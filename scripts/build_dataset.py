@@ -38,6 +38,8 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=None, help="Random seed override")
     parser.add_argument("--stage", default="full",
                         help="Build stage: 'full' (default) or 'inventory'")
+    parser.add_argument("--synthetic-images", action="store_true",
+                        help="Generate synthetic placeholder images (for proof-of-concept)")
     args = parser.parse_args()
 
     # Load config
@@ -110,6 +112,13 @@ def main() -> None:
         sys.exit(1)
 
     log.info("Validation passed: 0 errors, %d warnings", total_warnings)
+
+    # Generate synthetic images if requested
+    if args.synthetic_images:
+        from granunlearn.datasets.inaturalist import generate_synthetic_images
+        log.info("Generating synthetic images...")
+        generate_synthetic_images(output_dir.parent.parent.parent, associations)
+        log.info("Synthetic images generated")
 
     # Save artifacts
     output_dir.mkdir(parents=True, exist_ok=True)

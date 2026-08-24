@@ -37,6 +37,11 @@ class ImageRef(BaseModel):
     image_id: str
     path: str = Field(description="Relative path from data root")
     source: str = Field(default="original", description="original | synthetic | augmented")
+    split: str = Field(
+        default="train",
+        pattern=r"^(train|val|test)$",
+        description="Which split this image belongs to (for within-entity splitting)",
+    )
 
 
 class SplitInfo(BaseModel):

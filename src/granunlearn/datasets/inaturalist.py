@@ -4,24 +4,30 @@ For the smoke build, this adapter uses a built-in taxonomy fixture
 of 20 real species across multiple genera and families.  No LLM is
 required — the hierarchy is purely taxonomic and deterministic.
 
+Images are split WITHIN each species (train/val/test) so that:
+* The model is trained on train-split images of a species
+* Evaluated on held-out test-split images of the SAME species
+
+This tests whether species→genus granularity reduction generalizes
+across unseen visual instances of the same entity.
+
 When real iNaturalist data is available, the adapter can be extended
 to load from the HuggingFace ``iNaturalist`` dataset or local files.
 """
 
 from __future__ import annotations
 
+import hashlib
+from pathlib import Path
 from typing import Any
 
 from granunlearn.hierarchy import build_taxonomic_hierarchy
 from granunlearn.schema import (
     AssociationRecord,
-    HierarchyLevel,
     ImageRef,
     ProvenanceInfo,
     SplitInfo,
 )
-
-from .split import deterministic_split
 
 # -----------------------------------------------------------------------
 # Built-in taxonomy fixture — 20 real species
@@ -60,6 +66,83 @@ SMOKE_TAXONOMY: list[dict[str, Any]] = [
 ]
 
 
+def _assign_image_split(image_idx: int, n_images: int, seed: int, entity_id: str) -> str:
+    """Deterministically assign an image to train/val/test within its species.
+
+    Uses 60/20/20 split by default.
+    """
+    h = hashlib.sha256(f"{seed}:{entity_id}:img{image_idx}".encode()).hexdigest()
+    bucket = int(h[:8], 16) / 0xFFFFFFFF  # uniform in [0, 1)
+    if bucket < 0.6:
+        return "train"
+    elif bucket < 0.8:
+        return "val"
+    else:
+        return "test"
+
+
+def generate_synthetic_images(
+    output_root: Path,
+    associations: list[AssociationRecord],
+    size: tuple[int, int] = (64, 64),
+) -> None:
+    """Generate small synthetic placeholder images for proof-of-concept.
+
+    Creates a unique-colored image per species so that the model can
+    learn to associate visual features with taxa (even if the features
+    are trivially simple).
+
+    Parameters
+    ----------
+    output_root : Path
+        Root directory under which images are created.
+    associations : list[AssociationRecord]
+        The associations whose image references need backing files.
+    size : tuple[int, int]
+        Image dimensions (width, height).
+    """
+    import numpy as np
+
+    try:
+        from PIL import Image
+    except ImportError:
+        raise ImportError("Pillow is required for synthetic image generation")
+
+    for assoc in associations:
+        species_dir = output_root / assoc.entity_id.replace(" ", "_")
+        species_dir.mkdir(parents=True, exist_ok=True)
+
+        # Assign a deterministic "color" per species for synthetic variety
+        h = hashlib.sha256(assoc.entity_id.encode()).hexdigest()
+        base_r = int(h[0:2], 16)
+        base_g = int(h[2:4], 16)
+        base_b = int(h[4:6], 16)
+
+        for img_ref in assoc.images:
+            img_path = Path(img_ref.path)
+            if img_path.is_absolute():
+                full_path = img_path
+            else:
+                full_path = output_root.parent.parent.parent / img_path
+
+            full_path.parent.mkdir(parents=True, exist_ok=True)
+
+            if full_path.exists():
+                continue  # Don't overwrite existing images
+
+            # Create a synthetic image with species-specific color + noise
+            idx = int(img_ref.image_id.split("_img")[-1]) if "_img" in img_ref.image_id else 0
+            arr = np.zeros((*size, 3), dtype=np.uint8)
+            arr[:, :, 0] = (base_r + idx * 3) % 256
+            arr[:, :, 1] = (base_g + idx * 5) % 256
+            arr[:, :, 2] = (base_b + idx * 7) % 256
+            # Add some noise for variety
+            noise = np.random.randint(0, 30, (*size, 3), dtype=np.uint8)
+            arr = np.clip(arr.astype(np.int32) + noise.astype(np.int32), 0, 255).astype(np.uint8)
+
+            Image.fromarray(arr).save(full_path)
+
+
 class INaturalistAdapter:
     """iNaturalist dataset adapter.
 
@@ -77,11 +160,6 @@ class INaturalistAdapter:
         """
         max_species = config.get("max_species", 20)
         data = SMOKE_TAXONOMY[:max_species]
-
-        if len(data) < max_species:
-            # Not an error for smoke — just a note
-            pass
-
         return data
 
     def to_associations(
@@ -94,17 +172,16 @@ class INaturalistAdapter:
         Each species becomes one association with a taxonomic hierarchy:
         species (level 0) → genus (level 1) → family (level 2).
 
+        Images are split WITHIN each species so the same entity appears
+        in all splits, but different images are used for train/val/test.
+
         The target level defaults to 1 (genus) — the unlearning task is
         to reduce species-level knowledge to genus-level while retaining
         family-level recognition.
         """
         seed = config.get("seed", 42)
-        target_level = config.get("target_level", 1)  # default: reduce to genus
+        target_level = config.get("target_level", 1)
         dataset_version = config.get("version", "smoke_v1")
-
-        # Build entity-level splits
-        entity_ids = [r["species"] for r in raw_records]
-        splits = deterministic_split(entity_ids, seed=seed)
 
         associations: list[AssociationRecord] = []
         for record in raw_records:
@@ -129,18 +206,22 @@ class INaturalistAdapter:
                     + "; ".join(str(e) for e in errors)
                 )
 
-            # Create image references (placeholder paths)
-            n_images = record.get("n_images", 5)
-            images = [
-                ImageRef(
+            # Create image references with WITHIN-SPECIES splitting
+            n_images = record.get("n_images", 10)
+            images: list[ImageRef] = []
+            for i in range(n_images):
+                img_split = _assign_image_split(i, n_images, seed, species)
+                images.append(ImageRef(
                     image_id=f"inat_{species.replace(' ', '_')}_img{i:03d}",
                     path=f"data/raw/inaturalist/{dataset_version}/{species.replace(' ', '_')}/{i:03d}.jpg",
-                    source="original",
-                )
-                for i in range(n_images)
-            ]
+                    source="synthetic",
+                    split=img_split,
+                ))
 
             # Build the association record
+            # The entity's "split" field is set to "train" since the entity's
+            # knowledge is injected during training; individual images carry
+            # their own split for train/val/test separation.
             assoc = AssociationRecord(
                 association_id=f"inat_{species.replace(' ', '_')}",
                 dataset="inaturalist",
@@ -157,7 +238,7 @@ class INaturalistAdapter:
                     f"{common_name} ({species}) belongs to genus {genus}, family {family}."
                 ],
                 retain_attribute_names=[],
-                split=splits[species],
+                split=SplitInfo(split="train"),  # Entity is always "trained"
                 provenance=ProvenanceInfo(
                     source_dataset="inaturalist",
                     source_entity_id=species,

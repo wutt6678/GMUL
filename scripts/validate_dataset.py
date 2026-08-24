@@ -19,6 +19,7 @@ import pandas as pd
 
 from granunlearn.logging_utils import setup_logger
 from granunlearn.schema import AssociationRecord
+from granunlearn.hierarchy.validate import validate_chain
 
 log = setup_logger("validate_dataset")
 
@@ -79,6 +80,43 @@ def main() -> None:
             associations.append(assoc)
         except Exception as e:
             errors.append(f"RECORD_INVALID[row={idx}]: {e}")
+
+    # 4b. Re-run hierarchy validation on each deserialized record
+    log.info("Re-running hierarchy validation on deserialized records...")
+    for assoc in associations:
+        issues = validate_chain(assoc.levels)
+        for issue in issues:
+            if issue.is_error:
+                errors.append(
+                    f"HIERARCHY_INVALID[{assoc.association_id}]: {issue}"
+                )
+
+    # 4c. Check image path existence
+    log.info("Checking image path existence...")
+    missing_images = 0
+    total_images = 0
+    for assoc in associations:
+        for img in assoc.images:
+            total_images += 1
+            img_path = Path(data_dir).parent.parent.parent.parent / img.path
+            if not img_path.exists():
+                missing_images += 1
+                if missing_images <= 5:  # Limit noise
+                    errors.append(
+                        f"IMAGE_MISSING[{assoc.association_id}]: {img.path}"
+                    )
+    if missing_images > 0:
+        errors.append(f"IMAGE_MISSING_TOTAL: {missing_images}/{total_images} images not found")
+
+    # 4d. Check within-entity image split distribution
+    log.info("Checking within-entity image split coverage...")
+    for assoc in associations:
+        img_splits = {img.split for img in assoc.images}
+        if len(assoc.images) >= 3 and len(img_splits) < 2:
+            warnings.append(
+                f"IMAGE_SPLIT_SINGLE[{assoc.association_id}]: "
+                f"{len(assoc.images)} images all in split {img_splits}"
+            )
 
     # 5. Check entity leakage between splits
     # The split column may contain nested SplitInfo dicts; extract the string.
