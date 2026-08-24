@@ -194,6 +194,15 @@ def run_inventory(config_path: str | Path) -> Path:
     adapter.write_inventory_csv(rows, out_path)
     log.info("Wrote inventory with %d attributes -> %s", len(rows), out_path)
 
+    # Committed research-provenance summary (no raw data, no images)
+    summary = adapter.build_inventory_summary(
+        rows, source_revision=ds_cfg.get("source_revision")
+    ) if hasattr(adapter, "build_inventory_summary") else None
+    if summary is not None:
+        summary_path = repo_root / "data" / "reports" / f"{dataset_name}_inventory_summary.json"
+        save_json(summary, summary_path)
+        log.info("Wrote inventory summary -> %s", summary_path)
+
     # Summary of core-eligible attributes
     core = [r["attribute"] for r in rows if r["include_core"]]
     log.info("Core-eligible attributes: %s", core)

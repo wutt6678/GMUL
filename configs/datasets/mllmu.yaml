@@ -4,9 +4,14 @@ dataset:
   subset: fictitious  # no celebrity subset for MVP
   version: smoke10_v1
   source_mode: local
-  # Absolute path to the local MLLMU-Bench checkout (operator-provided).
-  data_root: /scratch/wutiantong/datasets/MLLMU-Bench/data
-  annotations_file: Full_Set.jsonl
+  # Official Hugging Face release layout (parquet is the default format).
+  # Populate via: huggingface-cli download MLLMMU/MLLMU-Bench
+  #   --repo-type dataset --include "Full_Set/*" --local-dir data/raw/MLLMU-Bench
+  data_root: data/raw/MLLMU-Bench
+  annotations_file: Full_Set/train-00000-of-00001.parquet
+  source_format: parquet
+  # HF repo revision the local copy was synced from (research provenance).
+  source_revision: e91a01eb060b61be8dbde7edb48b121341bd0890
 
 attributes:
   eligible:

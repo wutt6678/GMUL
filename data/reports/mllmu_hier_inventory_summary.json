@@ -1,0 +1,92 @@
+{
+  "source": "MLLMMU/MLLMU-Bench",
+  "subset": "Full_Set",
+  "source_revision": "e91a01eb060b61be8dbde7edb48b121341bd0890",
+  "source_format": "parquet",
+  "source_path": "/scratch/wutiantong/GMUL/granularity-unlearning/data/raw/MLLMU-Bench/Full_Set/train-00000-of-00001.parquet",
+  "num_source_records": 500,
+  "num_parsed": 500,
+  "num_errors": 0,
+  "num_celebrity_skipped": 0,
+  "error_rate": 0.0,
+  "attributes": [
+    {
+      "attribute": "residence",
+      "coverage": 1.0,
+      "suggested_hierarchy_type": "semantic",
+      "include_core": true
+    },
+    {
+      "attribute": "birthplace",
+      "coverage": 1.0,
+      "suggested_hierarchy_type": "semantic",
+      "include_core": true
+    },
+    {
+      "attribute": "date_of_birth",
+      "coverage": 1.0,
+      "suggested_hierarchy_type": "numeric",
+      "include_core": true
+    },
+    {
+      "attribute": "occupation",
+      "coverage": 1.0,
+      "suggested_hierarchy_type": "semantic",
+      "include_core": true
+    },
+    {
+      "attribute": "salary",
+      "coverage": 1.0,
+      "suggested_hierarchy_type": "numeric",
+      "include_core": true
+    },
+    {
+      "attribute": "height",
+      "coverage": 1.0,
+      "suggested_hierarchy_type": "numeric",
+      "include_core": true
+    },
+    {
+      "attribute": "education",
+      "coverage": 1.0,
+      "suggested_hierarchy_type": "semantic",
+      "include_core": true
+    },
+    {
+      "attribute": "name",
+      "coverage": 1.0,
+      "suggested_hierarchy_type": "",
+      "include_core": false
+    },
+    {
+      "attribute": "gender",
+      "coverage": 1.0,
+      "suggested_hierarchy_type": "",
+      "include_core": false
+    },
+    {
+      "attribute": "medical_conditions",
+      "coverage": 1.0,
+      "suggested_hierarchy_type": "",
+      "include_core": false
+    },
+    {
+      "attribute": "parents",
+      "coverage": 1.0,
+      "suggested_hierarchy_type": "",
+      "include_core": false
+    },
+    {
+      "attribute": "fun_facts",
+      "coverage": 1.0,
+      "suggested_hierarchy_type": "",
+      "include_core": false
+    },
+    {
+      "attribute": "description",
+      "coverage": 0.996,
+      "suggested_hierarchy_type": "",
+      "include_core": false
+    }
+  ]
+}

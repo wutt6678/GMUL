@@ -29,6 +29,9 @@ data/reports/*
 !data/generated/.gitkeep
 !data/manifests/.gitkeep
 !data/reports/.gitkeep
+# Committed research-provenance reports (small, regenerable)
+!data/reports/mllmu_hier_attribute_inventory.csv
+!data/reports/mllmu_hier_inventory_summary.json
 
 # Outputs
 outputs/*/

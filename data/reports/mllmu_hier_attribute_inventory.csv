@@ -1,0 +1,14 @@
+attribute,count,coverage,missing_count,distinct_count,observed_python_types,parseable_count,example_values,suggested_hierarchy_type,deterministic_possible,qwen_needed,include_core,notes
+residence,500,1.0,0,70,str,500,"Copenhagen, Denmark | Barcelona, Spain | San Francisco, USA",semantic,True,False,True,Location containment; deterministic if structured components present.
+birthplace,500,1.0,0,162,str,500,"Riga, Latvia | Reykjavik, Iceland | Munich, Germany",semantic,True,False,True,Location containment (city->region->country).
+date_of_birth,500,1.0,0,345,str,500,1988-05-14 | 1991-03-12 | 1984-06-13,numeric,True,False,True,date -> year -> decade; fully deterministic.
+occupation,500,1.0,0,69,str,500,Environmental Scientist | Art Curator | Software Engineer,semantic,False,True,True,Semantic abstraction; requires Qwen generation + verification.
+salary,500,1.0,0,67,str,500,"$75,000 | $58,000 | $120,000",numeric,True,False,True,Numeric bins configured per experiment.
+height,500,1.0,0,67,str,500,5 feet 5 inches | 168 cm | 180 cm,numeric,True,False,True,Numeric bins; do not infer socially sensitive labels.
+education,500,1.0,0,199,str,500,University of Helsinki | University of the Arts London | Technical University of Munich,semantic,False,True,True,Institution abstraction; requires Qwen where defensible.
+name,500,1.0,0,500,str,500,Amelia Kuznetsov | Aurora Keating | Lukas Harrington,,False,False,False,"Identifier, not an attribute with a hierarchy."
+gender,500,1.0,0,4,str,500,Female | Female | Male,,False,False,False,No meaningful granularity hierarchy.
+medical_conditions,500,1.0,0,10,str,500,Asthma | Asthma | Asthma,,False,False,False,Sensitive; excluded from core experiment.
+parents,500,1.0,0,461,"dict,str",13,"{'Father': {'Occupation': 'Mechanical Engineer', 'Works as': | {'Father': 'Mechanical Engineer, who works as a product desi | {'Father is': 'Small Business Owner, who works as a Cafe Own",,False,False,False,Nested structure; out of scope for MVP.
+fun_facts,500,1.0,0,500,"dict,list,str",266,"['Loves hiking and has completed the Appalachian Trail.', 'F | Aurora has a pet parrot named Picasso. She enjoys experiment | ['Lukas loves rock climbing and often spends his weekends ex",,False,False,False,Free-text list; no clean hierarchy.
+description,498,0.996,2,498,str,498,"Amelia Kuznetsov was born in Riga, Latvia, and is an accompl | Aurora Keating is an art curator born in Reykjavik, Iceland  | Lukas Harrington, born in Munich, Germany, is a talented Sof",,False,False,False,Free-text narrative; no clean hierarchy.
