@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from .hierarchy import HierarchyLevel, ImageRef, ProvenanceInfo, SplitInfo
 
@@ -58,6 +58,28 @@ class AssociationRecord(BaseModel):
     )
     split: SplitInfo
     provenance: ProvenanceInfo
+
+    @model_validator(mode="after")
+    def _check_level_bounds(self) -> "AssociationRecord":
+        n = len(self.levels)
+        if self.original_level >= n:
+            raise ValueError(
+                f"original_level ({self.original_level}) must be < len(levels) ({n})"
+            )
+        if self.target_level >= n:
+            raise ValueError(
+                f"target_level ({self.target_level}) must be < len(levels) ({n})"
+            )
+        if self.original_level != 0:
+            raise ValueError(
+                f"original_level must be 0 (got {self.original_level})"
+            )
+        if self.target_level < self.original_level:
+            raise ValueError(
+                f"target_level ({self.target_level}) must be >= "
+                f"original_level ({self.original_level})"
+            )
+        return self
 
     def fine_value(self) -> HierarchyLevel:
         """Return the finest (level 0) value."""

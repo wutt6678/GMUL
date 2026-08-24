@@ -5,13 +5,56 @@ These builders must **never** use LLM-generated labels.
 
 from __future__ import annotations
 
-import re
+import datetime
 from typing import Any, Sequence
 
 from granunlearn.schema import HierarchyLevel
 
 from .base import ChainHierarchy
 from .canonicalize import make_canonical_id, normalize
+
+
+# ---------------------------------------------------------------------------
+# Bin validation
+# ---------------------------------------------------------------------------
+
+def _validate_bins(bins: Sequence[Sequence[int | float | None]]) -> None:
+    """Validate that bins are well-formed: no reversal, overlap, or gaps.
+
+    Raises ``ValueError`` on any structural defect.
+    """
+    if len(bins) == 0:
+        raise ValueError("At least one bin is required")
+
+    for i, b in enumerate(bins):
+        if len(b) != 2:
+            raise ValueError(f"Bin {i} must be a [lo, hi] pair, got length {len(b)}")
+        lo, hi = b
+        if lo is not None and hi is not None:
+            if lo >= hi:
+                raise ValueError(
+                    f"Bin {i} has reversed or zero-width boundaries: "
+                    f"[{lo}, {hi}]"
+                )
+
+    # Check consecutive bins: prev.hi must equal next.lo (no gaps, no overlap)
+    for i in range(len(bins) - 1):
+        _, prev_hi = bins[i]
+        next_lo, _ = bins[i + 1]
+        if prev_hi is None:
+            raise ValueError(
+                f"Bin {i} has hi=None but is not the last bin — "
+                f"subsequent bins would be unreachable"
+            )
+        if next_lo is None:
+            raise ValueError(
+                f"Bin {i+1} has lo=None but is not the first bin"
+            )
+        if prev_hi != next_lo:
+            raise ValueError(
+                f"Gap or overlap between bins {i} and {i+1}: "
+                f"bin {i} hi={prev_hi}, bin {i+1} lo={next_lo}"
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -38,22 +81,37 @@ def build_date_hierarchy(
         # level 1: 1994
         # level 2: 1990s
     """
-    match = re.match(r"(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?", date_str.strip())
-    if not match:
-        raise ValueError(f"Cannot parse date: {date_str!r}")
+    date_str = date_str.strip()
 
-    year = match.group(1)
-    month = match.group(2)
-    day = match.group(3)
+    # Try full date parsing first (YYYY-MM-DD)
+    parsed_date: datetime.date | None = None
+    try:
+        parsed_date = datetime.date.fromisoformat(date_str)
+    except (ValueError, TypeError):
+        pass
 
-    values: list[tuple[str, str]] = []
+    if parsed_date is not None:
+        year = str(parsed_date.year)
+        values: list[tuple[str, str]] = [
+            (date_str, f"{prefix}:exact"),
+            (year, f"{prefix}:year"),
+        ]
+    else:
+        # Try year-only (YYYY)
+        if len(date_str) == 4 and date_str.isdigit():
+            year = date_str
+            # Validate it's a real year
+            try:
+                datetime.date(int(year), 1, 1)
+            except ValueError:
+                raise ValueError(f"Cannot parse date: {date_str!r}")
+            values = [
+                (year, f"{prefix}:year"),
+            ]
+        else:
+            raise ValueError(f"Cannot parse date: {date_str!r}")
 
-    # Level 0: finest available
-    if day and month:
-        values.append((date_str.strip(), f"{prefix}:exact"))
-    # Level 1 (or 0 if no day): year
-    values.append((year, f"{prefix}:year"))
-    # Level 2 (or 1): decade
+    # Decade level (always added)
     decade_start = (int(year) // 10) * 10
     values.append((f"{decade_start}s", f"{prefix}:decade"))
 
@@ -92,7 +150,7 @@ def build_binned_hierarchy(
         The fine-grained numeric value.
     bins : sequence of [lo, hi] pairs
         Bin boundaries.  ``hi=None`` means unbounded above.
-        Bins must be non-overlapping and cover the value.
+        Bins must be non-overlapping, contiguous, and cover the value.
     value_label : str | None
         Human-readable label for the exact value (e.g. "$87,500").
         Defaults to ``str(value)``.
@@ -106,7 +164,14 @@ def build_binned_hierarchy(
     ChainHierarchy
         Level 0 = exact value, Level 1 = bin label, Level 2 = broad category
         (upper half of bins vs lower half).
+
+    Raises
+    ------
+    ValueError
+        If bins are malformed, overlapping, have gaps, or don't contain the value.
     """
+    _validate_bins(bins)
+
     if value_label is None:
         value_label = f"{value:g}"
 

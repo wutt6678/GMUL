@@ -40,6 +40,7 @@ from granunlearn.hierarchy import (
     validate_chain,
 )
 from granunlearn.hierarchy.validate import assert_valid
+from granunlearn.hierarchy.numeric import _validate_bins
 
 
 # =====================================================================
@@ -250,20 +251,46 @@ class TestValidation:
 
     def test_duplicate_id_rejected(self):
         levels = [
-            HierarchyLevel(level=0, canonical_id="dup", value="A", normalized_value="a", parent_id=None),
+            HierarchyLevel(level=0, canonical_id="dup", value="A", normalized_value="a", parent_id="dup"),
             HierarchyLevel(level=1, canonical_id="dup", value="B", normalized_value="b", parent_id=None),
         ]
         issues = validate_chain(levels)
         codes = [i.code for i in issues]
         assert "DUPLICATE_ID" in codes
 
-    def test_missing_parent_rejected(self):
+    def test_chain_parent_mismatch_rejected(self):
+        """A parent that skips a level is detected (strict chain invariant)."""
+        # level 0 -> level 2 (skips level 1)
         levels = [
-            HierarchyLevel(level=0, canonical_id="a", value="A", normalized_value="a", parent_id="ghost"),
+            HierarchyLevel(level=0, canonical_id="a", value="A", normalized_value="a", parent_id="c"),
+            HierarchyLevel(level=1, canonical_id="b", value="B", normalized_value="b", parent_id=None),
+            HierarchyLevel(level=2, canonical_id="c", value="C", normalized_value="c", parent_id=None),
         ]
         issues = validate_chain(levels)
         codes = [i.code for i in issues]
-        assert "MISSING_PARENT" in codes
+        assert "CHAIN_PARENT_MISMATCH" in codes
+
+    def test_chain_root_has_parent_rejected(self):
+        """Coarsest node with a non-None parent is rejected."""
+        levels = [
+            HierarchyLevel(level=0, canonical_id="a", value="A", normalized_value="a", parent_id="b"),
+            HierarchyLevel(level=1, canonical_id="b", value="B", normalized_value="b", parent_id="ghost"),
+        ]
+        issues = validate_chain(levels)
+        codes = [i.code for i in issues]
+        # ghost parent doesn't exist → CHAIN_ROOT_HAS_PARENT (b is coarsest but has parent)
+        assert "CHAIN_ROOT_HAS_PARENT" in codes
+
+    def test_level_sequence_gap_rejected(self):
+        """Level indices 0, 2, 9 are rejected (must be 0, 1, 2)."""
+        levels = [
+            HierarchyLevel(level=0, canonical_id="a", value="A", normalized_value="a", parent_id="b"),
+            HierarchyLevel(level=2, canonical_id="b", value="B", normalized_value="b", parent_id="c"),
+            HierarchyLevel(level=9, canonical_id="c", value="C", normalized_value="c", parent_id=None),
+        ]
+        issues = validate_chain(levels)
+        codes = [i.code for i in issues]
+        assert "LEVEL_SEQUENCE_INVALID" in codes
 
     def test_duplicate_normalized_rejected(self):
         levels = [
@@ -284,8 +311,51 @@ class TestValidation:
             HierarchyLevel(level=0, canonical_id="a", value="A", normalized_value="a", parent_id="ghost"),
         ]
         issues = validate_chain(levels)
-        with pytest.raises(ValueError, match="MISSING_PARENT"):
+        with pytest.raises(ValueError, match="CHAIN_ROOT_HAS_PARENT"):
             assert_valid(issues)
+
+
+class TestAssociationBounds:
+    """AssociationRecord level-bounds validation."""
+
+    def _make_assoc(self, **kwargs):
+        defaults = {
+            "association_id": "test",
+            "dataset": "ds",
+            "entity_id": "e1",
+            "attribute_name": "attr",
+            "hierarchy_type": "semantic",
+            "levels": [
+                HierarchyLevel(level=0, canonical_id="a", value="A", normalized_value="a", parent_id="b"),
+                HierarchyLevel(level=1, canonical_id="b", value="B", normalized_value="b", parent_id=None),
+            ],
+            "original_level": 0,
+            "target_level": 1,
+            "split": SplitInfo(split="train"),
+            "provenance": ProvenanceInfo(source_dataset="ds"),
+        }
+        defaults.update(kwargs)
+        return AssociationRecord(**defaults)
+
+    def test_target_level_out_of_bounds(self):
+        with pytest.raises(Exception, match="target_level"):
+            self._make_assoc(target_level=17)
+
+    def test_original_level_out_of_bounds(self):
+        with pytest.raises(Exception, match="original_level"):
+            self._make_assoc(original_level=5)
+
+    def test_original_level_must_be_zero(self):
+        with pytest.raises(Exception, match="original_level must be 0"):
+            self._make_assoc(original_level=1)
+
+    def test_target_below_original_rejected(self):
+        # Since original_level must be 0, target_level < 0 is already
+        # blocked by Field(ge=0).  Verify target_level == original_level
+        # is allowed (retain the exact fine value).
+        assoc = self._make_assoc(original_level=0, target_level=0)
+        assert assoc.target_level == 0
+        assert assoc.original_level == 0
 
 
 # =====================================================================
@@ -329,6 +399,27 @@ class TestNumericHierarchy:
         with pytest.raises(ValueError, match="does not fall in any configured bin"):
             build_salary_hierarchy(999_999_999, bins=[[0, 100]])
 
+    def test_bin_gap_rejected(self):
+        with pytest.raises(ValueError, match="Gap or overlap"):
+            _validate_bins([[0, 50], [60, 100]])  # gap at 50-60
+
+    def test_bin_overlap_rejected(self):
+        with pytest.raises(ValueError, match="Gap or overlap"):
+            _validate_bins([[0, 60], [50, 100]])  # overlap at 50-60
+
+    def test_bin_reversed_rejected(self):
+        with pytest.raises(ValueError, match="reversed or zero-width"):
+            _validate_bins([[100, 50]])
+
+    def test_invalid_date_rejected(self):
+        with pytest.raises(ValueError, match="Cannot parse date"):
+            build_date_hierarchy("not-a-date")
+
+    def test_invalid_calendar_date_rejected(self):
+        """Feb 30 is not a valid calendar date."""
+        with pytest.raises(ValueError, match="Cannot parse date"):
+            build_date_hierarchy("2024-02-30")
+
 
 # =====================================================================
 # Semantic / taxonomic tests
@@ -349,6 +440,29 @@ class TestSemanticTaxonomic:
         assert taxon_chain.is_ancestor(genus_id, species_id)
         assert taxon_chain.is_ancestor(family_id, species_id)
         assert taxon_chain.get_level(species_id).metadata["rank"] == "species"
+
+    def test_taxonomy_wrong_rank_order_rejected(self):
+        """species → family → genus is rejected (wrong rank order)."""
+        with pytest.raises(ValueError, match="Rank order not strictly increasing"):
+            build_taxonomic_hierarchy([
+                {"name": "Passer domesticus", "rank": "species"},
+                {"name": "Passeridae", "rank": "family"},
+                {"name": "Passer", "rank": "genus"},  # genus < family → wrong
+            ])
+
+    def test_taxonomy_unknown_rank_rejected(self):
+        with pytest.raises(ValueError, match="Unknown taxonomic rank"):
+            build_taxonomic_hierarchy([
+                {"name": "X", "rank": "species"},
+                {"name": "Y", "rank": "bogus_rank"},
+            ])
+
+    def test_taxonomy_missing_rank_rejected(self):
+        with pytest.raises(ValueError, match="has no 'rank' field"):
+            build_taxonomic_hierarchy([
+                {"name": "X"},  # no rank
+                {"name": "Y", "rank": "genus"},
+            ])
 
 
 # =====================================================================
