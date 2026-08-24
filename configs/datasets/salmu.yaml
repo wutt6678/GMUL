@@ -1,0 +1,31 @@
+dataset:
+  name: salmu_hierarchical
+  source: SALMUBench
+  version: pilot_v1
+
+preserve_original: true
+original_dir: salmu_original
+hierarchical_dir: salmu_hierarchical
+
+attributes:
+  eligible:
+    - occupation
+    - location
+    - financial_value
+  excluded:
+    - phone_number
+    - email
+
+auxiliary:
+  redaction_dir: salmu_aux_redaction
+  label: "AUXILIARY REDACTION EXPERIMENT — NOT PART OF CORE GRANULARITY-REDUCTION CLAIM"
+
+evaluation:
+  embedding_metrics:
+    - sim_fine
+    - sim_target
+    - sim_ancestor
+    - sim_wrong_sibling
+    - retain_non_target
+    - holdout_identity
+    - holdout_association

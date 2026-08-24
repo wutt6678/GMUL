@@ -1,0 +1,28 @@
+# Frozen environment from env_probe.py — 2026-08-23
+# Hardware: NVIDIA RTX 6000 Ada Generation (48 GB)
+# Python: 3.10.20, CUDA: 12.8, cuDNN: 91002
+#
+# This file captures the EXACT versions verified by the env probe.
+# It is complementary to base.txt / qwen.txt (which declare supported ranges).
+# Use this lock for reproducibility; use base/qwen for fresh installs.
+
+torch==2.8.0+cu128
+torchvision==0.23.0+cu128
+transformers==5.14.1
+accelerate==1.10.1
+peft==0.20.0
+bitsandbytes==0.50.1
+datasets==4.2.0
+pyarrow==25.0.0
+pandas==2.3.3
+numpy==2.2.6
+pillow
+pyyaml==6.0.3
+pydantic==2.13.4
+tqdm==4.67.1
+scikit-learn==1.7.2
+pytest==9.1.1
+jsonschema==4.26.0
+safetensors==0.8.0
+einops==0.8.1
+qwen-vl-utils==0.0.14

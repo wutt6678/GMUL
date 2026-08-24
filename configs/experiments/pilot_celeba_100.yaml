@@ -1,0 +1,40 @@
+experiment:
+  name: celeba_pilot100
+  seed: 42
+
+dataset:
+  name: celeba_synth
+  version: pilot100_v1
+  max_identities: 100
+  hierarchy_types:
+    - semantic
+    - numeric
+
+model:
+  config: configs/models/qwen35_9b.yaml
+
+states:
+  train:
+    - MF
+    - MG
+    - MN
+
+methods:
+  - no_op
+  - unknown_target
+  - generalized_sft
+  - contrastive_rewrite
+
+evaluation:
+  routes:
+    - text_to_text
+    - image_to_text
+    - image_text_to_text
+  metrics:
+    - fine_information_leakage
+    - target_granularity_accuracy
+    - under_forgetting
+    - over_forgetting
+    - wrong_branch
+    - same_entity_retain
+    - other_entity_retain

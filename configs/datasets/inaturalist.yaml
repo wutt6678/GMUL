@@ -1,0 +1,25 @@
+dataset:
+  name: inaturalist
+  source: iNaturalist
+  version: smoke_v1
+
+taxonomy:
+  chain:
+    - species
+    - genus
+    - family
+  # optionally add order after initial pilot
+
+smoke:
+  max_species: 20
+  min_genera: 2
+  min_families: 2
+
+pilot:
+  max_species: 100
+  min_genera: 20
+
+model_task:
+  - image_to_species
+  - image_to_genus
+  - image_to_family

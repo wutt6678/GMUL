@@ -92,12 +92,20 @@ class TestMultimodalGeneration:
         assert len(result.strip()) > 0
 
 
-# ---- LoRA tests ----
+# ---- LoRA lifecycle test ----
+# get_peft_model() mutates the base model in-place, so calling it
+# multiple times on the same shared fixture would be order-dependent.
+# We verify the full LoRA lifecycle (attach -> backward -> save -> reload)
+# in a single test to keep the module-scoped base model clean.
 
 class TestLoRA:
-    def test_lora_attach(self, model, processor):
-        """LoRA adapters can be attached to language projection modules."""
-        from peft import LoraConfig, get_peft_model
+    def test_lora_lifecycle(self, model, processor, tmp_path):
+        """Full LoRA lifecycle: attach, verify params, backward, save, reload.
+
+        PEFT's get_peft_model() modifies the base model in-place, so we
+        perform all LoRA operations in one test to avoid test-order coupling.
+        """
+        from peft import LoraConfig, get_peft_model, PeftModel
 
         target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
         config = LoraConfig(
@@ -108,28 +116,15 @@ class TestLoRA:
             bias="none",
             task_type="CAUSAL_LM",
         )
+
+        # 1. Attach
         model_lora = get_peft_model(model, config)
         trainable, total = model_lora.get_nb_trainable_parameters()
-        assert trainable > 0
-        assert trainable < total
-        del model_lora
+        assert trainable > 0, "LoRA should add trainable parameters"
+        assert trainable < total, "Only LoRA params should be trainable"
 
-    def test_lora_backward(self, model, processor):
-        """One forward+backward step succeeds with LoRA."""
-        from peft import LoraConfig, get_peft_model
-
-        target_modules = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
-        config = LoraConfig(
-            r=16,
-            lora_alpha=32,
-            lora_dropout=0.05,
-            target_modules=target_modules,
-            bias="none",
-            task_type="CAUSAL_LM",
-        )
-        model_lora = get_peft_model(model, config)
+        # 2. Backward
         model_lora.train()
-
         messages = [
             {"role": "user", "content": "What is 2+2?"},
             {"role": "assistant", "content": "The answer is 4."},
@@ -142,29 +137,20 @@ class TestLoRA:
         outputs = model_lora(input_ids=input_ids, labels=labels)
         loss = outputs.loss
         loss.backward()
-        assert loss.item() > 0
-        del model_lora
+        assert loss.item() > 0, "Loss should be positive"
 
-    def test_lora_save_load(self, model, processor, tmp_path):
-        """LoRA adapter can be saved and reloaded."""
-        from peft import LoraConfig, get_peft_model, PeftModel
-
-        target_modules = ["q_proj", "v_proj"]
-        config = LoraConfig(
-            r=8,
-            lora_alpha=16,
-            target_modules=target_modules,
-            bias="none",
-            task_type="CAUSAL_LM",
-        )
-        model_lora = get_peft_model(model, config)
+        # 3. Save adapter
         save_path = tmp_path / "lora_adapter"
         model_lora.save_pretrained(str(save_path))
+        assert (save_path / "adapter_config.json").exists()
 
-        # Reload
+        # 4. Unload and reload onto the base model
+        model_lora.unload()
         model_reloaded = PeftModel.from_pretrained(model, str(save_path))
         assert model_reloaded is not None
-        del model_lora, model_reloaded
+
+        # Cleanup: unload again so the shared base model stays clean
+        model_reloaded.unload()
 
 
 # ---- 4-bit loading test (optional) ----

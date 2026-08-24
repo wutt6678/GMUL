@@ -1,0 +1,39 @@
+dataset:
+  name: mllmu_hier
+  source: MLLMU-Bench
+  subset: fictitious  # no celebrity subset for MVP
+  version: smoke10_v1
+
+attributes:
+  eligible:
+    - residence
+    - birthplace
+    - date_of_birth
+    - occupation
+    - salary
+    - height
+    - education
+  excluded:
+    - phone_number
+    - email
+    - physical_description
+
+hierarchy:
+  deterministic_first: true
+  qwen_assisted_attributes:
+    - occupation
+    - education
+
+query_families:
+  - fine_direct
+  - target_direct
+  - open
+  - ancestor
+  - retain_same_entity
+  - retain_other_entity
+  paraphrases_per_query: 3
+
+split:
+  train_ratio: 0.6
+  val_ratio: 0.2
+  test_ratio: 0.2

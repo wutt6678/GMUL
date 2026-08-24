@@ -1,0 +1,34 @@
+experiment:
+  name: inat_smoke
+  seed: 42
+
+dataset:
+  name: inaturalist
+  version: smoke_v1
+  max_species: 20
+  hierarchy_types:
+    - taxonomic
+
+model:
+  config: configs/models/qwen35_9b.yaml
+
+states:
+  train:
+    - MF
+    - MG
+    - MN
+
+methods:
+  - no_op
+  - generalized_sft
+  - contrastive_rewrite
+
+evaluation:
+  routes:
+    - image_to_text
+  metrics:
+    - fine_information_leakage
+    - target_granularity_accuracy
+    - under_forgetting
+    - over_forgetting
+    - wrong_branch

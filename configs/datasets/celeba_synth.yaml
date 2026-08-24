@@ -1,0 +1,37 @@
+dataset:
+  name: celeba_synth
+  source: CelebA
+  version: pilot100_v1
+
+identity_selection:
+  max_identities: 100
+  min_images_per_identity: 10
+  prefer_min_images: 15
+
+image_split:
+  train_ratio: 0.6
+  val_ratio: 0.2
+  test_ratio: 0.2
+
+synthetic_attributes:
+  - residence
+  - occupation
+  - education
+  - date_of_birth
+  - salary
+
+retain_attributes_whitelist:
+  - Eyeglasses
+  - Smiling
+  - Blond_Hair
+  - Black_Hair
+  - Mustache
+  - Young
+
+synthetic_persona_policy:
+  avoid:
+    - fabricated_medical_diagnoses
+    - fabricated_criminal_history
+    - real_contact_information
+    - real_addresses
+    - real_employer_claims
