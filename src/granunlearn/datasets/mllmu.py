@@ -45,6 +45,7 @@ from granunlearn.hierarchy import (
     build_date_hierarchy,
     build_height_hierarchy,
     build_salary_hierarchy,
+    build_semantic_hierarchy,
 )
 from granunlearn.hierarchy.location import build_location_hierarchy
 from granunlearn.hierarchy.parsers import (
@@ -840,6 +841,91 @@ class MLLMUAdapter:
             "num_entities_without_image": sum(
                 1 for rec in raw_records if rec.entity_id not in image_map),
         }
+        return associations
+
+    # ---- Qwen-assisted associations (Iteration 5) -----------------------
+
+    def to_semantic_associations(
+        self,
+        raw_records: list[MLLMUSourceRecord],
+        accepted_chains: dict[str, dict[str, list[str]]],
+        config: dict[str, Any],
+        generation_provenance: dict[str, Any] | None = None,
+        prompt_versions: dict[str, str] | None = None,
+    ) -> list[AssociationRecord]:
+        """Build AssociationRecords from ACCEPTED qwen-assisted chains.
+
+        Only values with a fully gated (proposed -> deterministically
+        validated -> independently verified -> confidence-gated) chain are
+        turned into records.  Rejected values yield no record — rejection
+        over forced hierarchy construction.
+        """
+        seed = int(config.get("seed", 42))
+        prov = generation_provenance or {}
+        pvers = prompt_versions or {}
+        image_map: dict[str, str] = getattr(self, "last_image_map", {}) or {}
+
+        split_ratios = config.get("split", {}) or {}
+        entity_split = deterministic_entity_splits(
+            [rec.entity_id for rec in raw_records], seed,
+            train_ratio=float(split_ratios.get("train_ratio", 0.6)),
+            val_ratio=float(split_ratios.get("val_ratio", 0.2)),
+        )
+
+        associations: list[AssociationRecord] = []
+        for rec in raw_records:
+            for attr, chains in accepted_chains.items():
+                value = rec.fields.get(attr)
+                chain = chains.get(str(value).strip() if value else "")
+                if chain is None:
+                    continue
+                hierarchy = build_semantic_hierarchy(chain, prefix=attr)
+                issues = validate_chain(hierarchy.levels())
+                errors = [i for i in issues if i.is_error]
+                if errors:
+                    # Accepted chains must always pass; never emit broken records
+                    raise ValueError(
+                        f"Accepted {attr} chain for {rec.entity_id} failed "
+                        f"validation: {errors}"
+                    )
+                n_levels = len(hierarchy.levels())
+                target = select_target_level(
+                    seed, f"{rec.entity_id}:{attr}", n_levels)
+                split = entity_split[rec.entity_id]
+                images: list[ImageRef] = []
+                if rec.entity_id in image_map:
+                    images.append(ImageRef(
+                        image_id=f"mllmu_{rec.raw_id}",
+                        path=image_map[rec.entity_id],
+                        source="materialized",
+                        split=split,
+                    ))
+                associations.append(AssociationRecord(
+                    association_id=f"mllmu_{rec.raw_id}__{attr}",
+                    dataset="mllmu_hier",
+                    entity_id=rec.entity_id,
+                    entity_name=rec.entity_name,
+                    attribute_name=attr,
+                    hierarchy_type="semantic",
+                    levels=hierarchy.levels(),
+                    original_level=0,
+                    target_level=target,
+                    source_modalities=["text", "image"] if images else ["text"],
+                    images=images,
+                    textual_context=[
+                        f"{rec.entity_name} — {attr}: {value}"
+                    ],
+                    retain_attribute_names=[],
+                    split=SplitInfo(split=split),
+                    provenance=ProvenanceInfo(
+                        source_dataset="mllmu_bench",
+                        source_entity_id=rec.raw_id,
+                        source_record_id=rec.raw_id,
+                        generation_model=prov.get("model_id"),
+                        hierarchy_builder="qwen_assisted",
+                        prompt_version=pvers.get("proposal"),
+                    ),
+                ))
         return associations
 
     def _build_chain(self, attr, parsed, salary_bins, height_bins):

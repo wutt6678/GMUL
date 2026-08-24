@@ -1,0 +1,264 @@
+{"attribute": "occupation", "value": "Aerospace Engineer", "chain": ["Aerospace Engineer", "Engineer", "Professional", "Person"]}
+{"attribute": "occupation", "value": "Agricultural Scientist", "chain": ["Agricultural Scientist", "Scientist", "Professional", "Person"]}
+{"attribute": "occupation", "value": "Architect", "chain": ["Architect", "Architectural Designer", "Design Professional", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Art Conservator", "chain": ["Art Conservator", "Conservator", "Cultural Heritage Professional", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Art Curator", "chain": ["Art Curator", "Curator", "Museum Professional", "Cultural Heritage Professional", "Professional"]}
+{"attribute": "occupation", "value": "Art Director", "chain": ["Art Director", "Director", "Creative Professional", "Professional"]}
+{"attribute": "occupation", "value": "Art Historian", "chain": ["Art Historian", "Historian", "Social Scientist", "Academic", "Professional"]}
+{"attribute": "occupation", "value": "Bioinformatics Researcher", "chain": ["Bioinformatics Researcher", "Researcher", "Scientist", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Biomedical Engineer", "chain": ["Biomedical Engineer", "Engineer", "Professional", "Person"]}
+{"attribute": "occupation", "value": "Biomedical Scientist", "chain": ["Biomedical Scientist", "Scientist", "Healthcare Professional", "Worker"]}
+{"attribute": "occupation", "value": "Biotechnologist", "chain": ["Biotechnologist", "Biologist", "Life Scientist", "Scientist", "Professional"]}
+{"attribute": "occupation", "value": "Botanist", "chain": ["Botanist", "Biologist", "Scientist", "Professional"]}
+{"attribute": "occupation", "value": "CEO of a Renewable Energy Company", "chain": ["CEO of a Renewable Energy Company", "Chief Executive Officer", "Corporate Executive", "Business Leader", "Professional"]}
+{"attribute": "occupation", "value": "Civil Engineer", "chain": ["Civil Engineer", "Engineer", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Clinical Psychologist", "chain": ["Clinical Psychologist", "Psychologist", "Mental Health Professional", "Healthcare Professional", "Professional"]}
+{"attribute": "occupation", "value": "Culinary Artist", "chain": ["Culinary Artist", "Chef", "Food Service Worker", "Service Worker", "Worker"]}
+{"attribute": "occupation", "value": "Cultural Anthropologist", "chain": ["Cultural Anthropologist", "Anthropologist", "Social Scientist", "Researcher", "Professional"]}
+{"attribute": "occupation", "value": "Data Scientist", "chain": ["Data Scientist", "Data Professional", "Knowledge Worker", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Ecologist", "chain": ["Ecologist", "Biologist", "Natural Scientist", "Scientist", "Professional"]}
+{"attribute": "occupation", "value": "Educational Consultant", "chain": ["Educational Consultant", "Consultant", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Environmental Consultant", "chain": ["Environmental Consultant", "Consultant", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Environmental Engineer", "chain": ["Environmental Engineer", "Engineer", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Environmental Researcher", "chain": ["Environmental Researcher", "Researcher", "Scientist", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Environmental Scientist", "chain": ["Environmental Scientist", "Scientist", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Fashion Designer", "chain": ["Fashion Designer", "Designer", "Creative Professional", "Professional"]}
+{"attribute": "occupation", "value": "Freelance Writer", "chain": ["Freelance Writer", "Writer", "Author", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Geriatric Specialist", "chain": ["Geriatric Specialist", "Geriatrician", "Physician", "Medical Doctor", "Healthcare Professional"]}
+{"attribute": "occupation", "value": "Graphic Designer", "chain": ["Graphic Designer", "Designer", "Creative Professional", "Professional"]}
+{"attribute": "occupation", "value": "Healthcare Administrator", "chain": ["Healthcare Administrator", "Healthcare Manager", "Health Services Manager", "Manager", "Executive"]}
+{"attribute": "occupation", "value": "Healthcare Consultant", "chain": ["Healthcare Consultant", "Consultant", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "High school student", "chain": ["High school student", "Student", "Person"]}
+{"attribute": "occupation", "value": "History Professor", "chain": ["History Professor", "Professor", "Academic", "Educator", "Professional"]}
+{"attribute": "occupation", "value": "Human Rights Advocate", "chain": ["Human Rights Advocate", "Advocate", "Activist", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Hydrologist", "chain": ["Hydrologist", "Hydrologist and Water Resources Specialist", "Earth Scientist", "Natural Scientist", "Scientist"]}
+{"attribute": "occupation", "value": "Interior Designer", "chain": ["Interior Designer", "Designer", "Creative Professional", "Professional"]}
+{"attribute": "occupation", "value": "Landscape Architect", "chain": ["Landscape Architect", "Architect", "Professional", "Human"]}
+{"attribute": "occupation", "value": "Landscape Photographer", "chain": ["Landscape Photographer", "Photographer", "Visual Artist", "Creative Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Literary Editor", "chain": ["Literary Editor", "Editor", "Editorial Professional", "Media Professional", "Professional"]}
+{"attribute": "occupation", "value": "Marine Biologist", "chain": ["Marine Biologist", "Biologist", "Life Scientist", "Scientist", "Professional"]}
+{"attribute": "occupation", "value": "Marine Ecologist", "chain": ["Marine Ecologist", "Ecologist", "Biologist", "Scientist", "Professional"]}
+{"attribute": "occupation", "value": "Marketing Director", "chain": ["Marketing Director", "Director", "Executive", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Mechanical Engineer", "chain": ["Mechanical Engineer", "Engineer", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Molecular Biologist", "chain": ["Molecular Biologist", "Biologist", "Life Scientist", "Scientist", "Professional"]}
+{"attribute": "occupation", "value": "Museum Curator", "chain": ["Museum Curator", "Curator", "Museum Professional", "Cultural Heritage Professional", "Professional"]}
+{"attribute": "occupation", "value": "NA (Student)", "chain": ["NA (Student)", "Student", "Person"]}
+{"attribute": "occupation", "value": "Orchestra Conductor", "chain": ["Orchestra Conductor", "Conductor", "Musician", "Artist", "Professional"]}
+{"attribute": "occupation", "value": "Pediatric Nurse", "chain": ["Pediatric Nurse", "Nurse", "Healthcare Professional", "Medical Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Pediatrician", "chain": ["Pediatrician", "Physician", "Doctor", "Healthcare Professional", "Professional"]}
+{"attribute": "occupation", "value": "Professor of History", "chain": ["Professor of History", "Professor", "Academic", "Educator", "Professional"]}
+{"attribute": "occupation", "value": "Renewable Energy Consultant", "chain": ["Renewable Energy Consultant", "Energy Consultant", "Consultant", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Retired Architect", "chain": ["Retired Architect", "Retired Professional", "Retired Person", "Person"]}
+{"attribute": "occupation", "value": "Retired Pharmacist", "chain": ["Retired Pharmacist", "Retired Healthcare Professional", "Retired Professional", "Retired Person", "Person"]}
+{"attribute": "occupation", "value": "Robotics Engineer", "chain": ["Robotics Engineer", "Engineer", "Professional", "Person"]}
+{"attribute": "occupation", "value": "Software Architect", "chain": ["Software Architect", "Software Engineer", "Computer Professional", "Professional", "Worker"]}
+{"attribute": "occupation", "value": "Software Developer", "chain": ["Software Developer", "Software Engineer", "Computer Programmer", "IT Professional", "Professional"]}
+{"attribute": "occupation", "value": "Software Developer at an AI firm", "chain": ["Software Developer at an AI firm", "Software Developer", "Developer", "Software Professional", "Professional"]}
+{"attribute": "occupation", "value": "Software Development Manager", "chain": ["Software Development Manager", "Software Development Lead", "Software Manager", "Information Technology Manager", "Manager"]}
+{"attribute": "occupation", "value": "Software Engineer", "chain": ["Software Engineer", "Engineer", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Structural Engineer", "chain": ["Structural Engineer", "Engineer", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Student", "chain": ["Student", "Learner", "Person"]}
+{"attribute": "occupation", "value": "University Professor", "chain": ["University Professor", "Professor", "Academic", "Educator", "Professional"]}
+{"attribute": "occupation", "value": "Urban Planner", "chain": ["Urban Planner", "Planner", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Veterinarian", "chain": ["Veterinarian", "Healthcare Professional", "Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Veterinary Surgeon", "chain": ["Veterinary Surgeon", "Veterinarian", "Healthcare Professional", "Medical Professional", "Occupation"]}
+{"attribute": "occupation", "value": "Wildlife Biologist", "chain": ["Wildlife Biologist", "Biologist", "Life Scientist", "Scientist", "Professional"]}
+{"attribute": "occupation", "value": "Wildlife Photographer", "chain": ["Wildlife Photographer", "Photographer", "Visual Artist", "Creative Professional", "Occupation"]}
+{"attribute": "education", "value": "Aalto University", "chain": ["Aalto University", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Academy of Fine Arts, Zagreb", "chain": ["Academy of Fine Arts, Zagreb", "Academy of Fine Arts", "Academy", "Higher Education Institution", "Educational Institution"]}
+{"attribute": "education", "value": "Aristotle University of Thessaloniki", "chain": ["Aristotle University of Thessaloniki", "University", "Higher education institution", "Educational institution"]}
+{"attribute": "education", "value": "Autonomous University of Nuevo León", "chain": ["Autonomous University of Nuevo León", "University", "Higher education institution", "Educational institution"]}
+{"attribute": "education", "value": "Bandung International School", "chain": ["Bandung International School", "International School", "Educational Institution"]}
+{"attribute": "education", "value": "Beyrouth International School", "chain": ["Beyrouth International School", "International School", "Educational Institution"]}
+{"attribute": "education", "value": "Brisbane State High School", "chain": ["Brisbane State High School", "State High School", "Secondary School", "Educational Institution"]}
+{"attribute": "education", "value": "Cardiff University", "chain": ["Cardiff University", "University", "Higher education institution", "Educational institution"]}
+{"attribute": "education", "value": "Chalmers University of Technology", "chain": ["Chalmers University of Technology", "University", "Higher education institution", "Educational institution"]}
+{"attribute": "education", "value": "Charles University, Prague", "chain": ["Charles University, Prague", "Charles University", "university", "higher-education institution"]}
+{"attribute": "education", "value": "Christchurch Primary School", "chain": ["Christchurch Primary School", "Primary School", "Educational Institution"]}
+{"attribute": "education", "value": "Colegio Internacional de Valparaíso", "chain": ["Colegio Internacional de Valparaíso", "educational institution"]}
+{"attribute": "education", "value": "Delft University of Technology", "chain": ["Delft University of Technology", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "ETH Zurich", "chain": ["ETH Zurich", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "ETH Zurich, Switzerland", "chain": ["ETH Zurich, Switzerland", "ETH Zurich", "Eidgenössische Technische Hochschule Zürich", "University", "Higher-education institution"]}
+{"attribute": "education", "value": "Ecole du Louvre, Paris", "chain": ["Ecole du Louvre, Paris", "Ecole du Louvre", "Ecole", "Educational institution"]}
+{"attribute": "education", "value": "Edinburgh Primary School", "chain": ["Edinburgh Primary School", "Primary School", "Educational Institution"]}
+{"attribute": "education", "value": "Eötvös Loránd University", "chain": ["Eötvös Loránd University", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Federal University of Rio Grande do Sul (UFRGS)", "chain": ["Federal University of Rio Grande do Sul (UFRGS)", "Federal University", "Public University", "University", "Higher Education Institution"]}
+{"attribute": "education", "value": "Halswell School", "chain": ["Halswell School", "school", "educational institution"]}
+{"attribute": "education", "value": "Ho Chi Minh City University of Medicine and Pharmacy", "chain": ["Ho Chi Minh City University of Medicine and Pharmacy", "University", "Higher education institution", "Educational institution"]}
+{"attribute": "education", "value": "Hong Kong University", "chain": ["Hong Kong University", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Hoshigaoka Junior High School, Kyoto", "chain": ["Hoshigaoka Junior High School, Kyoto", "Junior High School", "Secondary School", "Educational Institution"]}
+{"attribute": "education", "value": "Hungarian University of Fine Arts", "chain": ["Hungarian University of Fine Arts", "University", "Higher Education Institution", "Educational Institution"]}
+{"attribute": "education", "value": "Imperial College London", "chain": ["Imperial College London", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Indian Institute of Technology Bombay", "chain": ["Indian Institute of Technology Bombay", "Indian Institute of Technology", "Institute of Technology", "University", "Higher-education institution"]}
+{"attribute": "education", "value": "Indian Institute of Technology Delhi", "chain": ["Indian Institute of Technology Delhi", "Indian Institute of Technology", "Institute of Technology", "University", "Higher-education institution"]}
+{"attribute": "education", "value": "Indian Institute of Technology, Bombay", "chain": ["Indian Institute of Technology, Bombay", "Indian Institute of Technology", "Institute of Technology", "University", "Higher-education institution"]}
+{"attribute": "education", "value": "Institut Teknologi Bandung", "chain": ["Institut Teknologi Bandung", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "International School of Zurich", "chain": ["International School of Zurich", "school", "educational institution"]}
+{"attribute": "education", "value": "Jagiellonian University, Poland", "chain": ["Jagiellonian University, Poland", "Jagiellonian University", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "James Cook University", "chain": ["James Cook University", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "James Cook University, Australia", "chain": ["James Cook University, Australia", "James Cook University", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "KTH Royal Institute of Technology", "chain": ["KTH Royal Institute of Technology", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "KU Leuven", "chain": ["KU Leuven", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Karolinska Institute", "chain": ["Karolinska Institute", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Karolinska Institutet", "chain": ["Karolinska Institutet", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Katholieke Universiteit Leuven", "chain": ["Katholieke Universiteit Leuven", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Kyoto University", "chain": ["Kyoto University", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Kyrgyz National University", "chain": ["Kyrgyz National University", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Latvian University of Life Sciences and Technologies", "chain": ["Latvian University of Life Sciences and Technologies", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "Le Cordon Bleu, Paris", "chain": ["Le Cordon Bleu, Paris", "Le Cordon Bleu"]}
+{"attribute": "education", "value": "Leiden University", "chain": ["Leiden University", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Lomonosov Moscow State University", "chain": ["Lomonosov Moscow State University", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Ludwig Maximilian University of Munich", "chain": ["Ludwig Maximilian University of Munich", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Lund University", "chain": ["Lund University", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Lund University, Sweden", "chain": ["Lund University, Sweden", "Lund University", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "Lycée Français de Barcelone", "chain": ["Lycée Français de Barcelone", "Lycée", "Secondary school", "Educational institution"]}
+{"attribute": "education", "value": "Massachusetts Institute of Technology", "chain": ["Massachusetts Institute of Technology", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Massachusetts Institute of Technology (MIT)", "chain": ["Massachusetts Institute of Technology (MIT)", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Moscow State University", "chain": ["Moscow State University", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Mumbai International School", "chain": ["Mumbai International School", "International School", "Private School", "Educational Institution"]}
+{"attribute": "education", "value": "National Institute of Design, Ahmedabad", "chain": ["National Institute of Design, Ahmedabad", "National Institute of Design", "National Institute", "Higher-education institution"]}
+{"attribute": "education", "value": "National Institute of Design, India", "chain": ["National Institute of Design, India", "educational institution"]}
+{"attribute": "education", "value": "National Technical University of Athens", "chain": ["National Technical University of Athens", "University", "Higher Education Institution", "Educational Institution"]}
+{"attribute": "education", "value": "National University of Cordoba", "chain": ["National University of Cordoba", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "National University of Ireland, Galway", "chain": ["National University of Ireland, Galway", "National University of Ireland", "University", "Higher Education Institution", "Educational Institution"]}
+{"attribute": "education", "value": "National University of Uzbekistan", "chain": ["National University of Uzbekistan", "University", "Higher education institution", "Educational institution"]}
+{"attribute": "education", "value": "Norwegian University of Science and Technology", "chain": ["Norwegian University of Science and Technology", "University", "Higher education institution", "Educational institution"]}
+{"attribute": "education", "value": "Norwegian University of Science and Technology (NTNU)", "chain": ["Norwegian University of Science and Technology (NTNU)", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "Ontario College of Art & Design", "chain": ["Ontario College of Art & Design", "college", "post-secondary institution", "educational institution"]}
+{"attribute": "education", "value": "Osaka Institute of Technology", "chain": ["Osaka Institute of Technology", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Osaka University of Arts", "chain": ["Osaka University of Arts", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Oslo National Academy of the Arts", "chain": ["Oslo National Academy of the Arts", "art academy", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Parsons School of Design, New York", "chain": ["Parsons School of Design, New York", "Parsons School of Design", "School of Design", "Educational Institution"]}
+{"attribute": "education", "value": "Peking University", "chain": ["Peking University", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Perth Modern School", "chain": ["Perth Modern School", "secondary school", "educational institution"]}
+{"attribute": "education", "value": "Politecnico di Milano", "chain": ["Politecnico di Milano", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Politecnico di Milano, Italy", "chain": ["Politecnico di Milano, Italy", "Politecnico di Milano", "Politecnico di Milano University", "University", "Higher-education institution"]}
+{"attribute": "education", "value": "Politehnica University of Bucharest", "chain": ["Politehnica University of Bucharest", "University", "Higher Education Institution", "Educational Institution"]}
+{"attribute": "education", "value": "Polytechnic University of Catalonia", "chain": ["Polytechnic University of Catalonia", "University", "Higher Education Institution", "Educational Institution"]}
+{"attribute": "education", "value": "Polytechnic University of Madrid", "chain": ["Polytechnic University of Madrid", "University of Madrid", "University in Spain", "University in Europe", "University"]}
+{"attribute": "education", "value": "Polytechnic University of Milan", "chain": ["Polytechnic University of Milan", "University", "Higher education institution", "Educational institution"]}
+{"attribute": "education", "value": "Pontifical Catholic University of Chile", "chain": ["Pontifical Catholic University of Chile", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "Pontifical Catholic University of Peru", "chain": ["Pontifical Catholic University of Peru", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "Pontifical Catholic University of Valparaíso", "chain": ["Pontifical Catholic University of Valparaíso", "Catholic University", "University", "Higher Education Institution", "Educational Institution"]}
+{"attribute": "education", "value": "Rhode Island School of Design, USA", "chain": ["Rhode Island School of Design, USA", "School of Design", "Educational Institution", "Higher-Education Institution"]}
+{"attribute": "education", "value": "Royal College of Art, London", "chain": ["Royal College of Art, London", "Royal College of Art", "College of Art", "Higher Education Institution", "Educational Institution"]}
+{"attribute": "education", "value": "Royal College of Music, London", "chain": ["Royal College of Music, London", "Royal College of Music", "College of Music", "Higher Education Institution", "Educational Institution"]}
+{"attribute": "education", "value": "Royal Melbourne Institute of Technology (RMIT)", "chain": ["Royal Melbourne Institute of Technology (RMIT)", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Royal Melbourne Institute of Technology (RMIT) University", "chain": ["Royal Melbourne Institute of Technology (RMIT) University", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "Royal Veterinary College, University of London", "chain": ["Royal Veterinary College, University of London", "University of London", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "Sofia University", "chain": ["Sofia University", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "St. Agnes Primary School", "chain": ["St. Agnes Primary School", "primary school", "educational institution"]}
+{"attribute": "education", "value": "St. Catherine's School, Melbourne", "chain": ["St. Catherine's School, Melbourne", "school", "educational institution"]}
+{"attribute": "education", "value": "Stanford University", "chain": ["Stanford University", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "Stockholm University", "chain": ["Stockholm University", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Stockholm University, Sweden", "chain": ["Stockholm University, Sweden", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "Swedish University of Agricultural Sciences", "chain": ["Swedish University of Agricultural Sciences", "University", "Higher education institution", "Educational institution"]}
+{"attribute": "education", "value": "Technical University of Denmark", "chain": ["Technical University of Denmark", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Technical University of Lisbon", "chain": ["Technical University of Lisbon", "Technical University", "University", "Higher Education Institution", "Educational Institution"]}
+{"attribute": "education", "value": "Technical University of Madrid", "chain": ["Technical University of Madrid", "Technical University", "University", "Higher Education Institution"]}
+{"attribute": "education", "value": "Technical University of Munich", "chain": ["Technical University of Munich", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Technical University of Sofia", "chain": ["Technical University of Sofia", "Technical University", "University", "Higher Education Institution"]}
+{"attribute": "education", "value": "Technical University of Valencia", "chain": ["Technical University of Valencia", "Technical University", "University", "Higher Education Institution"]}
+{"attribute": "education", "value": "Technical University of Vienna", "chain": ["Technical University of Vienna", "Technical University", "University", "Higher Education Institution"]}
+{"attribute": "education", "value": "Technion - Israel Institute of Technology", "chain": ["Technion - Israel Institute of Technology", "Israel Institute of Technology", "Institute of Technology", "University", "Higher Education Institution"]}
+{"attribute": "education", "value": "Tokyo Institute of Technology", "chain": ["Tokyo Institute of Technology", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Tokyo University of the Arts", "chain": ["Tokyo University of the Arts", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Trinity College Dublin", "chain": ["Trinity College Dublin", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Universidad Nacional de Colombia", "chain": ["Universidad Nacional de Colombia", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Universidad Politécnica de Valencia", "chain": ["Universidad Politécnica de Valencia", "Universidad", "Institución de educación superior", "Institución educativa"]}
+{"attribute": "education", "value": "Universidad San Francisco de Quito", "chain": ["Universidad San Francisco de Quito", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Universidad de Barcelona", "chain": ["Universidad de Barcelona", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Universidad de Buenos Aires", "chain": ["Universidad de Buenos Aires", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Universidad de Los Andes, Colombia", "chain": ["Universidad de Los Andes, Colombia", "Universidad de Los Andes", "Universidad", "Educational Institution"]}
+{"attribute": "education", "value": "Universidad de la República", "chain": ["Universidad de la República", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Universitat Politècnica de Catalunya", "chain": ["Universitat Politècnica de Catalunya", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Universitat Politècnica de València", "chain": ["Universitat Politècnica de València", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University College Dublin", "chain": ["University College Dublin", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University College London", "chain": ["University College London", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Aix-Marseille", "chain": ["University of Aix-Marseille", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Amsterdam", "chain": ["University of Amsterdam", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Antwerp", "chain": ["University of Antwerp", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Auckland", "chain": ["University of Auckland", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Barcelona", "chain": ["University of Barcelona", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Belgrade", "chain": ["University of Belgrade", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Bergen", "chain": ["University of Bergen", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Bologna", "chain": ["University of Bologna", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Bristol", "chain": ["University of Bristol", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of British Columbia", "chain": ["University of British Columbia", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of British Columbia, Canada", "chain": ["University of British Columbia, Canada", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of Bucharest, University of Cambridge", "chain": ["University of Bucharest, University of Cambridge", "University", "Higher Education Institution", "Educational Institution"]}
+{"attribute": "education", "value": "University of Buenos Aires", "chain": ["University of Buenos Aires", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of California, Berkeley", "chain": ["University of California, Berkeley", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of California, San Diego", "chain": ["University of California, San Diego", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of California, Santa Barbara", "chain": ["University of California, Santa Barbara", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of California, Santa Cruz", "chain": ["University of California, Santa Cruz", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of Cambridge", "chain": ["University of Cambridge", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Canterbury", "chain": ["University of Canterbury", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Canterbury, New Zealand", "chain": ["University of Canterbury, New Zealand", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of Cape Town", "chain": ["University of Cape Town", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Cartagena", "chain": ["University of Cartagena", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Copenhagen", "chain": ["University of Copenhagen", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Edinburgh", "chain": ["University of Edinburgh", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Exeter", "chain": ["University of Exeter", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Florence", "chain": ["University of Florence", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Freiburg", "chain": ["University of Freiburg", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Galway, Ireland", "chain": ["University of Galway, Ireland", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of Geneva", "chain": ["University of Geneva", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Glasgow", "chain": ["University of Glasgow", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Gothenburg, Sweden", "chain": ["University of Gothenburg, Sweden", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of Grenoble Alpes", "chain": ["University of Grenoble Alpes", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Heidelberg, Germany", "chain": ["University of Heidelberg, Germany", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of Helsinki", "chain": ["University of Helsinki", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Iceland", "chain": ["University of Iceland", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Indonesia, Jakarta", "chain": ["University of Indonesia, Jakarta", "University of Indonesia", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of Leeds", "chain": ["University of Leeds", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Leeds, United Kingdom", "chain": ["University of Leeds, United Kingdom", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of Lisbon", "chain": ["University of Lisbon", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Lisbon, Portugal", "chain": ["University of Lisbon, Portugal", "University of Lisbon", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of Manchester", "chain": ["University of Manchester", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Melbourne", "chain": ["University of Melbourne", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Melbourne, Australia", "chain": ["University of Melbourne, Australia", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of Milan", "chain": ["University of Milan", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Mumbai", "chain": ["University of Mumbai", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of Nairobi", "chain": ["University of Nairobi", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Naples Federico II", "chain": ["University of Naples Federico II", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Oslo", "chain": ["University of Oslo", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Otago", "chain": ["University of Otago", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Otago, New Zealand", "chain": ["University of Otago, New Zealand", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of Oxford", "chain": ["University of Oxford", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Padua", "chain": ["University of Padua", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Plymouth", "chain": ["University of Plymouth", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Porto", "chain": ["University of Porto", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Porto, Portugal", "chain": ["University of Porto, Portugal", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of Queensland", "chain": ["University of Queensland", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Queensland, Australia", "chain": ["University of Queensland, Australia", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of Salamanca", "chain": ["University of Salamanca", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Sao Paulo", "chain": ["University of Sao Paulo", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Seville", "chain": ["University of Seville", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Sofia", "chain": ["University of Sofia", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Southampton", "chain": ["University of Southampton", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of St Andrews", "chain": ["University of St Andrews", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Stellenbosch", "chain": ["University of Stellenbosch", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Stockholm", "chain": ["University of Stockholm", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Sydney", "chain": ["University of Sydney", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Sydney, Australia", "chain": ["University of Sydney, Australia", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of São Paulo", "chain": ["University of São Paulo", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of São Paulo, Harvard Medical School", "chain": ["University of São Paulo, Harvard Medical School", "University of São Paulo", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of Tartu", "chain": ["University of Tartu", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Tasmania", "chain": ["University of Tasmania", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Tasmania, Australia", "chain": ["University of Tasmania, Australia", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of Tokyo", "chain": ["University of Tokyo", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Tokyo, Japan", "chain": ["University of Tokyo, Japan", "University", "Higher-education institution", "Educational institution"]}
+{"attribute": "education", "value": "University of Toronto", "chain": ["University of Toronto", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Valencia", "chain": ["University of Valencia", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Vienna", "chain": ["University of Vienna", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Western Australia", "chain": ["University of Western Australia", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Zagreb", "chain": ["University of Zagreb", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of Zurich", "chain": ["University of Zurich", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "University of the Arts London", "chain": ["University of the Arts London", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Victoria University of Wellington", "chain": ["Victoria University of Wellington", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Vienna University of Technology", "chain": ["Vienna University of Technology", "university", "higher-education institution", "educational institution"]}
+{"attribute": "education", "value": "Warsaw University of Technology", "chain": ["Warsaw University of Technology", "University", "Higher education institution", "Educational institution"]}
+{"attribute": "education", "value": "École Nationale Supérieure d'Architecture de Lyon", "chain": ["École Nationale Supérieure d'Architecture de Lyon", "École nationale supérieure", "Établissement d'enseignement supérieur", "Établissement d'enseignement"]}
+{"attribute": "education", "value": "École Normale Supérieure de Lyon", "chain": ["École Normale Supérieure de Lyon", "École Normale Supérieure", "French higher-education institution", "Higher-education institution"]}
+{"attribute": "education", "value": "École des Beaux-Arts, Paris", "chain": ["École des Beaux-Arts, Paris", "beaux-arts school", "art school", "higher-education institution"]}

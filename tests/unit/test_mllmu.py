@@ -387,6 +387,46 @@ class TestRegistry:
 
 
 # =====================================================================
+# Qwen-assisted semantic associations (Iteration 5)
+# =====================================================================
+
+class TestSemanticAssociations:
+    def test_accepted_chains_become_records(self, mllmu_parquet, tmp_path):
+        adapter = MLLMUAdapter()
+        records = adapter.load_raw(_cfg_parquet(mllmu_parquet))
+        cfg = _cfg_parquet(mllmu_parquet) | {"images_dir": str(tmp_path / "img")}
+        adapter.materialize_images(records, cfg)
+
+        # One occupation value accepted, all others rejected by the gate
+        occ_value = records[0].fields["occupation"]
+        accepted = {"occupation": {
+            occ_value: [occ_value, "professional"],
+        }}
+        assocs = adapter.to_semantic_associations(
+            records, accepted, cfg,
+            generation_provenance={"model_id": "Qwen/Qwen3.5-9B"},
+            prompt_versions={"proposal": "abc123"},
+        )
+        # only profiles sharing the accepted value get records
+        n_with_value = sum(1 for r in records if r.fields["occupation"] == occ_value)
+        assert len(assocs) == n_with_value
+        for a in assocs:
+            assert a.attribute_name == "occupation"
+            assert a.hierarchy_type == "semantic"
+            assert a.provenance.hierarchy_builder == "qwen_assisted"
+            assert a.provenance.generation_model == "Qwen/Qwen3.5-9B"
+            assert a.provenance.prompt_version == "abc123"
+            assert 1 <= a.target_level < a.num_levels()
+            assert len(a.images) == 1
+
+    def test_rejected_values_yield_no_records(self, mllmu_parquet, tmp_path):
+        adapter = MLLMUAdapter()
+        records = adapter.load_raw(_cfg_parquet(mllmu_parquet))
+        assocs = adapter.to_semantic_associations(records, {}, _cfg_parquet(mllmu_parquet))
+        assert assocs == []
+
+
+# =====================================================================
 # Image materialization (Iteration 4)
 # =====================================================================
 

@@ -34,6 +34,9 @@ data/reports/*
 !data/reports/mllmu_hier_inventory_summary.json
 !data/reports/mllmu_hier_parse_coverage.json
 !data/reports/mllmu_hier_association_build_report.json
+!data/reports/mllmu_hier_qwen_generation_report.json
+!data/reports/mllmu_hier_manual_audit_sample.json
+!data/reports/mllmu_hier_semantic_chains.jsonl
 
 # Outputs
 outputs/*/

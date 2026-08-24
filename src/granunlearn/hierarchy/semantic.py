@@ -48,7 +48,9 @@ def build_semantic_hierarchy(
             value=val,
             normalized_value=normalize(val),
             parent_id=parent_id,
-            metadata=metadata or {},
+            # Non-empty metadata: parquet cannot store empty struct columns,
+            # and the type marker is genuinely useful downstream.
+            metadata=metadata if metadata else {"type": "semantic"},
         ))
 
     return ChainHierarchy(levels)

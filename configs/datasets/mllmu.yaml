@@ -56,6 +56,16 @@ hierarchy:
     - occupation
     - education
 
+# ---- Iteration 5: Qwen-assisted semantic hierarchies ----
+qwen:
+  model_id: Qwen/Qwen3.5-9B
+  device: auto               # most-free GPU
+  bf16: true                 # full-precision BF16 generation (Iteration 5 evidence run)
+  min_proposal_confidence: 0.6
+  min_verification_confidence: 0.7
+  audit_sample_accepted: 10
+  audit_sample_rejected: 5
+
 query_families:
   families:
     - fine_direct

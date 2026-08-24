@@ -1,0 +1,56 @@
+{
+  "stage": "qwen_assisted_semantic_hierarchies",
+  "principle": "rejection over forced hierarchy construction",
+  "generation_provenance": {
+    "model_id": "Qwen/Qwen3.5-9B",
+    "load_mode": "bf16",
+    "device": "cuda:2",
+    "transformers_version": "5.14.1",
+    "torch_version": "2.8.0+cu128",
+    "decoding": "greedy (do_sample=False)"
+  },
+  "prompt_version_proposal": "5a81312ad60c8fb3-73c75e54",
+  "prompt_version_verification": "99cc47a7ea6f47d1-73c75e54",
+  "cache_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/generated/qwen_cache/mllmu_hier",
+  "cache_hits": 533,
+  "cache_writes": 0,
+  "gates": {
+    "min_proposal_confidence": 0.6,
+    "min_verification_confidence": 0.7
+  },
+  "attributes": {
+    "occupation": {
+      "distinct_values": 69,
+      "accepted": 66,
+      "acceptance_rate": 0.9565,
+      "rejection_reasons": {
+        "deterministic_invalid:duplicate_levels": 2,
+        "verification_rejected": 1
+      },
+      "profiles_total": 497,
+      "profiles_with_accepted_hierarchy": 491,
+      "missing_values": 3,
+      "accepted_chains_count": 66
+    },
+    "education": {
+      "distinct_values": 199,
+      "accepted": 198,
+      "acceptance_rate": 0.995,
+      "rejection_reasons": {
+        "deterministic_invalid:chain_too_long": 1
+      },
+      "profiles_total": 497,
+      "profiles_with_accepted_hierarchy": 495,
+      "missing_values": 3,
+      "accepted_chains_count": 198
+    }
+  },
+  "manual_audit_sample_size": 24,
+  "audit_status": "PENDING \u2014 fill auditor_verdict before smoke build",
+  "generation_settings": {
+    "max_new_tokens": 1024,
+    "batch_size": 4,
+    "load_mode": "bf16"
+  },
+  "num_semantic_associations": 986
+}
