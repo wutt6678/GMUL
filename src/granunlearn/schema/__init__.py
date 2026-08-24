@@ -8,7 +8,7 @@ Re-exports all public types for convenient imports::
 from .association import AssociationRecord
 from .hierarchy import HierarchyLevel, ImageRef, ProvenanceInfo, SplitInfo
 from .prediction import PredictionRecord
-from .query import QueryRecord, QueryType, Route
+from .query import QueryFamily, QueryRecord, QueryType, Route
 
 __all__ = [
     "AssociationRecord",
@@ -16,6 +16,7 @@ __all__ = [
     "ImageRef",
     "PredictionRecord",
     "ProvenanceInfo",
+    "QueryFamily",
     "QueryRecord",
     "QueryType",
     "Route",

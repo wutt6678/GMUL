@@ -96,6 +96,11 @@ query_families:
   # Iteration 6 smoke eligibility: entities need >= this many distinct
   # attributes plus a semantic hierarchy and a materialised image.
   smoke_min_attribute_types: 6
+  # Entity-attribute selective unlearning (F/R partition): per entity,
+  # pick this many targets per hierarchy type; the rest is retain.
+  smoke_targets_per_type:
+    semantic: 1
+    numeric: 1
 
 split:
   train_ratio: 0.6

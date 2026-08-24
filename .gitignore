@@ -39,6 +39,7 @@ data/reports/*
 !data/reports/mllmu_hier_semantic_chains.jsonl
 !data/reports/mllmu_smoke_entities.json
 !data/reports/mllmu_smoke_query_report.json
+!data/reports/mllmu_smoke_target_retain.json
 
 # Outputs
 outputs/*/

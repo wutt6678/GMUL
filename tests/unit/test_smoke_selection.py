@@ -1,4 +1,5 @@
-"""Unit tests for Iteration 6 smoke selection + audit gate."""
+"""Unit tests for Iteration 6 smoke selection, target/retain partition,
+and the hardened Iteration 5 audit gate."""
 
 from __future__ import annotations
 
@@ -9,6 +10,7 @@ import pytest
 from granunlearn.datasets.smoke import (
     check_audit_gate,
     select_smoke_entities,
+    select_target_retain,
     selection_evidence,
     subset_associations,
 )
@@ -117,6 +119,43 @@ class TestSelectSmokeEntities:
                    for v in ev["selected_per_entity"].values())
 
 
+class TestSelectTargetRetain:
+    def test_one_semantic_plus_one_numeric_per_entity(self):
+        pool = rich_entity("e1") + rich_entity("e2")
+        p = select_target_retain(pool, seed=42)
+        assert p["target_counts_by_type"] == {"semantic": 2, "numeric": 2}
+        assert len(p["target_association_ids"]) == 4
+        assert len(p["retain_association_ids"]) == len(pool) - 4
+        for e in ("e1", "e2"):
+            assert len(p["per_entity"][e]["targets"]) == 2
+            assert len(p["per_entity"][e]["retain"]) == len(ATTRS) - 2
+
+    def test_partition_is_exhaustive_and_disjoint(self):
+        pool = rich_entity("e1") + rich_entity("e2")
+        p = select_target_retain(pool, seed=42)
+        all_ids = {a.association_id for a in pool}
+        assert (set(p["target_association_ids"])
+                | set(p["retain_association_ids"])) == all_ids
+        assert not (set(p["target_association_ids"])
+                    & set(p["retain_association_ids"]))
+
+    def test_deterministic(self):
+        pool = rich_entity("e1") + rich_entity("e2")
+        assert (select_target_retain(pool, seed=42)["target_association_ids"]
+                == select_target_retain(pool, seed=42)["target_association_ids"])
+
+    def test_seed_changes_targets(self):
+        pool = rich_entity("e1")
+        picked = {tuple(select_target_retain(pool, seed=s)[
+            "target_association_ids"]) for s in range(30)}
+        assert len(picked) > 1  # hash ranking varies with the seed
+
+    def test_entity_missing_type_gets_fewer_targets(self):
+        pool = [make_assoc("e1", "salary")]  # numeric only
+        p = select_target_retain(pool, seed=42)
+        assert p["target_counts_by_type"] == {"semantic": 0, "numeric": 1}
+
+
 class TestAuditGate:
     def _write(self, tmp_path, audit_items, chains):
         audit = tmp_path / "audit.json"
@@ -154,7 +193,7 @@ class TestAuditGate:
              "auditor_verdict": "rejected", "auditor_notes": ""},
         ], [{"attribute": "occupation", "value": "A", "chain": chain}])
         ok, problems = check_audit_gate(audit, chains)
-        assert not ok and any("auditor rejected chain" in p for p in problems)
+        assert not ok and any("accepted chain exists" in p for p in problems)
 
     def test_auditor_rejection_of_non_accepted_chain_passes(self, tmp_path):
         """Auditor may reject a chain the pipeline never accepted."""
@@ -165,6 +204,41 @@ class TestAuditGate:
         ], [])
         ok, problems = check_audit_gate(audit, chains)
         assert ok and problems == []
+
+    def test_accepted_item_with_changed_chain_fails(self, tmp_path):
+        """Hardened invariant: a REGENERATED different chain for the same
+        (attribute, value) cannot bypass the previous audit."""
+        audit, chains = self._write(tmp_path, [
+            {"attribute": "occupation", "value": "A",
+             "chain": ["A", "B"], "auditor_verdict": "accepted",
+             "auditor_notes": ""},
+        ], [{"attribute": "occupation", "value": "A",
+             "chain": ["A", "C"]}])
+        ok, problems = check_audit_gate(audit, chains)
+        assert not ok and any("changed since audit" in p for p in problems)
+
+    def test_accepted_item_value_no_longer_accepted_fails(self, tmp_path):
+        audit, chains = self._write(tmp_path, [
+            {"attribute": "occupation", "value": "A",
+             "chain": ["A", "B"], "auditor_verdict": "accepted",
+             "auditor_notes": ""},
+        ], [])
+        ok, problems = check_audit_gate(audit, chains)
+        assert not ok and any("no accepted chain exists" in p
+                              for p in problems)
+
+    def test_rejected_item_with_new_accepted_chain_for_value_fails(self,
+                                                                    tmp_path):
+        """Value-level check: even a DIFFERENT accepted chain for a
+        previously rejected value requires re-audit."""
+        audit, chains = self._write(tmp_path, [
+            {"attribute": "occupation", "value": "A",
+             "chain": ["A", "B"], "auditor_verdict": "rejected",
+             "auditor_notes": ""},
+        ], [{"attribute": "occupation", "value": "A",
+             "chain": ["A", "X", "Y"]}])
+        ok, problems = check_audit_gate(audit, chains)
+        assert not ok and any("re-audit required" in p for p in problems)
 
     def test_empty_chain_marked_accepted_fails(self, tmp_path):
         audit, chains = self._write(tmp_path, [

@@ -34,11 +34,12 @@ from granunlearn.datasets.base import get_adapter
 from granunlearn.datasets.smoke import (
     check_audit_gate,
     select_smoke_entities,
+    select_target_retain,
     selection_evidence,
     subset_associations,
 )
 from granunlearn.evaluation.query_generation import (
-    FAMILIES,
+    UNLEARNING_FAMILIES,
     generate_queries,
     validate_queries,
 )
@@ -131,6 +132,20 @@ def run_smoke_build(
     log.info("Selected %d smoke entities", len(selected))
     smoke = subset_associations(pool, set(selected))
 
+    # ---- 3b. Target/retain partition (Blocker-2 fix) --------------------
+    # Entity-attribute SELECTIVE unlearning: per entity, 1 semantic +
+    # 1 numeric association are TARGETS (F); the rest are RETAIN (R).
+    targets_per_type = dict(qf_cfg.get(
+        "smoke_targets_per_type", {"semantic": 1, "numeric": 1}))
+    partition = select_target_retain(smoke, seed=seed,
+                                     targets_per_type=targets_per_type)
+    log.info(
+        "Target/retain partition: %d targets %s | %d retain",
+        len(partition["target_association_ids"]),
+        partition["target_counts_by_type"],
+        len(partition["retain_association_ids"]),
+    )
+
     # ---- 4. Write smoke dataset -----------------------------------------
     if output_dir is None:
         output_dir = Path("data") / "mllmu_hier_smoke"
@@ -144,6 +159,7 @@ def run_smoke_build(
 
     evidence = selection_evidence(pool, selected, seed, n_entities, min_attr)
     save_json(evidence, reports / "mllmu_smoke_entities.json")
+    save_json(partition, reports / "mllmu_smoke_target_retain.json")
 
     manifest = {
         "dataset": "mllmu_hier",
@@ -163,6 +179,11 @@ def run_smoke_build(
             ht: sum(1 for a in smoke if a.hierarchy_type == ht)
             for ht in sorted({a.hierarchy_type for a in smoke})
         },
+        # Entity-attribute selective unlearning contract (F/R partition):
+        # MF/MG/MN operate on `target_*`; `retain_*` must stay unchanged.
+        "target_association_ids": partition["target_association_ids"],
+        "retain_association_ids": partition["retain_association_ids"],
+        "target_counts_by_type": partition["target_counts_by_type"],
         "selected_entities": selected,
         "config_path": str(config_path),
     }
@@ -171,9 +192,9 @@ def run_smoke_build(
              len(selected), len(smoke), output_dir)
 
     # ---- 5. Query generation + validation -------------------------------
-    families = list(qf_cfg.get("families", FAMILIES))
-    queries = generate_queries(smoke, seed=seed, families=families)
-    errors, stats = validate_queries(queries, smoke)
+    families = list(qf_cfg.get("families", UNLEARNING_FAMILIES))
+    queries = generate_queries(smoke, partition, seed=seed, families=families)
+    errors, stats = validate_queries(queries, smoke, partition=partition)
     if errors:
         for e in errors[:20]:
             log.error("QUERY VALIDATION: %s", e)
@@ -188,27 +209,63 @@ def run_smoke_build(
     query_report = {
         "seed": seed,
         "num_queries": len(queries),
-        "families": families,
+        "unlearning_families": families,
+        "query_schema": "granunlearn.schema.QueryRecord (canonical)",
         "split_semantics": (
             "paraphrase split over the SAME target associations: each "
             "(association, family) appears in train/val/test with distinct "
             "paraphrase templates; template assignment is deterministic: "
             "(hash(seed, association_id, family) + split_index) % 3"
         ),
+        "target_retain": {
+            "num_targets": len(partition["target_association_ids"]),
+            "num_retain": len(partition["retain_association_ids"]),
+            "target_counts_by_type": partition["target_counts_by_type"],
+            "note": (
+                "Unlearning families (F/G/N/M) are generated for TARGET "
+                "associations only; retain_same_entity covers every "
+                "retained association of the target entities and "
+                "retain_other_entity one deterministic donor per target. "
+                "This makes MF/MG/MN vs MU deltas interpretable as "
+                "entity-attribute SELECTIVE unlearning."
+            ),
+        },
+        "adversarial": {
+            "num_queries": stats["num_adversarial"],
+            "families": ["negation_correction"],
+            "policy": (
+                "Prompted-recovery probes quote the forgotten fine value; "
+                "they are EXCLUDED from the core FILR average and reported "
+                "separately."
+            ),
+        },
+        "multimodal_route_caveat": (
+            "multimodal_image_text names the entity in the text "
+            "(route=image_text_to_text); it is NOT evidence for the "
+            "image->identity->attribute route (image_to_text is a later "
+            "iteration)."
+        ),
         "validation": {
             "passed": True,
             "num_errors": stats["num_errors"],
             "checks": [
-                "answer_is_exact_hierarchy_level_string",
+                "acceptable_answer_ids_equal_expected_level_canonical_id",
+                "expected_answer_is_exact_level_value",
+                "forbidden_descendant_ids_are_exactly_finer_levels",
                 "one_query_per_split_per_association_family",
                 "distinct_templates_across_splits",
                 "unique_query_ids",
+                "adversarial_flag_matches_family_policy",
+                "retain_same_entity_covers_all_retained_non_target",
+                "retain_other_entity_donor_from_different_entity",
                 "retain_fact_dedupe",
                 "negation_distractor_never_equals_answer",
             ],
         },
         "by_split": stats["by_split"],
         "by_family": stats["by_family"],
+        "num_retain_same_entity": stats["num_retain_same_entity"],
+        "num_retain_other_entity": stats["num_retain_other_entity"],
         "num_associations_with_queries": stats[
             "num_associations_with_queries"],
         "num_associations_total": len(smoke),
