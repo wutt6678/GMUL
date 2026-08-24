@@ -1,0 +1,4 @@
+model:
+  id: openai/clip-vit-base-patch32
+  dtype: float32
+  device: cuda

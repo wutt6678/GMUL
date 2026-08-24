@@ -1,0 +1,59 @@
+{
+  "python": "3.10.20",
+  "platform": "Linux-6.17.0-1011-oracle-x86_64-with-glibc2.39",
+  "torch": "2.8.0+cu128",
+  "cuda": "12.8",
+  "cudnn": "91002",
+  "transformers": "5.14.1",
+  "peft": "0.20.0",
+  "bitsandbytes": "0.50.1",
+  "gpu_count": 1,
+  "gpu_names": [
+    "NVIDIA RTX 6000 Ada Generation"
+  ],
+  "gpu_vram_gb": [
+    47.4
+  ],
+  "processor_class": "Qwen3VLProcessor",
+  "model_class": "Qwen3_5ForConditionalGeneration",
+  "n_params_b": 9.41,
+  "load_time_s": 5.9,
+  "qwen_load_bf16": true,
+  "lang_linear_modules": [
+    "down_proj",
+    "gate_proj",
+    "k_proj",
+    "o_proj",
+    "q_proj",
+    "up_proj",
+    "v_proj"
+  ],
+  "mm_linear_modules": [
+    "in_proj_a",
+    "in_proj_b",
+    "in_proj_qkv",
+    "in_proj_z",
+    "linear_fc1",
+    "linear_fc2",
+    "lm_head",
+    "out_proj",
+    "proj",
+    "qkv"
+  ],
+  "qwen_text_forward": true,
+  "qwen_image_forward": true,
+  "lora_attach": true,
+  "lora_trainable_params": 29097984,
+  "lora_target_modules": [
+    "down_proj",
+    "gate_proj",
+    "k_proj",
+    "o_proj",
+    "q_proj",
+    "up_proj",
+    "v_proj"
+  ],
+  "lora_backward": true,
+  "four_bit_load": true,
+  "all_acceptance_pass": true
+}

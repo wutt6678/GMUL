@@ -1,0 +1,28 @@
+model:
+  id: Qwen/Qwen3.5-9B
+  dtype: bfloat16
+  device: cuda
+  trust_remote_code: false
+
+training:
+  method: lora
+  freeze_vision: true
+  gradient_checkpointing: true
+  max_seq_length: 512
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+generation:
+  max_new_tokens: 64
+  do_sample: false

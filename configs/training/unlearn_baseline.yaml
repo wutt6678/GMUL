@@ -1,0 +1,15 @@
+unlearning:
+  method: contrastive_rewrite
+  num_epochs: 3
+  learning_rate: 1.0e-4
+  weight_decay: 0.01
+  batch_size: 2
+  gradient_accumulation_steps: 8
+  max_seq_length: 512
+  gradient_checkpointing: true
+  freeze_vision: true
+
+loss:
+  lambda_fine: 1.0
+  lambda_generalized: 1.0
+  lambda_retain: 0.5

@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Data directories (keep structure, ignore contents)
+data/raw/*
+data/interim/*
+data/processed/*
+data/generated/*
+data/manifests/*
+data/reports/*
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/processed/.gitkeep
+!data/generated/.gitkeep
+!data/manifests/.gitkeep
+!data/reports/.gitkeep
+
+# Outputs
+outputs/*/
+!outputs/env_probe/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Model checkpoints
+*.bin
+*.pt
+*.safetensors
+
+# Environment
+.env
