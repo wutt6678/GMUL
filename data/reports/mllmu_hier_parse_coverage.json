@@ -1,0 +1,94 @@
+[
+  {
+    "attribute": "residence",
+    "parser": "parse_location_components",
+    "total_profiles": 500,
+    "parse_success": 500,
+    "parse_coverage": 1.0,
+    "min_parse_coverage": 0.95,
+    "enabled": true,
+    "failure_examples": []
+  },
+  {
+    "attribute": "birthplace",
+    "parser": "parse_location_components",
+    "total_profiles": 500,
+    "parse_success": 500,
+    "parse_coverage": 1.0,
+    "min_parse_coverage": 0.95,
+    "enabled": true,
+    "failure_examples": []
+  },
+  {
+    "attribute": "date_of_birth",
+    "parser": "parse_date_value",
+    "total_profiles": 500,
+    "parse_success": 500,
+    "parse_coverage": 1.0,
+    "min_parse_coverage": 0.95,
+    "enabled": true,
+    "failure_examples": []
+  },
+  {
+    "attribute": "salary",
+    "parser": "parse_salary_value",
+    "total_profiles": 500,
+    "parse_success": 462,
+    "parse_coverage": 0.924,
+    "min_parse_coverage": 0.9,
+    "enabled": true,
+    "failure_examples": [
+      {
+        "entity_id": "mllmu_007",
+        "value": "\u20ac62,000"
+      },
+      {
+        "entity_id": "mllmu_013",
+        "value": "\u00a375,000"
+      },
+      {
+        "entity_id": "mllmu_039",
+        "value": "NA"
+      },
+      {
+        "entity_id": "mllmu_053",
+        "value": "\u00a353,000"
+      },
+      {
+        "entity_id": "mllmu_065",
+        "value": "N/A"
+      }
+    ]
+  },
+  {
+    "attribute": "height",
+    "parser": "parse_height_cm",
+    "total_profiles": 500,
+    "parse_success": 494,
+    "parse_coverage": 0.988,
+    "min_parse_coverage": 0.95,
+    "enabled": true,
+    "failure_examples": [
+      {
+        "entity_id": "mllmu_164",
+        "value": "6ft 1in (185 cm)"
+      },
+      {
+        "entity_id": "mllmu_235",
+        "value": "6 feet (183 cm)"
+      },
+      {
+        "entity_id": "mllmu_324",
+        "value": "5ft 3in (160 cm)"
+      },
+      {
+        "entity_id": "mllmu_359",
+        "value": "5'6\" (168 cm)"
+      },
+      {
+        "entity_id": "mllmu_444",
+        "value": "NA"
+      }
+    ]
+  }
+]

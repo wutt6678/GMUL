@@ -78,10 +78,35 @@ def run_build(
         load_report.get("num_genera", 0), load_report.get("num_families", 0),
     )
 
+    # ---- Image materialization (MLLMU embedded bytes; Iteration 4) ----
+    if hasattr(adapter, "materialize_images") and ds_cfg.get("materialize_images"):
+        log.info("Materializing images...")
+        image_map = adapter.materialize_images(raw_records, ds_cfg)
+        log.info("Materialized + verified %d images", len(image_map))
+
     ds_cfg["version"] = version
     log.info("Building associations...")
     associations = adapter.to_associations(raw_records, ds_cfg)
     log.info("Built %d associations", len(associations))
+
+    # ---- Real parse-coverage + usability evidence (Iteration 4) ----
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    if hasattr(adapter, "last_parse_coverage") and getattr(adapter, "last_parse_coverage", None):
+        save_json(adapter.last_parse_coverage, output_dir / "parse_coverage.json")
+        for row in adapter.last_parse_coverage:
+            log.info(
+                "Parse coverage %-14s %d/%d (%.2f%%) enabled=%s",
+                row["attribute"], row["parse_success"], row["total_profiles"],
+                100.0 * row["parse_coverage"], row["enabled"],
+            )
+    assoc_report = getattr(adapter, "last_association_report", None)
+    if assoc_report:
+        save_json(assoc_report, output_dir / "association_build_report.json")
+        log.info(
+            "Usable profiles per attribute: %s",
+            assoc_report["usable_profiles_per_attribute"],
+        )
 
     # ---- Hierarchy validation ----
     log.info("Validating hierarchies...")
@@ -100,8 +125,6 @@ def run_build(
     log.info("Validation passed: 0 errors, %d warnings", total_warnings)
 
     # ---- Write artifacts ----
-    output_dir.mkdir(parents=True, exist_ok=True)
-
     import pandas as pd
     assoc_dicts = [json.loads(a.model_dump_json()) for a in associations]
     df = pd.DataFrame(assoc_dicts)
@@ -144,6 +167,12 @@ def run_build(
         "data_root": data_root_abs,
         "config_path": str(config_path),
         "output_dir": str(output_dir),
+        # Split semantics: 'within_entity' (iNaturalist-style image splits)
+        # or 'entity_level' (whole entities assigned, e.g. MLLMU 1 img/profile)
+        "split_mode": ds_cfg.get("split_mode", "within_entity"),
+        "usable_profiles_per_attribute": (
+            assoc_report["usable_profiles_per_attribute"] if assoc_report else None
+        ),
     }
     save_json(manifest, output_dir / "manifest.json")
     log.info("Saved manifest.json")

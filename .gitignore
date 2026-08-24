@@ -32,6 +32,8 @@ data/reports/*
 # Committed research-provenance reports (small, regenerable)
 !data/reports/mllmu_hier_attribute_inventory.csv
 !data/reports/mllmu_hier_inventory_summary.json
+!data/reports/mllmu_hier_parse_coverage.json
+!data/reports/mllmu_hier_association_build_report.json
 
 # Outputs
 outputs/*/

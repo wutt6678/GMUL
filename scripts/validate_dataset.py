@@ -115,16 +115,23 @@ def validate_dataset_dir(data_dir: str | Path) -> tuple[list[str], list[str]]:
                 errors.append(f"HIERARCHY_INVALID[{assoc.association_id}]: {issue}")
 
     # ---- Gate 4: image gates ---------------------------------------------
-    seen_image_ids: dict[str, tuple[str, str]] = {}   # image_id → (assoc, split)
-    seen_image_paths: dict[str, tuple[str, str]] = {}  # path → (assoc, split)
+    split_mode = manifest.get("split_mode", "within_entity")
+    # image_id / path → (entity_id, assoc, split).  Reuse ACROSS entities is
+    # an error; reuse across associations of the SAME entity is legitimate
+    # (one profile photo supports several attributes of the same person).
+    seen_image_ids: dict[str, tuple[str, str, str]] = {}
+    seen_image_paths: dict[str, tuple[str, str, str]] = {}
     missing_images = 0
     total_images = 0
+    dataset_image_splits: set[str] = set()
 
     for assoc in associations:
         split_image_ids: dict[str, list[str]] = {"train": [], "val": [], "test": []}
 
         for img in assoc.images:
             total_images += 1
+            if img.split:
+                dataset_image_splits.add(img.split)
 
             # 4a. existence
             if not _resolve_image_path(img.path, data_dir).exists():
@@ -132,24 +139,30 @@ def validate_dataset_dir(data_dir: str | Path) -> tuple[list[str], list[str]]:
                 if missing_images <= 5:
                     errors.append(f"IMAGE_MISSING[{assoc.association_id}]: {img.path}")
 
-            # 4b. uniqueness across splits (ID and path)
+            # 4b. cross-ENTITY uniqueness (ID and path)
             if img.image_id in seen_image_ids:
-                prev_assoc, prev_split = seen_image_ids[img.image_id]
-                errors.append(
-                    f"IMAGE_ID_REUSE[{assoc.association_id}]: {img.image_id!r} "
-                    f"already used by {prev_assoc} (split {prev_split})"
-                )
+                prev_entity, prev_assoc, prev_split = seen_image_ids[img.image_id]
+                if prev_entity != assoc.entity_id:
+                    errors.append(
+                        f"IMAGE_ID_REUSE[{assoc.association_id}]: {img.image_id!r} "
+                        f"already used by entity {prev_entity} ({prev_assoc}, "
+                        f"split {prev_split})"
+                    )
             else:
-                seen_image_ids[img.image_id] = (assoc.association_id, img.split or "?")
+                seen_image_ids[img.image_id] = (
+                    assoc.entity_id, assoc.association_id, img.split or "?")
 
             if img.path in seen_image_paths:
-                prev_assoc, prev_split = seen_image_paths[img.path]
-                errors.append(
-                    f"IMAGE_PATH_REUSE[{assoc.association_id}]: {img.path!r} "
-                    f"already used by {prev_assoc} (split {prev_split})"
-                )
+                prev_entity, prev_assoc, prev_split = seen_image_paths[img.path]
+                if prev_entity != assoc.entity_id:
+                    errors.append(
+                        f"IMAGE_PATH_REUSE[{assoc.association_id}]: {img.path!r} "
+                        f"already used by entity {prev_entity} ({prev_assoc}, "
+                        f"split {prev_split})"
+                    )
             else:
-                seen_image_paths[img.path] = (assoc.association_id, img.split or "?")
+                seen_image_paths[img.path] = (
+                    assoc.entity_id, assoc.association_id, img.split or "?")
 
             if img.split is None:
                 warnings.append(
@@ -158,8 +171,8 @@ def validate_dataset_dir(data_dir: str | Path) -> tuple[list[str], list[str]]:
             else:
                 split_image_ids[img.split].append(img.image_id)
 
-        # 4c. every entity must have train AND test images
-        if len(assoc.images) > 0:
+        # 4c. split coverage — semantics depend on the declared split mode
+        if split_mode == "within_entity" and len(assoc.images) > 0:
             if not split_image_ids["train"]:
                 errors.append(
                     f"NO_TRAIN_IMAGES[{assoc.association_id}]: "
@@ -170,6 +183,15 @@ def validate_dataset_dir(data_dir: str | Path) -> tuple[list[str], list[str]]:
                     f"NO_TEST_IMAGES[{assoc.association_id}]: "
                     f"entity has {len(assoc.images)} images but none in test split"
                 )
+
+    # 4c-bis. entity_level mode: train AND test must exist DATASET-WIDE
+    # (each entity carries a single image assigned to one split).
+    if split_mode == "entity_level":
+        if total_images > 0:
+            if "train" not in dataset_image_splits:
+                errors.append("DATASET_NO_TRAIN_IMAGES: no image in train split")
+            if "test" not in dataset_image_splits:
+                errors.append("DATASET_NO_TEST_IMAGES: no image in test split")
 
         # 4d. minimum image count per entity
         min_images = manifest.get("min_images_per_species")

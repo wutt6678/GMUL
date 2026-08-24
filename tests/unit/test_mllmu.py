@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from fixtures.mllmu_fixture import write_jsonl, write_parquet
@@ -375,8 +377,191 @@ class TestRegistry:
         assert isinstance(get_adapter("mllmu_hier"), MLLMUAdapter)
         assert isinstance(get_adapter("mllmu"), MLLMUAdapter)
 
-    def test_to_associations_deferred(self, mllmu_parquet):
+    def test_to_associations_implemented(self, mllmu_parquet, tmp_path):
         adapter = MLLMUAdapter()
         records = adapter.load_raw(_cfg_parquet(mllmu_parquet))
-        with pytest.raises(NotImplementedError):
-            adapter.to_associations(records, {})
+        adapter.materialize_images(
+            records, _cfg_parquet(mllmu_parquet) | {"images_dir": str(tmp_path / "img")})
+        assocs = adapter.to_associations(records, _cfg_parquet(mllmu_parquet))
+        assert len(assocs) > 0
+
+
+# =====================================================================
+# Image materialization (Iteration 4)
+# =====================================================================
+
+class TestImageMaterialization:
+    def test_materializes_and_verifies(self, mllmu_parquet, tmp_path):
+        adapter = MLLMUAdapter()
+        records = adapter.load_raw(_cfg_parquet(mllmu_parquet))
+        cfg = _cfg_parquet(mllmu_parquet) | {"images_dir": str(tmp_path / "img")}
+        image_map = adapter.materialize_images(records, cfg)
+        assert len(image_map) == 5
+        for rec in records:
+            stored = image_map[rec.entity_id]
+            assert Path(stored).exists()
+            assert Path(stored).stat().st_size > 0
+
+    def test_corrupt_image_bytes_hard_error(self, tmp_path):
+        root = tmp_path / "badimg"
+        write_parquet(root, n_records=5, corrupt_image_idx=2)
+        adapter = MLLMUAdapter()
+        records = adapter.load_raw(_cfg_parquet(root))
+        cfg = _cfg_parquet(root) | {"images_dir": str(tmp_path / "img")}
+        with pytest.raises(ValueError, match="materialization failed"):
+            adapter.materialize_images(records, cfg)
+
+    def test_idempotent_rewrite(self, mllmu_parquet, tmp_path):
+        adapter = MLLMUAdapter()
+        records = adapter.load_raw(_cfg_parquet(mllmu_parquet))
+        cfg = _cfg_parquet(mllmu_parquet) | {"images_dir": str(tmp_path / "img")}
+        m1 = adapter.materialize_images(records, cfg)
+        m2 = adapter.materialize_images(records, cfg)
+        assert m1 == m2
+
+
+# =====================================================================
+# Real parse coverage gate (Iteration 4)
+# =====================================================================
+
+class TestParseCoverageGate:
+    def test_all_attributes_measured(self, mllmu_parquet):
+        adapter = MLLMUAdapter()
+        records = adapter.load_raw(_cfg_parquet(mllmu_parquet))
+        rows = adapter.build_parse_coverage(records)
+        by_attr = {r["attribute"]: r for r in rows}
+        assert set(by_attr) == {"residence", "birthplace", "date_of_birth",
+                                "salary", "height"}
+        for row in rows:
+            assert row["total_profiles"] == 5
+            # fixture values are parser-friendly -> full coverage
+            assert row["parse_coverage"] == 1.0
+            assert row["enabled"] is True
+
+    def test_low_coverage_disables_attribute(self, mllmu_parquet):
+        adapter = MLLMUAdapter()
+        records = adapter.load_raw(_cfg_parquet(mllmu_parquet))
+        # Sabotage salary on most profiles AFTER load
+        for rec in records[1:]:
+            rec.fields["salary"] = "NA"
+        rows = adapter.build_parse_coverage(records, ["salary"], min_coverage=0.95)
+        assert rows[0]["parse_coverage"] == pytest.approx(0.2)
+        assert rows[0]["enabled"] is False
+        assert rows[0]["failure_examples"]  # reported, never silent
+
+    def test_per_attribute_threshold_override(self, mllmu_parquet):
+        adapter = MLLMUAdapter()
+        records = adapter.load_raw(_cfg_parquet(mllmu_parquet))
+        for rec in records[1:]:
+            rec.fields["salary"] = "NA"
+        rows = adapter.build_parse_coverage(
+            records, ["salary"], min_coverage=0.95,
+            min_coverage_per_attribute={"salary": 0.1})
+        assert rows[0]["enabled"] is True
+        assert rows[0]["min_parse_coverage"] == 0.1
+
+    def test_no_enabled_attribute_raises(self, mllmu_parquet, tmp_path):
+        adapter = MLLMUAdapter()
+        records = adapter.load_raw(_cfg_parquet(mllmu_parquet))
+        for rec in records:
+            rec.fields["salary"] = "NA"
+        with pytest.raises(ValueError, match="min_parse_coverage"):
+            adapter.to_associations(
+                records, _cfg_parquet(mllmu_parquet)
+                | {"deterministic_attributes": ["salary"]})
+
+
+# =====================================================================
+# Deterministic association building (Iteration 4)
+# =====================================================================
+
+class TestAssociations:
+    @pytest.fixture
+    def built(self, mllmu_parquet, tmp_path):
+        adapter = MLLMUAdapter()
+        records = adapter.load_raw(_cfg_parquet(mllmu_parquet))
+        cfg = _cfg_parquet(mllmu_parquet) | {"images_dir": str(tmp_path / "img")}
+        adapter.materialize_images(records, cfg)
+        assocs = adapter.to_associations(records, cfg)
+        return adapter, records, assocs
+
+    def test_one_association_per_enabled_attribute(self, built):
+        adapter, records, assocs = built
+        assert len(assocs) == len(records) * 5
+
+    def test_target_levels_in_valid_range(self, built):
+        _, _, assocs = built
+        for a in assocs:
+            assert 1 <= a.target_level < a.num_levels()
+
+    def test_target_selection_reproducible(self, mllmu_parquet, tmp_path):
+        adapter = MLLMUAdapter()
+        records = adapter.load_raw(_cfg_parquet(mllmu_parquet))
+        cfg = _cfg_parquet(mllmu_parquet) | {"images_dir": str(tmp_path / "img")}
+        adapter.materialize_images(records, cfg)
+        a1 = adapter.to_associations(records, cfg)
+        a2 = adapter.to_associations(records, cfg)
+        assert [x.target_level for x in a1] == [x.target_level for x in a2]
+
+    def test_location_chains_have_variable_depth(self, built):
+        _, _, assocs = built
+        loc = [a for a in assocs if a.attribute_name == "residence"]
+        # two-component fixture values -> exactly two levels
+        assert all(a.num_levels() == 2 for a in loc)
+        for a in loc:
+            assert a.levels[1].value in a.levels[0].value  # coarser is substring
+
+    def test_date_chains_depth_three(self, built):
+        _, _, assocs = built
+        for a in (x for x in assocs if x.attribute_name == "date_of_birth"):
+            assert a.num_levels() == 3  # date -> year -> decade
+
+    def test_height_values_normalized_to_cm(self, built):
+        """Fixture heights are imperial ('5 feet 5 inches') — level 0 must
+        carry the normalized centimetre value."""
+        _, _, assocs = built
+        heights = [a for a in assocs if a.attribute_name == "height"]
+        assert heights
+        for a in heights:
+            assert a.levels[0].value.endswith("cm")
+
+    def test_every_association_has_materialized_image(self, built):
+        _, _, assocs = built
+        for a in assocs:
+            assert len(a.images) == 1
+            img = a.images[0]
+            assert Path(img.path).exists()
+            assert img.split in ("train", "val", "test")
+
+    def test_entity_split_consistent_across_attributes(self, built):
+        _, _, assocs = built
+        from collections import defaultdict
+        per_entity = defaultdict(set)
+        for a in assocs:
+            per_entity[a.entity_id].add(a.split.split)
+        for entity, splits in per_entity.items():
+            assert len(splits) == 1, f"{entity} spans splits {splits}"
+
+    def test_provenance_builder_deterministic(self, built):
+        _, _, assocs = built
+        for a in assocs:
+            assert a.provenance.hierarchy_builder == "deterministic"
+
+    def test_retain_attributes_exclude_forgotten_one(self, built):
+        _, _, assocs = built
+        for a in assocs:
+            assert a.attribute_name not in a.retain_attribute_names
+
+    def test_usable_profiles_reported(self, mllmu_parquet, tmp_path):
+        adapter = MLLMUAdapter()
+        records = adapter.load_raw(_cfg_parquet(mllmu_parquet))
+        cfg = _cfg_parquet(mllmu_parquet) | {"images_dir": str(tmp_path / "img")}
+        adapter.materialize_images(records, cfg)
+        # one profile has no usable salary; keep salary enabled via a low
+        # threshold so the per-profile exclusion is observable
+        cfg = cfg | {"min_parse_coverage": 0.5}
+        records[0].fields["salary"] = "NA"
+        adapter.to_associations(records, cfg)
+        report = adapter.last_association_report
+        assert report["usable_profiles_per_attribute"]["salary"] == len(records) - 1
+        assert report["unusable"]["salary:unparseable"] == 1

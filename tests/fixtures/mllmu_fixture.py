@@ -10,10 +10,19 @@ data and not a research proof-of-concept result.
 """
 from __future__ import annotations
 
+import io
 import json
 import random
 from pathlib import Path
 from typing import Any
+
+
+def make_png_bytes(size: int = 8, color: tuple[int, int, int] = (120, 40, 200)) -> bytes:
+    """A real decodable PNG (needed for PIL-verified image materialization)."""
+    from PIL import Image
+    buf = io.BytesIO()
+    Image.new("RGB", (size, size), color).save(buf, format="PNG")
+    return buf.getvalue()
 
 FIRST_NAMES = ["Ada", "Bram", "Chen", "Dara", "Eli", "Faye", "Gil", "Hana"]
 LAST_NAMES = ["Aoki", "Boone", "Castro", "Dietz", "Eng", "Frost", "Gao", "Hale"]
@@ -37,7 +46,7 @@ def make_profile(rng: random.Random, i: int) -> dict[str, Any]:
         "Height": rng.choice(HEIGHTS),
         "Educated at:": rng.choice(EDUCATION),
         "Annual Salary: ": rng.choice(SALARIES),
-        "Residence": f"{rng.randint(1, 99)} {rng.choice(['Main', 'Oak', 'Elm'])} Street",
+        "Residence": f"{CITIES[c]}, {COUNTRIES[c]}",
         "Medical Conditions": rng.choice(["none", "asthma"]),
         "Parents": rng.choice([
             "John Doe and Jane Doe",
@@ -132,6 +141,7 @@ def write_parquet(
     duplicate_ids: bool = False,
     include_celebrity: bool = False,
     corrupt_idx: int | None = None,
+    corrupt_image_idx: int | None = None,
     subset: str = "Full_Set",
     filename: str = "train-00000-of-00001.parquet",
 ) -> Path:
@@ -139,6 +149,9 @@ def write_parquet(
 
     Reproduces: image (dict with bytes/path), ID, Directory, biography,
     question, answer, Classification_Task, Generation_Task, Mask_Task.
+
+    ``corrupt_image_idx`` writes undecodable bytes for that record's image
+    (materialization-gate test).
     """
     import pandas as pd
 
@@ -148,9 +161,12 @@ def write_parquet(
     path = out_dir / filename
 
     rows = []
-    for row in _base_rows(n_records, duplicate_ids, include_celebrity, corrupt_idx):
+    for i, row in enumerate(_base_rows(n_records, duplicate_ids,
+                                       include_celebrity, corrupt_idx)):
+        img_bytes = (b"\x89PNG not a real image"
+                     if corrupt_image_idx == i else make_png_bytes())
         rows.append({
-            "image": {"bytes": b"\x89PNG fake", "path": None},
+            "image": {"bytes": img_bytes, "path": None},
             "ID": row["ID"],
             "Directory": row["Directory"],
             "biography": row["biography"],

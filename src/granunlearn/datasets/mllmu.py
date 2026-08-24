@@ -41,7 +41,28 @@ from pathlib import Path
 from typing import Any, Iterator
 
 from granunlearn.config import _find_repo_root
-from granunlearn.schema import ProvenanceInfo
+from granunlearn.hierarchy import (
+    build_date_hierarchy,
+    build_height_hierarchy,
+    build_salary_hierarchy,
+)
+from granunlearn.hierarchy.location import build_location_hierarchy
+from granunlearn.hierarchy.parsers import (
+    parse_date_value,
+    parse_height_cm,
+    parse_location_components,
+    parse_salary_value,
+)
+from granunlearn.hierarchy.target_selection import select_target_level
+from granunlearn.hierarchy.validate import validate_chain
+from granunlearn.schema import (
+    AssociationRecord,
+    ImageRef,
+    ProvenanceInfo,
+    SplitInfo,
+)
+
+from .splits import deterministic_entity_splits
 
 # Official Hugging Face release coordinates
 OFFICIAL_HF_REPO = "MLLMMU/MLLMU-Bench"
@@ -185,6 +206,37 @@ ATTRIBUTE_POLICY: dict[str, dict[str, Any]] = {
         "notes": "Free-text narrative; no clean hierarchy.",
     },
 }
+
+# -----------------------------------------------------------------------
+# Deterministic attribute registry (Iteration 4)
+# -----------------------------------------------------------------------
+# Attributes with strict, verified parsers.  An attribute is ENABLED for
+# association building only when its REAL parse coverage across all
+# profiles reaches ``min_parse_coverage``.
+
+DEFAULT_DETERMINISTIC_ATTRIBUTES = [
+    "residence", "birthplace", "date_of_birth", "salary", "height",
+]
+
+ATTRIBUTE_PARSERS = {
+    "date_of_birth": parse_date_value,
+    "salary": parse_salary_value,
+    "height": parse_height_cm,
+    "residence": parse_location_components,
+    "birthplace": parse_location_components,
+}
+
+#: hierarchy_type of each deterministic attribute
+ATTRIBUTE_HIERARCHY_TYPE = {
+    "date_of_birth": "numeric",
+    "salary": "numeric",
+    "height": "numeric",
+    "residence": "semantic",
+    "birthplace": "semantic",
+}
+
+_LOCATION_ATTRS = {"residence", "birthplace"}
+
 
 INVENTORY_COLUMNS = [
     "attribute",
@@ -435,14 +487,328 @@ class MLLMUAdapter:
             isinstance(flag, str) and flag.strip().lower() in ("true", "1", "yes")
         )
 
-    # ---- Association building (deferred to Iteration 4+) ----------------
+    # ---- Image materialization -------------------------------------------
+
+    def materialize_images(
+        self,
+        records: list[MLLMUSourceRecord],
+        config: dict[str, Any],
+    ) -> dict[str, str]:
+        """Materialize embedded image bytes to disk and verify them.
+
+        For the official parquet release the ``image`` column holds the
+        actual bytes; they are written under ``images_dir`` and verified
+        with PIL.  For converted JSONL copies the string image path is
+        resolved against ``data_root`` and verified in place.
+
+        Returns / stores on ``self.last_image_map`` a mapping
+        ``entity_id -> repo-relative image path``.
+
+        Raises
+        ------
+        ValueError
+            If any requested entity has no usable, decodable image.
+        """
+        from PIL import Image
+
+        repo_root = _find_repo_root(Path.cwd())
+        images_dir = Path(config.get(
+            "images_dir", "data/processed/mllmu_hier/images"))
+        if not images_dir.is_absolute() and repo_root is not None:
+            images_dir = repo_root / images_dir
+        images_dir.mkdir(parents=True, exist_ok=True)
+
+        source_format = config.get("source_format", "parquet")
+        wanted = {rec.raw_id for rec in records}
+        image_map: dict[str, str] = {}
+        problems: list[str] = []
+
+        if source_format == "parquet":
+            import pandas as pd
+            src = self._source_path(config)
+            df = pd.read_parquet(src, columns=["ID", "Directory", "image"])
+            for row in df.itertuples(index=False):
+                raw_id = str(row.ID).strip()
+                if raw_id not in wanted:
+                    continue
+                directory = str(row.Directory or "")
+                ext = Path(directory).suffix or ".jpg"
+                out = images_dir / f"mllmu_{raw_id}{ext}"
+                img_obj = row.image
+                raw_bytes = (
+                    img_obj.get("bytes") if isinstance(img_obj, dict) else None
+                )
+                if not raw_bytes:
+                    problems.append(f"{raw_id}: no embedded image bytes")
+                    continue
+                if not out.exists():
+                    out.write_bytes(raw_bytes)
+                if not self._verify_image(out):
+                    problems.append(f"{raw_id}: image fails PIL verification")
+                    continue
+                image_map[f"mllmu_{raw_id}"] = self._repo_relative(out, repo_root)
+        else:  # jsonl: string paths resolved against data_root
+            data_root = Path(config.get("data_root", "."))
+            if not data_root.is_absolute() and repo_root is not None:
+                data_root = repo_root / data_root
+            for rec in records:
+                if not rec.image_path:
+                    problems.append(f"{rec.raw_id}: no image path")
+                    continue
+                full = (data_root / rec.image_path).resolve()
+                if not full.exists():
+                    problems.append(f"{rec.raw_id}: image missing: {full}")
+                    continue
+                if not self._verify_image(full):
+                    problems.append(f"{rec.raw_id}: image fails PIL verification")
+                    continue
+                image_map[rec.entity_id] = self._repo_relative(full, repo_root)
+
+        # image_map keys are entity_ids ("mllmu_<raw_id>") in both formats
+        missing = wanted - {k.removeprefix("mllmu_") for k in image_map}
+        if problems or missing:
+            detail = "; ".join(problems[:10])
+            raise ValueError(
+                f"Image materialization failed: {len(problems)} problems, "
+                f"{len(missing)} entities without image. First: {detail}"
+            )
+
+        self.last_image_map = image_map
+        return image_map
+
+    @staticmethod
+    def _verify_image(path: Path) -> bool:
+        """True iff *path* exists, is non-empty, and decodes via PIL."""
+        from PIL import Image
+        if not path.exists() or path.stat().st_size == 0:
+            return False
+        try:
+            with Image.open(path) as im:
+                im.verify()
+            with Image.open(path) as im:
+                _ = im.size
+            return True
+        except Exception:
+            return False
+
+    @staticmethod
+    def _repo_relative(path: Path, repo_root: Path | None) -> str:
+        try:
+            return str(path.relative_to(repo_root)) if repo_root else str(path)
+        except ValueError:
+            return str(path)
+
+    # ---- Real per-attribute parse coverage -------------------------------
+
+    def build_parse_coverage(
+        self,
+        records: list[MLLMUSourceRecord],
+        attributes: list[str] | None = None,
+        min_coverage: float = 0.95,
+        min_coverage_per_attribute: dict[str, float] | None = None,
+    ) -> list[dict[str, Any]]:
+        """Run the REAL attribute parsers over every profile.
+
+        Unlike the generic inventory ``parseable_count`` (non-empty scalar
+        heuristic), this executes the exact parser that hierarchy building
+        will use.  An attribute is ``enabled`` only when its coverage
+        reaches its threshold (``min_coverage``, optionally overridden per
+        attribute via ``min_coverage_per_attribute`` — overrides must be
+        justified in the config, since failures must then be principled
+        policy exclusions, not parser weakness).
+        """
+        attributes = attributes or DEFAULT_DETERMINISTIC_ATTRIBUTES
+        per_attr = dict(min_coverage_per_attribute or {})
+        rows: list[dict[str, Any]] = []
+        total = len(records)
+        for attr in attributes:
+            parser = ATTRIBUTE_PARSERS.get(attr)
+            if parser is None:
+                raise ValueError(
+                    f"No deterministic parser registered for {attr!r}; "
+                    f"refusing to build hierarchies without a verified parser"
+                )
+            n_success = 0
+            failures: list[dict[str, str]] = []
+            for rec in records:
+                value = rec.fields.get(attr)
+                parsed = parser(value)
+                usable = parsed is not None
+                if usable and attr in _LOCATION_ATTRS:
+                    # A hierarchy needs >= 2 OBSERVED components
+                    usable = len(parsed) >= 2
+                if usable:
+                    n_success += 1
+                elif len(failures) < 5:
+                    failures.append({
+                        "entity_id": rec.entity_id,
+                        "value": str(value)[:60],
+                    })
+            coverage = n_success / total if total else 0.0
+            threshold = per_attr.get(attr, min_coverage)
+            rows.append({
+                "attribute": attr,
+                "parser": parser.__name__,
+                "total_profiles": total,
+                "parse_success": n_success,
+                "parse_coverage": round(coverage, 4),
+                "min_parse_coverage": threshold,
+                "enabled": coverage >= threshold,
+                "failure_examples": failures,
+            })
+        return rows
+
+    # ---- Association building (deterministic attributes) ------------------
 
     def to_associations(self, raw_records, config):
-        raise NotImplementedError(
-            "MLLMU association building is implemented in Iteration 4+ "
-            "(deterministic hierarchies) and Iteration 5+ (Qwen-assisted). "
-            "Run with --stage inventory for Iteration 3."
+        """Build deterministic AssociationRecords (Iteration 4).
+
+        Per profile and per ENABLED deterministic attribute: parse the
+        value with the verified parser, build the hierarchy (variable
+        depth, observed components only), validate the chain, select the
+        target level deterministically, and attach the materialized image
+        with the entity-level split.
+
+        Qwen-assisted attributes (occupation, education) remain deferred
+        to Iteration 5.
+        """
+        seed = int(config.get("seed", 42))
+        attributes = config.get(
+            "deterministic_attributes", DEFAULT_DETERMINISTIC_ATTRIBUTES)
+        min_cov = float(config.get("min_parse_coverage", 0.95))
+        per_attr_cov = {
+            str(k): float(v)
+            for k, v in (config.get("min_parse_coverage_per_attribute") or {}).items()
+        }
+        salary_bins = config.get("salary_bins")
+        height_bins = config.get("height_bins")
+
+        # Real parse coverage gate (never silent)
+        coverage_rows = self.build_parse_coverage(
+            raw_records, attributes, min_cov, per_attr_cov)
+        self.last_parse_coverage = coverage_rows
+        enabled = [r["attribute"] for r in coverage_rows if r["enabled"]]
+        disabled = [
+            (r["attribute"], r["parse_coverage"])
+            for r in coverage_rows if not r["enabled"]
+        ]
+        if disabled:
+            import logging
+            logging.getLogger("granunlearn.mllmu").warning(
+                "Attributes disabled by parse-coverage gate (<%s): %s",
+                min_cov, disabled,
+            )
+        if not enabled:
+            raise ValueError(
+                f"No attribute reaches min_parse_coverage={min_cov}; "
+                f"coverage: {[(r['attribute'], r['parse_coverage']) for r in coverage_rows]}"
+            )
+
+        # Entity-level splits (one image per profile in MLLMU)
+        split_ratios = config.get("split", {}) or {}
+        entity_ids = [rec.entity_id for rec in raw_records]
+        entity_split = deterministic_entity_splits(
+            entity_ids, seed,
+            train_ratio=float(split_ratios.get("train_ratio", 0.6)),
+            val_ratio=float(split_ratios.get("val_ratio", 0.2)),
         )
+
+        image_map: dict[str, str] = getattr(self, "last_image_map", {}) or {}
+
+        associations: list[AssociationRecord] = []
+        unusable: Counter[str] = Counter()
+        usable_profiles: Counter[str] = Counter()
+
+        for rec in raw_records:
+            for attr in enabled:
+                value = rec.fields.get(attr)
+                parsed = ATTRIBUTE_PARSERS[attr](value)
+                usable = parsed is not None
+                if usable and attr in _LOCATION_ATTRS:
+                    usable = len(parsed) >= 2
+                if not usable:
+                    unusable[f"{attr}:unparseable"] += 1
+                    continue
+
+                try:
+                    chain = self._build_chain(
+                        attr, parsed, salary_bins, height_bins)
+                except ValueError as e:
+                    unusable[f"{attr}:builder_error"] += 1
+                    continue
+
+                issues = validate_chain(chain.levels())
+                errors = [i for i in issues if i.is_error]
+                if errors:
+                    unusable[f"{attr}:invalid_chain"] += 1
+                    continue
+
+                n_levels = len(chain.levels())
+                target = select_target_level(
+                    seed, f"{rec.entity_id}:{attr}", n_levels)
+
+                split = entity_split[rec.entity_id]
+                images: list[ImageRef] = []
+                if rec.entity_id in image_map:
+                    images.append(ImageRef(
+                        image_id=f"mllmu_{rec.raw_id}",
+                        path=image_map[rec.entity_id],
+                        source="materialized",
+                        split=split,
+                    ))
+
+                associations.append(AssociationRecord(
+                    association_id=f"mllmu_{rec.raw_id}__{attr}",
+                    dataset="mllmu_hier",
+                    entity_id=rec.entity_id,
+                    entity_name=rec.entity_name,
+                    attribute_name=attr,
+                    hierarchy_type=ATTRIBUTE_HIERARCHY_TYPE[attr],
+                    levels=chain.levels(),
+                    original_level=0,
+                    target_level=target,
+                    source_modalities=["text", "image"] if images else ["text"],
+                    images=images,
+                    textual_context=[
+                        f"{rec.entity_name} — {attr.replace('_', ' ')}: {value}"
+                    ],
+                    retain_attribute_names=[
+                        a for a in enabled if a != attr
+                    ],
+                    split=SplitInfo(split=split),
+                    provenance=ProvenanceInfo(
+                        source_dataset="mllmu_bench",
+                        source_entity_id=rec.raw_id,
+                        source_record_id=rec.raw_id,
+                        hierarchy_builder="deterministic",
+                    ),
+                ))
+                usable_profiles[attr] += 1
+
+        self.last_association_report = {
+            "num_associations": len(associations),
+            "enabled_attributes": enabled,
+            "disabled_attributes": [
+                {"attribute": a, "parse_coverage": c} for a, c in disabled
+            ],
+            "usable_profiles_per_attribute": dict(usable_profiles),
+            "unusable": dict(unusable),
+            "num_entities_without_image": sum(
+                1 for rec in raw_records if rec.entity_id not in image_map),
+        }
+        return associations
+
+    def _build_chain(self, attr, parsed, salary_bins, height_bins):
+        """Build the hierarchy chain for one parsed value."""
+        if attr == "date_of_birth":
+            return build_date_hierarchy(parsed.isoformat(), prefix="date")
+        if attr == "salary":
+            return build_salary_hierarchy(parsed, bins=salary_bins)
+        if attr == "height":
+            return build_height_hierarchy(parsed, bins=height_bins)
+        if attr in _LOCATION_ATTRS:
+            return build_location_hierarchy(parsed, prefix=attr)
+        raise ValueError(f"No hierarchy builder for {attr!r}")
 
     # ---- Attribute inventory -------------------------------------------
 

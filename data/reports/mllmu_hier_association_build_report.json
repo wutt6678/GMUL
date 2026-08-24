@@ -1,0 +1,23 @@
+{
+  "num_associations": 2456,
+  "enabled_attributes": [
+    "residence",
+    "birthplace",
+    "date_of_birth",
+    "salary",
+    "height"
+  ],
+  "disabled_attributes": [],
+  "usable_profiles_per_attribute": {
+    "residence": 500,
+    "birthplace": 500,
+    "date_of_birth": 500,
+    "salary": 462,
+    "height": 494
+  },
+  "unusable": {
+    "salary:unparseable": 38,
+    "height:unparseable": 6
+  },
+  "num_entities_without_image": 0
+}
