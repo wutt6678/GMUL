@@ -3,9 +3,11 @@
 ``SMOKE_TAXONOMY`` is a TEST fixture — 20 real species with full Linnaean
 metadata.  Production code must NOT import from this module.
 
-``write_local_dataset`` materialises a COCO-style iNaturalist dataset on
-disk (annotations.json + real JPEG files) so the adapter's *local* data
-mode can be exercised in both unit and integration tests.
+``write_local_dataset`` materialises an on-disk COCO-style TEST dataset
+(annotations.json + JPEG files whose pixel content is synthetically
+generated from deterministic colors/noise).  This is a software-test
+fixture, NOT the iNaturalist research proof-of-concept — that must
+eventually run against actual iNaturalist photographs.
 """
 
 from __future__ import annotations

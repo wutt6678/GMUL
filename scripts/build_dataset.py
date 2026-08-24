@@ -69,9 +69,14 @@ def run_build(
 
     log.info("Loading raw records...")
     raw_records = adapter.load_raw(ds_cfg)
-    excluded = getattr(adapter.load_raw, "last_excluded", [])
-    log.info("Loaded %d raw records (%d species excluded by min-image filter)",
-             len(raw_records), len(excluded))
+    load_report = getattr(adapter, "last_load_report", {})
+    excluded = load_report.get("excluded_species", [])
+    log.info(
+        "Loaded %d raw records (%d species excluded by min-image filter; "
+        "%d genera, %d families in selected subset)",
+        len(raw_records), len(excluded),
+        load_report.get("num_genera", 0), load_report.get("num_families", 0),
+    )
 
     ds_cfg["version"] = version
     log.info("Building associations...")
@@ -133,6 +138,9 @@ def run_build(
         "num_entities": len(edf),
         "num_images": sum(len(a.images) for a in associations),
         "min_images_per_species": ds_cfg.get("min_images_per_species"),
+        "excluded_species": excluded,
+        "num_genera": load_report.get("num_genera"),
+        "num_families": load_report.get("num_families"),
         "data_root": data_root_abs,
         "config_path": str(config_path),
         "output_dir": str(output_dir),

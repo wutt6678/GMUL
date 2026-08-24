@@ -106,7 +106,7 @@ def _resolve_data_root(data_root: str | Path) -> Path:
     return repo_root / p
 
 
-def load_local_metadata(config: dict[str, Any]) -> list[dict[str, Any]]:
+def load_local_metadata(config: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Load species records from a local iNaturalist-format dataset.
 
     Config keys (under the ``dataset`` section):
@@ -115,19 +115,28 @@ def load_local_metadata(config: dict[str, Any]) -> list[dict[str, Any]]:
     * ``annotations_file`` — JSON filename, default ``annotations.json``
     * ``min_images_per_species`` — int, default 10
     * ``max_species`` — int, default 20
+    * ``min_genera`` — int, default 1 (hard gate on the selected subset)
+    * ``min_families`` — int, default 1 (hard gate on the selected subset)
 
     Returns
     -------
-    list[dict]
-        One record per selected species::
+    (records, load_report)
+        ``records`` — one dict per selected species.  ``load_report``
+        carries bookkeeping: ``excluded_species``, ``eligible_species``,
+        ``num_genera``, ``num_families``.
 
-            {"species", "genus", "family", "order", "common_name",
-             "images": [file_name, ...]}
+    Raises
+    ------
+    ValueError
+        If the selected subset does not satisfy ``min_genera`` /
+        ``min_families``.
     """
     root = _resolve_data_root(config["data_root"])
     ann_file = root / config.get("annotations_file", "annotations.json")
     min_images = int(config.get("min_images_per_species", 10))
     max_species = int(config.get("max_species", 20))
+    min_genera = int(config.get("min_genera", 1))
+    min_families = int(config.get("min_families", 1))
 
     if not ann_file.exists():
         raise FileNotFoundError(f"Annotations file not found: {ann_file}")
@@ -138,7 +147,8 @@ def load_local_metadata(config: dict[str, Any]) -> list[dict[str, Any]]:
     categories = {c["id"]: c for c in meta["categories"]}
     images_by_id = {im["id"]: im for im in meta["images"]}
 
-    # Group image file names by species
+    # Group image file names by species.  The official iNaturalist schema
+    # uses "name" (not "species") on categories; support both.
     species_images: dict[str, list[str]] = {}
     species_meta: dict[str, dict[str, Any]] = {}
     for ann in meta["annotations"]:
@@ -159,6 +169,25 @@ def load_local_metadata(config: dict[str, Any]) -> list[dict[str, Any]]:
     excluded = sorted(set(species_images) - set(eligible))
     selected = eligible[:max_species]
 
+    # ---- Hard gates: taxonomic diversity of the selected subset ----------
+    if not selected:
+        raise ValueError(
+            f"No species satisfy min_images_per_species={min_images}; "
+            f"cannot build a dataset (total species seen: {len(species_images)})"
+        )
+    genera = {species_meta[sp].get("genus", "") for sp in selected}
+    families = {species_meta[sp].get("family", "") for sp in selected}
+    if len(genera) < min_genera:
+        raise ValueError(
+            f"Selected subset has {len(genera)} genera, "
+            f"min_genera requires {min_genera}"
+        )
+    if len(families) < min_families:
+        raise ValueError(
+            f"Selected subset has {len(families)} families, "
+            f"min_families requires {min_families}"
+        )
+
     records: list[dict[str, Any]] = []
     for sp in selected:
         cat = species_meta[sp]
@@ -171,9 +200,13 @@ def load_local_metadata(config: dict[str, Any]) -> list[dict[str, Any]]:
             "images": sorted(species_images[sp]),
         })
 
-    # Expose exclusion info for reporting (attached as attribute)
-    load_local_metadata.last_excluded = excluded  # type: ignore[attr-defined]
-    return records
+    load_report = {
+        "excluded_species": excluded,
+        "eligible_species": len(eligible),
+        "num_genera": len(genera),
+        "num_families": len(families),
+    }
+    return records, load_report
 
 
 # -----------------------------------------------------------------------
@@ -183,20 +216,27 @@ def load_local_metadata(config: dict[str, Any]) -> list[dict[str, Any]]:
 class INaturalistAdapter:
     """iNaturalist dataset adapter (local-data mode only)."""
 
+    def __init__(self) -> None:
+        # Populated by load_raw(); consumed by the build script for reporting.
+        self.last_load_report: dict[str, Any] = {}
+
     def name(self) -> str:
         return "inaturalist"
 
     def load_raw(self, config: dict[str, Any]) -> list[dict[str, Any]]:
         """Load species records from the local dataset root.
 
-        Requires ``config["data_root"]``.
+        Requires ``config["data_root"]``.  The full load report (excluded
+        species, diversity counts) is stored on ``self.last_load_report``.
         """
         if "data_root" not in config:
             raise ValueError(
                 "iNaturalist adapter requires 'data_root' pointing to a local "
                 "iNaturalist-format dataset (annotations.json + images/)"
             )
-        return load_local_metadata(config)
+        records, report = load_local_metadata(config)
+        self.last_load_report = report
+        return records
 
     def to_associations(
         self,

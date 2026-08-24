@@ -1,10 +1,16 @@
 """Unit tests for the iNaturalist dataset adapter.
 
-All tests exercise the adapter against a REAL on-disk COCO-style
-dataset written by ``fixtures.inat_fixture.write_local_dataset``.
+All tests exercise the adapter against a materialized on-disk COCO-style
+test dataset written by ``fixtures.inat_fixture.write_local_dataset``.
+Note: the image FILES are real files on disk, but their pixel content is
+synthetically generated — this is a software test fixture, NOT the
+iNaturalist research proof-of-concept (which must eventually run against
+actual iNaturalist photographs).
 """
 
 from __future__ import annotations
+
+import json
 
 import pytest
 
@@ -20,7 +26,7 @@ from granunlearn.hierarchy.validate import validate_chain
 
 @pytest.fixture(scope="module")
 def local_dataset(tmp_path_factory):
-    """Materialise a real local dataset once for the module."""
+    """Materialise an on-disk COCO-style test dataset once for the module."""
     root = tmp_path_factory.mktemp("inat_local")
     write_local_dataset(root, images_per_species=12, seed=0)
     return root
@@ -79,15 +85,13 @@ class TestLocalLoading:
         assert len(raw) == 2
 
     def test_min_images_filter_excludes_small(self, tmp_path):
-        root = tmp_path / "mixed"
-        write_local_dataset(root, taxonomy=SMOKE_TAXONOMY[:1], images_per_species=12)
-        # Add a species with only 3 images by writing a second dataset dir
         root2 = tmp_path / "mixed2"
         write_local_dataset(root2, taxonomy=[SMOKE_TAXONOMY[3]], images_per_species=3)
         adapter = INaturalistAdapter()
         cfg = _base_config(root2, min_images_per_species=10)
-        raw = adapter.load_raw(cfg)
-        assert len(raw) == 0
+        # Nothing survives the filter -> hard error (not an empty dataset)
+        with pytest.raises(ValueError, match="No species satisfy"):
+            adapter.load_raw(cfg)
 
     def test_requires_data_root(self):
         adapter = INaturalistAdapter()
@@ -98,6 +102,79 @@ class TestLocalLoading:
         adapter = INaturalistAdapter()
         with pytest.raises(FileNotFoundError):
             adapter.load_raw(_base_config(tmp_path / "nonexistent"))
+
+    def test_official_inat_category_schema_name_only(self, tmp_path):
+        """Official iNaturalist categories carry 'name' but NOT 'species'.
+
+        The adapter must fall back to 'name' for the species identity.
+        """
+        from PIL import Image
+
+        root = tmp_path / "official_schema"
+        (root / "images").mkdir(parents=True)
+        images, annotations = [], []
+        img_id = 0
+        for i in range(10):
+            fname = f"images/{i:03d}.jpg"
+            Image.new("RGB", (8, 8)).save(root / fname)
+            images.append({"id": img_id, "file_name": fname})
+            annotations.append({"id": i, "image_id": img_id, "category_id": 1})
+            img_id += 1
+
+        # Official-style category: name/genus/family — no "species" key
+        meta = {
+            "images": images,
+            "annotations": annotations,
+            "categories": [{
+                "id": 1,
+                "name": "Passer domesticus",
+                "genus": "Passer",
+                "family": "Passeridae",
+            }],
+        }
+        (root / "annotations.json").write_text(json.dumps(meta))
+
+        adapter = INaturalistAdapter()
+        cfg = _base_config(root, min_images_per_species=5, max_species=1,
+                           min_genera=1, min_families=1)
+        raw = adapter.load_raw(cfg)
+        assert len(raw) == 1
+        assert raw[0]["species"] == "Passer domesticus"  # resolved from name
+        assert raw[0]["genus"] == "Passer"
+
+    def test_min_genera_gate(self, tmp_path):
+        """Selection raising on min_genera is a hard gate."""
+        root = tmp_path / "one_genus"
+        # Two species, same genus, same family
+        write_local_dataset(root, taxonomy=SMOKE_TAXONOMY[:2], images_per_species=12)
+        adapter = INaturalistAdapter()
+        cfg = _base_config(root, min_genera=2, min_families=1)
+        with pytest.raises(ValueError, match="min_genera"):
+            adapter.load_raw(cfg)
+
+    def test_min_families_gate(self, tmp_path):
+        """Selection raising on min_families is a hard gate."""
+        root = tmp_path / "one_family"
+        write_local_dataset(root, taxonomy=SMOKE_TAXONOMY[:2], images_per_species=12)
+        adapter = INaturalistAdapter()
+        cfg = _base_config(root, min_genera=1, min_families=3)
+        with pytest.raises(ValueError, match="min_families"):
+            adapter.load_raw(cfg)
+
+    def test_load_report_excluded_species(self, tmp_path):
+        """adapter.last_load_report records excluded species correctly."""
+        root = tmp_path / "mixed_counts"
+        write_local_dataset(root, taxonomy=SMOKE_TAXONOMY[:2], images_per_species=12)
+        adapter = INaturalistAdapter()
+        # Require more images than exist → both species excluded is impossible
+        # to select; instead check reporting with a lower bar:
+        cfg = _base_config(root, min_images_per_species=10)
+        adapter.load_raw(cfg)
+        report = adapter.last_load_report
+        assert report["excluded_species"] == []
+        assert report["eligible_species"] == 2
+        assert report["num_genera"] == 1
+        assert report["num_families"] == 1
 
 
 # =====================================================================
