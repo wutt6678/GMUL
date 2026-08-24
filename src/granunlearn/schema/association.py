@@ -62,6 +62,14 @@ class AssociationRecord(BaseModel):
     @model_validator(mode="after")
     def _check_level_bounds(self) -> "AssociationRecord":
         n = len(self.levels)
+        # Levels must be ordered finest→coarsest: [0, 1, 2, …, n-1]
+        actual = [lv.level for lv in self.levels]
+        expected = list(range(n))
+        if actual != expected:
+            raise ValueError(
+                f"levels must be ordered finest→coarsest with indices "
+                f"{expected}, got {actual}"
+            )
         if self.original_level >= n:
             raise ValueError(
                 f"original_level ({self.original_level}) must be < len(levels) ({n})"

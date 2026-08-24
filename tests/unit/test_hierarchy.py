@@ -292,6 +292,17 @@ class TestValidation:
         codes = [i.code for i in issues]
         assert "LEVEL_SEQUENCE_INVALID" in codes
 
+    def test_out_of_order_levels_rejected(self):
+        """Out-of-order levels [2, 0, 1] are rejected even though they contain 0,1,2."""
+        levels = [
+            HierarchyLevel(level=2, canonical_id="c", value="C", normalized_value="c", parent_id=None),
+            HierarchyLevel(level=0, canonical_id="a", value="A", normalized_value="a", parent_id="b"),
+            HierarchyLevel(level=1, canonical_id="b", value="B", normalized_value="b", parent_id="c"),
+        ]
+        issues = validate_chain(levels)
+        codes = [i.code for i in issues]
+        assert "LEVEL_SEQUENCE_INVALID" in codes
+
     def test_duplicate_normalized_rejected(self):
         levels = [
             HierarchyLevel(level=0, canonical_id="a", value="Hello", normalized_value="hello", parent_id="b"),
@@ -336,6 +347,29 @@ class TestAssociationBounds:
         }
         defaults.update(kwargs)
         return AssociationRecord(**defaults)
+
+    def test_out_of_order_levels_rejected(self):
+        """AssociationRecord rejects levels not ordered finest→coarsest."""
+        with pytest.raises(Exception, match="levels must be ordered"):
+            AssociationRecord(
+                association_id="test",
+                dataset="ds",
+                entity_id="e1",
+                attribute_name="attr",
+                hierarchy_type="semantic",
+                levels=[
+                    HierarchyLevel(level=2, canonical_id="c", value="C",
+                                   normalized_value="c", parent_id=None),
+                    HierarchyLevel(level=0, canonical_id="a", value="A",
+                                   normalized_value="a", parent_id="b"),
+                    HierarchyLevel(level=1, canonical_id="b", value="B",
+                                   normalized_value="b", parent_id="c"),
+                ],
+                original_level=0,
+                target_level=1,
+                split=SplitInfo(split="train"),
+                provenance=ProvenanceInfo(source_dataset="ds"),
+            )
 
     def test_target_level_out_of_bounds(self):
         with pytest.raises(Exception, match="target_level"):

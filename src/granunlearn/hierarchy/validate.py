@@ -57,20 +57,21 @@ def _check_duplicate_ids(levels: list[HierarchyLevel]) -> list[ValidationIssue]:
 # -----------------------------------------------------------------------
 
 def _check_level_sequence(levels: list[HierarchyLevel]) -> list[ValidationIssue]:
-    """Level indices must form the exact sequence [0, 1, 2, …, n-1].
+    """Level indices must form the exact sequence [0, 1, 2, …, n-1]
+    **in the order provided**.
 
-    Sorting before checking is NOT sufficient — the sequence must be
-    contiguous starting from 0 so that numeric comparisons like
-    ``predicted_level < target_level`` are semantically meaningful.
+    Out-of-order input (e.g. [2, 0, 1]) is rejected.  Downstream code
+    (``AssociationRecord.fine_value()``, ``target_value()``) relies on
+    positional indexing, so sorting before validation would mask real errors.
     """
     issues: list[ValidationIssue] = []
-    sorted_levels = sorted(levels, key=lambda l: l.level)
-    actual = [lv.level for lv in sorted_levels]
+    actual = [lv.level for lv in levels]
     expected = list(range(len(levels)))
     if actual != expected:
         issues.append(ValidationIssue(
             "error", "LEVEL_SEQUENCE_INVALID",
-            f"Level indices {actual} do not match expected sequence {expected}",
+            f"Level indices {actual} do not match expected sequence {expected} "
+            f"(levels must be ordered finest→coarsest)",
         ))
     return issues
 
@@ -106,7 +107,11 @@ def _check_cycles(levels: list[HierarchyLevel]) -> list[ValidationIssue]:
 # -----------------------------------------------------------------------
 
 def _check_strict_chain_parents(levels: list[HierarchyLevel]) -> list[ValidationIssue]:
-    """Every level's parent must be the *next coarser* level in the chain.
+    """Every level's parent must be the *next coarser* level in the list.
+
+    Uses the raw input order (not sorted).  ``_check_level_sequence``
+    guarantees the list is already ordered 0, 1, 2, … when this runs
+    in the full validation pipeline.
 
     Specifically:
     * ``levels[i].parent_id == levels[i+1].canonical_id`` for all i < n-1
@@ -115,11 +120,10 @@ def _check_strict_chain_parents(levels: list[HierarchyLevel]) -> list[Validation
     This is the single-chain invariant that simplifies all downstream logic.
     """
     issues: list[ValidationIssue] = []
-    sorted_levels = sorted(levels, key=lambda l: l.level)
 
-    for i in range(len(sorted_levels) - 1):
-        curr = sorted_levels[i]
-        next_coarser = sorted_levels[i + 1]
+    for i in range(len(levels) - 1):
+        curr = levels[i]
+        next_coarser = levels[i + 1]
         if curr.parent_id != next_coarser.canonical_id:
             issues.append(ValidationIssue(
                 "error", "CHAIN_PARENT_MISMATCH",
@@ -128,8 +132,8 @@ def _check_strict_chain_parents(levels: list[HierarchyLevel]) -> list[Validation
                 node_id=curr.canonical_id,
             ))
 
-    # Coarsest node must have no parent
-    coarsest = sorted_levels[-1]
+    # Last node in the list must have no parent
+    coarsest = levels[-1]
     if coarsest.parent_id is not None:
         issues.append(ValidationIssue(
             "error", "CHAIN_ROOT_HAS_PARENT",
