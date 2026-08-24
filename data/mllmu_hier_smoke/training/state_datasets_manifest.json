@@ -1,0 +1,40 @@
+{
+  "states": {
+    "MF": {
+      "path": "/scratch/wutiantong/GMUL/granularity-unlearning/data/mllmu_hier_smoke/training/MF.jsonl",
+      "num_examples": 68,
+      "num_target": 20,
+      "num_retain": 48,
+      "num_image_text": 68,
+      "target_level_distribution": {
+        "0": 20
+      }
+    },
+    "MG": {
+      "path": "/scratch/wutiantong/GMUL/granularity-unlearning/data/mllmu_hier_smoke/training/MG.jsonl",
+      "num_examples": 68,
+      "num_target": 20,
+      "num_retain": 48,
+      "num_image_text": 68,
+      "target_level_distribution": {
+        "1": 13,
+        "2": 3,
+        "3": 3,
+        "4": 1
+      }
+    },
+    "MN": {
+      "path": "/scratch/wutiantong/GMUL/granularity-unlearning/data/mllmu_hier_smoke/training/MN.jsonl",
+      "num_examples": 48,
+      "num_target": 0,
+      "num_retain": 48,
+      "num_image_text": 48,
+      "target_level_distribution": {}
+    }
+  },
+  "training_template": {
+    "prompt": "What is {name}'s {attr}?",
+    "completion": "{value}.",
+    "note": "One controlled template shared by all states; MF/MG/MN differ ONLY in the transformed knowledge dataset.  Evaluation query families (incl. adversarial negation_correction) are never used for training."
+  }
+}

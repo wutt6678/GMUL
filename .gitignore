@@ -40,6 +40,7 @@ data/reports/*
 !data/reports/mllmu_smoke_entities.json
 !data/reports/mllmu_smoke_query_report.json
 !data/reports/mllmu_smoke_target_retain.json
+!data/reports/mllmu_smoke_reference_eval.json
 
 # Outputs
 outputs/*/
@@ -59,3 +60,6 @@ Thumbs.db
 
 # Environment
 .env
+# Iteration 7: checkpoints and generated predictions stay local
+data/checkpoints/
+data/mllmu_hier_smoke/predictions/
