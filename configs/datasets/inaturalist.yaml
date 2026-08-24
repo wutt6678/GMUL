@@ -2,6 +2,14 @@ dataset:
   name: inaturalist
   source: iNaturalist
   version: smoke_v1
+  source_mode: local
+  # Local COCO-style dataset root (annotations.json + images/).
+  # Relative paths resolve against the repository root.
+  # Operator must populate this directory; no automatic download.
+  data_root: data/raw/inaturalist/local_v1
+  annotations_file: annotations.json
+  min_images_per_species: 10
+  target_level: 1   # reduce species → genus
 
 taxonomy:
   chain:

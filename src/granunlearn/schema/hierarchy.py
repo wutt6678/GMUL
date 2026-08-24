@@ -9,7 +9,7 @@ Convention
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -35,12 +35,14 @@ class ImageRef(BaseModel):
     """Reference to an image used in an association."""
 
     image_id: str
-    path: str = Field(description="Relative path from data root")
+    path: str = Field(description="Relative path from repo root")
     source: str = Field(default="original", description="original | synthetic | augmented")
-    split: str = Field(
-        default="train",
-        pattern=r"^(train|val|test)$",
-        description="Which split this image belongs to (for within-entity splitting)",
+    split: Literal["train", "val", "test"] | None = Field(
+        default=None,
+        description=(
+            "Which split this image belongs to.  Required for datasets that "
+            "use within-entity image splitting (e.g. iNaturalist)."
+        ),
     )
 
 

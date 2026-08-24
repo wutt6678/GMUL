@@ -53,8 +53,18 @@ def generate_report(
         target_counter[str(a.target_level)] += 1
 
     split_counter: Counter[str] = Counter()
-    for a in associations:
-        split_counter[a.split.split] += 1
+    image_split_present = any(
+        img.split is not None for a in associations for img in a.images
+    )
+    if image_split_present:
+        # Within-entity image splitting (e.g. iNaturalist): count image splits
+        for a in associations:
+            for img in a.images:
+                if img.split is not None:
+                    split_counter[img.split] += 1
+    else:
+        for a in associations:
+            split_counter[a.split.split] += 1
 
     images_per_entity: dict[str, int] = {}
     for a in associations:
