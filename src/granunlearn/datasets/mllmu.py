@@ -48,6 +48,8 @@ from granunlearn.hierarchy import (
 )
 from granunlearn.hierarchy.location import build_location_hierarchy
 from granunlearn.hierarchy.parsers import (
+    ATTRIBUTE_FAILURE_CLASSIFIERS,
+    POLICY_REASONS,
     parse_date_value,
     parse_height_cm,
     parse_location_components,
@@ -606,16 +608,31 @@ class MLLMUAdapter:
         attributes: list[str] | None = None,
         min_coverage: float = 0.95,
         min_coverage_per_attribute: dict[str, float] | None = None,
+        min_parser_reliability: float = 0.99,
     ) -> list[dict[str, Any]]:
         """Run the REAL attribute parsers over every profile.
 
         Unlike the generic inventory ``parseable_count`` (non-empty scalar
         heuristic), this executes the exact parser that hierarchy building
-        will use.  An attribute is ``enabled`` only when its coverage
-        reaches its threshold (``min_coverage``, optionally overridden per
-        attribute via ``min_coverage_per_attribute`` — overrides must be
-        justified in the config, since failures must then be principled
-        policy exclusions, not parser weakness).
+        will use, and classifies EVERY non-included profile:
+
+        * ``policy_excluded`` — deterministic, principled refusals
+          (``missing``, ``unsupported_currency``, ``ambiguous_numeric_format``,
+          ``insufficient_components``).  These are NOT parser failures.
+        * ``parser_failure`` — present, policy-supported values the parser
+          could not handle.
+
+        Reported metrics:
+        * ``inclusion_coverage`` = included / total (overall usable fraction)
+        * ``parser_success_among_eligible`` = included / (total - policy
+          exclusions) — the parser's true reliability on supported values.
+
+        An attribute is ``enabled`` only when its inclusion coverage reaches
+        its threshold (``min_coverage``, optionally overridden per attribute
+        via ``min_coverage_per_attribute`` — overrides must be justified in
+        the config by principled policy exclusions) AND the parser's
+        reliability on eligible values reaches ``min_parser_reliability``.
+        The breakdown is fully reconstructable from the report.
         """
         attributes = attributes or DEFAULT_DETERMINISTIC_ATTRIBUTES
         per_attr = dict(min_coverage_per_attribute or {})
@@ -623,38 +640,62 @@ class MLLMUAdapter:
         total = len(records)
         for attr in attributes:
             parser = ATTRIBUTE_PARSERS.get(attr)
-            if parser is None:
+            classifier = ATTRIBUTE_FAILURE_CLASSIFIERS.get(attr)
+            if parser is None or classifier is None:
                 raise ValueError(
-                    f"No deterministic parser registered for {attr!r}; "
-                    f"refusing to build hierarchies without a verified parser"
+                    f"No deterministic parser/classifier registered for "
+                    f"{attr!r}; refusing to build hierarchies without a "
+                    f"verified parser"
                 )
-            n_success = 0
-            failures: list[dict[str, str]] = []
+
+            included = 0
+            policy_excluded: Counter[str] = Counter()
+            parser_failures = 0
+            failure_examples: list[dict[str, str]] = []
+
             for rec in records:
                 value = rec.fields.get(attr)
-                parsed = parser(value)
-                usable = parsed is not None
-                if usable and attr in _LOCATION_ATTRS:
-                    # A hierarchy needs >= 2 OBSERVED components
-                    usable = len(parsed) >= 2
-                if usable:
-                    n_success += 1
-                elif len(failures) < 5:
-                    failures.append({
+                reason = classifier(value)
+                if reason is None:
+                    included += 1
+                    continue
+                if reason in POLICY_REASONS:
+                    policy_excluded[reason] += 1
+                else:
+                    parser_failures += 1
+                if len(failure_examples) < 10:
+                    failure_examples.append({
                         "entity_id": rec.entity_id,
                         "value": str(value)[:60],
+                        "reason": reason,
                     })
-            coverage = n_success / total if total else 0.0
+
+            inclusion_coverage = included / total if total else 0.0
+            eligible = total - sum(policy_excluded.values())
+            reliability = included / eligible if eligible else 0.0
             threshold = per_attr.get(attr, min_coverage)
+            enabled = (
+                inclusion_coverage >= threshold
+                and reliability >= min_parser_reliability
+            )
             rows.append({
                 "attribute": attr,
                 "parser": parser.__name__,
                 "total_profiles": total,
-                "parse_success": n_success,
-                "parse_coverage": round(coverage, 4),
+                "included": included,
+                "inclusion_coverage": round(inclusion_coverage, 4),
+                "policy_excluded": dict(sorted(policy_excluded.items())),
+                "num_policy_excluded": int(sum(policy_excluded.values())),
+                "parser_failure": parser_failures,
+                "eligible_profiles": eligible,
+                "parser_success_among_eligible": round(reliability, 4),
                 "min_parse_coverage": threshold,
-                "enabled": coverage >= threshold,
-                "failure_examples": failures,
+                "min_parser_reliability": min_parser_reliability,
+                "enabled": enabled,
+                "failure_examples": failure_examples,
+                # Backward-compatible aliases (deprecated naming):
+                "parse_success": included,
+                "parse_coverage": round(inclusion_coverage, 4),
             })
         return rows
 
@@ -684,12 +725,13 @@ class MLLMUAdapter:
         height_bins = config.get("height_bins")
 
         # Real parse coverage gate (never silent)
+        min_reliability = float(config.get("min_parser_reliability", 0.99))
         coverage_rows = self.build_parse_coverage(
-            raw_records, attributes, min_cov, per_attr_cov)
+            raw_records, attributes, min_cov, per_attr_cov, min_reliability)
         self.last_parse_coverage = coverage_rows
         enabled = [r["attribute"] for r in coverage_rows if r["enabled"]]
         disabled = [
-            (r["attribute"], r["parse_coverage"])
+            (r["attribute"], r["inclusion_coverage"])
             for r in coverage_rows if not r["enabled"]
         ]
         if disabled:
@@ -700,8 +742,10 @@ class MLLMUAdapter:
             )
         if not enabled:
             raise ValueError(
-                f"No attribute reaches min_parse_coverage={min_cov}; "
-                f"coverage: {[(r['attribute'], r['parse_coverage']) for r in coverage_rows]}"
+                f"No attribute passes the parse gates "
+                f"(min_parse_coverage={min_cov}, "
+                f"min_parser_reliability={min_reliability}); "
+                f"coverage: {[(r['attribute'], r['inclusion_coverage'], r['parser_success_among_eligible']) for r in coverage_rows]}"
             )
 
         # Entity-level splits (one image per profile in MLLMU)
@@ -789,7 +833,7 @@ class MLLMUAdapter:
             "num_associations": len(associations),
             "enabled_attributes": enabled,
             "disabled_attributes": [
-                {"attribute": a, "parse_coverage": c} for a, c in disabled
+                {"attribute": a, "inclusion_coverage": c} for a, c in disabled
             ],
             "usable_profiles_per_attribute": dict(usable_profiles),
             "unusable": dict(unusable),

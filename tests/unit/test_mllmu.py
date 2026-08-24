@@ -460,6 +460,40 @@ class TestParseCoverageGate:
         assert rows[0]["enabled"] is True
         assert rows[0]["min_parse_coverage"] == 0.1
 
+    def test_breakdown_separates_policy_from_parser_failure(self, mllmu_parquet):
+        """The report must reconstruct: inclusion coverage vs policy
+        exclusions vs true parser failures (paper-ready semantics)."""
+        adapter = MLLMUAdapter()
+        records = adapter.load_raw(_cfg_parquet(mllmu_parquet))
+        records[0].fields["salary"] = "NA"             # missing (policy)
+        records[1].fields["salary"] = "\u20ac62,000"      # non-USD (policy)
+        records[2].fields["salary"] = "competitive"    # parser failure
+        rows = adapter.build_parse_coverage(records, ["salary"], min_coverage=0.1)
+        r = rows[0]
+        assert r["total_profiles"] == 5
+        assert r["included"] == 2
+        assert r["inclusion_coverage"] == pytest.approx(0.4)
+        assert r["policy_excluded"] == {"missing": 1, "unsupported_currency": 1}
+        assert r["num_policy_excluded"] == 2
+        assert r["parser_failure"] == 1
+        assert r["eligible_profiles"] == 3
+        assert r["parser_success_among_eligible"] == pytest.approx(2 / 3, abs=1e-3)
+        assert r["failure_examples"]
+        assert {e["reason"] for e in r["failure_examples"]} == {
+            "missing", "unsupported_currency", "parser_failure"}
+
+    def test_parser_failures_gate_enabling(self, mllmu_parquet):
+        """Even with high inclusion coverage, an unreliable parser
+        (failures on eligible values) must not be enabled."""
+        adapter = MLLMUAdapter()
+        records = adapter.load_raw(_cfg_parquet(mllmu_parquet))
+        records[0].fields["salary"] = "competitive"  # 1/5 eligible fails
+        rows = adapter.build_parse_coverage(
+            records, ["salary"], min_coverage=0.5, min_parser_reliability=0.99)
+        assert rows[0]["inclusion_coverage"] == pytest.approx(0.8)
+        assert rows[0]["parser_success_among_eligible"] == pytest.approx(0.8)
+        assert rows[0]["enabled"] is False
+
     def test_no_enabled_attribute_raises(self, mllmu_parquet, tmp_path):
         adapter = MLLMUAdapter()
         records = adapter.load_raw(_cfg_parquet(mllmu_parquet))

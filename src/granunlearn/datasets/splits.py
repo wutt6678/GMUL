@@ -3,6 +3,14 @@
 Used by datasets where each entity has a single image (e.g. MLLMU-Bench
 profiles): whole ENTITIES are assigned to train/val/test, unlike the
 within-entity image splitting in ``inaturalist.deterministic_image_splits``.
+
+IMPORTANT SEMANTICS: this is a SOURCE/DATA partition only.  It must NOT
+define the later unlearning evaluation split.  For MF/MG/MN training the
+target entities must actually be LEARNED first, so the evaluation query
+split (Iteration 6+) is a separate dimension: the same target
+entity-attribute association gets training formulations, validation
+paraphrases, and test paraphrases.  Evaluating unlearning on entities MF
+never learned would prove nothing.
 """
 
 from __future__ import annotations

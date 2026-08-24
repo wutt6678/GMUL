@@ -99,9 +99,11 @@ class TestBuildPipeline:
         assert manifest["data_root"] is not None
         assert Path(manifest["data_root"]).exists()
         assert manifest["min_images_per_species"] == 10
-        assert manifest["num_images"] == sum(
+        assert manifest["num_image_references"] == sum(
             len(a.images) for a in built_dataset["associations"]
         )
+        # iNaturalist: every image reference is a distinct physical image
+        assert manifest["num_unique_images"] == manifest["num_image_references"]
 
 
 class TestStandaloneValidation:

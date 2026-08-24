@@ -216,9 +216,11 @@ def validate_dataset_dir(data_dir: str | Path) -> tuple[list[str], list[str]]:
             f"MANIFEST_ENTITY_MISMATCH: manifest={manifest.get('num_entities')}, "
             f"parquet={len(entities)}"
         )
-    if manifest.get("num_images") is not None and manifest["num_images"] != total_images:
+    expected_refs = manifest.get(
+        "num_image_references", manifest.get("num_images"))
+    if expected_refs is not None and expected_refs != total_images:
         errors.append(
-            f"MANIFEST_IMAGE_MISMATCH: manifest={manifest.get('num_images')}, "
+            f"MANIFEST_IMAGE_MISMATCH: manifest={expected_refs}, "
             f"records={total_images}"
         )
 

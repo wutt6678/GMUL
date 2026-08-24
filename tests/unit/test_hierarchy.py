@@ -433,12 +433,29 @@ class TestNumericHierarchy:
 
     def test_height_hierarchy(self):
         h = build_height_hierarchy(177)
+        # Two levels only: exact -> cm range.  No relative "upper_range"
+        # label (not a natural numeric abstraction).
+        assert len(h) == 2
         ids = h.all_ids()
         assert h.get_level(ids[0]).value == "177 cm"
         # 177 should be in [170, 180)
         bin_lv = h.get_level(ids[1])
         assert bin_lv.metadata["bin_lo"] == 170
         assert bin_lv.metadata["bin_hi"] == 180
+
+    def test_salary_hierarchy_two_levels(self):
+        h = build_salary_hierarchy(87_500)
+        assert len(h) == 2
+        values = [h.get_level(i).value for i in h.all_ids()]
+        assert values[0] == "$87,500"
+        assert "range" not in values[1].lower()
+
+    def test_broad_category_opt_in(self):
+        from granunlearn.hierarchy import build_binned_hierarchy
+        h = build_binned_hierarchy(
+            87_500, [[0, 50_000], [50_000, None]], include_broad_category=True)
+        assert len(h) == 3
+        assert h.get_level(h.all_ids()[2]).value in ("lower_range", "upper_range")
 
     def test_bin_value_outside_range_raises(self):
         with pytest.raises(ValueError, match="does not fall in any configured bin"):

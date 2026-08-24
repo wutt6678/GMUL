@@ -17,7 +17,11 @@ dataset:
   seed: 42
   materialize_images: true
   images_dir: data/processed/mllmu_hier/images
-  split_mode: entity_level        # one image per profile -> entity-level splits
+  # one image per profile -> entity-level splits.  NOTE: this is a
+  # SOURCE/DATA partition only; the unlearning evaluation query split
+  # (train/val/test paraphrases over the SAME target associations) is a
+  # separate dimension built in Iteration 6.
+  split_mode: entity_level
   min_parse_coverage: 0.95        # real-parser coverage gate per attribute
   # Justified per-attribute override: salary failures are principled policy
   # exclusions (17 NA/N/A + 21 non-USD currencies that cannot be converted

@@ -87,6 +87,19 @@ class TestHeightParser:
         assert parse_height_cm("30 cm") is None
         assert parse_height_cm("50") is None  # ambiguous and implausible
 
+    def test_feet_only(self):
+        assert parse_height_cm("6 feet") == round(6 * 30.48, 1)
+        assert parse_height_cm("6ft") == round(6 * 30.48, 1)
+
+    def test_redundant_consistent_accepted(self):
+        assert parse_height_cm("6ft 1in (185 cm)") == 185.0
+        assert parse_height_cm("6 feet (183 cm)") == 183.0
+        assert parse_height_cm("5ft 3in (160 cm)") == 160.0
+        assert parse_height_cm('5\'6" (168 cm)') == 168.0
+
+    def test_redundant_inconsistent_rejected(self):
+        assert parse_height_cm('5\'6" (190 cm)') is None
+
     def test_missing_and_garbage(self):
         assert parse_height_cm("NA") is None
         assert parse_height_cm(None) is None
@@ -114,6 +127,35 @@ class TestLocationParser:
         assert parse_location_components("") is None
         assert parse_location_components(None) is None
         assert parse_location_components(",,,") is None
+
+
+class TestFailureClassification:
+    def test_salary_policy_vs_parser(self):
+        from granunlearn.hierarchy.parsers import classify_salary_failure
+        assert classify_salary_failure("$85,000") is None
+        assert classify_salary_failure("NA") == "missing"
+        assert classify_salary_failure("\u20ac62,000") == "unsupported_currency"
+        assert classify_salary_failure("78,000 GBP") == "unsupported_currency"
+        assert classify_salary_failure("competitive") == "parser_failure"
+
+    def test_date_policy_vs_parser(self):
+        from granunlearn.hierarchy.parsers import classify_date_failure
+        assert classify_date_failure("1988-05-14") is None
+        assert classify_date_failure("NA") == "missing"
+        assert classify_date_failure("01/02/1990") == "ambiguous_numeric_format"
+        assert classify_date_failure("someday") == "parser_failure"
+
+    def test_location_policy_vs_parser(self):
+        from granunlearn.hierarchy.parsers import classify_location_failure
+        assert classify_location_failure("Riga, Latvia") is None
+        assert classify_location_failure("NA") == "missing"
+        assert classify_location_failure("Luxembourg") == "insufficient_components"
+
+    def test_height_policy_vs_parser(self):
+        from granunlearn.hierarchy.parsers import classify_height_failure
+        assert classify_height_failure("165 cm") is None
+        assert classify_height_failure("NA") == "missing"
+        assert classify_height_failure("tall") == "parser_failure"
 
 
 class TestMissing:

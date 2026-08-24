@@ -3,92 +3,152 @@
     "attribute": "residence",
     "parser": "parse_location_components",
     "total_profiles": 500,
-    "parse_success": 500,
-    "parse_coverage": 1.0,
+    "included": 500,
+    "inclusion_coverage": 1.0,
+    "policy_excluded": {},
+    "num_policy_excluded": 0,
+    "parser_failure": 0,
+    "eligible_profiles": 500,
+    "parser_success_among_eligible": 1.0,
     "min_parse_coverage": 0.95,
+    "min_parser_reliability": 0.99,
     "enabled": true,
-    "failure_examples": []
+    "failure_examples": [],
+    "parse_success": 500,
+    "parse_coverage": 1.0
   },
   {
     "attribute": "birthplace",
     "parser": "parse_location_components",
     "total_profiles": 500,
-    "parse_success": 500,
-    "parse_coverage": 1.0,
+    "included": 500,
+    "inclusion_coverage": 1.0,
+    "policy_excluded": {},
+    "num_policy_excluded": 0,
+    "parser_failure": 0,
+    "eligible_profiles": 500,
+    "parser_success_among_eligible": 1.0,
     "min_parse_coverage": 0.95,
+    "min_parser_reliability": 0.99,
     "enabled": true,
-    "failure_examples": []
+    "failure_examples": [],
+    "parse_success": 500,
+    "parse_coverage": 1.0
   },
   {
     "attribute": "date_of_birth",
     "parser": "parse_date_value",
     "total_profiles": 500,
-    "parse_success": 500,
-    "parse_coverage": 1.0,
+    "included": 500,
+    "inclusion_coverage": 1.0,
+    "policy_excluded": {},
+    "num_policy_excluded": 0,
+    "parser_failure": 0,
+    "eligible_profiles": 500,
+    "parser_success_among_eligible": 1.0,
     "min_parse_coverage": 0.95,
+    "min_parser_reliability": 0.99,
     "enabled": true,
-    "failure_examples": []
+    "failure_examples": [],
+    "parse_success": 500,
+    "parse_coverage": 1.0
   },
   {
     "attribute": "salary",
     "parser": "parse_salary_value",
     "total_profiles": 500,
-    "parse_success": 462,
-    "parse_coverage": 0.924,
+    "included": 462,
+    "inclusion_coverage": 0.924,
+    "policy_excluded": {
+      "missing": 20,
+      "unsupported_currency": 18
+    },
+    "num_policy_excluded": 38,
+    "parser_failure": 0,
+    "eligible_profiles": 462,
+    "parser_success_among_eligible": 1.0,
     "min_parse_coverage": 0.9,
+    "min_parser_reliability": 0.99,
     "enabled": true,
     "failure_examples": [
       {
         "entity_id": "mllmu_007",
-        "value": "\u20ac62,000"
+        "value": "\u20ac62,000",
+        "reason": "unsupported_currency"
       },
       {
         "entity_id": "mllmu_013",
-        "value": "\u00a375,000"
+        "value": "\u00a375,000",
+        "reason": "unsupported_currency"
       },
       {
         "entity_id": "mllmu_039",
-        "value": "NA"
+        "value": "NA",
+        "reason": "missing"
       },
       {
         "entity_id": "mllmu_053",
-        "value": "\u00a353,000"
+        "value": "\u00a353,000",
+        "reason": "unsupported_currency"
       },
       {
         "entity_id": "mllmu_065",
-        "value": "N/A"
+        "value": "N/A",
+        "reason": "missing"
+      },
+      {
+        "entity_id": "mllmu_067",
+        "value": "NA",
+        "reason": "missing"
+      },
+      {
+        "entity_id": "mllmu_090",
+        "value": "NA",
+        "reason": "missing"
+      },
+      {
+        "entity_id": "mllmu_101",
+        "value": "NA",
+        "reason": "missing"
+      },
+      {
+        "entity_id": "mllmu_146",
+        "value": "NA",
+        "reason": "missing"
+      },
+      {
+        "entity_id": "mllmu_169",
+        "value": "\u20ac55,000",
+        "reason": "unsupported_currency"
       }
-    ]
+    ],
+    "parse_success": 462,
+    "parse_coverage": 0.924
   },
   {
     "attribute": "height",
     "parser": "parse_height_cm",
     "total_profiles": 500,
-    "parse_success": 494,
-    "parse_coverage": 0.988,
+    "included": 499,
+    "inclusion_coverage": 0.998,
+    "policy_excluded": {
+      "missing": 1
+    },
+    "num_policy_excluded": 1,
+    "parser_failure": 0,
+    "eligible_profiles": 499,
+    "parser_success_among_eligible": 1.0,
     "min_parse_coverage": 0.95,
+    "min_parser_reliability": 0.99,
     "enabled": true,
     "failure_examples": [
       {
-        "entity_id": "mllmu_164",
-        "value": "6ft 1in (185 cm)"
-      },
-      {
-        "entity_id": "mllmu_235",
-        "value": "6 feet (183 cm)"
-      },
-      {
-        "entity_id": "mllmu_324",
-        "value": "5ft 3in (160 cm)"
-      },
-      {
-        "entity_id": "mllmu_359",
-        "value": "5'6\" (168 cm)"
-      },
-      {
         "entity_id": "mllmu_444",
-        "value": "NA"
+        "value": "NA",
+        "reason": "missing"
       }
-    ]
+    ],
+    "parse_success": 499,
+    "parse_coverage": 0.998
   }
 ]

@@ -1,5 +1,5 @@
 {
-  "num_associations": 2456,
+  "num_associations": 2461,
   "enabled_attributes": [
     "residence",
     "birthplace",
@@ -13,11 +13,11 @@
     "birthplace": 500,
     "date_of_birth": 500,
     "salary": 462,
-    "height": 494
+    "height": 499
   },
   "unusable": {
     "salary:unparseable": 38,
-    "height:unparseable": 6
+    "height:unparseable": 1
   },
   "num_entities_without_image": 0
 }

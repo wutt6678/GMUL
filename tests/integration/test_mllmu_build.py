@@ -102,7 +102,12 @@ class TestBuildPipeline:
                                 "salary", "height"}
         for r in rows:
             assert r["total_profiles"] == N_PROFILES
-            assert r["parse_success"] == N_PROFILES
+            assert r["included"] == N_PROFILES
+            assert r["inclusion_coverage"] == 1.0
+            # full breakdown reconstructable, no hidden exclusions
+            assert r["policy_excluded"] == {}
+            assert r["parser_failure"] == 0
+            assert r["parser_success_among_eligible"] == 1.0
             assert r["enabled"] is True
 
     def test_usable_profiles_reported(self, built_dataset):
@@ -118,7 +123,9 @@ class TestBuildPipeline:
         assert manifest["split_mode"] == "entity_level"
         assert manifest["num_associations"] == N_PROFILES * 5
         assert manifest["num_entities"] == N_PROFILES
-        assert manifest["num_images"] == N_PROFILES * 5  # one per association
+        # one physical image per profile, referenced by 5 associations
+        assert manifest["num_unique_images"] == N_PROFILES
+        assert manifest["num_image_references"] == N_PROFILES * 5
 
 
 class TestStandaloneValidation:

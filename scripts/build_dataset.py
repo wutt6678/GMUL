@@ -96,9 +96,16 @@ def run_build(
         save_json(adapter.last_parse_coverage, output_dir / "parse_coverage.json")
         for row in adapter.last_parse_coverage:
             log.info(
-                "Parse coverage %-14s %d/%d (%.2f%%) enabled=%s",
-                row["attribute"], row["parse_success"], row["total_profiles"],
-                100.0 * row["parse_coverage"], row["enabled"],
+                "Parse coverage %-14s included %d/%d (%.2f%%) | "
+                "parser success among eligible %d/%d (%.2f%%) | "
+                "policy excluded %s | parser failures %d | enabled=%s",
+                row["attribute"],
+                row["included"], row["total_profiles"],
+                100.0 * row["inclusion_coverage"],
+                row["included"], row["eligible_profiles"],
+                100.0 * row["parser_success_among_eligible"],
+                row["policy_excluded"], row["parser_failure"],
+                row["enabled"],
             )
     assoc_report = getattr(adapter, "last_association_report", None)
     if assoc_report:
@@ -159,7 +166,11 @@ def run_build(
         "seed": seed,
         "num_associations": len(associations),
         "num_entities": len(edf),
-        "num_images": sum(len(a.images) for a in associations),
+        # num_image_references counts association->image references (one
+        # profile photo is referenced by several attribute associations);
+        # num_unique_images counts DISTINCT physical image files.
+        "num_image_references": sum(len(a.images) for a in associations),
+        "num_unique_images": len({img.path for a in associations for img in a.images}),
         "min_images_per_species": ds_cfg.get("min_images_per_species"),
         "excluded_species": excluded,
         "num_genera": load_report.get("num_genera"),

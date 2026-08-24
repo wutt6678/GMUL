@@ -141,8 +141,9 @@ def build_binned_hierarchy(
     value_label: str | None = None,
     prefix: str = "num",
     unit: str = "",
+    include_broad_category: bool = False,
 ) -> ChainHierarchy:
-    """Build a numeric hierarchy: exact value → bin → broad category.
+    """Build a numeric hierarchy: exact value → bin (→ broad category).
 
     Parameters
     ----------
@@ -158,12 +159,18 @@ def build_binned_hierarchy(
         Canonical ID prefix.
     unit : str
         Unit suffix (e.g. "USD", "cm").
+    include_broad_category : bool
+        If True, appends a coarsest "lower_range"/"upper_range" level.
+        DEFAULT FALSE: relative range labels carry no units or numeric
+        bounds and are not natural numeric abstractions, so they must not
+        be used as experimental target values.  A third level is only
+        legitimate when it is itself an explicit numeric super-range.
 
     Returns
     -------
     ChainHierarchy
-        Level 0 = exact value, Level 1 = bin label, Level 2 = broad category
-        (upper half of bins vs lower half).
+        Level 0 = exact value, Level 1 = bin label (and optionally
+        Level 2 = broad category).
 
     Raises
     ------
@@ -197,15 +204,14 @@ def build_binned_hierarchy(
     if unit:
         bin_label += f" {unit}"
 
-    # Broad category: lower half vs upper half
-    mid = len(bins) / 2
-    broad_label = "lower_range" if bin_index < mid else "upper_range"
-
     raw_values = [
         value_label,
         bin_label,
-        broad_label,
     ]
+    if include_broad_category:
+        # Broad category: lower half vs upper half (not a numeric abstraction)
+        mid = len(bins) / 2
+        raw_values.append("lower_range" if bin_index < mid else "upper_range")
 
     levels: list[HierarchyLevel] = []
     for i, val in enumerate(raw_values):
@@ -248,7 +254,7 @@ def build_height_hierarchy(
     bins: Sequence[Sequence[int | float | None]] | None = None,
     prefix: str = "height",
 ) -> ChainHierarchy:
-    """Build a height hierarchy: exact cm → range → broad category."""
+    """Build a height hierarchy: exact cm → cm range (two levels)."""
     return build_binned_hierarchy(
         value=cm,
         bins=bins or _DEFAULT_HEIGHT_BINS,
@@ -277,7 +283,7 @@ def build_salary_hierarchy(
     bins: Sequence[Sequence[int | float | None]] | None = None,
     prefix: str = "salary",
 ) -> ChainHierarchy:
-    """Build a salary hierarchy: exact amount → salary band → broad category."""
+    """Build a salary hierarchy: exact amount → salary band (two levels)."""
     return build_binned_hierarchy(
         value=amount,
         bins=bins or _DEFAULT_SALARY_BINS,
