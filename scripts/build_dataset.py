@@ -165,6 +165,41 @@ def run_build(
     return output_dir, report, associations
 
 
+def run_inventory(config_path: str | Path) -> Path:
+    """Run the attribute-inventory stage (MLLMU, Iteration 3).
+
+    Returns the path to the written inventory CSV.
+    """
+    cfg = resolve_config(config_path)
+    ds_cfg = dict(cfg.get("dataset", {}))
+    dataset_name = ds_cfg.get("name", "unknown")
+
+    adapter = get_adapter(dataset_name)
+    if not hasattr(adapter, "build_inventory"):
+        raise ValueError(f"Dataset {dataset_name!r} does not support --stage inventory")
+
+    log.info("Running attribute inventory for %s", dataset_name)
+    records = adapter.load_raw(ds_cfg)
+    report = getattr(adapter, "last_load_report", {})
+    log.info(
+        "Parsed %d/%d records (%d parse errors, %d celebrity skipped)",
+        report.get("num_parsed", len(records)), report.get("num_total", 0),
+        report.get("num_parse_errors", 0), report.get("num_celebrity_skipped", 0),
+    )
+
+    rows = adapter.build_inventory(records)
+
+    repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
+    out_path = repo_root / "data" / "reports" / f"{dataset_name}_attribute_inventory.csv"
+    adapter.write_inventory_csv(rows, out_path)
+    log.info("Wrote inventory with %d attributes -> %s", len(rows), out_path)
+
+    # Summary of core-eligible attributes
+    core = [r["attribute"] for r in rows if r["include_core"]]
+    log.info("Core-eligible attributes: %s", core)
+    return out_path
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build a GMUL dataset")
     parser.add_argument("--config", required=True, help="Path to dataset YAML config")
@@ -175,8 +210,8 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.stage == "inventory":
-        log.info("Inventory stage not supported for this dataset")
-        sys.exit(0)
+        run_inventory(args.config)
+        return
 
     run_build(args.config, preset=args.preset, output_dir=args.output, seed=args.seed)
 

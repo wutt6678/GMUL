@@ -3,6 +3,10 @@ dataset:
   source: MLLMU-Bench
   subset: fictitious  # no celebrity subset for MVP
   version: smoke10_v1
+  source_mode: local
+  # Absolute path to the local MLLMU-Bench checkout (operator-provided).
+  data_root: /scratch/wutiantong/datasets/MLLMU-Bench/data
+  annotations_file: Full_Set.jsonl
 
 attributes:
   eligible:
@@ -25,12 +29,13 @@ hierarchy:
     - education
 
 query_families:
-  - fine_direct
-  - target_direct
-  - open
-  - ancestor
-  - retain_same_entity
-  - retain_other_entity
+  families:
+    - fine_direct
+    - target_direct
+    - open
+    - ancestor
+    - retain_same_entity
+    - retain_other_entity
   paraphrases_per_query: 3
 
 split:

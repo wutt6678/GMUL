@@ -54,7 +54,10 @@ def get_adapter(dataset_name: str) -> DatasetAdapter:
     if dataset_name in ("inaturalist", "inat"):
         from .inaturalist import INaturalistAdapter
         return INaturalistAdapter()
+    if dataset_name in ("mllmu_hier", "mllmu"):
+        from .mllmu import MLLMUAdapter
+        return MLLMUAdapter()
     raise ValueError(
         f"Unknown dataset {dataset_name!r}. "
-        f"Available: inaturalist"
+        f"Available: inaturalist, mllmu_hier"
     )
