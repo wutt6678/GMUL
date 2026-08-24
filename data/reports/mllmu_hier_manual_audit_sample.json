@@ -20,10 +20,10 @@
       "unsupported_information": false,
       "ambiguous": false,
       "verdict": "accept",
-      "confidence": 1.0,
+      "confidence": 1,
       "reason": "The hierarchy correctly generalizes from 'Clinical Psychologist' to 'Psychologist', then to 'Mental Health Professional', 'Healthcare Professional', and finally 'Professional'. Each step is a valid superset without introducing unsupported attributes like specific degrees, employers, or geography. The terms are standard and unambiguous in this context."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {
@@ -47,10 +47,10 @@
       "unsupported_information": false,
       "ambiguous": false,
       "verdict": "accept",
-      "confidence": 1.0,
+      "confidence": 1,
       "reason": "The hierarchy strictly generalizes from specific role to broad category without adding external attributes. 'Art Conservator' is a type of 'Conservator', which is a type of 'Cultural Heritage Professional', which is a type of 'Professional', which is a type of 'Occupation'. All steps are logically sound and defensible."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {
@@ -72,10 +72,10 @@
       "unsupported_information": false,
       "ambiguous": false,
       "verdict": "accept",
-      "confidence": 1.0,
+      "confidence": 1,
       "reason": "The hierarchy is logically sound: 'Landscape Architect' is a specific type of 'Architect'; 'Architect' is a specific type of 'Professional'; and 'Professional' is a specific type of 'Human'. No extraneous information is added, and no steps are ambiguous."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {
@@ -102,7 +102,7 @@
       "confidence": 0.95,
       "reason": "The hierarchy correctly generalizes from 'Culinary Artist' to 'Chef', then to 'Food Service Worker', 'Service Worker', and finally 'Worker'. Each step is a valid superset without introducing extraneous attributes like prestige or specific geography. The terms are standard and unambiguous in this context."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {
@@ -126,10 +126,10 @@
       "unsupported_information": false,
       "ambiguous": false,
       "verdict": "accept",
-      "confidence": 1.0,
+      "confidence": 1,
       "reason": "The hierarchy strictly generalizes from specific to broad without adding external attributes. 'Wildlife Photographer' is a subset of 'Photographer', which is a subset of 'Visual Artist', then 'Creative Professional', and finally 'Occupation'. No unsupported details or ambiguities are present."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {
@@ -151,10 +151,10 @@
       "unsupported_information": false,
       "ambiguous": false,
       "verdict": "accept",
-      "confidence": 1.0,
+      "confidence": 1,
       "reason": "The hierarchy is logically sound: 'Biomedical Engineer' is a specific type of 'Engineer', which is a type of 'Professional', which is a type of 'Person'. No extra attributes (like degree, location, or prestige) are added, and the terms are clear and unambiguous."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {
@@ -178,10 +178,10 @@
       "unsupported_information": false,
       "ambiguous": false,
       "verdict": "accept",
-      "confidence": 1.0,
+      "confidence": 1,
       "reason": "The hierarchy correctly generalizes from 'Pediatrician' to 'Physician', then 'Doctor', 'Healthcare Professional', and finally 'Professional'. Each step is a valid semantic generalization without introducing extraneous attributes or ambiguity."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {
@@ -208,7 +208,7 @@
       "confidence": 0.95,
       "reason": "The hierarchy correctly generalizes from 'Art Historian' to 'Historian' (field), then to 'Social Scientist' (broader discipline), then to 'Academic' (institutional role), and finally to 'Professional' (broad category). No extraneous information is added, and the steps are logically sound."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {
@@ -235,7 +235,7 @@
       "confidence": 0.95,
       "reason": "The hierarchy correctly generalizes from specific role to broad category without adding unsupported attributes. 'Museum Curator' is a specific type of 'Curator'. 'Curator' is a specific type of 'Museum Professional'. 'Museum Professional' is a specific type of 'Cultural Heritage Professional'. 'Cultural Heritage Professional' is a specific type of 'Professional'. All steps are logically sound and entailment holds."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {
@@ -255,10 +255,10 @@
       "unsupported_information": false,
       "ambiguous": false,
       "verdict": "accept",
-      "confidence": 1.0,
+      "confidence": 1,
       "reason": "The hierarchy is logically sound: 'Learner' is a valid generalization of 'Student' (all students are learners), and 'Person' is a valid generalization of 'Learner' (all learners are persons). No extra attributes like degree level or prestige are introduced, and the terms are not ambiguous in this context."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {
@@ -285,7 +285,7 @@
       "confidence": 0.95,
       "reason": "The first step is invalid because 'Environmental Activist' is not a true generalization of 'Environmentalist'. An 'Environmentalist' is a broad category encompassing anyone concerned with the environment (including scientists, policymakers, and casual supporters), whereas an 'Activist' specifically denotes someone engaged in active campaigning or protest. The proposed hierarchy incorrectly narrows the scope at the first step rather than generalizing it."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "rejected",
     "auditor_notes": ""
   },
   {
@@ -325,10 +325,10 @@
       "unsupported_information": false,
       "ambiguous": false,
       "verdict": "accept",
-      "confidence": 1.0,
+      "confidence": 1,
       "reason": "The hierarchy correctly generalizes from the specific institution to 'University', then to 'Higher education institution', and finally to 'Educational institution'. No extraneous information is added, and all terms are precise."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {
@@ -350,10 +350,10 @@
       "unsupported_information": false,
       "ambiguous": false,
       "verdict": "accept",
-      "confidence": 1.0,
+      "confidence": 1,
       "reason": "The hierarchy correctly generalizes 'Cardiff University' to 'University', then to 'Higher education institution', and finally to 'Educational institution'. Each step is a strict logical generalization without introducing external attributes or ambiguity."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {
@@ -375,10 +375,10 @@
       "unsupported_information": false,
       "ambiguous": false,
       "verdict": "accept",
-      "confidence": 1.0,
+      "confidence": 1,
       "reason": "The hierarchy correctly generalizes from the specific institution to 'University', then to 'Higher Education Institution', and finally to 'Educational Institution'. No external attributes like location or prestige are added, and all terms are unambiguous."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {
@@ -400,10 +400,10 @@
       "unsupported_information": false,
       "ambiguous": false,
       "verdict": "accept",
-      "confidence": 1.0,
+      "confidence": 1,
       "reason": "The hierarchy correctly generalizes from the specific entity to broader categories without adding unsupported attributes or introducing ambiguity. Each step is a valid logical generalization."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {
@@ -425,10 +425,10 @@
       "unsupported_information": false,
       "ambiguous": false,
       "verdict": "accept",
-      "confidence": 1.0,
+      "confidence": 1,
       "reason": "The hierarchy correctly generalizes from the specific institution to 'University', then to 'Higher-education institution', and finally to 'Educational institution'. No extraneous information is added, and all terms are precise and unambiguous."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {
@@ -450,10 +450,10 @@
       "unsupported_information": false,
       "ambiguous": false,
       "verdict": "accept",
-      "confidence": 1.0,
+      "confidence": 1,
       "reason": "The hierarchy correctly generalizes 'University of Canterbury' to 'university', then to 'higher-education institution', and finally to 'educational institution'. Each step is a strict logical generalization without introducing external attributes or ambiguity."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {
@@ -475,10 +475,10 @@
       "unsupported_information": false,
       "ambiguous": false,
       "verdict": "accept",
-      "confidence": 1.0,
+      "confidence": 1,
       "reason": "The hierarchy correctly generalizes 'University of Milan' to 'university', then to 'higher-education institution', and finally to 'educational institution'. Each step is a strict logical generalization without introducing external attributes like prestige or location, and no terms are ambiguous."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {
@@ -500,10 +500,10 @@
       "unsupported_information": false,
       "ambiguous": false,
       "verdict": "accept",
-      "confidence": 1.0,
+      "confidence": 1,
       "reason": "The hierarchy correctly generalizes from a specific school name to its type (State High School), then to the broader category (Secondary School), and finally to the general class (Educational Institution). No external attributes like location, prestige, or specific programs are introduced."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {
@@ -525,10 +525,10 @@
       "unsupported_information": false,
       "ambiguous": false,
       "verdict": "accept",
-      "confidence": 1.0,
+      "confidence": 1,
       "reason": "The hierarchy correctly generalizes from the specific entity to broader categories without adding unsupported attributes or introducing ambiguity. Each step is a logical superset of the previous one."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {
@@ -550,10 +550,10 @@
       "unsupported_information": false,
       "ambiguous": false,
       "verdict": "accept",
-      "confidence": 1.0,
+      "confidence": 1,
       "reason": "The hierarchy correctly generalizes from a specific university to the broader category of universities, then to higher-education institutions, and finally to educational institutions. No extraneous information is added, and all terms are unambiguous."
     },
-    "auditor_verdict": null,
+    "auditor_verdict": "accepted",
     "auditor_notes": ""
   },
   {

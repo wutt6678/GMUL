@@ -67,14 +67,35 @@ qwen:
   audit_sample_rejected: 5
 
 query_families:
+  # Iteration 6 taxonomy (GMUL spec "Query families"):
+  #   F = fine-grained identity (answer = levels[0]), 6 wording variants
+  #   G = granularity-controlled (answer pinned to a coarser level)
+  #   N = negation (target-level answer against a broader distractor)
+  #   M = multimodal (image + text)
   families:
     - fine_direct
-    - target_direct
-    - open
-    - ancestor
-    - retain_same_entity
-    - retain_other_entity
+    - fine_descriptive
+    - fine_paraphrase
+    - fine_contrastive
+    - fine_contextual
+    - fine_verification
+    - granular_fine
+    - granular_intermediate
+    - granular_coarse
+    - negation_direct
+    - negation_correction
+    - negation_disambiguation
+    - multimodal_image_text
+  # One distinct paraphrase template per split -> the SAME target
+  # association appears in train/val/test with different wording.
   paraphrases_per_query: 3
+  min_paraphrase_groups: 3
+  answer_source: association_levels
+  dedupe_against_retain_facts: true
+  split_semantics: train val test over same target associations
+  # Iteration 6 smoke eligibility: entities need >= this many distinct
+  # attributes plus a semantic hierarchy and a materialised image.
+  smoke_min_attribute_types: 6
 
 split:
   train_ratio: 0.6

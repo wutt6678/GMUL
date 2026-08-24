@@ -1,0 +1,106 @@
+{
+  "seed": 42,
+  "num_queries": 2652,
+  "families": [
+    "fine_direct",
+    "fine_descriptive",
+    "fine_paraphrase",
+    "fine_contrastive",
+    "fine_contextual",
+    "fine_verification",
+    "granular_fine",
+    "granular_intermediate",
+    "granular_coarse",
+    "negation_direct",
+    "negation_correction",
+    "negation_disambiguation",
+    "multimodal_image_text"
+  ],
+  "split_semantics": "paraphrase split over the SAME target associations: each (association, family) appears in train/val/test with distinct paraphrase templates; template assignment is deterministic: (hash(seed, association_id, family) + split_index) % 3",
+  "validation": {
+    "passed": true,
+    "num_errors": 0,
+    "checks": [
+      "answer_is_exact_hierarchy_level_string",
+      "one_query_per_split_per_association_family",
+      "distinct_templates_across_splits",
+      "unique_query_ids",
+      "retain_fact_dedupe",
+      "negation_distractor_never_equals_answer"
+    ]
+  },
+  "by_split": {
+    "train": 884,
+    "val": 884,
+    "test": 884
+  },
+  "by_family": {
+    "fine_contextual": {
+      "train": 68,
+      "val": 68,
+      "test": 68
+    },
+    "fine_contrastive": {
+      "train": 68,
+      "val": 68,
+      "test": 68
+    },
+    "fine_descriptive": {
+      "train": 68,
+      "val": 68,
+      "test": 68
+    },
+    "fine_direct": {
+      "train": 68,
+      "val": 68,
+      "test": 68
+    },
+    "fine_paraphrase": {
+      "train": 68,
+      "val": 68,
+      "test": 68
+    },
+    "fine_verification": {
+      "train": 68,
+      "val": 68,
+      "test": 68
+    },
+    "granular_coarse": {
+      "train": 68,
+      "val": 68,
+      "test": 68
+    },
+    "granular_fine": {
+      "train": 68,
+      "val": 68,
+      "test": 68
+    },
+    "granular_intermediate": {
+      "train": 68,
+      "val": 68,
+      "test": 68
+    },
+    "multimodal_image_text": {
+      "train": 68,
+      "val": 68,
+      "test": 68
+    },
+    "negation_correction": {
+      "train": 68,
+      "val": 68,
+      "test": 68
+    },
+    "negation_direct": {
+      "train": 68,
+      "val": 68,
+      "test": 68
+    },
+    "negation_disambiguation": {
+      "train": 68,
+      "val": 68,
+      "test": 68
+    }
+  },
+  "num_associations_with_queries": 68,
+  "num_associations_total": 68
+}

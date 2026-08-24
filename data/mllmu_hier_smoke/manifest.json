@@ -1,0 +1,36 @@
+{
+  "dataset": "mllmu_hier",
+  "version": "smoke_v1",
+  "seed": 42,
+  "num_entities": 10,
+  "num_associations": 68,
+  "num_image_references": 68,
+  "num_unique_images": 10,
+  "split_mode": "entity_level",
+  "attribute_counts": {
+    "birthplace": 10,
+    "date_of_birth": 10,
+    "education": 10,
+    "height": 10,
+    "occupation": 9,
+    "residence": 10,
+    "salary": 9
+  },
+  "hierarchy_type_counts": {
+    "numeric": 29,
+    "semantic": 39
+  },
+  "selected_entities": [
+    "mllmu_107",
+    "mllmu_018",
+    "mllmu_315",
+    "mllmu_188",
+    "mllmu_032",
+    "mllmu_300",
+    "mllmu_118",
+    "mllmu_016",
+    "mllmu_350",
+    "mllmu_337"
+  ],
+  "config_path": "configs/datasets/mllmu.yaml"
+}
