@@ -46,11 +46,19 @@
     }
   },
   "manual_audit_sample_size": 24,
-  "audit_status": "PENDING \u2014 fill auditor_verdict before smoke build",
+  "audit_status": "ADJUDICATED — manual audit complete: 20 accepted, 1 rejected (chain absent from the accepted set), 3 exempt (pipeline-rejected, empty chain). Smoke-build audit gate (check_audit_gate, value-level invariants) PASSED against this sample.",
   "generation_settings": {
     "max_new_tokens": 1024,
     "batch_size": 4,
     "load_mode": "bf16"
   },
-  "num_semantic_associations": 986
+  "num_semantic_associations": 986,
+  "audit_resolution": {
+    "audited_items": 24,
+    "auditor_accepted": 20,
+    "auditor_rejected": 1,
+    "exempt_empty_chain": 3,
+    "auditor_rejections_contradicting_accepted_set": 0,
+    "smoke_build_audit_gate": "PASSED"
+  }
 }

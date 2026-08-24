@@ -1,6 +1,6 @@
 {
   "seed": 42,
-  "num_queries": 984,
+  "num_queries": 927,
   "unlearning_families": [
     "fine_direct",
     "fine_descriptive",
@@ -27,6 +27,22 @@
     },
     "note": "Unlearning families (F/G/N/M) are generated for TARGET associations only; retain_same_entity covers every retained association of the target entities and retain_other_entity one deterministic donor per target. This makes MF/MG/MN vs MU deltas interpretable as entity-attribute SELECTIVE unlearning."
   },
+  "applicable_targets_per_family": {
+    "fine_direct": 20,
+    "fine_descriptive": 20,
+    "fine_paraphrase": 20,
+    "fine_contrastive": 20,
+    "fine_contextual": 20,
+    "fine_verification": 20,
+    "granular_fine": 20,
+    "granular_intermediate": 1,
+    "granular_coarse": 20,
+    "negation_direct": 20,
+    "negation_correction": 20,
+    "negation_disambiguation": 20,
+    "multimodal_image_text": 20
+  },
+  "prompt_self_containment": "Granularity probes use attribute-aware, level-specific wording (LEVEL_QUESTIONS) and never reference hidden benchmark metadata such as 'the target granularity': e.g. 'What year was X born?', 'Which salary range does X fall into?', 'In which country does X live?', or relative wording for semantic hierarchies.",
   "adversarial": {
     "num_queries": 60,
     "families": [
@@ -53,14 +69,15 @@
       "retain_other_entity_donor_is_retained_association",
       "retain_other_entity_donor_from_different_entity",
       "retain_other_entity_explicit_target_association_id",
-      "retain_fact_dedupe",
+      "retain_fact_dedupe_entity_scoped_non_vacuous",
+      "prompts_self_contained_no_hidden_granularity_metadata",
       "negation_distractor_never_equals_answer"
     ]
   },
   "by_split": {
-    "train": 328,
-    "val": 328,
-    "test": 328
+    "train": 309,
+    "val": 309,
+    "test": 309
   },
   "by_family": {
     "fine_contextual": {
@@ -104,9 +121,9 @@
       "test": 20
     },
     "granular_intermediate": {
-      "train": 20,
-      "val": 20,
-      "test": 20
+      "train": 1,
+      "val": 1,
+      "test": 1
     },
     "multimodal_image_text": {
       "train": 20,
@@ -223,6 +240,11 @@
       "donor_association_id": "mllmu_315__height"
     }
   ],
+  "retain_fact_corpus": {
+    "num_entities": 10,
+    "num_facts": 96,
+    "source": "per entity: exact fine values + textual_context of its retained associations"
+  },
   "num_associations_with_queries": 68,
   "num_associations_total": 68
 }

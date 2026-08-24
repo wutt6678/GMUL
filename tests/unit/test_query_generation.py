@@ -13,11 +13,13 @@ import pytest
 from granunlearn.datasets.smoke import select_target_retain
 from granunlearn.evaluation.query_generation import (
     ADVERSARIAL_FAMILIES,
+    BANNED_PROMPT_PHRASES,
     FAMILIES,
     FAMILY_QUERY_TYPE,
     SPLITS,
     UNLEARNING_FAMILIES,
     answer_level_for_family,
+    family_applicable,
     generate_queries,
     select_other_entity_donor,
     template_index,
@@ -112,11 +114,22 @@ class TestAnswerLevels:
         assert answer_level_for_family(a, "granular_intermediate") == 2
         assert answer_level_for_family(a, "granular_coarse") == 2
 
-    def test_two_level_chain_degenerates_consistently(self):
+    def test_two_level_chain_intermediate_not_applicable(self):
+        """A 2-level chain with target=1 has no ancestor above the
+        target; granular_intermediate must not be generated (Blocker-1
+        fix, review #3).  coarse == target stays permitted."""
         a = make_assoc(values=["Munich", "Germany"], target_level=1)
-        assert answer_level_for_family(a, "granular_fine") == 1
-        assert answer_level_for_family(a, "granular_intermediate") == 1
-        assert answer_level_for_family(a, "granular_coarse") == 1
+        assert family_applicable(a, "granular_fine")
+        assert not family_applicable(a, "granular_intermediate")
+        assert family_applicable(a, "granular_coarse")
+
+    def test_intermediate_applicable_when_ancestor_exists(self):
+        a = make_assoc(target_level=1)  # 3 levels
+        assert family_applicable(a, "granular_intermediate")
+        b = make_assoc(values=["a", "b", "c", "d"], target_level=2)
+        assert family_applicable(b, "granular_intermediate")
+        c = make_assoc(values=["a", "b", "c"], target_level=2)
+        assert not family_applicable(c, "granular_intermediate")
 
     def test_unknown_family_raises(self):
         with pytest.raises(ValueError):
@@ -276,18 +289,36 @@ class TestPartitionAwareGeneration:
             a, [a], partition["retain_association_ids"], seed=42)
         assert donor is None
 
-    def test_counts(self):
+    def test_counts_respect_applicability(self):
+        """2-level targets contribute no granular_intermediate queries
+        (Blocker-1 fix): per-family counts legitimately differ."""
         assocs, partition = two_entity_pool()
+        by_id = {a.association_id: a for a in assocs}
+        targets = [by_id[i] for i in partition["target_association_ids"]]
         queries = generate_queries(assocs, partition, seed=42)
-        n_targets = len(partition["target_association_ids"])
-        n_retain = len(partition["retain_association_ids"])
+        expected_unlearning = sum(
+            3 for t in targets for fam in UNLEARNING_FAMILIES
+            if family_applicable(t, fam))
         unlearning = sum(1 for q in queries
                          if q.family in UNLEARNING_FAMILIES)
-        assert unlearning == n_targets * 13 * 3
+        assert unlearning == expected_unlearning
+        # two_entity_pool: occupation targets are 3-level (13 families),
+        # salary targets are 2-level (12 families, no intermediate)
+        assert unlearning < len(targets) * 13 * 3
+        n_retain = len(partition["retain_association_ids"])
+        n_targets = len(targets)
         assert sum(1 for q in queries
                    if q.family == "retain_same_entity") == n_retain * 3
         assert sum(1 for q in queries
                    if q.family == "retain_other_entity") == n_targets * 3
+
+    def test_no_intermediate_queries_for_two_level_targets(self):
+        assocs, partition = two_entity_pool()
+        queries = generate_queries(assocs, partition, seed=42)
+        two_level = {a.association_id for a in assocs
+                     if a.num_levels() == 2}
+        assert not any(q.family == "granular_intermediate"
+                       and q.association_id in two_level for q in queries)
 
     def test_deterministic_regeneration(self):
         assocs, partition = two_entity_pool()
@@ -386,13 +417,34 @@ class TestValidation:
         errors, _ = validate_queries(queries, assocs, partition=partition)
         assert any("retain_same_entity missing" in e for e in errors)
 
-    def test_retain_fact_dedupe(self):
+    def test_retain_fact_dedupe_entity_scoped(self):
         assocs, partition = two_entity_pool()
         queries = generate_queries(assocs, partition, seed=42)
+        by_id = {a.association_id: a for a in assocs}
+        first = next(q for q in queries
+                     if not q.family.startswith("retain_"))
+        entity = by_id[first.association_id].entity_id
         errors, _ = validate_queries(
             queries, assocs, partition=partition,
-            retain_facts={queries[0].expected_answer})
+            retain_facts_by_entity={entity: {first.expected_answer}})
         assert any("retain fact" in e for e in errors)
+
+    def test_retain_fact_other_entity_not_flagged(self):
+        """Facts are entity-conditioned: a corpus attached to a DIFFERENT
+        entity must not flag this entity's probes."""
+        assocs, partition = two_entity_pool()
+        queries = generate_queries(assocs, partition, seed=42)
+        by_id = {a.association_id: a for a in assocs}
+        first = next(q for q in queries
+                     if not q.family.startswith("retain_"))
+        other = next(e for e in {by_id[i].entity_id
+                                 for i in partition["target_association_ids"]}
+                     if e != by_id[first.association_id].entity_id)
+        unique_fact = f"UNIQUE_FACT_{first.query_id}"
+        errors, _ = validate_queries(
+            queries, assocs, partition=partition,
+            retain_facts_by_entity={other: {unique_fact}})
+        assert not any("retain fact" in e for e in errors)
 
     def test_non_retain_donor_detected(self):
         """Sabotage: point a donor probe at a TARGET association."""
@@ -435,3 +487,120 @@ class TestValidation:
                    for q in queries]
         errors, _ = validate_queries(queries, assocs, partition=partition)
         assert any("retain probe must not set" in e for e in errors)
+
+    def test_hidden_granularity_metadata_detected(self):
+        assocs, partition = two_entity_pool()
+        queries = generate_queries(assocs, partition, seed=42)
+        bad = queries[0].model_copy(update={
+            "prompt": queries[0].prompt + " at the target granularity"})
+        queries = [bad] + queries[1:]
+        errors, _ = validate_queries(queries, assocs, partition=partition)
+        assert any("hidden benchmark metadata" in e for e in errors)
+
+
+class TestSelfContainedPrompts:
+    """Research-design fix (review #3): prompts never reference hidden
+    benchmark metadata; granularity is phrased attribute-aware."""
+
+    def test_no_banned_phrases_in_generated_prompts(self):
+        assocs, partition = two_entity_pool()
+        queries = generate_queries(assocs, partition, seed=42)
+        for q in queries:
+            lowered = q.prompt.lower()
+            for phrase in BANNED_PROMPT_PHRASES:
+                assert phrase not in lowered, q.query_id
+
+    def test_date_probes_ask_year_or_decade(self):
+        a = make_assoc("d1", values=["1994-08-16", "1994", "1990s"],
+                       target_level=1, attribute_name="date_of_birth",
+                       hierarchy_type="numeric")
+        partition = select_target_retain([a], seed=42)
+        q1 = generate_queries([a], partition, seed=42,
+                              families=["granular_fine"])
+        assert all("What year" in q.prompt for q in q1)
+        a2 = a.model_copy(update={"target_level": 2})
+        p2 = select_target_retain([a2], seed=42)
+        q2 = generate_queries([a2], p2, seed=42,
+                              families=["granular_fine"])
+        assert all("Which decade" in q.prompt for q in q2)
+
+    def test_salary_height_probes_ask_range(self):
+        s = make_assoc("s1", values=["$120,000", "$100K-$150K"],
+                       target_level=1, attribute_name="salary",
+                       hierarchy_type="numeric")
+        h = make_assoc("h1", values=["177.8 cm", "170-180 cm"],
+                       target_level=1, attribute_name="height",
+                       hierarchy_type="numeric")
+        partition = select_target_retain([s, h], seed=42)
+        qs = generate_queries([s, h], partition, seed=42,
+                              families=["granular_fine"])
+        for q in qs:
+            assert "range" in q.prompt.lower()
+
+    def test_location_coarse_asks_country(self):
+        a = make_assoc("loc1", values=["Sydney, Australia", "Australia"],
+                       target_level=1, attribute_name="residence",
+                       hierarchy_type="numeric")
+        partition = select_target_retain([a], seed=42)
+        qs = generate_queries([a], partition, seed=42,
+                              families=["granular_coarse"])
+        assert all("In which country" in q.prompt for q in qs)
+
+    def test_semantic_uses_relative_wording(self):
+        a = make_assoc("o1", values=["Data Scientist", "Analyst",
+                                      "Professional"], target_level=1)
+        partition = select_target_retain([a], seed=42)
+        qs = generate_queries([a], partition, seed=42,
+                              families=["granular_fine"])
+        assert all("level(s) of abstraction broader" in q.prompt or
+                   "broadest occupational category" in q.prompt
+                   for q in qs)
+
+
+class TestPostUnlearningAcceptable:
+    """Blocker-2 fix (review #3): post-unlearning acceptable follows the
+    REQUESTED level except for fine_* probes (which map to the target)."""
+
+    def test_coarse_probe_keeps_coarsest_acceptable(self):
+        a = make_assoc(
+            "loc1", values=["San Francisco", "California", "USA"],
+            target_level=1, attribute_name="residence",
+            hierarchy_type="numeric")
+        partition = select_target_retain([a], seed=42)
+        qs = generate_queries([a], partition, seed=42,
+                              families=["granular_coarse"])
+        for q in qs:
+            assert q.expected_answer == "USA"
+            assert q.post_unlearning_acceptable_answer_ids == [
+                "l2:usa"]  # NOT California
+            assert q.leakage_forbidden_ids == [
+                "l0:san_francisco"]  # leakage stays target-relative
+
+    def test_intermediate_probe_keeps_its_ancestor_acceptable(self):
+        a = make_assoc(values=["a", "b", "c", "d"], target_level=1)
+        partition = select_target_retain([a], seed=42)
+        qs = generate_queries([a], partition, seed=42,
+                              families=["granular_intermediate"])
+        for q in qs:
+            assert q.expected_level == 2
+            assert q.post_unlearning_acceptable_answer_ids == [
+                a.levels[2].canonical_id]
+
+    def test_fine_probe_maps_to_target(self):
+        a = make_assoc(values=["a", "b", "c"], target_level=1)
+        partition = select_target_retain([a], seed=42)
+        qs = generate_queries([a], partition, seed=42,
+                              families=["fine_direct"])
+        for q in qs:
+            assert q.post_unlearning_acceptable_answer_ids == [
+                a.levels[1].canonical_id]
+
+    def test_negation_and_multimodal_map_to_target(self):
+        a = make_assoc(values=["a", "b", "c"], target_level=1)
+        partition = select_target_retain([a], seed=42)
+        qs = generate_queries([a], partition, seed=42,
+                              families=["negation_direct",
+                                        "multimodal_image_text"])
+        for q in qs:
+            assert q.post_unlearning_acceptable_answer_ids == [
+                a.levels[1].canonical_id]

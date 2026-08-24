@@ -124,9 +124,15 @@ class QueryRecord(BaseModel):
     post_unlearning_acceptable_answer_ids: list[str] = Field(
         default_factory=list,
         description=(
-            "canonical_ids that count as correct AFTER unlearning: the "
-            "target-level id for target-association probes; the retained "
-            "fine id (== acceptable_answer_ids) for retain probes."
+            "canonical_ids that count as correct AFTER unlearning. "
+            "fine_* probes: the target-level id (the fine value must be "
+            "gone; the retained abstraction is correct).  All other "
+            "target probes: the REQUESTED level's id — a probe asking "
+            "for the broadest category stays answered by the broadest "
+            "category after unlearning (requested granularity remains "
+            "valid; leakage is judged separately via "
+            "leakage_forbidden_ids).  Retain probes: the retained fine "
+            "id (== acceptable_answer_ids)."
         ),
     )
 

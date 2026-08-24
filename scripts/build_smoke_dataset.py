@@ -40,6 +40,7 @@ from granunlearn.datasets.smoke import (
 )
 from granunlearn.evaluation.query_generation import (
     UNLEARNING_FAMILIES,
+    family_applicable,
     generate_queries,
     validate_queries,
 )
@@ -194,7 +195,28 @@ def run_smoke_build(
     # ---- 5. Query generation + validation -------------------------------
     families = list(qf_cfg.get("families", UNLEARNING_FAMILIES))
     queries = generate_queries(smoke, partition, seed=seed, families=families)
-    errors, stats = validate_queries(queries, smoke, partition=partition)
+
+    # Retain-fact corpus for a NON-VACUOUS dedupe check (Blocker-3 fix,
+    # review #3): per entity, the exact fine values and textual contexts
+    # of its RETAINED associations.  The check is entity-scoped because
+    # facts are entity-conditioned (two entities may share a value).
+    assoc_by_id = {a.association_id: a for a in smoke}
+    retain_facts_by_entity: dict[str, set[str]] = {}
+    for rid in partition["retain_association_ids"]:
+        a = assoc_by_id[rid]
+        facts = retain_facts_by_entity.setdefault(a.entity_id, set())
+        facts.add(a.levels[0].value)
+        facts.update(a.textual_context)
+
+    targets = [assoc_by_id[i] for i in partition["target_association_ids"]]
+    applicable_targets = {
+        fam: sum(1 for t in targets if family_applicable(t, fam))
+        for fam in families
+    }
+
+    errors, stats = validate_queries(
+        queries, smoke, partition=partition,
+        retain_facts_by_entity=retain_facts_by_entity)
     if errors:
         for e in errors[:20]:
             log.error("QUERY VALIDATION: %s", e)
@@ -230,6 +252,19 @@ def run_smoke_build(
                 "entity-attribute SELECTIVE unlearning."
             ),
         },
+        # Hierarchy-shape applicability (Blocker-1 fix, review #3):
+        # granular_intermediate is only generated when a level strictly
+        # above the target exists, so per-family counts legitimately
+        # differ between families.
+        "applicable_targets_per_family": applicable_targets,
+        "prompt_self_containment": (
+            "Granularity probes use attribute-aware, level-specific "
+            "wording (LEVEL_QUESTIONS) and never reference hidden "
+            "benchmark metadata such as 'the target granularity': e.g. "
+            "'What year was X born?', 'Which salary range does X fall "
+            "into?', 'In which country does X live?', or relative "
+            "wording for semantic hierarchies."
+        ),
         "adversarial": {
             "num_queries": stats["num_adversarial"],
             "families": ["negation_correction"],
@@ -263,7 +298,8 @@ def run_smoke_build(
                 "retain_other_entity_donor_is_retained_association",
                 "retain_other_entity_donor_from_different_entity",
                 "retain_other_entity_explicit_target_association_id",
-                "retain_fact_dedupe",
+                "retain_fact_dedupe_entity_scoped_non_vacuous",
+                "prompts_self_contained_no_hidden_granularity_metadata",
                 "negation_distractor_never_equals_answer",
             ],
         },
@@ -272,6 +308,14 @@ def run_smoke_build(
         "num_retain_same_entity": stats["num_retain_same_entity"],
         "num_retain_other_entity": stats["num_retain_other_entity"],
         "retain_other_entity_donor_pairs": stats["donor_pairs"],
+        "retain_fact_corpus": {
+            "num_entities": len(retain_facts_by_entity),
+            "num_facts": sum(len(v) for v in retain_facts_by_entity.values()),
+            "source": (
+                "per entity: exact fine values + textual_context of its "
+                "retained associations"
+            ),
+        },
         "num_associations_with_queries": stats[
             "num_associations_with_queries"],
         "num_associations_total": len(smoke),

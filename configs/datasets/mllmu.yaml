@@ -24,7 +24,7 @@ dataset:
   split_mode: entity_level
   min_parse_coverage: 0.95        # real-parser coverage gate per attribute
   # Justified per-attribute override: salary failures are principled policy
-  # exclusions (17 NA/N/A + 21 non-USD currencies that cannot be converted
+  # exclusions (20 missing NA/N/A values + 18 unsupported non-USD currencies that cannot be converted
   # deterministically), not parser weakness.  All exclusions are reported
   # in parse_coverage.json.
   min_parse_coverage_per_attribute:

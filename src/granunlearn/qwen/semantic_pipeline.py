@@ -477,7 +477,7 @@ def run_semantic_pipeline(
         },
         "attributes": {},
         "manual_audit_sample_size": len(audit),
-        "audit_status": "PENDING — fill auditor_verdict before smoke build",
+        "audit_status": ("AWAITING_MANUAL_AUDIT — adjudicate auditor_verdict in the committed sample; the smoke-build audit gate (check_audit_gate, value-level invariants) enforces this before any smoke dataset is built"),
     }
     for attr in attribute_values:
         n_total = sum(result.outcomes[attr].values())
