@@ -142,27 +142,62 @@ class TestCanonicalContract:
 
     def test_acceptable_and_forbidden_ids(self):
         """San Francisco -> California -> USA example: target=California
-        => acceptable=[California], forbidden=[San Francisco]."""
+        => baseline acceptable=[San Francisco] for fine probes, but the
+        FILR view says post-unlearning acceptable=[California],
+        leakage forbidden=[San Francisco]."""
         a = make_assoc(
             "loc1", values=["San Francisco", "California", "USA"],
             target_level=1, attribute_name="residence",
             hierarchy_type="numeric")
         partition = select_target_retain([a], seed=42)
         queries = generate_queries([a], partition, seed=42,
-                                   families=["granular_fine"])
+                                   families=["granular_fine", "fine_direct"])
         for q in queries:
-            assert q.expected_level == 1
-            assert q.acceptable_answer_ids == ["l1:california"]
-            assert q.forbidden_descendant_ids == ["l0:san_francisco"]
-            assert q.expected_answer == "California"
+            # FILR view is identical for every probe of this target
+            assert q.unlearning_target_level == 1
+            assert q.leakage_forbidden_ids == ["l0:san_francisco"]
+            assert q.post_unlearning_acceptable_answer_ids == [
+                "l1:california"]
+        gf = [q for q in queries if q.family == "granular_fine"]
+        assert all(q.expected_level == 1 for q in gf)
+        assert all(q.acceptable_answer_ids == ["l1:california"] for q in gf)
+        fd = [q for q in queries if q.family == "fine_direct"]
+        assert all(q.expected_level == 0 for q in fd)
+        assert all(q.acceptable_answer_ids == ["l0:san_francisco"]
+                   for q in fd)
 
-    def test_fine_queries_forbid_nothing_below_zero(self):
-        a = make_assoc("t1")
+    def test_fine_queries_baseline_forbidden_empty_but_leakage_set(self):
+        """fine_* probes ask for level 0 (baseline forbidden empty) but
+        MUST still carry the post-unlearning leakage set — everything
+        finer than the unlearning target (Blocker-1 fix)."""
+        a = make_assoc("t1")  # 3 levels, target_level=1
         partition = select_target_retain([a], seed=42)
         queries = generate_queries([a], partition, seed=42,
                                    families=["fine_direct"])
-        assert all(q.forbidden_descendant_ids == [] for q in queries)
-        assert all(q.expected_level == 0 for q in queries)
+        for q in queries:
+            assert q.expected_level == 0
+            assert q.forbidden_descendant_ids == []
+            assert q.unlearning_target_level == 1
+            assert q.leakage_forbidden_ids == [
+                a.levels[0].canonical_id]
+            assert q.post_unlearning_acceptable_answer_ids == [
+                a.levels[1].canonical_id]
+
+    def test_retain_probes_have_no_unlearning_semantics(self):
+        assocs, partition = two_entity_pool()
+        queries = generate_queries(assocs, partition, seed=42)
+        retains = [q for q in queries if q.family and
+                   q.family.startswith("retain_")]
+        assert retains
+        for q in retains:
+            assert q.unlearning_target_level is None
+            assert q.leakage_forbidden_ids == []
+            assert q.post_unlearning_acceptable_answer_ids == \
+                q.acceptable_answer_ids
+        rse = [q for q in retains if q.family == "retain_same_entity"]
+        assert all(q.target_association_id is None for q in rse)
+        roe = [q for q in retains if q.family == "retain_other_entity"]
+        assert all(q.target_association_id for q in roe)
 
     def test_query_type_route_mapping(self):
         assocs, partition = two_entity_pool()
@@ -205,26 +240,41 @@ class TestPartitionAwareGeneration:
                 assert any(q.association_id == rid and q.split == split
                            for q in rse)
 
-    def test_retain_other_entity_cross_entity(self):
+    def test_retain_other_entity_cross_entity_and_retained(self):
         assocs, partition = two_entity_pool()
         queries = generate_queries(assocs, partition, seed=42)
         roe = [q for q in queries if q.family == "retain_other_entity"]
         assert roe
+        retain_ids = set(partition["retain_association_ids"])
         by_id = {a.association_id: a for a in assocs}
         for q in roe:
-            tail = q.query_id.split("__for_", 1)[-1]
-            target_id = tail.rsplit("__", 1)[0]  # ids may contain '__'
+            assert q.association_id in retain_ids  # HARD invariant
+            assert q.target_association_id
             assert by_id[q.association_id].entity_id != \
-                by_id[target_id].entity_id
+                by_id[q.target_association_id].entity_id
 
-    def test_donor_prefers_same_attribute(self):
-        assocs, _ = two_entity_pool()
+    def test_donor_is_partition_aware(self):
+        """Donor selection must skip associations that are themselves
+        unlearning targets (Blocker-2 fix)."""
+        assocs, partition = two_entity_pool()
+        retain_ids = set(partition["retain_association_ids"])
         target = next(a for a in assocs
                       if a.association_id == "e1__occupation")
-        donor = select_other_entity_donor(target, assocs, seed=42)
+        # e2__occupation is e2's semantic TARGET -> never a donor
+        assert "e2__occupation" not in retain_ids
+        donor = select_other_entity_donor(target, assocs, retain_ids,
+                                          seed=42)
         assert donor is not None
-        assert donor.attribute_name == "occupation"
+        assert donor.association_id in retain_ids
         assert donor.entity_id == "e2"
+
+    def test_donor_none_without_retain_candidates(self):
+        a = make_assoc("solo")
+        # Single association: nothing retained elsewhere -> no donor.
+        partition = select_target_retain([a], seed=42)
+        donor = select_other_entity_donor(
+            a, [a], partition["retain_association_ids"], seed=42)
+        assert donor is None
 
     def test_counts(self):
         assocs, partition = two_entity_pool()
@@ -283,6 +333,12 @@ class TestValidation:
         assert stats["num_queries"] == len(queries)
         assert stats["num_adversarial"] == \
             len(partition["target_association_ids"]) * 3
+        # explicit donor pairs are persisted in the stats
+        assert len(stats["donor_pairs"]) == \
+            len(partition["target_association_ids"])
+        assert all(set(p) == {"target_association_id",
+                              "donor_association_id"}
+                   for p in stats["donor_pairs"])
 
     def test_bad_acceptable_ids_detected(self):
         assocs, partition = two_entity_pool()
@@ -337,3 +393,45 @@ class TestValidation:
             queries, assocs, partition=partition,
             retain_facts={queries[0].expected_answer})
         assert any("retain fact" in e for e in errors)
+
+    def test_non_retain_donor_detected(self):
+        """Sabotage: point a donor probe at a TARGET association."""
+        assocs, partition = two_entity_pool()
+        queries = generate_queries(assocs, partition, seed=42)
+        target_id = partition["target_association_ids"][0]
+        roe = next(q for q in queries if q.family == "retain_other_entity")
+        bad = roe.model_copy(update={"association_id": target_id})
+        queries = [q if q.query_id != roe.query_id else bad
+                   for q in queries]
+        errors, _ = validate_queries(queries, assocs, partition=partition)
+        assert any("NOT a retained association" in e for e in errors)
+
+    def test_missing_target_association_id_detected(self):
+        assocs, partition = two_entity_pool()
+        queries = generate_queries(assocs, partition, seed=42)
+        roe = next(q for q in queries if q.family == "retain_other_entity")
+        bad = roe.model_copy(update={"target_association_id": None})
+        queries = [q if q.query_id != roe.query_id else bad
+                   for q in queries]
+        errors, _ = validate_queries(queries, assocs, partition=partition)
+        assert any("explicit target_association_id" in e for e in errors)
+
+    def test_bad_leakage_set_detected(self):
+        assocs, partition = two_entity_pool()
+        queries = generate_queries(assocs, partition, seed=42)
+        fine = next(q for q in queries if q.family == "fine_direct")
+        bad = fine.model_copy(update={"leakage_forbidden_ids": []})
+        queries = [q if q.query_id != fine.query_id else bad
+                   for q in queries]
+        errors, _ = validate_queries(queries, assocs, partition=partition)
+        assert any("leakage_forbidden_ids" in e for e in errors)
+
+    def test_retain_probe_with_unlearning_semantics_detected(self):
+        assocs, partition = two_entity_pool()
+        queries = generate_queries(assocs, partition, seed=42)
+        rse = next(q for q in queries if q.family == "retain_same_entity")
+        bad = rse.model_copy(update={"unlearning_target_level": 1})
+        queries = [q if q.query_id != rse.query_id else bad
+                   for q in queries]
+        errors, _ = validate_queries(queries, assocs, partition=partition)
+        assert any("retain probe must not set" in e for e in errors)

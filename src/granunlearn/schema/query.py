@@ -89,7 +89,45 @@ class QueryRecord(BaseModel):
     )
     forbidden_descendant_ids: list[str] = Field(
         default_factory=list,
-        description="canonical_ids finer than target — revealing these = leakage",
+        description=(
+            "canonical_ids strictly finer than expected_level — the "
+            "BASELINE over-specification set (what would be 'too fine' "
+            "for what the prompt asks).  Do NOT overload this for "
+            "post-unlearning leakage: use leakage_forbidden_ids."
+        ),
+    )
+
+    # ---- Post-unlearning (FILR) semantics ------------------------------
+    # The probe may ASK for one level (expected_level, baseline task) while
+    # unlearning forbids a DIFFERENT set.  Example: a fine-recovery probe
+    # asks for 'San Francisco' (expected_level=0) but after MG with target
+    # 'California' the fine value is LEAKAGE: acceptable becomes
+    # California and San Francisco is forbidden.  These fields make that
+    # distinction explicit so the scorer needs no family-specific hacks.
+    unlearning_target_level: int | None = Field(
+        default=None,
+        description=(
+            "The association's unlearning target level for probes of "
+            "TARGET associations (None for retain probes, which are never "
+            "unlearned)."
+        ),
+    )
+    leakage_forbidden_ids: list[str] = Field(
+        default_factory=list,
+        description=(
+            "canonical_ids strictly finer than unlearning_target_level — "
+            "revealing ANY of these after unlearning is fine leakage "
+            "(this is exactly what FILR measures).  Empty for retain "
+            "probes."
+        ),
+    )
+    post_unlearning_acceptable_answer_ids: list[str] = Field(
+        default_factory=list,
+        description=(
+            "canonical_ids that count as correct AFTER unlearning: the "
+            "target-level id for target-association probes; the retained "
+            "fine id (== acceptable_answer_ids) for retain probes."
+        ),
     )
 
     split: str = Field(pattern=r"^(train|val|test)$")
@@ -112,5 +150,14 @@ class QueryRecord(BaseModel):
             "which quotes the forgotten fine value).  Such queries are "
             "EXCLUDED from the core FILR average: repeating the quoted "
             "value cannot be attributed to model memory."
+        ),
+    )
+    target_association_id: str | None = Field(
+        default=None,
+        description=(
+            "Explicit FK to the unlearning target a RETAIN probe is "
+            "paired with (retain_other_entity donor probes).  None for "
+            "unlearning-family queries, where association_id IS the "
+            "target.  Persisted so analysis never parses query_id."
         ),
     )

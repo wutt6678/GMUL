@@ -41,13 +41,18 @@
     "checks": [
       "acceptable_answer_ids_equal_expected_level_canonical_id",
       "expected_answer_is_exact_level_value",
-      "forbidden_descendant_ids_are_exactly_finer_levels",
+      "forbidden_descendant_ids_are_exactly_finer_than_expected",
+      "filr_view_consistent_with_unlearning_target_level",
+      "leakage_forbidden_ids_are_exactly_finer_than_target",
+      "retain_probes_have_no_unlearning_semantics",
       "one_query_per_split_per_association_family",
       "distinct_templates_across_splits",
       "unique_query_ids",
       "adversarial_flag_matches_family_policy",
       "retain_same_entity_covers_all_retained_non_target",
+      "retain_other_entity_donor_is_retained_association",
       "retain_other_entity_donor_from_different_entity",
+      "retain_other_entity_explicit_target_association_id",
       "retain_fact_dedupe",
       "negation_distractor_never_equals_answer"
     ]
@@ -136,6 +141,88 @@
   },
   "num_retain_same_entity": 144,
   "num_retain_other_entity": 60,
+  "retain_other_entity_donor_pairs": [
+    {
+      "target_association_id": "mllmu_016__height",
+      "donor_association_id": "mllmu_118__height"
+    },
+    {
+      "target_association_id": "mllmu_016__occupation",
+      "donor_association_id": "mllmu_118__occupation"
+    },
+    {
+      "target_association_id": "mllmu_018__date_of_birth",
+      "donor_association_id": "mllmu_188__date_of_birth"
+    },
+    {
+      "target_association_id": "mllmu_018__education",
+      "donor_association_id": "mllmu_350__education"
+    },
+    {
+      "target_association_id": "mllmu_032__education",
+      "donor_association_id": "mllmu_118__education"
+    },
+    {
+      "target_association_id": "mllmu_032__height",
+      "donor_association_id": "mllmu_018__height"
+    },
+    {
+      "target_association_id": "mllmu_107__birthplace",
+      "donor_association_id": "mllmu_018__birthplace"
+    },
+    {
+      "target_association_id": "mllmu_107__height",
+      "donor_association_id": "mllmu_337__height"
+    },
+    {
+      "target_association_id": "mllmu_118__birthplace",
+      "donor_association_id": "mllmu_016__birthplace"
+    },
+    {
+      "target_association_id": "mllmu_118__salary",
+      "donor_association_id": "mllmu_016__salary"
+    },
+    {
+      "target_association_id": "mllmu_188__education",
+      "donor_association_id": "mllmu_118__education"
+    },
+    {
+      "target_association_id": "mllmu_188__height",
+      "donor_association_id": "mllmu_118__height"
+    },
+    {
+      "target_association_id": "mllmu_300__height",
+      "donor_association_id": "mllmu_118__height"
+    },
+    {
+      "target_association_id": "mllmu_300__residence",
+      "donor_association_id": "mllmu_032__residence"
+    },
+    {
+      "target_association_id": "mllmu_315__date_of_birth",
+      "donor_association_id": "mllmu_188__date_of_birth"
+    },
+    {
+      "target_association_id": "mllmu_315__education",
+      "donor_association_id": "mllmu_337__education"
+    },
+    {
+      "target_association_id": "mllmu_337__residence",
+      "donor_association_id": "mllmu_016__residence"
+    },
+    {
+      "target_association_id": "mllmu_337__salary",
+      "donor_association_id": "mllmu_016__salary"
+    },
+    {
+      "target_association_id": "mllmu_350__birthplace",
+      "donor_association_id": "mllmu_337__birthplace"
+    },
+    {
+      "target_association_id": "mllmu_350__height",
+      "donor_association_id": "mllmu_315__height"
+    }
+  ],
   "num_associations_with_queries": 68,
   "num_associations_total": 68
 }

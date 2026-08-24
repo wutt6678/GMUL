@@ -2,13 +2,25 @@
 
 Emits the CANONICAL ``granunlearn.schema.QueryRecord`` — the single query
 data contract shared with training and with ``PredictionRecord`` scoring.
-Every query carries hierarchy-relative correctness ids:
+Every query carries TWO correctness views (Blocker-1 fix, Iteration 6
+review #2):
 
-* ``expected_level``            = hierarchy index of the correct answer
-* ``acceptable_answer_ids``     = [canonical_id of that level]
-* ``forbidden_descendant_ids``  = canonical_ids of all levels STRICTLY
-  FINER than the expected one (revealing any of them = leakage; this is
-  exactly what FILR consumes)
+BASELINE (what the probe asks; evaluates MF):
+  expected_level, acceptable_answer_ids, forbidden_descendant_ids
+  (forbidden = strictly finer than expected_level)
+
+POST-UNLEARNING (what FILR measures after MF/MG/MN):
+  unlearning_target_level        = association.target_level for probes of
+                                   TARGET associations (None for retain)
+  leakage_forbidden_ids          = ALL levels strictly finer than the
+                                   unlearning target — revealing any of
+                                   them is fine leakage.  For fine_*
+                                   probes expected_level=0 but the
+                                   leakage set is still everything finer
+                                   than the target.
+  post_unlearning_acceptable_answer_ids = target-level id for target
+                                   probes; retained fine id for retain
+                                   probes.
 
 Query roles
 -----------
@@ -218,10 +230,16 @@ def _make_query(
     idx: int,
     seed: int,
     query_id: str,
-    entity_name: str | None = None,
+    is_target_probe: bool,
+    target_association_id: str | None = None,
 ) -> QueryRecord:
-    """Build one canonical QueryRecord for (assoc, family, split)."""
-    name = entity_name or assoc.entity_name or assoc.entity_id
+    """Build one canonical QueryRecord for (assoc, family, split).
+
+    ``is_target_probe`` distinguishes probes of UNLEARNING targets (which
+    carry the post-unlearning FILR fields) from retain probes (which must
+    remain exactly as before unlearning).
+    """
+    name = assoc.entity_name or assoc.entity_id
     attr = _display_attr(assoc.attribute_name)
     answer_idx = answer_level_for_family(assoc, family)
     answer = assoc.levels[answer_idx].value
@@ -235,6 +253,23 @@ def _make_query(
     text = FAMILY_TEMPLATES[family][idx].format(
         name=name, attr=attr, answer=answer, distractor=distractor)
 
+    acceptable = [assoc.levels[answer_idx].canonical_id]
+    if is_target_probe:
+        # FILR view: fine probes ask for level 0 but post-unlearning the
+        # target level is acceptable and EVERYTHING finer than it is
+        # forbidden leakage.
+        t = assoc.target_level
+        unlearning_target_level: int | None = t
+        leakage_forbidden = [lv.canonical_id for lv in assoc.levels
+                             if lv.level < t]
+        post_acceptable = [assoc.levels[t].canonical_id]
+    else:
+        # Retain probes: nothing is unlearned here; the fine value must
+        # survive unlearning unchanged.
+        unlearning_target_level = None
+        leakage_forbidden = []
+        post_acceptable = list(acceptable)
+
     is_multimodal = family == "multimodal_image_text"
     return QueryRecord(
         query_id=query_id,
@@ -245,31 +280,45 @@ def _make_query(
         image_ids=[assoc.images[0].image_id] if is_multimodal and assoc.images else [],
         prompt=text,
         expected_level=answer_idx,
-        acceptable_answer_ids=[assoc.levels[answer_idx].canonical_id],
+        acceptable_answer_ids=acceptable,
         forbidden_descendant_ids=[
             lv.canonical_id for lv in assoc.levels if lv.level < answer_idx
         ],
+        unlearning_target_level=unlearning_target_level,
+        leakage_forbidden_ids=leakage_forbidden,
+        post_unlearning_acceptable_answer_ids=post_acceptable,
         split=split,
         paraphrase_group_id=f"{assoc.association_id}:{family}",
         template_id=f"{family}:{idx}",
         expected_answer=answer,
         adversarial=family in ADVERSARIAL_FAMILIES,
+        target_association_id=target_association_id,
     )
 
 
 def select_other_entity_donor(
     target: AssociationRecord,
     associations: list[AssociationRecord],
+    retain_association_ids: list[str] | set[str],
     seed: int = 42,
 ) -> AssociationRecord | None:
-    """Deterministic donor for retain_other_entity: a different entity's
-    association, preferring the same attribute."""
+    """Deterministic donor for retain_other_entity.
+
+    PARTITION-AWARE (Blocker-2 fix, Iteration 6 review #2): the donor
+    MUST be a RETAINED association — otherwise an intended unlearning
+    target would be scored as collateral retention damage.  Prefers the
+    same attribute, from a different entity, ranked by a deterministic
+    hash.
+    """
+    retain_ids = set(retain_association_ids)
     candidates = [a for a in associations
-                  if a.entity_id != target.entity_id
+                  if a.association_id in retain_ids
+                  and a.entity_id != target.entity_id
                   and a.attribute_name == target.attribute_name]
     if not candidates:
         candidates = [a for a in associations
-                      if a.entity_id != target.entity_id]
+                      if a.association_id in retain_ids
+                      and a.entity_id != target.entity_id]
     if not candidates:
         return None
     return min(
@@ -313,7 +362,8 @@ def generate_queries(
                 idx = template_index(seed, assoc.association_id, fam, split)
                 queries.append(_make_query(
                     assoc, fam, split, idx, seed,
-                    query_id=f"{assoc.association_id}__{fam}__{split}"))
+                    query_id=f"{assoc.association_id}__{fam}__{split}",
+                    is_target_probe=True))
 
     # ---- retain_same_entity: per entity, each retained association ----
     per_entity = partition.get("per_entity", {})
@@ -327,11 +377,14 @@ def generate_queries(
                                      "retain_same_entity", split)
                 queries.append(_make_query(
                     assoc, "retain_same_entity", split, idx, seed,
-                    query_id=f"{retain_id}__retain_same_entity__{split}"))
+                    query_id=f"{retain_id}__retain_same_entity__{split}",
+                    is_target_probe=False))
 
-    # ---- retain_other_entity: one donor association per target ----
+    # ---- retain_other_entity: one RETAINED donor association per target ----
     for target in targets:
-        donor = select_other_entity_donor(target, associations, seed)
+        donor = select_other_entity_donor(
+            target, associations,
+            partition["retain_association_ids"], seed)
         if donor is None:
             continue
         for split in SPLITS:
@@ -340,7 +393,9 @@ def generate_queries(
             queries.append(_make_query(
                 donor, "retain_other_entity", split, idx, seed,
                 query_id=(f"{donor.association_id}__retain_other_entity"
-                          f"__for_{target.association_id}__{split}")))
+                          f"__for_{target.association_id}__{split}"),
+                is_target_probe=False,
+                target_association_id=target.association_id))
     return queries
 
 
@@ -354,16 +409,22 @@ def validate_queries(
 
     Checks:
     * unique query ids; association ids resolve;
-    * ``acceptable_answer_ids`` == [canonical_id of expected_level] and
-      ``expected_answer`` is that level's exact value;
-    * ``forbidden_descendant_ids`` == exactly the levels finer than
+    * BASELINE view: ``acceptable_answer_ids`` == [canonical_id of
+      expected_level], ``expected_answer`` is that level's exact value,
+      ``forbidden_descendant_ids`` == exactly the levels finer than
       expected;
+    * FILR view: target probes carry ``unlearning_target_level`` ==
+      assoc.target_level, ``leakage_forbidden_ids`` == exactly the levels
+      strictly finer than the unlearning target, and
+      ``post_unlearning_acceptable_answer_ids`` == [target-level id];
+      retain probes carry None / [] / baseline acceptable;
     * per (association, family): one query per split, distinct templates;
     * adversarial flag is set exactly for ADVERSARIAL_FAMILIES;
     * retain_same_entity queries ask ONLY non-target associations and
       cover every retained association of every partition entity;
-    * retain_other_entity donors belong to a different entity than the
-      target they serve;
+    * retain_other_entity donors are RETAINED associations (hard
+      invariant) from a different entity than the target they serve,
+      resolved via the explicit ``target_association_id`` field;
     * no query text or answer duplicates a known retain fact.
     """
     errors: list[str] = []
@@ -403,6 +464,43 @@ def validate_queries(
             errors.append(f"{q.query_id}: adversarial flag missing")
         if q.family not in ADVERSARIAL_FAMILIES and q.adversarial:
             errors.append(f"{q.query_id}: unexpected adversarial flag")
+
+        # ---- FILR (post-unlearning) view ----
+        if (q.family or "").startswith("retain_"):
+            if q.unlearning_target_level is not None:
+                errors.append(
+                    f"{q.query_id}: retain probe must not set "
+                    f"unlearning_target_level")
+            if q.leakage_forbidden_ids:
+                errors.append(
+                    f"{q.query_id}: retain probe must have empty "
+                    f"leakage_forbidden_ids")
+            if q.post_unlearning_acceptable_answer_ids != \
+                    q.acceptable_answer_ids:
+                errors.append(
+                    f"{q.query_id}: retain probe post-unlearning "
+                    f"acceptable must equal baseline acceptable")
+        else:
+            t = assoc.target_level
+            if q.unlearning_target_level != t:
+                errors.append(
+                    f"{q.query_id}: unlearning_target_level "
+                    f"{q.unlearning_target_level} != assoc.target_level {t}")
+            expected_leakage = [lv.canonical_id for lv in assoc.levels
+                                if lv.level < t]
+            if q.leakage_forbidden_ids != expected_leakage:
+                errors.append(
+                    f"{q.query_id}: leakage_forbidden_ids "
+                    f"{q.leakage_forbidden_ids} != {expected_leakage}")
+            if q.post_unlearning_acceptable_answer_ids != \
+                    [assoc.levels[t].canonical_id]:
+                errors.append(
+                    f"{q.query_id}: post_unlearning_acceptable != "
+                    f"[{assoc.levels[t].canonical_id!r}]")
+            if q.target_association_id is not None:
+                errors.append(
+                    f"{q.query_id}: target probe must not set "
+                    f"target_association_id")
         grouped.setdefault((q.association_id, q.family or ""), []).append(q)
 
     for (aid, fam), qs in sorted(grouped.items()):
@@ -437,14 +535,23 @@ def validate_queries(
                 errors.append(
                     f"{q.query_id}: retain query asks a TARGET association")
         other = [q for q in queries if q.family == "retain_other_entity"]
+        retain_ids = set(partition["retain_association_ids"])
         per_target: dict[str, list[QueryRecord]] = {}
         for q in other:
             donor = by_assoc.get(q.association_id)
-            # query_id = {donor_id}__retain_other_entity__for_{target_id}__{split};
-            # association ids may themselves contain '__', so strip only
-            # the trailing split segment.
-            tail = q.query_id.split("__for_", 1)[-1]
-            target_id = tail.rsplit("__", 1)[0]
+            # Hard invariant (Blocker-2 fix): the donor MUST be a retained
+            # association, else intended forgetting would be scored as
+            # collateral retention damage.
+            if q.association_id not in retain_ids:
+                errors.append(
+                    f"{q.query_id}: donor {q.association_id!r} is NOT a "
+                    f"retained association")
+            target_id = q.target_association_id
+            if not target_id:
+                errors.append(
+                    f"{q.query_id}: retain_other_entity requires explicit "
+                    f"target_association_id")
+                continue
             target_assoc = by_assoc.get(target_id)
             if target_assoc is None:
                 errors.append(
@@ -487,6 +594,14 @@ def validate_queries(
             1 for q in queries if q.family == "retain_same_entity"),
         "num_retain_other_entity": sum(
             1 for q in queries if q.family == "retain_other_entity"),
+        "donor_pairs": [
+            {"target_association_id": t, "donor_association_id": d}
+            for t, d in sorted(
+                {(q.target_association_id, q.association_id)
+                 for q in queries
+                 if q.family == "retain_other_entity"
+                 and q.target_association_id})
+        ],
         "num_associations_with_queries": len({q.association_id for q in queries}),
         "num_errors": len(errors),
     }
