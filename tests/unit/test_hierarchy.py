@@ -303,6 +303,17 @@ class TestValidation:
         codes = [i.code for i in issues]
         assert "LEVEL_SEQUENCE_INVALID" in codes
 
+    def test_chain_hierarchy_preserves_invalid_order_for_validation(self):
+        """ChainHierarchy does NOT silently sort; validate() sees the raw order."""
+        levels = [
+            HierarchyLevel(level=2, canonical_id="c", value="C", normalized_value="c", parent_id=None),
+            HierarchyLevel(level=0, canonical_id="a", value="A", normalized_value="a", parent_id="b"),
+            HierarchyLevel(level=1, canonical_id="b", value="B", normalized_value="b", parent_id="c"),
+        ]
+        h = ChainHierarchy(levels)
+        codes = [x.code for x in h.validate()]
+        assert "LEVEL_SEQUENCE_INVALID" in codes
+
     def test_duplicate_normalized_rejected(self):
         levels = [
             HierarchyLevel(level=0, canonical_id="a", value="Hello", normalized_value="hello", parent_id="b"),

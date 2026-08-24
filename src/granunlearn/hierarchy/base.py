@@ -66,14 +66,16 @@ class ChainHierarchy:
     Parameters
     ----------
     levels : Sequence[HierarchyLevel]
-        Nodes forming the chain.  Will be sorted by ``level`` on construction.
+        Nodes forming the chain.  Must already be ordered finest→coarsest
+        (level 0, 1, 2, …).  Out-of-order input is **not** silently
+        corrected — call ``validate()`` to detect malformed ordering.
     """
 
     def __init__(self, levels: Sequence[HierarchyLevel]) -> None:
         if not levels:
             raise ValueError("ChainHierarchy requires at least one level")
 
-        self._levels: list[HierarchyLevel] = sorted(levels, key=lambda l: l.level)
+        self._levels: list[HierarchyLevel] = list(levels)
         self._by_id: dict[str, HierarchyLevel] = {}
         for lv in self._levels:
             self._by_id[lv.canonical_id] = lv
