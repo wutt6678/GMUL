@@ -1,0 +1,78 @@
+{
+  "experiment_id": "mllmu_smoke_iter7",
+  "dataset": "mllmu_hier_smoke (10 entities, 68 associations)",
+  "dataset_hashes_sha256": {
+    "data/mllmu_hier_smoke/associations.parquet": "94c62f347e832ef6d0f63503c3664fb59d174f84a7b5f8833c07dc390cf24d76",
+    "data/mllmu_hier_smoke/queries.parquet": "0e9ac4bc35595a8954ca26ca236f2dcaf993eb56052d2dc3469c477cda8a1d8d",
+    "data/mllmu_hier_smoke/manifest.json": "3cf490536814df73ce6e0a5685866868f0ef7284281090887f6523612d110c0e",
+    "data/mllmu_hier_smoke/training/MF.jsonl": "573cff7a564c766150ef2e1d2f58b5bb77474bf25cd9bdbd7ed3f55faa36756e",
+    "data/mllmu_hier_smoke/training/MG.jsonl": "a3791eec6537482d22936ec11f221f13f73b92b8df0d2933e0c065db4aa6ee57",
+    "data/mllmu_hier_smoke/training/MN.jsonl": "dc790e4daa104b52ce56449f3defe87748187e8876f178c3e771f0b5efc34036",
+    "data/mllmu_hier_smoke/training/state_datasets_manifest.json": "69f9df7e18aa54d74d7751d38537ba419143084f51632d7960c7e4e07c950c66",
+    "data/reports/mllmu_smoke_target_retain.json": "e4dd8e3a78a01056800d14999c44f6dcb9e0bf29579c7c3171ced36a70b5bb1b"
+  },
+  "base_model": {
+    "model_id": "Qwen/Qwen3.5-9B",
+    "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+    "cache_path": "/scratch/wutiantong/.cache/huggingface/hub/models--Qwen--Qwen3.5-9B"
+  },
+  "recipe": {
+    "model_id": "Qwen/Qwen3.5-9B",
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "lora_target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0,
+    "num_epochs": 10,
+    "per_device_batch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "max_length": 1536,
+    "max_image_pixels": 147456,
+    "seed": 42,
+    "bf16": true,
+    "gradient_checkpointing": true
+  },
+  "checkpoints": {
+    "MF": {
+      "adapter_sha256": "f87cc0421474f494a413657dd50eba7e4fdc7ad52a8e123cc1c27b00d876c1bc",
+      "training_summary_sha256": "04822bbf5894e2a9b07034d9d7c7d63c8167a4fe9f97ee1670a94981d9287ce2",
+      "num_optimizer_steps": 90,
+      "final_loss": 0.0187
+    },
+    "MG": {
+      "adapter_sha256": "7a976d1cde1b1d0fe234006fcca9b85b8ea04442c73f85a728335e759d4e6acb",
+      "training_summary_sha256": "4da1a8d215cf902db2d5b8765f8d5cc3f38765be211f927c92b25380a67c58d0",
+      "num_optimizer_steps": 90,
+      "final_loss": 0.0411
+    },
+    "MN": {
+      "adapter_sha256": "d5c89436d39c6e204f33908282dc049aef5d3b261c5231fefe64244c6c10514c",
+      "training_summary_sha256": "0b8c10f8ab8293d54632dc1daf113d8d33a6a94eb8c0c3e031251a52688b3477",
+      "num_optimizer_steps": 60,
+      "final_loss": 0.0302
+    }
+  },
+  "environment": {
+    "python": "3.10.20",
+    "torch": "2.8.0+cu128",
+    "transformers": "5.14.1",
+    "peft": "0.20.0",
+    "cuda_runtime": "12.8",
+    "gpu": "NVIDIA RTX 6000 Ada Generation",
+    "platform": "Linux-6.17.0-1011-oracle-x86_64-with-glibc2.39"
+  },
+  "notes": [
+    "MF/MG/MN share the recipe verbatim; only D_F/D_G/D_N differ.",
+    "Optimizer steps differ only via dataset size (68/68/48 examples; accum-normalized trailing groups).",
+    "Evaluation metrics are reported pooled AND per paraphrase split; adversarial probes excluded from core slices."
+  ]
+}

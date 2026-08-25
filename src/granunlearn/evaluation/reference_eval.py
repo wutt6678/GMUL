@@ -39,6 +39,17 @@ def load_queries_parquet(path: str | Path) -> list[QueryRecord]:
             for r in df.to_dict(orient="records")]
 
 
+def load_predictions_parquet(path: str | Path) -> list[PredictionRecord]:
+    """NaN-safe parquet -> canonical PredictionRecord loader (rescore
+    path: regenerate metrics from persisted raw outputs without
+    re-running the model)."""
+    import pandas as pd
+    df = pd.read_parquet(path)
+    df = df.astype(object).where(pd.notnull(df), None)
+    return [PredictionRecord.model_validate(r)
+            for r in df.to_dict(orient="records")]
+
+
 def load_associations_parquet(path: str | Path) -> list[AssociationRecord]:
     import pandas as pd
     df = pd.read_parquet(path)
@@ -193,10 +204,19 @@ def evaluate_state(
                     checkpoint_id=checkpoint_id)
         for q, raw in zip(queries, raw_outputs)
     ]
-    metrics = compute_metrics(predictions, queries)
-    metrics["num_queries"] = len(queries)
-    metrics["generation_seconds"] = round(time.time() - t0, 1)
-    return predictions, metrics
+    return predictions, {"generation_seconds": round(time.time() - t0, 1)}
+
+
+def metrics_for_predictions(
+    predictions: list[PredictionRecord],
+    queries: list[QueryRecord],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Pooled metrics + per-split metrics (test-paraphrase SEPARATE from
+    pooled train/val/test, Iteration 7 review)."""
+    pooled = compute_metrics(predictions, queries)
+    by_split = {s: compute_metrics(predictions, queries, split=s)
+                for s in ("train", "val", "test")}
+    return pooled, by_split
 
 
 def run_reference_evaluation(
@@ -208,8 +228,13 @@ def run_reference_evaluation(
     states: list[str] | None = None,
     predictions_dir: str | Path | None = None,
     batch_size: int = 2,
+    rescore: bool = False,
 ) -> dict[str, Any]:
-    """Evaluate BASE + MF/MG/MN and apply the separation gate."""
+    """Evaluate BASE + MF/MG/MN and apply the separation gate.
+
+    With ``rescore=True`` the persisted prediction parquets are re-scored
+    (no model loading) — used to regenerate metrics after scorer changes.
+    """
     smoke_dir = Path(smoke_dir)
     checkpoints_dir = Path(checkpoints_dir)
     queries = load_queries_parquet(smoke_dir / "queries.parquet")
@@ -223,19 +248,34 @@ def run_reference_evaluation(
         predictions_dir.mkdir(parents=True, exist_ok=True)
 
     metrics_by_state: dict[str, Any] = {}
+    metrics_by_split: dict[str, Any] = {
+        s: {} for s in ("train", "val", "test")}
     for state in states:
-        adapter_dir = None
-        if state != "BASE":
-            adapter_dir = checkpoints_dir / state / "adapters"
-            if not adapter_dir.exists():
-                raise FileNotFoundError(
-                    f"Missing adapter for state {state}: {adapter_dir}")
-        log.info("Evaluating state %s...", state)
-        preds, metrics = evaluate_state(
-            state, queries, associations, repo_root, model_id, device,
-            adapter_dir, batch_size=batch_size)
-        metrics_by_state[state] = metrics
-        if predictions_dir:
+        if rescore:
+            if predictions_dir is None:
+                raise ValueError("rescore requires predictions_dir")
+            ppath = predictions_dir / f"predictions_{state}.parquet"
+            log.info("Rescoring %s from %s...", state, ppath)
+            preds = load_predictions_parquet(ppath)
+            gen_info: dict[str, Any] = {"rescored": True}
+        else:
+            adapter_dir = None
+            if state != "BASE":
+                adapter_dir = checkpoints_dir / state / "adapters"
+                if not adapter_dir.exists():
+                    raise FileNotFoundError(
+                        f"Missing adapter for state {state}: {adapter_dir}")
+            log.info("Evaluating state %s...", state)
+            preds, gen_info = evaluate_state(
+                state, queries, associations, repo_root, model_id, device,
+                adapter_dir, batch_size=batch_size)
+
+        pooled, per_split = metrics_for_predictions(preds, queries)
+        pooled.update(gen_info)
+        metrics_by_state[state] = pooled
+        for s, m in per_split.items():
+            metrics_by_split[s][state] = m
+        if predictions_dir and not rescore:
             import pandas as pd
             pd.DataFrame(
                 [json.loads(p.model_dump_json()) for p in preds]
@@ -245,25 +285,37 @@ def run_reference_evaluation(
         log.info("[%s] fine_recovery=%.3f target_post=%.3f "
                  "retain_same=%.3f retain_other=%.3f leakage=%.3f",
                  state,
-                 (metrics.get("fine_recovery") or {}).get("baseline_accuracy"),
-                 (metrics.get("target_core") or {}).get("post_unlearning_accuracy"),
-                 (metrics.get("retain_same_entity") or {}).get("baseline_accuracy"),
-                 (metrics.get("retain_other_entity") or {}).get("baseline_accuracy"),
-                 (metrics.get("target_core") or {}).get("leakage_rate"))
+                 (pooled.get("fine_recovery") or {}).get("baseline_accuracy"),
+                 (pooled.get("target_core") or {}).get("post_unlearning_accuracy"),
+                 (pooled.get("retain_same_entity") or {}).get("baseline_accuracy"),
+                 (pooled.get("retain_other_entity") or {}).get("baseline_accuracy"),
+                 (pooled.get("target_core") or {}).get("leakage_rate"))
 
     gate_states = {s: m for s, m in metrics_by_state.items()
                    if s in ("MF", "MG", "MN")}
     passed, reasons = separation_gate(gate_states)
+    test_gate_states = {s: metrics_by_split["test"][s]
+                        for s in ("MF", "MG", "MN")
+                        if s in metrics_by_split["test"]}
+    test_passed, test_reasons = separation_gate(test_gate_states)
 
     report = {
         "experiment_id": "mllmu_smoke_iter7",
         "model_id": model_id,
         "states": states,
         "num_queries": len(queries),
+        "metrics_split_semantics": (
+            "metrics_by_state pools train/val/test; metrics_by_split "
+            "reports each paraphrase split separately — the TEST numbers "
+            "measure generalization to unseen wording and are the "
+            "authoritative held-out view."
+        ),
         "metrics_by_state": metrics_by_state,
+        "metrics_by_split": metrics_by_split,
         "separation_gate": {
             "passed": passed,
             "reasons": reasons,
+            "basis": "pooled train/val/test",
             "definition": {
                 "fine_recovery": "MF > MG and MF > MN by >= 0.15 "
                                  "(baseline accuracy, adversarial excluded)",
@@ -273,10 +325,18 @@ def run_reference_evaluation(
                           "other-entity retain accuracy",
             },
         },
+        "separation_gate_test_split": {
+            "passed": test_passed,
+            "reasons": test_reasons,
+            "basis": "test paraphrase split only",
+        },
     }
     Path(report_path).parent.mkdir(parents=True, exist_ok=True)
     with open(report_path, "w") as f:
         json.dump(report, f, indent=2, ensure_ascii=False)
-    log.info("Separation gate: %s%s", "PASSED" if passed else "FAILED",
+    log.info("Separation gate (pooled): %s%s", "PASSED" if passed else "FAILED",
              f" ({'; '.join(reasons)})" if reasons else "")
+    log.info("Separation gate (test split): %s%s",
+             "PASSED" if test_passed else "FAILED",
+             f" ({'; '.join(test_reasons)})" if test_reasons else "")
     return report

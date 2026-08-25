@@ -21,6 +21,8 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Any
 
+import re
+
 from granunlearn.schema import AssociationRecord, PredictionRecord, QueryRecord
 
 
@@ -28,22 +30,78 @@ def _normalize(s: str) -> str:
     return " ".join(s.lower().replace("\u2013", "-").split())
 
 
+# Negation cues checked on WORD BOUNDARIES within the 5 tokens preceding a
+# value match.  Substring matching is deliberately avoided: it would
+# false-positive on tokens like "Nottingham" (Iteration 7 scorer audit).
+# Bare "no" is excluded — the audit showed it false-positives on answer
+# tokens such as "NSW;".  The cue list is intentionally conservative;
+# residual cases are surfaced by the committed scorer-decision audit
+# rather than by silently adding more cues.
+NEGATION_CUES = (
+    "not", "never", "isn't", "wasn't", "aren't", "weren't",
+    "doesn't", "didn't", "don't", "can't", "cannot", "won't",
+    "is not", "was not", "are not", "does not", "did not",
+    "rather than", "instead of",
+)
+
+
+def _prefix_tokens(text: str, match_start: int, n: int = 5) -> list[str]:
+    """The last ``n`` tokens before the match within the CURRENT CLAUSE.
+
+    The window never crosses sentence/clause punctuation (. ; ! ?) —
+    otherwise 'not Sydney; it is NSW' would flag NSW as denied — and
+    leading/trailing punctuation is stripped so 'NSW;' compares as 'nsw'.
+    """
+    prefix = text[:match_start]
+    cut = max(prefix.rfind(sep) for sep in (".", ";", "!", "?"))
+    if cut >= 0:
+        prefix = prefix[cut + 1:]
+    return [t.strip(".,;:!?()[]{}'\"")
+            for t in prefix.split()[-n:]]
+
+
+def _is_negated(text: str, match_start: int) -> bool:
+    """True when a negation cue appears in the 5 tokens before the match.
+
+    Multiword cues are matched against the tail string with word
+    boundaries; single words are checked token-wise so that e.g.
+    'nottingham' never triggers 'not'.
+    """
+    prefix_words = _prefix_tokens(text, match_start)
+    tail = " ".join(prefix_words)
+    for cue in NEGATION_CUES:
+        if " " in cue:
+            if re.search(r"\b" + re.escape(cue) + r"\b", tail):
+                return True
+        elif cue in prefix_words:
+            return True
+    return False
+
+
 def match_answer(
     raw_output: str, assoc: AssociationRecord
-) -> tuple[int | None, str | None]:
+) -> tuple[int | None, str | None, list[str]]:
     """Match a raw output to the association's hierarchy.
 
-    Returns ``(level_index, canonical_id)`` — the FINEST level whose
-    normalized value occurs in the output; ``(None, None)`` when no level
-    value is present.
+    Returns ``(level_index, canonical_id, negated_values)`` — the FINEST
+    level whose normalized value occurs in the output.  A match directly
+    preceded by a negation cue is SKIPPED (the model denied that value)
+    and recorded in ``negated_values``; coarser levels are still
+    considered.  ``(None, None, [...])`` when no level value is present.
     """
     text = _normalize(raw_output)
+    negated: list[str] = []
     if not text:
-        return None, None
+        return None, None, negated
     for lv in assoc.levels:  # levels ordered finest -> coarsest
-        if _normalize(lv.value) in text:
-            return lv.level, lv.canonical_id
-    return None, None
+        needle = _normalize(lv.value)
+        pos = text.find(needle)
+        while pos >= 0:
+            if not _is_negated(text, pos):
+                return lv.level, lv.canonical_id, negated
+            negated.append(lv.value)
+            pos = text.find(needle, pos + 1)
+    return None, None, negated
 
 
 def score_query(
@@ -54,7 +112,7 @@ def score_query(
     checkpoint_id: str,
 ) -> PredictionRecord:
     """Build the canonical PredictionRecord for one generated answer."""
-    predicted_level, matched_id = match_answer(raw_output, assoc)
+    predicted_level, matched_id, negated = match_answer(raw_output, assoc)
     parsed = (assoc.levels[predicted_level].value
               if predicted_level is not None else None)
 
@@ -82,7 +140,8 @@ def score_query(
         is_coarser_than_target=is_coarser,
         metadata={"post_acceptable_match": is_post_correct,
                   "family": query.family,
-                  "adversarial": query.adversarial},
+                  "adversarial": query.adversarial,
+                  "negated_matches": negated},
     )
 
 
@@ -93,16 +152,23 @@ def _rate(flags: list[bool]) -> float | None:
 def compute_metrics(
     predictions: list[PredictionRecord],
     queries: list[QueryRecord],
+    split: str | None = None,
 ) -> dict[str, Any]:
     """Aggregate metrics per role/family slice.
 
     Core slices exclude adversarial probes; the adversarial slice is
     reported separately (prompted-recovery probes quote the forgotten
     fine value and cannot be attributed to model memory).
+
+    ``split=None`` pools train/val/test; pass ``split='test'`` (etc.) for
+    the held-out paraphrase metrics, which are reported SEPARATELY from
+    the pooled numbers (Iteration 7 review: the paraphrase split exists
+    to measure wording generalization, so it must be visible on its own).
     """
     by_id = {q.query_id: q for q in queries}
     rows = [(by_id[p.query_id], p) for p in predictions
-            if p.query_id in by_id]
+            if p.query_id in by_id
+            and (split is None or by_id[p.query_id].split == split)]
 
     def select(pred, role=None, families=None, include_adversarial=False):
         out = []
@@ -137,6 +203,7 @@ def compute_metrics(
     fine_families = [f for f in {q.family for q, _ in rows}
                      if f and f.startswith("fine_")]
     metrics: dict[str, Any] = {
+        "num_queries": len(rows),
         "all_core": block(select(rows)),
         "target_core": block(select(rows, role="target")),
         "fine_recovery": block(select(rows, families=set(fine_families))),

@@ -30,6 +30,9 @@ def main() -> None:
                         default="data/checkpoints/mllmu_smoke")
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--batch-size", type=int, default=2)
+    parser.add_argument("--rescore", action="store_true",
+                        help="Re-score persisted prediction parquets "
+                             "instead of running the model (CPU-only)")
     args = parser.parse_args()
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
@@ -47,6 +50,7 @@ def main() -> None:
         states=[s.strip().upper() for s in args.states.split(",")],
         predictions_dir=smoke_dir / "predictions",
         batch_size=args.batch_size,
+        rescore=args.rescore,
     )
     gate = report["separation_gate"]
     log.info("GATE %s | reasons: %s",

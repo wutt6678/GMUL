@@ -8,6 +8,7 @@ from granunlearn.evaluation.query_generation import (
     generate_queries,
 )
 from granunlearn.evaluation.scoring import (
+    _is_negated,
     compute_metrics,
     match_answer,
     score_query,
@@ -50,34 +51,125 @@ def make_assoc(aid="a1", entity_id="e1",
 class TestMatchAnswer:
     def test_exact_fine_match(self):
         a = make_assoc()
-        lv, cid = match_answer("San Francisco", a)
-        assert lv == 0 and cid == "l0:san_francisco"
+        lv, cid, neg = match_answer("San Francisco", a)
+        assert lv == 0 and cid == "l0:san_francisco" and neg == []
 
     def test_finest_match_wins_when_multiple_present(self):
         """An output containing the fine value reveals the fine value —
         leakage regardless of surrounding coarser text."""
         a = make_assoc()
-        lv, cid = match_answer("San Francisco, California, USA", a)
+        lv, cid, _ = match_answer("San Francisco, California, USA", a)
         assert lv == 0
 
     def test_coarse_only_match(self):
         a = make_assoc()
-        lv, cid = match_answer("She lives in California.", a)
+        lv, cid, _ = match_answer("She lives in California.", a)
         assert lv == 1 and cid == "l1:california"
 
     def test_normalization_case_and_whitespace(self):
         a = make_assoc()
-        lv, _ = match_answer("  sAn   FRANCISCO ", a)
+        lv, _, _ = match_answer("  sAn   FRANCISCO ", a)
         assert lv == 0
 
     def test_no_match(self):
         a = make_assoc()
-        lv, cid = match_answer("I don't know.", a)
+        lv, cid, _ = match_answer("I don't know.", a)
         assert lv is None and cid is None
 
     def test_empty_output(self):
         a = make_assoc()
-        assert match_answer("", a) == (None, None)
+        assert match_answer("", a) == (None, None, [])
+
+
+class TestNegationAwareness:
+    """Substring matching must not count DENIED values as revealed
+    (Iteration 7 scorer audit).  Cues are word-boundary based."""
+
+    def test_negated_fine_match_is_skipped(self):
+        # 3 levels so the denied fine value can fall through to a coarse
+        # match; single-token values keep cue matching unambiguous
+        a = make_assoc(values=["Sydney", "NSW", "Oceania"])
+        lv, cid, neg = match_answer(
+            "The birthplace is not Sydney; it is NSW.", a)
+        assert lv == 1
+        assert neg == ["Sydney"]
+
+    def test_negation_contraction(self):
+        a = make_assoc(values=["Sydney", "NSW", "Oceania"])
+        lv, cid, neg = match_answer("It isn't Sydney.", a)
+        assert lv is None and cid is None
+        assert neg == ["Sydney"]
+
+    def test_multiword_cue(self):
+        a = make_assoc(values=["Sydney", "NSW", "Oceania"])
+        lv, cid, neg = match_answer(
+            "She lives in NSW rather than Sydney.", a)
+        # the fine value appears but is denied; the coarse one stands
+        assert lv == 1
+        assert "Sydney" in neg
+
+    def test_nottingham_does_not_trigger_not(self):
+        """The audit found a naive substring cue false-positiving on
+        'Nottingham'; token-wise comparison must not repeat that."""
+        a = make_assoc(values=["Nottingham", "England", "UK"])
+        lv, cid, neg = match_answer("Nottingham, England.", a)
+        assert lv == 0 and cid is not None and neg == []
+
+    def test_cues_are_word_bounded(self):
+        assert not _is_negated("knot gardenia", len("knot gardenia"))
+        assert _is_negated("the answer is not", len("the answer is not "))
+
+    def test_negated_matches_recorded_in_metadata(self):
+        pool = [make_assoc("e1__res", "e1",
+                           values=["Sydney", "NSW", "Oceania"]),
+                make_assoc("e1__occ", "e1", attribute_name="occupation",
+                           hierarchy_type="semantic",
+                           values=["Data Scientist", "Analyst"]),
+                make_assoc("e1__height", "e1", attribute_name="height",
+                           values=["180 cm", "tall-band"])]
+        partition = select_target_retain(pool, seed=42)
+        queries = generate_queries(pool, partition, seed=42,
+                                   families=["fine_direct"])
+        target = next(
+            q for q in queries
+            if q.association_id in partition["target_association_ids"])
+        assoc = next(a for a in pool
+                     if a.association_id == target.association_id)
+        fine_value = assoc.levels[0].value
+        p = score_query(target, assoc, f"It is not {fine_value}.",
+                        "exp", "MN")
+        assert p.matched_canonical_id is None or \
+            p.matched_canonical_id != assoc.levels[0].canonical_id
+        assert p.metadata["negated_matches"] == [fine_value]
+
+
+class TestSplitMetrics:
+    """Test-paraphrase metrics must be reportable separately from the
+    pooled train/val/test numbers (Iteration 7 review)."""
+
+    def test_split_filter_partitions_predictions(self):
+        pool = [make_assoc("e1__res", "e1",
+                           values=["Sydney", "NSW", "Oceania"]),
+                make_assoc("e1__occ", "e1", attribute_name="occupation",
+                           hierarchy_type="semantic",
+                           values=["Data Scientist", "Analyst"]),
+                make_assoc("e1__height", "e1", attribute_name="height",
+                           values=["180 cm", "tall-band"])]
+        partition = select_target_retain(pool, seed=42)
+        queries = generate_queries(pool, partition, seed=42)
+        by_id = {a.association_id: a for a in pool}
+        preds = [score_query(q, by_id[q.association_id], "Sydney",
+                             "exp", "MF") for q in queries]
+        pooled = compute_metrics(preds, queries)
+        per_split = {s: compute_metrics(preds, queries, split=s)
+                     for s in ("train", "val", "test")}
+        assert pooled["num_queries"] == len(queries)
+        assert sum(m["num_queries"] for m in per_split.values()) == \
+            pooled["num_queries"]
+        for s, m in per_split.items():
+            assert m["num_queries"] > 0
+            assert sum(1 for q in queries if q.split == s) == \
+                m["num_queries"]
 
 
 class TestScoreQuery:
