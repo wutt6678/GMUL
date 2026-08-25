@@ -36,14 +36,20 @@ def sha256_file(path: Path) -> str:
 
 
 def base_model_revision(model_id: str) -> dict:
-    """Resolve the local HF cache revision for the base model."""
-    info = {"model_id": model_id, "revision": None, "cache_path": None}
+    """Resolve the local HF cache revision for the base model.
+
+    The pinned ``revision`` is the reproducibility contract; the local
+    cache path is diagnostic environment metadata only (Iteration 7
+    review) and is deliberately separated from it.
+    """
+    info = {"model_id": model_id, "revision": None,
+            "diagnostics": {"local_cache_path": None}}
     cache_root = Path.home() / ".cache" / "huggingface" / "hub"
     model_dir = cache_root / ("models--" + model_id.replace("/", "--"))
     ref = model_dir / "refs" / "main"
     if ref.exists():
         info["revision"] = ref.read_text().strip()
-        info["cache_path"] = str(model_dir)
+        info["diagnostics"]["local_cache_path"] = str(model_dir)
     return info
 
 
@@ -118,6 +124,12 @@ def main() -> None:
             "examples; accum-normalized trailing groups).",
             "Evaluation metrics are reported pooled AND per paraphrase "
             "split; adversarial probes excluded from core slices.",
+            "Reproducibility contract = dataset hashes + base-model "
+            "revision + recipe + adapter hashes. Fields under "
+            "'diagnostics' and 'environment' are machine-specific "
+            "metadata, not part of the contract.",
+            "Training jsonl image paths are repo-relative "
+            "(data/processed/...); resolved at load time.",
         ],
     }
 

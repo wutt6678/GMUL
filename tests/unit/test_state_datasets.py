@@ -169,3 +169,77 @@ class TestWriteAndLoad:
             update={"association_id": target_id, "role": "target"})
         errors = validate_state_examples(examples, partition, "MN")
         assert errors
+
+
+class TestRepoRelativeImagePaths:
+    """Persisted image_path must be repo-relative; resolution happens at
+    load time (Iteration 7 review — no machine-specific paths in the
+    committed jsonl)."""
+
+    def test_build_persists_repo_relative_paths(self, tmp_path):
+        assocs, partition = pool_and_partition()
+        for state in STATES:
+            for e in build_state_examples(
+                    assocs, partition, state, repo_root=tmp_path):
+                if e.image_path is not None:
+                    assert not e.image_path.startswith("/")
+                    assert e.image_path.startswith("data/images/")
+
+    def test_absolute_path_relativized(self, tmp_path):
+        assocs, partition = pool_and_partition()
+        aid = assocs[0].association_id
+        abs_assoc = assocs[0].model_copy(update={"images": [ImageRef(
+            image_id=f"img_{aid}",
+            path=str(tmp_path / "data" / "images" / f"{aid}.jpg"),
+            source="materialized", split="train")]})
+        ex = build_state_examples(
+            [abs_assoc] + assocs[1:], partition, "MF", repo_root=tmp_path)
+        e = next(x for x in ex if x.association_id == aid)
+        assert e.image_path == f"data/images/{aid}.jpg"
+
+    def test_absolute_path_outside_repo_rejected(self, tmp_path):
+        assocs, partition = pool_and_partition()
+        aid = assocs[0].association_id
+        abs_assoc = assocs[0].model_copy(update={"images": [ImageRef(
+            image_id=f"img_{aid}", path="/elsewhere/img.jpg",
+            source="materialized", split="train")]})
+        with pytest.raises(ValueError):
+            build_state_examples(
+                [abs_assoc] + assocs[1:], partition, "MF",
+                repo_root=tmp_path)
+
+    def test_load_resolves_against_repo_root(self, tmp_path):
+        assocs, partition = pool_and_partition()
+        # materialize the image files so validation passes
+        img_dir = tmp_path / "data" / "images"
+        img_dir.mkdir(parents=True)
+        for a in assocs:
+            (img_dir / f"{a.association_id}.jpg").write_bytes(b"x")
+        manifest = write_state_datasets(
+            assocs, partition, tmp_path, repo_root=tmp_path)
+        raw_line = (tmp_path / "MF.jsonl").read_text().splitlines()[0]
+        assert not str(tmp_path) in raw_line  # nothing absolute persisted
+        loaded = load_state_examples(tmp_path / "MF.jsonl",
+                                     repo_root=tmp_path)
+        for e in loaded:
+            if e.image_path is not None:
+                assert e.image_path.startswith(str(tmp_path))
+        # without repo_root the persisted form stays relative
+        unresolved = load_state_examples(tmp_path / "MF.jsonl")
+        assert all(
+            e.image_path is None or not e.image_path.startswith("/")
+            for e in unresolved)
+        assert manifest["states"]["MF"]["num_image_text"] == len(assocs)
+
+    def test_validate_flags_absolute_and_missing(self, tmp_path):
+        assocs, partition = pool_and_partition()
+        examples = build_state_examples(assocs, partition, "MF")
+        examples[0] = examples[0].model_copy(
+            update={"image_path": "/scratch/somewhere/img.jpg"})
+        errors = validate_state_examples(examples, partition, "MF")
+        assert any("repo-relative" in err for err in errors)
+        examples[0] = examples[0].model_copy(
+            update={"image_path": "data/images/missing.jpg"})
+        errors = validate_state_examples(
+            examples, partition, "MF", repo_root=tmp_path)
+        assert any("missing" in err for err in errors)

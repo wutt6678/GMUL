@@ -5,16 +5,18 @@
     "data/mllmu_hier_smoke/associations.parquet": "94c62f347e832ef6d0f63503c3664fb59d174f84a7b5f8833c07dc390cf24d76",
     "data/mllmu_hier_smoke/queries.parquet": "0e9ac4bc35595a8954ca26ca236f2dcaf993eb56052d2dc3469c477cda8a1d8d",
     "data/mllmu_hier_smoke/manifest.json": "3cf490536814df73ce6e0a5685866868f0ef7284281090887f6523612d110c0e",
-    "data/mllmu_hier_smoke/training/MF.jsonl": "573cff7a564c766150ef2e1d2f58b5bb77474bf25cd9bdbd7ed3f55faa36756e",
-    "data/mllmu_hier_smoke/training/MG.jsonl": "a3791eec6537482d22936ec11f221f13f73b92b8df0d2933e0c065db4aa6ee57",
-    "data/mllmu_hier_smoke/training/MN.jsonl": "dc790e4daa104b52ce56449f3defe87748187e8876f178c3e771f0b5efc34036",
+    "data/mllmu_hier_smoke/training/MF.jsonl": "fabce21fc608c0ab5b7a98e66534f06063786ceed713de816ec8c15fe951ea8d",
+    "data/mllmu_hier_smoke/training/MG.jsonl": "acc92bc614726e711c48a47af94a00fe10a4052abaad665207464153e317b57f",
+    "data/mllmu_hier_smoke/training/MN.jsonl": "5897a7648bf617d420a33b0f0332a42ab3001840597bcf6c0a951319f870af3c",
     "data/mllmu_hier_smoke/training/state_datasets_manifest.json": "69f9df7e18aa54d74d7751d38537ba419143084f51632d7960c7e4e07c950c66",
     "data/reports/mllmu_smoke_target_retain.json": "e4dd8e3a78a01056800d14999c44f6dcb9e0bf29579c7c3171ced36a70b5bb1b"
   },
   "base_model": {
     "model_id": "Qwen/Qwen3.5-9B",
     "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
-    "cache_path": "/scratch/wutiantong/.cache/huggingface/hub/models--Qwen--Qwen3.5-9B"
+    "diagnostics": {
+      "local_cache_path": "/scratch/wutiantong/.cache/huggingface/hub/models--Qwen--Qwen3.5-9B"
+    }
   },
   "recipe": {
     "model_id": "Qwen/Qwen3.5-9B",
@@ -73,6 +75,8 @@
   "notes": [
     "MF/MG/MN share the recipe verbatim; only D_F/D_G/D_N differ.",
     "Optimizer steps differ only via dataset size (68/68/48 examples; accum-normalized trailing groups).",
-    "Evaluation metrics are reported pooled AND per paraphrase split; adversarial probes excluded from core slices."
+    "Evaluation metrics are reported pooled AND per paraphrase split; adversarial probes excluded from core slices.",
+    "Reproducibility contract = dataset hashes + base-model revision + recipe + adapter hashes. Fields under 'diagnostics' and 'environment' are machine-specific metadata, not part of the contract.",
+    "Training jsonl image paths are repo-relative (data/processed/...); resolved at load time."
   ]
 }

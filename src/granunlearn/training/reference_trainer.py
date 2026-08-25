@@ -148,7 +148,10 @@ def train_state(
     (output_dir / "adapters").mkdir(parents=True, exist_ok=True)
     set_recipe_seeds(recipe.seed)
 
-    examples = load_state_examples(dataset_path)
+    # image_path is persisted repo-relative; resolve it here
+    from granunlearn.config import _find_repo_root
+    repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
+    examples = load_state_examples(dataset_path, repo_root=repo_root)
     log.info("[%s] %d training examples | device=%s", state, len(examples),
              device)
 

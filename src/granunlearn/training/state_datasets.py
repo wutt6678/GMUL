@@ -62,7 +62,13 @@ class TrainingExample(BaseModel):
     level_value: str = Field(description="Exact value at that level")
     prompt: str
     completion: str
-    image_path: str | None = None
+    image_path: str | None = Field(
+        default=None,
+        description=(
+            "REPO-RELATIVE posix path (e.g. data/processed/.../img.jpg); "
+            "resolved against the repo root at load time — machine-"
+            "specific absolute paths must never be persisted "
+            "(Iteration 7 review)."))
     modality: str = Field(description="text | image_text")
 
 
@@ -90,8 +96,11 @@ def build_state_examples(
 ) -> list[TrainingExample]:
     """Build D_state from the association pool + F/R partition.
 
-    Deterministic ordering (sorted association ids).  Image paths are
-    resolved against ``repo_root`` when relative.
+    Deterministic ordering (sorted association ids).  ``image_path`` is
+    persisted REPO-RELATIVE (the association's own relative path); an
+    absolute association path is relativized against ``repo_root`` and
+    rejected if it lies outside the repo, so no machine-specific path
+    ever reaches the committed jsonl.
     """
     if state not in STATES:
         raise ValueError(f"Unknown reference state: {state!r}")
@@ -111,9 +120,18 @@ def build_state_examples(
         image_path = None
         if assoc.images:
             p = Path(assoc.images[0].path)
-            if not p.is_absolute() and repo_root is not None:
-                p = Path(repo_root) / p
-            image_path = str(p)
+            if p.is_absolute():
+                if repo_root is None:
+                    raise ValueError(
+                        f"{aid}: absolute image path {p} without repo_root "
+                        f"to relativize against")
+                try:
+                    p = p.resolve().relative_to(Path(repo_root).resolve())
+                except ValueError as exc:
+                    raise ValueError(
+                        f"{aid}: image path {p} lies outside repo root "
+                        f"{repo_root}") from exc
+            image_path = p.as_posix()
         name = assoc.entity_name or assoc.entity_id
         examples.append(TrainingExample(
             example_id=f"{state}__{aid}",
@@ -137,6 +155,7 @@ def validate_state_examples(
     examples: list[TrainingExample],
     partition: dict,
     state: str,
+    repo_root: str | Path | None = None,
 ) -> list[str]:
     """Structural invariants for a state dataset. Returns errors."""
     errors: list[str] = []
@@ -155,6 +174,15 @@ def validate_state_examples(
                 f"level in every state")
         if ex.level_value not in ex.completion:
             errors.append(f"{ex.example_id}: completion lacks level value")
+        if ex.image_path is not None:
+            if Path(ex.image_path).is_absolute():
+                errors.append(
+                    f"{ex.example_id}: image_path must be repo-relative, "
+                    f"got {ex.image_path}")
+            elif repo_root is not None and not (
+                    Path(repo_root) / ex.image_path).exists():
+                errors.append(
+                    f"{ex.example_id}: image file missing: {ex.image_path}")
     seen_assoc = {ex.association_id for ex in examples}
     if state == "MN":
         overlap = seen_assoc & target_ids
@@ -183,7 +211,8 @@ def write_state_datasets(
     for state in STATES:
         examples = build_state_examples(
             associations, partition, state, repo_root=repo_root)
-        errors = validate_state_examples(examples, partition, state)
+        errors = validate_state_examples(
+            examples, partition, state, repo_root=repo_root)
         if errors:
             raise ValueError(
                 f"State dataset {state} failed validation: {errors[:5]}")
@@ -220,6 +249,21 @@ def write_state_datasets(
     return manifest
 
 
-def load_state_examples(path: str | Path) -> list[TrainingExample]:
-    return [TrainingExample.model_validate(json.loads(line))
-            for line in Path(path).read_text().splitlines() if line.strip()]
+def load_state_examples(
+    path: str | Path,
+    repo_root: str | Path | None = None,
+) -> list[TrainingExample]:
+    """Load a state dataset; relative ``image_path`` values are resolved
+    against ``repo_root`` so consumers receive ready-to-open paths."""
+    examples = [TrainingExample.model_validate(json.loads(line))
+                for line in Path(path).read_text().splitlines()
+                if line.strip()]
+    if repo_root is not None:
+        resolved = []
+        for ex in examples:
+            if ex.image_path and not Path(ex.image_path).is_absolute():
+                ex = ex.model_copy(update={
+                    "image_path": str(Path(repo_root) / ex.image_path)})
+            resolved.append(ex)
+        return resolved
+    return examples
