@@ -1,0 +1,17 @@
+{
+  "groups": {
+    "fine_target": {
+      "path": "/scratch/wutiantong/GMUL/granularity-unlearning/data/mllmu_hier_smoke/unlearning/fine_target.jsonl",
+      "num_examples": 20
+    },
+    "target_level": {
+      "path": "/scratch/wutiantong/GMUL/granularity-unlearning/data/mllmu_hier_smoke/unlearning/target_level.jsonl",
+      "num_examples": 20
+    },
+    "retain": {
+      "path": "/scratch/wutiantong/GMUL/granularity-unlearning/data/mllmu_hier_smoke/unlearning/retain.jsonl",
+      "num_examples": 48
+    }
+  },
+  "note": "Unlearning knowledge groups derive from the F/R partition and association hierarchies only — evaluation queries are never used. Same controlled template as the reference-state datasets."
+}

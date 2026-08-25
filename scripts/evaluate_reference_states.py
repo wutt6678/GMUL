@@ -33,6 +33,9 @@ def main() -> None:
     parser.add_argument("--rescore", action="store_true",
                         help="Re-score persisted prediction parquets "
                              "instead of running the model (CPU-only)")
+    parser.add_argument("--skip-existing", action="store_true",
+                        help="Reuse persisted predictions for states "
+                             "that already have them")
     args = parser.parse_args()
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
@@ -52,6 +55,7 @@ def main() -> None:
         batch_size=args.batch_size,
         rescore=args.rescore,
         failure_export_dir=smoke_dir / "failure_exports",
+        skip_existing=args.skip_existing,
     )
     gate = report["separation_gate"]
     log.info("GATE %s | reasons: %s",

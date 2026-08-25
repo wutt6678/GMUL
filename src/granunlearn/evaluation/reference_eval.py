@@ -234,11 +234,15 @@ def run_reference_evaluation(
     batch_size: int = 2,
     rescore: bool = False,
     failure_export_dir: str | Path | None = None,
+    skip_existing: bool = False,
 ) -> dict[str, Any]:
     """Evaluate BASE + MF/MG/MN and apply the separation gate.
 
     With ``rescore=True`` the persisted prediction parquets are re-scored
     (no model loading) — used to regenerate metrics after scorer changes.
+    With ``skip_existing=True`` states whose prediction parquet already
+    exists are loaded instead of re-generated (Iteration 9: reference
+    states and selection-time predictions reused in the final run).
     Hierarchy metrics (FILR/TGA/failure taxonomy/strata) are reported
     per split with TEST as the primary basis; ``failure_export_dir``
     receives per-example failure exports for inspection.
@@ -273,6 +277,14 @@ def run_reference_evaluation(
             log.info("Rescoring %s from %s...", state, ppath)
             preds = load_predictions_parquet(ppath)
             gen_info: dict[str, Any] = {"rescored": True}
+        elif (skip_existing and predictions_dir is not None
+              and (predictions_dir /
+                   f"predictions_{state}.parquet").exists()):
+            ppath = predictions_dir / f"predictions_{state}.parquet"
+            log.info("[%s] reusing persisted predictions %s",
+                     state, ppath)
+            preds = load_predictions_parquet(ppath)
+            gen_info = {"reused_predictions": True}
         else:
             adapter_dir = None
             if state != "BASE":
