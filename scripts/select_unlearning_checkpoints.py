@@ -77,11 +77,13 @@ def main() -> None:
     associations = load_associations_parquet(smoke / "associations.parquet")
     by_assoc = {a.association_id: a for a in associations}
 
-    # Candidate registry: candidate_id -> (method, adapter_dir)
+    # Candidate registry: candidate_id -> (method, adapter_dir).
+    # Ids mirror train_unlearning_baselines.candidate_configs() (lr
+    # formatted with %g).
     candidates_dirs: dict[str, tuple[str, Path | None]] = {
         "B0": ("B0", unlearn_ckpt / "B0" / "adapters"),
         "B1_lr2e-05": ("B1", unlearn_ckpt / "B1_lr2e-05" / "adapters"),
-        "B1_lr1e-04": ("B1", unlearn_ckpt / "B1_lr1e-04" / "adapters"),
+        "B1_lr0.0001": ("B1", unlearn_ckpt / "B1_lr0.0001" / "adapters"),
         "B2_lr1e-04": ("B2", unlearn_ckpt / "B2_lr1e-04" / "adapters"),
         "B3_lam1.0": ("B3", unlearn_ckpt / "B3_lam1.0" / "adapters"),
         "B3_lam0.5": ("B3", unlearn_ckpt / "B3_lam0.5" / "adapters"),
@@ -133,8 +135,10 @@ def main() -> None:
         shutil.copy(unlearn_ckpt / cid / "training_summary.json",
                     unlearn_ckpt / "selected" / method /
                     "training_summary.json")
-        shutil.copy(predictions_dir / f"predictions_{cid}.parquet",
-                    predictions_dir / f"predictions_{method}.parquet")
+        pred_src = predictions_dir / f"predictions_{cid}.parquet"
+        pred_dst = predictions_dir / f"predictions_{method}.parquet"
+        if pred_src.resolve() != pred_dst.resolve():
+            shutil.copy(pred_src, pred_dst)
         log.info("SELECTED %s <- %s (D_G=%.4f)", method, cid,
                  report["candidates"][cid]["distance_to_mg"])
 

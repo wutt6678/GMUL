@@ -277,6 +277,7 @@ def run_reference_evaluation(
             log.info("Rescoring %s from %s...", state, ppath)
             preds = load_predictions_parquet(ppath)
             gen_info: dict[str, Any] = {"rescored": True}
+            loaded_existing = True
         elif (skip_existing and predictions_dir is not None
               and (predictions_dir /
                    f"predictions_{state}.parquet").exists()):
@@ -285,7 +286,9 @@ def run_reference_evaluation(
                      state, ppath)
             preds = load_predictions_parquet(ppath)
             gen_info = {"reused_predictions": True}
+            loaded_existing = True
         else:
+            loaded_existing = False
             adapter_dir = None
             if state != "BASE":
                 adapter_dir = checkpoints_dir / state / "adapters"
@@ -316,7 +319,7 @@ def run_reference_evaluation(
             log.info("[%s] failure export: %d cases (%s)", state,
                      export["num_failure_cases"],
                      export["failure_counts"])
-        if predictions_dir and not rescore:
+        if predictions_dir and not loaded_existing:
             import pandas as pd
             pd.DataFrame(
                 [json.loads(p.model_dump_json()) for p in preds]

@@ -42,6 +42,7 @@ data/reports/*
 !data/reports/mllmu_smoke_target_retain.json
 !data/reports/mllmu_smoke_reference_eval.json
 !data/reports/mllmu_smoke_scorer_audit.json
+!data/reports/mllmu_smoke_unlearning_selection.json
 !data/reports/mllmu_smoke_reference_provenance.json
 
 # Outputs
