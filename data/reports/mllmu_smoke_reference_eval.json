@@ -74,177 +74,177 @@
         "unmatched_rate": 0.0333
       },
       "num_queries": 927,
-      "generation_seconds": 787.3
+      "generation_seconds": 980.2
     },
     "MF": {
       "all_core": {
         "num_queries": 867,
-        "baseline_accuracy": 0.4752,
-        "post_unlearning_accuracy": 0.1972,
-        "leakage_rate": 0.4429,
-        "unmatched_rate": 0.3356
+        "baseline_accuracy": 0.5352,
+        "post_unlearning_accuracy": 0.2353,
+        "leakage_rate": 0.466,
+        "unmatched_rate": 0.2814
       },
       "target_core": {
         "num_queries": 663,
-        "baseline_accuracy": 0.4359,
-        "post_unlearning_accuracy": 0.0724,
-        "leakage_rate": 0.5792,
-        "unmatched_rate": 0.3484
+        "baseline_accuracy": 0.4887,
+        "post_unlearning_accuracy": 0.0965,
+        "leakage_rate": 0.6094,
+        "unmatched_rate": 0.2926
       },
       "fine_recovery": {
         "num_queries": 360,
-        "baseline_accuracy": 0.6778,
+        "baseline_accuracy": 0.7306,
         "post_unlearning_accuracy": 0.0083,
-        "leakage_rate": 0.7472,
-        "unmatched_rate": 0.2444
+        "leakage_rate": 0.8139,
+        "unmatched_rate": 0.1778
       },
       "granular": {
         "num_queries": 123,
-        "baseline_accuracy": 0.1463,
-        "post_unlearning_accuracy": 0.1463,
-        "leakage_rate": 0.3984,
-        "unmatched_rate": 0.4553
+        "baseline_accuracy": 0.1626,
+        "post_unlearning_accuracy": 0.1626,
+        "leakage_rate": 0.3577,
+        "unmatched_rate": 0.4797
       },
       "negation": {
         "num_queries": 120,
-        "baseline_accuracy": 0.1167,
-        "post_unlearning_accuracy": 0.1167,
-        "leakage_rate": 0.3333,
-        "unmatched_rate": 0.55
+        "baseline_accuracy": 0.2,
+        "post_unlearning_accuracy": 0.2,
+        "leakage_rate": 0.35,
+        "unmatched_rate": 0.4417
       },
       "multimodal": {
         "num_queries": 60,
-        "baseline_accuracy": 0.2167,
-        "post_unlearning_accuracy": 0.2167,
-        "leakage_rate": 0.4333,
-        "unmatched_rate": 0.35
+        "baseline_accuracy": 0.2833,
+        "post_unlearning_accuracy": 0.2833,
+        "leakage_rate": 0.4167,
+        "unmatched_rate": 0.3
       },
       "retain_same_entity": {
         "num_queries": 144,
-        "baseline_accuracy": 0.5417,
-        "post_unlearning_accuracy": 0.5417,
+        "baseline_accuracy": 0.6597,
+        "post_unlearning_accuracy": 0.6597,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.3264
+        "unmatched_rate": 0.25
       },
       "retain_other_entity": {
         "num_queries": 60,
         "baseline_accuracy": 0.75,
         "post_unlearning_accuracy": 0.75,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.2167
+        "unmatched_rate": 0.2333
       },
       "adversarial_only": {
         "num_queries": 60,
-        "baseline_accuracy": 0.2667,
-        "post_unlearning_accuracy": 0.2667,
-        "leakage_rate": 0.1333,
-        "unmatched_rate": 0.5667
+        "baseline_accuracy": 0.3,
+        "post_unlearning_accuracy": 0.3,
+        "leakage_rate": 0.2333,
+        "unmatched_rate": 0.4167
       },
       "num_queries": 927,
-      "generation_seconds": 213.7
+      "generation_seconds": 218.6
     },
     "MG": {
       "all_core": {
         "num_queries": 867,
         "baseline_accuracy": 0.3356,
-        "post_unlearning_accuracy": 0.6586,
-        "leakage_rate": 0.0069,
-        "unmatched_rate": 0.301
+        "post_unlearning_accuracy": 0.6275,
+        "leakage_rate": 0.0115,
+        "unmatched_rate": 0.3206
       },
       "target_core": {
         "num_queries": 663,
-        "baseline_accuracy": 0.2489,
-        "post_unlearning_accuracy": 0.6712,
-        "leakage_rate": 0.009,
-        "unmatched_rate": 0.3152
+        "baseline_accuracy": 0.267,
+        "post_unlearning_accuracy": 0.6486,
+        "leakage_rate": 0.0151,
+        "unmatched_rate": 0.3318
       },
       "fine_recovery": {
         "num_queries": 360,
         "baseline_accuracy": 0.0,
-        "post_unlearning_accuracy": 0.7778,
-        "leakage_rate": 0.0028,
-        "unmatched_rate": 0.2194
+        "post_unlearning_accuracy": 0.7028,
+        "leakage_rate": 0.0,
+        "unmatched_rate": 0.2972
       },
       "granular": {
         "num_queries": 123,
-        "baseline_accuracy": 0.5203,
-        "post_unlearning_accuracy": 0.5203,
-        "leakage_rate": 0.0163,
-        "unmatched_rate": 0.439
+        "baseline_accuracy": 0.5691,
+        "post_unlearning_accuracy": 0.5691,
+        "leakage_rate": 0.0325,
+        "unmatched_rate": 0.374
       },
       "negation": {
         "num_queries": 120,
-        "baseline_accuracy": 0.4667,
-        "post_unlearning_accuracy": 0.4667,
-        "leakage_rate": 0.025,
-        "unmatched_rate": 0.5083
+        "baseline_accuracy": 0.4833,
+        "post_unlearning_accuracy": 0.4833,
+        "leakage_rate": 0.05,
+        "unmatched_rate": 0.4667
       },
       "multimodal": {
         "num_queries": 60,
-        "baseline_accuracy": 0.75,
-        "post_unlearning_accuracy": 0.75,
+        "baseline_accuracy": 0.8167,
+        "post_unlearning_accuracy": 0.8167,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.25
+        "unmatched_rate": 0.1833
       },
       "retain_same_entity": {
         "num_queries": 144,
-        "baseline_accuracy": 0.5833,
-        "post_unlearning_accuracy": 0.5833,
+        "baseline_accuracy": 0.5486,
+        "post_unlearning_accuracy": 0.5486,
         "leakage_rate": 0.0,
         "unmatched_rate": 0.2986
       },
       "retain_other_entity": {
         "num_queries": 60,
-        "baseline_accuracy": 0.7,
-        "post_unlearning_accuracy": 0.7,
+        "baseline_accuracy": 0.5833,
+        "post_unlearning_accuracy": 0.5833,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.15
+        "unmatched_rate": 0.25
       },
       "adversarial_only": {
         "num_queries": 60,
-        "baseline_accuracy": 0.5167,
-        "post_unlearning_accuracy": 0.5167,
-        "leakage_rate": 0.0667,
-        "unmatched_rate": 0.4
+        "baseline_accuracy": 0.5,
+        "post_unlearning_accuracy": 0.5,
+        "leakage_rate": 0.05,
+        "unmatched_rate": 0.4333
       },
       "num_queries": 927,
-      "generation_seconds": 181.8
+      "generation_seconds": 187.7
     },
     "MN": {
       "all_core": {
         "num_queries": 867,
-        "baseline_accuracy": 0.1926,
-        "post_unlearning_accuracy": 0.2226,
-        "leakage_rate": 0.1223,
-        "unmatched_rate": 0.6344
+        "baseline_accuracy": 0.1972,
+        "post_unlearning_accuracy": 0.2318,
+        "leakage_rate": 0.128,
+        "unmatched_rate": 0.6228
       },
       "target_core": {
         "num_queries": 663,
-        "baseline_accuracy": 0.083,
-        "post_unlearning_accuracy": 0.1222,
-        "leakage_rate": 0.1599,
-        "unmatched_rate": 0.7164
+        "baseline_accuracy": 0.0845,
+        "post_unlearning_accuracy": 0.1297,
+        "leakage_rate": 0.1674,
+        "unmatched_rate": 0.7014
       },
       "fine_recovery": {
         "num_queries": 360,
-        "baseline_accuracy": 0.025,
-        "post_unlearning_accuracy": 0.0972,
-        "leakage_rate": 0.2056,
-        "unmatched_rate": 0.6972
+        "baseline_accuracy": 0.0333,
+        "post_unlearning_accuracy": 0.1167,
+        "leakage_rate": 0.2361,
+        "unmatched_rate": 0.6472
       },
       "granular": {
         "num_queries": 123,
-        "baseline_accuracy": 0.122,
-        "post_unlearning_accuracy": 0.122,
-        "leakage_rate": 0.1789,
-        "unmatched_rate": 0.6992
+        "baseline_accuracy": 0.1057,
+        "post_unlearning_accuracy": 0.1057,
+        "leakage_rate": 0.1463,
+        "unmatched_rate": 0.748
       },
       "negation": {
         "num_queries": 120,
         "baseline_accuracy": 0.1667,
         "post_unlearning_accuracy": 0.1667,
-        "leakage_rate": 0.0833,
-        "unmatched_rate": 0.7417
+        "leakage_rate": 0.0667,
+        "unmatched_rate": 0.7583
       },
       "multimodal": {
         "num_queries": 60,
@@ -255,27 +255,27 @@
       },
       "retain_same_entity": {
         "num_queries": 144,
-        "baseline_accuracy": 0.5347,
-        "post_unlearning_accuracy": 0.5347,
+        "baseline_accuracy": 0.5625,
+        "post_unlearning_accuracy": 0.5625,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.3611
+        "unmatched_rate": 0.3542
       },
       "retain_other_entity": {
         "num_queries": 60,
-        "baseline_accuracy": 0.5833,
-        "post_unlearning_accuracy": 0.5833,
+        "baseline_accuracy": 0.5667,
+        "post_unlearning_accuracy": 0.5667,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.3833
+        "unmatched_rate": 0.4
       },
       "adversarial_only": {
         "num_queries": 60,
         "baseline_accuracy": 0.25,
         "post_unlearning_accuracy": 0.25,
-        "leakage_rate": 0.35,
-        "unmatched_rate": 0.3833
+        "leakage_rate": 0.3333,
+        "unmatched_rate": 0.4
       },
       "num_queries": 927,
-      "generation_seconds": 581.3
+      "generation_seconds": 563.2
     }
   },
   "separation_gate": {

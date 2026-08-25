@@ -189,24 +189,31 @@ def train_state(
     }
     global_step = 0
     t0 = time.time()
+    accum = recipe.gradient_accumulation_steps
     for epoch in range(recipe.num_epochs):
         order = list(range(len(examples)))
         rng.shuffle(order)
         epoch_loss, n_batches = 0.0, 0
         optimizer.zero_grad()
         for i, idx in enumerate(order):
+            # Normalize each micro-batch by the ACTUAL size of its
+            # accumulation group: the trailing group of an epoch can be
+            # smaller than `accum` (68 examples % 8 = 4) and must not be
+            # divided by 8, or that update receives half its proper
+            # gradient magnitude (Iteration 7 review fix).
+            group_start = (i // accum) * accum
+            group_size = min(accum, len(order) - group_start)
             enc = _encode_example(
                 examples[idx], processor, recipe.max_length,
                 recipe.max_image_pixels)
             enc = {k: v.to(device) for k, v in enc.items()
                    if torch.is_tensor(v)}
             out = model(**enc)
-            loss = out.loss / recipe.gradient_accumulation_steps
+            loss = out.loss / group_size
             loss.backward()
             epoch_loss += out.loss.item()
             n_batches += 1
-            if (i + 1) % recipe.gradient_accumulation_steps == 0 or \
-                    i + 1 == len(order):
+            if (i + 1) % accum == 0 or i + 1 == len(order):
                 optimizer.step()
                 optimizer.zero_grad()
                 global_step += 1
