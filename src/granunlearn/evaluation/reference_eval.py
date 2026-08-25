@@ -23,6 +23,10 @@ from granunlearn.evaluation.scoring import (
     score_query,
     separation_gate,
 )
+from granunlearn.evaluation.hierarchy_metrics import (
+    compute_hierarchy_metrics,
+    export_failure_cases,
+)
 from granunlearn.logging_utils import setup_logger
 from granunlearn.schema import AssociationRecord, PredictionRecord, QueryRecord
 
@@ -229,11 +233,15 @@ def run_reference_evaluation(
     predictions_dir: str | Path | None = None,
     batch_size: int = 2,
     rescore: bool = False,
+    failure_export_dir: str | Path | None = None,
 ) -> dict[str, Any]:
     """Evaluate BASE + MF/MG/MN and apply the separation gate.
 
     With ``rescore=True`` the persisted prediction parquets are re-scored
     (no model loading) — used to regenerate metrics after scorer changes.
+    Hierarchy metrics (FILR/TGA/failure taxonomy/strata) are reported
+    per split with TEST as the primary basis; ``failure_export_dir``
+    receives per-example failure exports for inspection.
     """
     smoke_dir = Path(smoke_dir)
     checkpoints_dir = Path(checkpoints_dir)
@@ -250,6 +258,13 @@ def run_reference_evaluation(
     metrics_by_state: dict[str, Any] = {}
     metrics_by_split: dict[str, Any] = {
         s: {} for s in ("train", "val", "test")}
+    # Iteration 8 frozen hierarchy metrics: TEST split first (primary)
+    hierarchy_by_split: dict[str, Any] = {
+        s: {} for s in ("test", "train", "val", "pooled")}
+    failure_export_dir = (Path(failure_export_dir)
+                          if failure_export_dir else None)
+    if failure_export_dir:
+        failure_export_dir.mkdir(parents=True, exist_ok=True)
     for state in states:
         if rescore:
             if predictions_dir is None:
@@ -275,6 +290,20 @@ def run_reference_evaluation(
         metrics_by_state[state] = pooled
         for s, m in per_split.items():
             metrics_by_split[s][state] = m
+        for s in ("test", "train", "val"):
+            hierarchy_by_split[s][state] = compute_hierarchy_metrics(
+                preds, queries, associations, split=s)
+        hierarchy_by_split["pooled"][state] = compute_hierarchy_metrics(
+            preds, queries, associations, split=None)
+        if failure_export_dir:
+            export = export_failure_cases(preds, queries, associations,
+                                          checkpoint_id=state)
+            with open(failure_export_dir /
+                      f"failure_cases_{state}.json", "w") as f:
+                json.dump(export, f, indent=2, ensure_ascii=False)
+            log.info("[%s] failure export: %d cases (%s)", state,
+                     export["num_failure_cases"],
+                     export["failure_counts"])
         if predictions_dir and not rescore:
             import pandas as pd
             pd.DataFrame(
@@ -312,6 +341,16 @@ def run_reference_evaluation(
         ),
         "metrics_by_state": metrics_by_state,
         "metrics_by_split": metrics_by_split,
+        "hierarchy_metrics": hierarchy_by_split,
+        "hierarchy_metrics_note": (
+            "Frozen Iteration 8 research metrics (FILR, TGA, ancestor "
+            "retention, under/over-forgetting, wrong-branch, refusal, "
+            "hallucination, route/type/depth strata). TEST split is the "
+            "PRIMARY basis; 'pooled' is secondary. These are the metrics "
+            "Iteration 9's MF->MU baselines will be compared on "
+            "(central comparison: MU ~= MG with retained non-target "
+            "knowledge)."
+        ),
         "separation_gate": {
             "passed": passed,
             "reasons": reasons,

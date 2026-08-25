@@ -63,19 +63,14 @@ def _prefix_tokens(text: str, match_start: int, n: int = 5) -> list[str]:
 def _is_negated(text: str, match_start: int) -> bool:
     """True when a negation cue appears in the 5 tokens before the match.
 
-    Multiword cues are matched against the tail string with word
-    boundaries; single words are checked token-wise so that e.g.
-    'nottingham' never triggers 'not'.
+    ALL cues are matched with word boundaries (Iteration 8 hardening):
+    uniform semantics for single- and multiword cues, so no cue can
+    ever fire inside another token.
     """
     prefix_words = _prefix_tokens(text, match_start)
     tail = " ".join(prefix_words)
-    for cue in NEGATION_CUES:
-        if " " in cue:
-            if re.search(r"\b" + re.escape(cue) + r"\b", tail):
-                return True
-        elif cue in prefix_words:
-            return True
-    return False
+    return any(re.search(r"\b" + re.escape(cue) + r"\b", tail)
+               for cue in NEGATION_CUES)
 
 
 def match_answer(

@@ -1079,6 +1079,2545 @@
       }
     }
   },
+  "hierarchy_metrics": {
+    "test": {
+      "BASE": {
+        "split": "test",
+        "num_target_probes": 221,
+        "filr": 0.0814,
+        "tga": 0.1041,
+        "failure_taxonomy": {
+          "correct_at_target": 23,
+          "under_forgetting": 18,
+          "over_forgetting": 7,
+          "wrong_branch": 84,
+          "refusal": 26,
+          "hallucination": 63
+        },
+        "failure_rates": {
+          "under_forgetting": 0.0814,
+          "over_forgetting": 0.0317,
+          "wrong_branch": 0.3801,
+          "refusal": 0.1176,
+          "hallucination": 0.2851
+        },
+        "ancestor_retention": {
+          "num_queries": 21,
+          "baseline_accuracy": 0.0952,
+          "post_unlearning_accuracy": 0.0952
+        },
+        "retain_same_entity": {
+          "num_queries": 48,
+          "baseline_accuracy": 0.0,
+          "unmatched_rate": 0.8125
+        },
+        "retain_other_entity": {
+          "num_queries": 20,
+          "baseline_accuracy": 0.0,
+          "unmatched_rate": 0.9
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 201,
+            "filr": 0.0796,
+            "tga": 0.0995,
+            "failure_categories": {
+              "correct_at_target": 20,
+              "under_forgetting": 16,
+              "over_forgetting": 6,
+              "wrong_branch": 73,
+              "refusal": 25,
+              "hallucination": 61
+            }
+          },
+          "image_to_text": {
+            "num_queries": 0
+          },
+          "image_text_to_text": {
+            "num_queries": 20,
+            "filr": 0.1,
+            "tga": 0.15,
+            "failure_categories": {
+              "correct_at_target": 3,
+              "under_forgetting": 2,
+              "over_forgetting": 1,
+              "wrong_branch": 11,
+              "refusal": 1,
+              "hallucination": 2
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 111,
+            "filr": 0.1622,
+            "tga": 0.1982,
+            "failure_categories": {
+              "correct_at_target": 22,
+              "under_forgetting": 18,
+              "over_forgetting": 7,
+              "wrong_branch": 39,
+              "refusal": 9,
+              "hallucination": 16
+            }
+          },
+          "numeric": {
+            "num_queries": 110,
+            "filr": 0.0,
+            "tga": 0.0091,
+            "failure_categories": {
+              "correct_at_target": 1,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 45,
+              "refusal": 17,
+              "hallucination": 47
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 143,
+            "filr": 0.007,
+            "tga": 0.1538,
+            "failure_categories": {
+              "correct_at_target": 22,
+              "under_forgetting": 1,
+              "over_forgetting": 0,
+              "wrong_branch": 64,
+              "refusal": 17,
+              "hallucination": 39
+            }
+          },
+          "2": {
+            "num_queries": 34,
+            "filr": 0.0,
+            "tga": 0.0294,
+            "failure_categories": {
+              "correct_at_target": 1,
+              "under_forgetting": 0,
+              "over_forgetting": 7,
+              "wrong_branch": 9,
+              "refusal": 2,
+              "hallucination": 15
+            }
+          },
+          "3": {
+            "num_queries": 33,
+            "filr": 0.3636,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 12,
+              "over_forgetting": 0,
+              "wrong_branch": 8,
+              "refusal": 6,
+              "hallucination": 7
+            }
+          },
+          "4": {
+            "num_queries": 11,
+            "filr": 0.4545,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 5,
+              "over_forgetting": 0,
+              "wrong_branch": 3,
+              "refusal": 1,
+              "hallucination": 2
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MF": {
+        "split": "test",
+        "num_target_probes": 221,
+        "filr": 0.6063,
+        "tga": 0.1086,
+        "failure_taxonomy": {
+          "correct_at_target": 24,
+          "under_forgetting": 134,
+          "over_forgetting": 1,
+          "wrong_branch": 33,
+          "refusal": 0,
+          "hallucination": 29
+        },
+        "failure_rates": {
+          "under_forgetting": 0.6063,
+          "over_forgetting": 0.0045,
+          "wrong_branch": 0.1493,
+          "refusal": 0.0,
+          "hallucination": 0.1312
+        },
+        "ancestor_retention": {
+          "num_queries": 21,
+          "baseline_accuracy": 0.1429,
+          "post_unlearning_accuracy": 0.1429
+        },
+        "retain_same_entity": {
+          "num_queries": 48,
+          "baseline_accuracy": 0.6667,
+          "unmatched_rate": 0.25
+        },
+        "retain_other_entity": {
+          "num_queries": 20,
+          "baseline_accuracy": 0.75,
+          "unmatched_rate": 0.25
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 201,
+            "filr": 0.6269,
+            "tga": 0.0896,
+            "failure_categories": {
+              "correct_at_target": 18,
+              "under_forgetting": 126,
+              "over_forgetting": 1,
+              "wrong_branch": 30,
+              "refusal": 0,
+              "hallucination": 26
+            }
+          },
+          "image_to_text": {
+            "num_queries": 0
+          },
+          "image_text_to_text": {
+            "num_queries": 20,
+            "filr": 0.4,
+            "tga": 0.3,
+            "failure_categories": {
+              "correct_at_target": 6,
+              "under_forgetting": 8,
+              "over_forgetting": 0,
+              "wrong_branch": 3,
+              "refusal": 0,
+              "hallucination": 3
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 111,
+            "filr": 0.5946,
+            "tga": 0.1802,
+            "failure_categories": {
+              "correct_at_target": 20,
+              "under_forgetting": 66,
+              "over_forgetting": 1,
+              "wrong_branch": 14,
+              "refusal": 0,
+              "hallucination": 10
+            }
+          },
+          "numeric": {
+            "num_queries": 110,
+            "filr": 0.6182,
+            "tga": 0.0364,
+            "failure_categories": {
+              "correct_at_target": 4,
+              "under_forgetting": 68,
+              "over_forgetting": 0,
+              "wrong_branch": 19,
+              "refusal": 0,
+              "hallucination": 19
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 143,
+            "filr": 0.6154,
+            "tga": 0.1399,
+            "failure_categories": {
+              "correct_at_target": 20,
+              "under_forgetting": 88,
+              "over_forgetting": 0,
+              "wrong_branch": 19,
+              "refusal": 0,
+              "hallucination": 16
+            }
+          },
+          "2": {
+            "num_queries": 34,
+            "filr": 0.3235,
+            "tga": 0.1176,
+            "failure_categories": {
+              "correct_at_target": 4,
+              "under_forgetting": 11,
+              "over_forgetting": 1,
+              "wrong_branch": 10,
+              "refusal": 0,
+              "hallucination": 8
+            }
+          },
+          "3": {
+            "num_queries": 33,
+            "filr": 0.8182,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 27,
+              "over_forgetting": 0,
+              "wrong_branch": 4,
+              "refusal": 0,
+              "hallucination": 2
+            }
+          },
+          "4": {
+            "num_queries": 11,
+            "filr": 0.7273,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 8,
+              "over_forgetting": 0,
+              "wrong_branch": 0,
+              "refusal": 0,
+              "hallucination": 3
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MG": {
+        "split": "test",
+        "num_target_probes": 221,
+        "filr": 0.0136,
+        "tga": 0.6742,
+        "failure_taxonomy": {
+          "correct_at_target": 149,
+          "under_forgetting": 3,
+          "over_forgetting": 0,
+          "wrong_branch": 35,
+          "refusal": 0,
+          "hallucination": 34
+        },
+        "failure_rates": {
+          "under_forgetting": 0.0136,
+          "over_forgetting": 0.0,
+          "wrong_branch": 0.1584,
+          "refusal": 0.0,
+          "hallucination": 0.1538
+        },
+        "ancestor_retention": {
+          "num_queries": 21,
+          "baseline_accuracy": 0.5238,
+          "post_unlearning_accuracy": 0.5238
+        },
+        "retain_same_entity": {
+          "num_queries": 48,
+          "baseline_accuracy": 0.5,
+          "unmatched_rate": 0.3125
+        },
+        "retain_other_entity": {
+          "num_queries": 20,
+          "baseline_accuracy": 0.55,
+          "unmatched_rate": 0.25
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 201,
+            "filr": 0.0149,
+            "tga": 0.6617,
+            "failure_categories": {
+              "correct_at_target": 133,
+              "under_forgetting": 3,
+              "over_forgetting": 0,
+              "wrong_branch": 33,
+              "refusal": 0,
+              "hallucination": 32
+            }
+          },
+          "image_to_text": {
+            "num_queries": 0
+          },
+          "image_text_to_text": {
+            "num_queries": 20,
+            "filr": 0.0,
+            "tga": 0.8,
+            "failure_categories": {
+              "correct_at_target": 16,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 2,
+              "refusal": 0,
+              "hallucination": 2
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 111,
+            "filr": 0.027,
+            "tga": 0.7568,
+            "failure_categories": {
+              "correct_at_target": 84,
+              "under_forgetting": 3,
+              "over_forgetting": 0,
+              "wrong_branch": 21,
+              "refusal": 0,
+              "hallucination": 3
+            }
+          },
+          "numeric": {
+            "num_queries": 110,
+            "filr": 0.0,
+            "tga": 0.5909,
+            "failure_categories": {
+              "correct_at_target": 65,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 14,
+              "refusal": 0,
+              "hallucination": 31
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 143,
+            "filr": 0.0,
+            "tga": 0.6643,
+            "failure_categories": {
+              "correct_at_target": 95,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 25,
+              "refusal": 0,
+              "hallucination": 23
+            }
+          },
+          "2": {
+            "num_queries": 34,
+            "filr": 0.0,
+            "tga": 0.4118,
+            "failure_categories": {
+              "correct_at_target": 14,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 10,
+              "refusal": 0,
+              "hallucination": 10
+            }
+          },
+          "3": {
+            "num_queries": 33,
+            "filr": 0.0909,
+            "tga": 0.8788,
+            "failure_categories": {
+              "correct_at_target": 29,
+              "under_forgetting": 3,
+              "over_forgetting": 0,
+              "wrong_branch": 0,
+              "refusal": 0,
+              "hallucination": 1
+            }
+          },
+          "4": {
+            "num_queries": 11,
+            "filr": 0.0,
+            "tga": 1.0,
+            "failure_categories": {
+              "correct_at_target": 11,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 0,
+              "refusal": 0,
+              "hallucination": 0
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MN": {
+        "split": "test",
+        "num_target_probes": 221,
+        "filr": 0.1584,
+        "tga": 0.1312,
+        "failure_taxonomy": {
+          "correct_at_target": 29,
+          "under_forgetting": 35,
+          "over_forgetting": 0,
+          "wrong_branch": 56,
+          "refusal": 2,
+          "hallucination": 99
+        },
+        "failure_rates": {
+          "under_forgetting": 0.1584,
+          "over_forgetting": 0.0,
+          "wrong_branch": 0.2534,
+          "refusal": 0.009,
+          "hallucination": 0.448
+        },
+        "ancestor_retention": {
+          "num_queries": 21,
+          "baseline_accuracy": 0.0952,
+          "post_unlearning_accuracy": 0.0952
+        },
+        "retain_same_entity": {
+          "num_queries": 48,
+          "baseline_accuracy": 0.5833,
+          "unmatched_rate": 0.3333
+        },
+        "retain_other_entity": {
+          "num_queries": 20,
+          "baseline_accuracy": 0.55,
+          "unmatched_rate": 0.4
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 201,
+            "filr": 0.1741,
+            "tga": 0.1244,
+            "failure_categories": {
+              "correct_at_target": 25,
+              "under_forgetting": 35,
+              "over_forgetting": 0,
+              "wrong_branch": 53,
+              "refusal": 2,
+              "hallucination": 86
+            }
+          },
+          "image_to_text": {
+            "num_queries": 0
+          },
+          "image_text_to_text": {
+            "num_queries": 20,
+            "filr": 0.0,
+            "tga": 0.2,
+            "failure_categories": {
+              "correct_at_target": 4,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 3,
+              "refusal": 0,
+              "hallucination": 13
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 111,
+            "filr": 0.2523,
+            "tga": 0.2252,
+            "failure_categories": {
+              "correct_at_target": 25,
+              "under_forgetting": 28,
+              "over_forgetting": 0,
+              "wrong_branch": 36,
+              "refusal": 2,
+              "hallucination": 20
+            }
+          },
+          "numeric": {
+            "num_queries": 110,
+            "filr": 0.0636,
+            "tga": 0.0364,
+            "failure_categories": {
+              "correct_at_target": 4,
+              "under_forgetting": 7,
+              "over_forgetting": 0,
+              "wrong_branch": 20,
+              "refusal": 0,
+              "hallucination": 79
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 143,
+            "filr": 0.021,
+            "tga": 0.1818,
+            "failure_categories": {
+              "correct_at_target": 26,
+              "under_forgetting": 3,
+              "over_forgetting": 0,
+              "wrong_branch": 36,
+              "refusal": 0,
+              "hallucination": 78
+            }
+          },
+          "2": {
+            "num_queries": 34,
+            "filr": 0.2059,
+            "tga": 0.0882,
+            "failure_categories": {
+              "correct_at_target": 3,
+              "under_forgetting": 7,
+              "over_forgetting": 0,
+              "wrong_branch": 17,
+              "refusal": 0,
+              "hallucination": 7
+            }
+          },
+          "3": {
+            "num_queries": 33,
+            "filr": 0.6667,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 22,
+              "over_forgetting": 0,
+              "wrong_branch": 1,
+              "refusal": 1,
+              "hallucination": 9
+            }
+          },
+          "4": {
+            "num_queries": 11,
+            "filr": 0.2727,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 3,
+              "over_forgetting": 0,
+              "wrong_branch": 2,
+              "refusal": 1,
+              "hallucination": 5
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      }
+    },
+    "train": {
+      "BASE": {
+        "split": "train",
+        "num_target_probes": 221,
+        "filr": 0.0905,
+        "tga": 0.086,
+        "failure_taxonomy": {
+          "correct_at_target": 19,
+          "under_forgetting": 20,
+          "over_forgetting": 6,
+          "wrong_branch": 76,
+          "refusal": 37,
+          "hallucination": 63
+        },
+        "failure_rates": {
+          "under_forgetting": 0.0905,
+          "over_forgetting": 0.0271,
+          "wrong_branch": 0.3439,
+          "refusal": 0.1674,
+          "hallucination": 0.2851
+        },
+        "ancestor_retention": {
+          "num_queries": 21,
+          "baseline_accuracy": 0.1429,
+          "post_unlearning_accuracy": 0.1429
+        },
+        "retain_same_entity": {
+          "num_queries": 48,
+          "baseline_accuracy": 0.0,
+          "unmatched_rate": 0.7917
+        },
+        "retain_other_entity": {
+          "num_queries": 20,
+          "baseline_accuracy": 0.0,
+          "unmatched_rate": 0.85
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 201,
+            "filr": 0.0846,
+            "tga": 0.0796,
+            "failure_categories": {
+              "correct_at_target": 16,
+              "under_forgetting": 17,
+              "over_forgetting": 5,
+              "wrong_branch": 69,
+              "refusal": 34,
+              "hallucination": 60
+            }
+          },
+          "image_to_text": {
+            "num_queries": 0
+          },
+          "image_text_to_text": {
+            "num_queries": 20,
+            "filr": 0.15,
+            "tga": 0.15,
+            "failure_categories": {
+              "correct_at_target": 3,
+              "under_forgetting": 3,
+              "over_forgetting": 1,
+              "wrong_branch": 7,
+              "refusal": 3,
+              "hallucination": 3
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 111,
+            "filr": 0.1712,
+            "tga": 0.1622,
+            "failure_categories": {
+              "correct_at_target": 18,
+              "under_forgetting": 19,
+              "over_forgetting": 6,
+              "wrong_branch": 30,
+              "refusal": 16,
+              "hallucination": 22
+            }
+          },
+          "numeric": {
+            "num_queries": 110,
+            "filr": 0.0091,
+            "tga": 0.0091,
+            "failure_categories": {
+              "correct_at_target": 1,
+              "under_forgetting": 1,
+              "over_forgetting": 0,
+              "wrong_branch": 46,
+              "refusal": 21,
+              "hallucination": 41
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 143,
+            "filr": 0.014,
+            "tga": 0.1189,
+            "failure_categories": {
+              "correct_at_target": 17,
+              "under_forgetting": 2,
+              "over_forgetting": 0,
+              "wrong_branch": 60,
+              "refusal": 26,
+              "hallucination": 38
+            }
+          },
+          "2": {
+            "num_queries": 34,
+            "filr": 0.0,
+            "tga": 0.0588,
+            "failure_categories": {
+              "correct_at_target": 2,
+              "under_forgetting": 0,
+              "over_forgetting": 6,
+              "wrong_branch": 7,
+              "refusal": 6,
+              "hallucination": 13
+            }
+          },
+          "3": {
+            "num_queries": 33,
+            "filr": 0.3333,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 11,
+              "over_forgetting": 0,
+              "wrong_branch": 6,
+              "refusal": 5,
+              "hallucination": 11
+            }
+          },
+          "4": {
+            "num_queries": 11,
+            "filr": 0.6364,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 7,
+              "over_forgetting": 0,
+              "wrong_branch": 3,
+              "refusal": 0,
+              "hallucination": 1
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MF": {
+        "split": "train",
+        "num_target_probes": 221,
+        "filr": 0.6154,
+        "tga": 0.0814,
+        "failure_taxonomy": {
+          "correct_at_target": 18,
+          "under_forgetting": 136,
+          "over_forgetting": 0,
+          "wrong_branch": 34,
+          "refusal": 0,
+          "hallucination": 33
+        },
+        "failure_rates": {
+          "under_forgetting": 0.6154,
+          "over_forgetting": 0.0,
+          "wrong_branch": 0.1538,
+          "refusal": 0.0,
+          "hallucination": 0.1493
+        },
+        "ancestor_retention": {
+          "num_queries": 21,
+          "baseline_accuracy": 0.1429,
+          "post_unlearning_accuracy": 0.1429
+        },
+        "retain_same_entity": {
+          "num_queries": 48,
+          "baseline_accuracy": 0.6875,
+          "unmatched_rate": 0.2292
+        },
+        "retain_other_entity": {
+          "num_queries": 20,
+          "baseline_accuracy": 0.8,
+          "unmatched_rate": 0.15
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 201,
+            "filr": 0.6368,
+            "tga": 0.0597,
+            "failure_categories": {
+              "correct_at_target": 12,
+              "under_forgetting": 128,
+              "over_forgetting": 0,
+              "wrong_branch": 31,
+              "refusal": 0,
+              "hallucination": 30
+            }
+          },
+          "image_to_text": {
+            "num_queries": 0
+          },
+          "image_text_to_text": {
+            "num_queries": 20,
+            "filr": 0.4,
+            "tga": 0.3,
+            "failure_categories": {
+              "correct_at_target": 6,
+              "under_forgetting": 8,
+              "over_forgetting": 0,
+              "wrong_branch": 3,
+              "refusal": 0,
+              "hallucination": 3
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 111,
+            "filr": 0.6306,
+            "tga": 0.1441,
+            "failure_categories": {
+              "correct_at_target": 16,
+              "under_forgetting": 70,
+              "over_forgetting": 0,
+              "wrong_branch": 14,
+              "refusal": 0,
+              "hallucination": 11
+            }
+          },
+          "numeric": {
+            "num_queries": 110,
+            "filr": 0.6,
+            "tga": 0.0182,
+            "failure_categories": {
+              "correct_at_target": 2,
+              "under_forgetting": 66,
+              "over_forgetting": 0,
+              "wrong_branch": 20,
+              "refusal": 0,
+              "hallucination": 22
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 143,
+            "filr": 0.6364,
+            "tga": 0.1119,
+            "failure_categories": {
+              "correct_at_target": 16,
+              "under_forgetting": 91,
+              "over_forgetting": 0,
+              "wrong_branch": 19,
+              "refusal": 0,
+              "hallucination": 17
+            }
+          },
+          "2": {
+            "num_queries": 34,
+            "filr": 0.2941,
+            "tga": 0.0588,
+            "failure_categories": {
+              "correct_at_target": 2,
+              "under_forgetting": 10,
+              "over_forgetting": 0,
+              "wrong_branch": 10,
+              "refusal": 0,
+              "hallucination": 12
+            }
+          },
+          "3": {
+            "num_queries": 33,
+            "filr": 0.8182,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 27,
+              "over_forgetting": 0,
+              "wrong_branch": 5,
+              "refusal": 0,
+              "hallucination": 1
+            }
+          },
+          "4": {
+            "num_queries": 11,
+            "filr": 0.7273,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 8,
+              "over_forgetting": 0,
+              "wrong_branch": 0,
+              "refusal": 0,
+              "hallucination": 3
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MG": {
+        "split": "train",
+        "num_target_probes": 221,
+        "filr": 0.0181,
+        "tga": 0.629,
+        "failure_taxonomy": {
+          "correct_at_target": 139,
+          "under_forgetting": 4,
+          "over_forgetting": 1,
+          "wrong_branch": 35,
+          "refusal": 0,
+          "hallucination": 42
+        },
+        "failure_rates": {
+          "under_forgetting": 0.0181,
+          "over_forgetting": 0.0045,
+          "wrong_branch": 0.1584,
+          "refusal": 0.0,
+          "hallucination": 0.19
+        },
+        "ancestor_retention": {
+          "num_queries": 21,
+          "baseline_accuracy": 0.5238,
+          "post_unlearning_accuracy": 0.5238
+        },
+        "retain_same_entity": {
+          "num_queries": 48,
+          "baseline_accuracy": 0.5625,
+          "unmatched_rate": 0.2917
+        },
+        "retain_other_entity": {
+          "num_queries": 20,
+          "baseline_accuracy": 0.5,
+          "unmatched_rate": 0.3
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 201,
+            "filr": 0.0199,
+            "tga": 0.6119,
+            "failure_categories": {
+              "correct_at_target": 123,
+              "under_forgetting": 4,
+              "over_forgetting": 1,
+              "wrong_branch": 33,
+              "refusal": 0,
+              "hallucination": 40
+            }
+          },
+          "image_to_text": {
+            "num_queries": 0
+          },
+          "image_text_to_text": {
+            "num_queries": 20,
+            "filr": 0.0,
+            "tga": 0.8,
+            "failure_categories": {
+              "correct_at_target": 16,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 2,
+              "refusal": 0,
+              "hallucination": 2
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 111,
+            "filr": 0.036,
+            "tga": 0.6937,
+            "failure_categories": {
+              "correct_at_target": 77,
+              "under_forgetting": 4,
+              "over_forgetting": 1,
+              "wrong_branch": 22,
+              "refusal": 0,
+              "hallucination": 7
+            }
+          },
+          "numeric": {
+            "num_queries": 110,
+            "filr": 0.0,
+            "tga": 0.5636,
+            "failure_categories": {
+              "correct_at_target": 62,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 13,
+              "refusal": 0,
+              "hallucination": 35
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 143,
+            "filr": 0.0,
+            "tga": 0.6503,
+            "failure_categories": {
+              "correct_at_target": 93,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 25,
+              "refusal": 0,
+              "hallucination": 25
+            }
+          },
+          "2": {
+            "num_queries": 34,
+            "filr": 0.0,
+            "tga": 0.2353,
+            "failure_categories": {
+              "correct_at_target": 8,
+              "under_forgetting": 0,
+              "over_forgetting": 1,
+              "wrong_branch": 10,
+              "refusal": 0,
+              "hallucination": 15
+            }
+          },
+          "3": {
+            "num_queries": 33,
+            "filr": 0.1212,
+            "tga": 0.8485,
+            "failure_categories": {
+              "correct_at_target": 28,
+              "under_forgetting": 4,
+              "over_forgetting": 0,
+              "wrong_branch": 0,
+              "refusal": 0,
+              "hallucination": 1
+            }
+          },
+          "4": {
+            "num_queries": 11,
+            "filr": 0.0,
+            "tga": 0.9091,
+            "failure_categories": {
+              "correct_at_target": 10,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 0,
+              "refusal": 0,
+              "hallucination": 1
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MN": {
+        "split": "train",
+        "num_target_probes": 221,
+        "filr": 0.1765,
+        "tga": 0.1222,
+        "failure_taxonomy": {
+          "correct_at_target": 27,
+          "under_forgetting": 39,
+          "over_forgetting": 0,
+          "wrong_branch": 64,
+          "refusal": 1,
+          "hallucination": 90
+        },
+        "failure_rates": {
+          "under_forgetting": 0.1765,
+          "over_forgetting": 0.0,
+          "wrong_branch": 0.2896,
+          "refusal": 0.0045,
+          "hallucination": 0.4072
+        },
+        "ancestor_retention": {
+          "num_queries": 21,
+          "baseline_accuracy": 0.0952,
+          "post_unlearning_accuracy": 0.0952
+        },
+        "retain_same_entity": {
+          "num_queries": 48,
+          "baseline_accuracy": 0.5417,
+          "unmatched_rate": 0.3542
+        },
+        "retain_other_entity": {
+          "num_queries": 20,
+          "baseline_accuracy": 0.65,
+          "unmatched_rate": 0.35
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 201,
+            "filr": 0.194,
+            "tga": 0.1144,
+            "failure_categories": {
+              "correct_at_target": 23,
+              "under_forgetting": 39,
+              "over_forgetting": 0,
+              "wrong_branch": 60,
+              "refusal": 1,
+              "hallucination": 78
+            }
+          },
+          "image_to_text": {
+            "num_queries": 0
+          },
+          "image_text_to_text": {
+            "num_queries": 20,
+            "filr": 0.0,
+            "tga": 0.2,
+            "failure_categories": {
+              "correct_at_target": 4,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 4,
+              "refusal": 0,
+              "hallucination": 12
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 111,
+            "filr": 0.2703,
+            "tga": 0.2162,
+            "failure_categories": {
+              "correct_at_target": 24,
+              "under_forgetting": 30,
+              "over_forgetting": 0,
+              "wrong_branch": 40,
+              "refusal": 0,
+              "hallucination": 17
+            }
+          },
+          "numeric": {
+            "num_queries": 110,
+            "filr": 0.0818,
+            "tga": 0.0273,
+            "failure_categories": {
+              "correct_at_target": 3,
+              "under_forgetting": 9,
+              "over_forgetting": 0,
+              "wrong_branch": 24,
+              "refusal": 1,
+              "hallucination": 73
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 143,
+            "filr": 0.042,
+            "tga": 0.1748,
+            "failure_categories": {
+              "correct_at_target": 25,
+              "under_forgetting": 6,
+              "over_forgetting": 0,
+              "wrong_branch": 44,
+              "refusal": 1,
+              "hallucination": 67
+            }
+          },
+          "2": {
+            "num_queries": 34,
+            "filr": 0.1765,
+            "tga": 0.0588,
+            "failure_categories": {
+              "correct_at_target": 2,
+              "under_forgetting": 6,
+              "over_forgetting": 0,
+              "wrong_branch": 17,
+              "refusal": 0,
+              "hallucination": 9
+            }
+          },
+          "3": {
+            "num_queries": 33,
+            "filr": 0.6667,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 22,
+              "over_forgetting": 0,
+              "wrong_branch": 0,
+              "refusal": 0,
+              "hallucination": 11
+            }
+          },
+          "4": {
+            "num_queries": 11,
+            "filr": 0.4545,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 5,
+              "over_forgetting": 0,
+              "wrong_branch": 3,
+              "refusal": 0,
+              "hallucination": 3
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      }
+    },
+    "val": {
+      "BASE": {
+        "split": "val",
+        "num_target_probes": 221,
+        "filr": 0.0995,
+        "tga": 0.0995,
+        "failure_taxonomy": {
+          "correct_at_target": 22,
+          "under_forgetting": 22,
+          "over_forgetting": 4,
+          "wrong_branch": 93,
+          "refusal": 20,
+          "hallucination": 60
+        },
+        "failure_rates": {
+          "under_forgetting": 0.0995,
+          "over_forgetting": 0.0181,
+          "wrong_branch": 0.4208,
+          "refusal": 0.0905,
+          "hallucination": 0.2715
+        },
+        "ancestor_retention": {
+          "num_queries": 21,
+          "baseline_accuracy": 0.1429,
+          "post_unlearning_accuracy": 0.1429
+        },
+        "retain_same_entity": {
+          "num_queries": 48,
+          "baseline_accuracy": 0.0,
+          "unmatched_rate": 0.8125
+        },
+        "retain_other_entity": {
+          "num_queries": 20,
+          "baseline_accuracy": 0.0,
+          "unmatched_rate": 0.9
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 201,
+            "filr": 0.0995,
+            "tga": 0.0945,
+            "failure_categories": {
+              "correct_at_target": 19,
+              "under_forgetting": 20,
+              "over_forgetting": 4,
+              "wrong_branch": 85,
+              "refusal": 18,
+              "hallucination": 55
+            }
+          },
+          "image_to_text": {
+            "num_queries": 0
+          },
+          "image_text_to_text": {
+            "num_queries": 20,
+            "filr": 0.1,
+            "tga": 0.15,
+            "failure_categories": {
+              "correct_at_target": 3,
+              "under_forgetting": 2,
+              "over_forgetting": 0,
+              "wrong_branch": 8,
+              "refusal": 2,
+              "hallucination": 5
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 111,
+            "filr": 0.1982,
+            "tga": 0.1892,
+            "failure_categories": {
+              "correct_at_target": 21,
+              "under_forgetting": 22,
+              "over_forgetting": 4,
+              "wrong_branch": 38,
+              "refusal": 8,
+              "hallucination": 18
+            }
+          },
+          "numeric": {
+            "num_queries": 110,
+            "filr": 0.0,
+            "tga": 0.0091,
+            "failure_categories": {
+              "correct_at_target": 1,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 55,
+              "refusal": 12,
+              "hallucination": 42
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 143,
+            "filr": 0.014,
+            "tga": 0.1399,
+            "failure_categories": {
+              "correct_at_target": 20,
+              "under_forgetting": 2,
+              "over_forgetting": 0,
+              "wrong_branch": 68,
+              "refusal": 16,
+              "hallucination": 37
+            }
+          },
+          "2": {
+            "num_queries": 34,
+            "filr": 0.0,
+            "tga": 0.0588,
+            "failure_categories": {
+              "correct_at_target": 2,
+              "under_forgetting": 0,
+              "over_forgetting": 4,
+              "wrong_branch": 14,
+              "refusal": 2,
+              "hallucination": 12
+            }
+          },
+          "3": {
+            "num_queries": 33,
+            "filr": 0.4242,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 14,
+              "over_forgetting": 0,
+              "wrong_branch": 8,
+              "refusal": 2,
+              "hallucination": 9
+            }
+          },
+          "4": {
+            "num_queries": 11,
+            "filr": 0.5455,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 6,
+              "over_forgetting": 0,
+              "wrong_branch": 3,
+              "refusal": 0,
+              "hallucination": 2
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MF": {
+        "split": "val",
+        "num_target_probes": 221,
+        "filr": 0.6063,
+        "tga": 0.0995,
+        "failure_taxonomy": {
+          "correct_at_target": 22,
+          "under_forgetting": 134,
+          "over_forgetting": 0,
+          "wrong_branch": 36,
+          "refusal": 0,
+          "hallucination": 29
+        },
+        "failure_rates": {
+          "under_forgetting": 0.6063,
+          "over_forgetting": 0.0,
+          "wrong_branch": 0.1629,
+          "refusal": 0.0,
+          "hallucination": 0.1312
+        },
+        "ancestor_retention": {
+          "num_queries": 21,
+          "baseline_accuracy": 0.1905,
+          "post_unlearning_accuracy": 0.1905
+        },
+        "retain_same_entity": {
+          "num_queries": 48,
+          "baseline_accuracy": 0.625,
+          "unmatched_rate": 0.2708
+        },
+        "retain_other_entity": {
+          "num_queries": 20,
+          "baseline_accuracy": 0.7,
+          "unmatched_rate": 0.3
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 201,
+            "filr": 0.6219,
+            "tga": 0.0846,
+            "failure_categories": {
+              "correct_at_target": 17,
+              "under_forgetting": 125,
+              "over_forgetting": 0,
+              "wrong_branch": 31,
+              "refusal": 0,
+              "hallucination": 28
+            }
+          },
+          "image_to_text": {
+            "num_queries": 0
+          },
+          "image_text_to_text": {
+            "num_queries": 20,
+            "filr": 0.45,
+            "tga": 0.25,
+            "failure_categories": {
+              "correct_at_target": 5,
+              "under_forgetting": 9,
+              "over_forgetting": 0,
+              "wrong_branch": 5,
+              "refusal": 0,
+              "hallucination": 1
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 111,
+            "filr": 0.5946,
+            "tga": 0.1712,
+            "failure_categories": {
+              "correct_at_target": 19,
+              "under_forgetting": 66,
+              "over_forgetting": 0,
+              "wrong_branch": 16,
+              "refusal": 0,
+              "hallucination": 10
+            }
+          },
+          "numeric": {
+            "num_queries": 110,
+            "filr": 0.6182,
+            "tga": 0.0273,
+            "failure_categories": {
+              "correct_at_target": 3,
+              "under_forgetting": 68,
+              "over_forgetting": 0,
+              "wrong_branch": 20,
+              "refusal": 0,
+              "hallucination": 19
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 143,
+            "filr": 0.6084,
+            "tga": 0.1329,
+            "failure_categories": {
+              "correct_at_target": 19,
+              "under_forgetting": 87,
+              "over_forgetting": 0,
+              "wrong_branch": 23,
+              "refusal": 0,
+              "hallucination": 14
+            }
+          },
+          "2": {
+            "num_queries": 34,
+            "filr": 0.3529,
+            "tga": 0.0882,
+            "failure_categories": {
+              "correct_at_target": 3,
+              "under_forgetting": 12,
+              "over_forgetting": 0,
+              "wrong_branch": 9,
+              "refusal": 0,
+              "hallucination": 10
+            }
+          },
+          "3": {
+            "num_queries": 33,
+            "filr": 0.7879,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 26,
+              "over_forgetting": 0,
+              "wrong_branch": 4,
+              "refusal": 0,
+              "hallucination": 3
+            }
+          },
+          "4": {
+            "num_queries": 11,
+            "filr": 0.8182,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 9,
+              "over_forgetting": 0,
+              "wrong_branch": 0,
+              "refusal": 0,
+              "hallucination": 2
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MG": {
+        "split": "val",
+        "num_target_probes": 221,
+        "filr": 0.0136,
+        "tga": 0.6425,
+        "failure_taxonomy": {
+          "correct_at_target": 142,
+          "under_forgetting": 3,
+          "over_forgetting": 2,
+          "wrong_branch": 30,
+          "refusal": 0,
+          "hallucination": 44
+        },
+        "failure_rates": {
+          "under_forgetting": 0.0136,
+          "over_forgetting": 0.009,
+          "wrong_branch": 0.1357,
+          "refusal": 0.0,
+          "hallucination": 0.1991
+        },
+        "ancestor_retention": {
+          "num_queries": 21,
+          "baseline_accuracy": 0.5714,
+          "post_unlearning_accuracy": 0.5714
+        },
+        "retain_same_entity": {
+          "num_queries": 48,
+          "baseline_accuracy": 0.5833,
+          "unmatched_rate": 0.2917
+        },
+        "retain_other_entity": {
+          "num_queries": 20,
+          "baseline_accuracy": 0.7,
+          "unmatched_rate": 0.2
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 201,
+            "filr": 0.0149,
+            "tga": 0.6219,
+            "failure_categories": {
+              "correct_at_target": 125,
+              "under_forgetting": 3,
+              "over_forgetting": 2,
+              "wrong_branch": 28,
+              "refusal": 0,
+              "hallucination": 43
+            }
+          },
+          "image_to_text": {
+            "num_queries": 0
+          },
+          "image_text_to_text": {
+            "num_queries": 20,
+            "filr": 0.0,
+            "tga": 0.85,
+            "failure_categories": {
+              "correct_at_target": 17,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 2,
+              "refusal": 0,
+              "hallucination": 1
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 111,
+            "filr": 0.027,
+            "tga": 0.6937,
+            "failure_categories": {
+              "correct_at_target": 77,
+              "under_forgetting": 3,
+              "over_forgetting": 2,
+              "wrong_branch": 20,
+              "refusal": 0,
+              "hallucination": 9
+            }
+          },
+          "numeric": {
+            "num_queries": 110,
+            "filr": 0.0,
+            "tga": 0.5909,
+            "failure_categories": {
+              "correct_at_target": 65,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 10,
+              "refusal": 0,
+              "hallucination": 35
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 143,
+            "filr": 0.0,
+            "tga": 0.6783,
+            "failure_categories": {
+              "correct_at_target": 97,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 20,
+              "refusal": 0,
+              "hallucination": 26
+            }
+          },
+          "2": {
+            "num_queries": 34,
+            "filr": 0.0,
+            "tga": 0.2941,
+            "failure_categories": {
+              "correct_at_target": 10,
+              "under_forgetting": 0,
+              "over_forgetting": 2,
+              "wrong_branch": 10,
+              "refusal": 0,
+              "hallucination": 12
+            }
+          },
+          "3": {
+            "num_queries": 33,
+            "filr": 0.0909,
+            "tga": 0.7879,
+            "failure_categories": {
+              "correct_at_target": 26,
+              "under_forgetting": 3,
+              "over_forgetting": 0,
+              "wrong_branch": 0,
+              "refusal": 0,
+              "hallucination": 4
+            }
+          },
+          "4": {
+            "num_queries": 11,
+            "filr": 0.0,
+            "tga": 0.8182,
+            "failure_categories": {
+              "correct_at_target": 9,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 0,
+              "refusal": 0,
+              "hallucination": 2
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MN": {
+        "split": "val",
+        "num_target_probes": 221,
+        "filr": 0.1674,
+        "tga": 0.1357,
+        "failure_taxonomy": {
+          "correct_at_target": 30,
+          "under_forgetting": 37,
+          "over_forgetting": 1,
+          "wrong_branch": 66,
+          "refusal": 1,
+          "hallucination": 86
+        },
+        "failure_rates": {
+          "under_forgetting": 0.1674,
+          "over_forgetting": 0.0045,
+          "wrong_branch": 0.2986,
+          "refusal": 0.0045,
+          "hallucination": 0.3891
+        },
+        "ancestor_retention": {
+          "num_queries": 21,
+          "baseline_accuracy": 0.1429,
+          "post_unlearning_accuracy": 0.1429
+        },
+        "retain_same_entity": {
+          "num_queries": 48,
+          "baseline_accuracy": 0.5625,
+          "unmatched_rate": 0.375
+        },
+        "retain_other_entity": {
+          "num_queries": 20,
+          "baseline_accuracy": 0.5,
+          "unmatched_rate": 0.45
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 201,
+            "filr": 0.1841,
+            "tga": 0.1343,
+            "failure_categories": {
+              "correct_at_target": 27,
+              "under_forgetting": 37,
+              "over_forgetting": 1,
+              "wrong_branch": 61,
+              "refusal": 1,
+              "hallucination": 74
+            }
+          },
+          "image_to_text": {
+            "num_queries": 0
+          },
+          "image_text_to_text": {
+            "num_queries": 20,
+            "filr": 0.0,
+            "tga": 0.15,
+            "failure_categories": {
+              "correct_at_target": 3,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 5,
+              "refusal": 0,
+              "hallucination": 12
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 111,
+            "filr": 0.2793,
+            "tga": 0.2072,
+            "failure_categories": {
+              "correct_at_target": 23,
+              "under_forgetting": 31,
+              "over_forgetting": 1,
+              "wrong_branch": 40,
+              "refusal": 1,
+              "hallucination": 15
+            }
+          },
+          "numeric": {
+            "num_queries": 110,
+            "filr": 0.0545,
+            "tga": 0.0636,
+            "failure_categories": {
+              "correct_at_target": 7,
+              "under_forgetting": 6,
+              "over_forgetting": 0,
+              "wrong_branch": 26,
+              "refusal": 0,
+              "hallucination": 71
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 143,
+            "filr": 0.035,
+            "tga": 0.1888,
+            "failure_categories": {
+              "correct_at_target": 27,
+              "under_forgetting": 5,
+              "over_forgetting": 0,
+              "wrong_branch": 43,
+              "refusal": 0,
+              "hallucination": 68
+            }
+          },
+          "2": {
+            "num_queries": 34,
+            "filr": 0.1765,
+            "tga": 0.0882,
+            "failure_categories": {
+              "correct_at_target": 3,
+              "under_forgetting": 6,
+              "over_forgetting": 1,
+              "wrong_branch": 18,
+              "refusal": 0,
+              "hallucination": 6
+            }
+          },
+          "3": {
+            "num_queries": 33,
+            "filr": 0.6364,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 21,
+              "over_forgetting": 0,
+              "wrong_branch": 2,
+              "refusal": 1,
+              "hallucination": 9
+            }
+          },
+          "4": {
+            "num_queries": 11,
+            "filr": 0.4545,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 5,
+              "over_forgetting": 0,
+              "wrong_branch": 3,
+              "refusal": 0,
+              "hallucination": 3
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      }
+    },
+    "pooled": {
+      "BASE": {
+        "split": "pooled",
+        "num_target_probes": 663,
+        "filr": 0.0905,
+        "tga": 0.0965,
+        "failure_taxonomy": {
+          "correct_at_target": 64,
+          "under_forgetting": 60,
+          "over_forgetting": 17,
+          "wrong_branch": 253,
+          "refusal": 83,
+          "hallucination": 186
+        },
+        "failure_rates": {
+          "under_forgetting": 0.0905,
+          "over_forgetting": 0.0256,
+          "wrong_branch": 0.3816,
+          "refusal": 0.1252,
+          "hallucination": 0.2805
+        },
+        "ancestor_retention": {
+          "num_queries": 63,
+          "baseline_accuracy": 0.127,
+          "post_unlearning_accuracy": 0.127
+        },
+        "retain_same_entity": {
+          "num_queries": 144,
+          "baseline_accuracy": 0.0,
+          "unmatched_rate": 0.8056
+        },
+        "retain_other_entity": {
+          "num_queries": 60,
+          "baseline_accuracy": 0.0,
+          "unmatched_rate": 0.8833
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 603,
+            "filr": 0.0879,
+            "tga": 0.0912,
+            "failure_categories": {
+              "correct_at_target": 55,
+              "under_forgetting": 53,
+              "over_forgetting": 15,
+              "wrong_branch": 227,
+              "refusal": 77,
+              "hallucination": 176
+            }
+          },
+          "image_to_text": {
+            "num_queries": 0
+          },
+          "image_text_to_text": {
+            "num_queries": 60,
+            "filr": 0.1167,
+            "tga": 0.15,
+            "failure_categories": {
+              "correct_at_target": 9,
+              "under_forgetting": 7,
+              "over_forgetting": 2,
+              "wrong_branch": 26,
+              "refusal": 6,
+              "hallucination": 10
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 333,
+            "filr": 0.1772,
+            "tga": 0.1832,
+            "failure_categories": {
+              "correct_at_target": 61,
+              "under_forgetting": 59,
+              "over_forgetting": 17,
+              "wrong_branch": 107,
+              "refusal": 33,
+              "hallucination": 56
+            }
+          },
+          "numeric": {
+            "num_queries": 330,
+            "filr": 0.003,
+            "tga": 0.0091,
+            "failure_categories": {
+              "correct_at_target": 3,
+              "under_forgetting": 1,
+              "over_forgetting": 0,
+              "wrong_branch": 146,
+              "refusal": 50,
+              "hallucination": 130
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 429,
+            "filr": 0.0117,
+            "tga": 0.1375,
+            "failure_categories": {
+              "correct_at_target": 59,
+              "under_forgetting": 5,
+              "over_forgetting": 0,
+              "wrong_branch": 192,
+              "refusal": 59,
+              "hallucination": 114
+            }
+          },
+          "2": {
+            "num_queries": 102,
+            "filr": 0.0,
+            "tga": 0.049,
+            "failure_categories": {
+              "correct_at_target": 5,
+              "under_forgetting": 0,
+              "over_forgetting": 17,
+              "wrong_branch": 30,
+              "refusal": 10,
+              "hallucination": 40
+            }
+          },
+          "3": {
+            "num_queries": 99,
+            "filr": 0.3737,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 37,
+              "over_forgetting": 0,
+              "wrong_branch": 22,
+              "refusal": 13,
+              "hallucination": 27
+            }
+          },
+          "4": {
+            "num_queries": 33,
+            "filr": 0.5455,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 18,
+              "over_forgetting": 0,
+              "wrong_branch": 9,
+              "refusal": 1,
+              "hallucination": 5
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MF": {
+        "split": "pooled",
+        "num_target_probes": 663,
+        "filr": 0.6094,
+        "tga": 0.0965,
+        "failure_taxonomy": {
+          "correct_at_target": 64,
+          "under_forgetting": 404,
+          "over_forgetting": 1,
+          "wrong_branch": 103,
+          "refusal": 0,
+          "hallucination": 91
+        },
+        "failure_rates": {
+          "under_forgetting": 0.6094,
+          "over_forgetting": 0.0015,
+          "wrong_branch": 0.1554,
+          "refusal": 0.0,
+          "hallucination": 0.1373
+        },
+        "ancestor_retention": {
+          "num_queries": 63,
+          "baseline_accuracy": 0.1587,
+          "post_unlearning_accuracy": 0.1587
+        },
+        "retain_same_entity": {
+          "num_queries": 144,
+          "baseline_accuracy": 0.6597,
+          "unmatched_rate": 0.25
+        },
+        "retain_other_entity": {
+          "num_queries": 60,
+          "baseline_accuracy": 0.75,
+          "unmatched_rate": 0.2333
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 603,
+            "filr": 0.6285,
+            "tga": 0.0779,
+            "failure_categories": {
+              "correct_at_target": 47,
+              "under_forgetting": 379,
+              "over_forgetting": 1,
+              "wrong_branch": 92,
+              "refusal": 0,
+              "hallucination": 84
+            }
+          },
+          "image_to_text": {
+            "num_queries": 0
+          },
+          "image_text_to_text": {
+            "num_queries": 60,
+            "filr": 0.4167,
+            "tga": 0.2833,
+            "failure_categories": {
+              "correct_at_target": 17,
+              "under_forgetting": 25,
+              "over_forgetting": 0,
+              "wrong_branch": 11,
+              "refusal": 0,
+              "hallucination": 7
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 333,
+            "filr": 0.6066,
+            "tga": 0.1652,
+            "failure_categories": {
+              "correct_at_target": 55,
+              "under_forgetting": 202,
+              "over_forgetting": 1,
+              "wrong_branch": 44,
+              "refusal": 0,
+              "hallucination": 31
+            }
+          },
+          "numeric": {
+            "num_queries": 330,
+            "filr": 0.6121,
+            "tga": 0.0273,
+            "failure_categories": {
+              "correct_at_target": 9,
+              "under_forgetting": 202,
+              "over_forgetting": 0,
+              "wrong_branch": 59,
+              "refusal": 0,
+              "hallucination": 60
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 429,
+            "filr": 0.62,
+            "tga": 0.1282,
+            "failure_categories": {
+              "correct_at_target": 55,
+              "under_forgetting": 266,
+              "over_forgetting": 0,
+              "wrong_branch": 61,
+              "refusal": 0,
+              "hallucination": 47
+            }
+          },
+          "2": {
+            "num_queries": 102,
+            "filr": 0.3235,
+            "tga": 0.0882,
+            "failure_categories": {
+              "correct_at_target": 9,
+              "under_forgetting": 33,
+              "over_forgetting": 1,
+              "wrong_branch": 29,
+              "refusal": 0,
+              "hallucination": 30
+            }
+          },
+          "3": {
+            "num_queries": 99,
+            "filr": 0.8081,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 80,
+              "over_forgetting": 0,
+              "wrong_branch": 13,
+              "refusal": 0,
+              "hallucination": 6
+            }
+          },
+          "4": {
+            "num_queries": 33,
+            "filr": 0.7576,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 25,
+              "over_forgetting": 0,
+              "wrong_branch": 0,
+              "refusal": 0,
+              "hallucination": 8
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MG": {
+        "split": "pooled",
+        "num_target_probes": 663,
+        "filr": 0.0151,
+        "tga": 0.6486,
+        "failure_taxonomy": {
+          "correct_at_target": 430,
+          "under_forgetting": 10,
+          "over_forgetting": 3,
+          "wrong_branch": 100,
+          "refusal": 0,
+          "hallucination": 120
+        },
+        "failure_rates": {
+          "under_forgetting": 0.0151,
+          "over_forgetting": 0.0045,
+          "wrong_branch": 0.1508,
+          "refusal": 0.0,
+          "hallucination": 0.181
+        },
+        "ancestor_retention": {
+          "num_queries": 63,
+          "baseline_accuracy": 0.5397,
+          "post_unlearning_accuracy": 0.5397
+        },
+        "retain_same_entity": {
+          "num_queries": 144,
+          "baseline_accuracy": 0.5486,
+          "unmatched_rate": 0.2986
+        },
+        "retain_other_entity": {
+          "num_queries": 60,
+          "baseline_accuracy": 0.5833,
+          "unmatched_rate": 0.25
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 603,
+            "filr": 0.0166,
+            "tga": 0.6318,
+            "failure_categories": {
+              "correct_at_target": 381,
+              "under_forgetting": 10,
+              "over_forgetting": 3,
+              "wrong_branch": 94,
+              "refusal": 0,
+              "hallucination": 115
+            }
+          },
+          "image_to_text": {
+            "num_queries": 0
+          },
+          "image_text_to_text": {
+            "num_queries": 60,
+            "filr": 0.0,
+            "tga": 0.8167,
+            "failure_categories": {
+              "correct_at_target": 49,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 6,
+              "refusal": 0,
+              "hallucination": 5
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 333,
+            "filr": 0.03,
+            "tga": 0.7147,
+            "failure_categories": {
+              "correct_at_target": 238,
+              "under_forgetting": 10,
+              "over_forgetting": 3,
+              "wrong_branch": 63,
+              "refusal": 0,
+              "hallucination": 19
+            }
+          },
+          "numeric": {
+            "num_queries": 330,
+            "filr": 0.0,
+            "tga": 0.5818,
+            "failure_categories": {
+              "correct_at_target": 192,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 37,
+              "refusal": 0,
+              "hallucination": 101
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 429,
+            "filr": 0.0,
+            "tga": 0.6643,
+            "failure_categories": {
+              "correct_at_target": 285,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 70,
+              "refusal": 0,
+              "hallucination": 74
+            }
+          },
+          "2": {
+            "num_queries": 102,
+            "filr": 0.0,
+            "tga": 0.3137,
+            "failure_categories": {
+              "correct_at_target": 32,
+              "under_forgetting": 0,
+              "over_forgetting": 3,
+              "wrong_branch": 30,
+              "refusal": 0,
+              "hallucination": 37
+            }
+          },
+          "3": {
+            "num_queries": 99,
+            "filr": 0.101,
+            "tga": 0.8384,
+            "failure_categories": {
+              "correct_at_target": 83,
+              "under_forgetting": 10,
+              "over_forgetting": 0,
+              "wrong_branch": 0,
+              "refusal": 0,
+              "hallucination": 6
+            }
+          },
+          "4": {
+            "num_queries": 33,
+            "filr": 0.0,
+            "tga": 0.9091,
+            "failure_categories": {
+              "correct_at_target": 30,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 0,
+              "refusal": 0,
+              "hallucination": 3
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MN": {
+        "split": "pooled",
+        "num_target_probes": 663,
+        "filr": 0.1674,
+        "tga": 0.1297,
+        "failure_taxonomy": {
+          "correct_at_target": 86,
+          "under_forgetting": 111,
+          "over_forgetting": 1,
+          "wrong_branch": 186,
+          "refusal": 4,
+          "hallucination": 275
+        },
+        "failure_rates": {
+          "under_forgetting": 0.1674,
+          "over_forgetting": 0.0015,
+          "wrong_branch": 0.2805,
+          "refusal": 0.006,
+          "hallucination": 0.4148
+        },
+        "ancestor_retention": {
+          "num_queries": 63,
+          "baseline_accuracy": 0.1111,
+          "post_unlearning_accuracy": 0.1111
+        },
+        "retain_same_entity": {
+          "num_queries": 144,
+          "baseline_accuracy": 0.5625,
+          "unmatched_rate": 0.3542
+        },
+        "retain_other_entity": {
+          "num_queries": 60,
+          "baseline_accuracy": 0.5667,
+          "unmatched_rate": 0.4
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 603,
+            "filr": 0.1841,
+            "tga": 0.1244,
+            "failure_categories": {
+              "correct_at_target": 75,
+              "under_forgetting": 111,
+              "over_forgetting": 1,
+              "wrong_branch": 174,
+              "refusal": 4,
+              "hallucination": 238
+            }
+          },
+          "image_to_text": {
+            "num_queries": 0
+          },
+          "image_text_to_text": {
+            "num_queries": 60,
+            "filr": 0.0,
+            "tga": 0.1833,
+            "failure_categories": {
+              "correct_at_target": 11,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 12,
+              "refusal": 0,
+              "hallucination": 37
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 333,
+            "filr": 0.2673,
+            "tga": 0.2162,
+            "failure_categories": {
+              "correct_at_target": 72,
+              "under_forgetting": 89,
+              "over_forgetting": 1,
+              "wrong_branch": 116,
+              "refusal": 3,
+              "hallucination": 52
+            }
+          },
+          "numeric": {
+            "num_queries": 330,
+            "filr": 0.0667,
+            "tga": 0.0424,
+            "failure_categories": {
+              "correct_at_target": 14,
+              "under_forgetting": 22,
+              "over_forgetting": 0,
+              "wrong_branch": 70,
+              "refusal": 1,
+              "hallucination": 223
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 429,
+            "filr": 0.0326,
+            "tga": 0.1818,
+            "failure_categories": {
+              "correct_at_target": 78,
+              "under_forgetting": 14,
+              "over_forgetting": 0,
+              "wrong_branch": 123,
+              "refusal": 1,
+              "hallucination": 213
+            }
+          },
+          "2": {
+            "num_queries": 102,
+            "filr": 0.1863,
+            "tga": 0.0784,
+            "failure_categories": {
+              "correct_at_target": 8,
+              "under_forgetting": 19,
+              "over_forgetting": 1,
+              "wrong_branch": 52,
+              "refusal": 0,
+              "hallucination": 22
+            }
+          },
+          "3": {
+            "num_queries": 99,
+            "filr": 0.6566,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 65,
+              "over_forgetting": 0,
+              "wrong_branch": 3,
+              "refusal": 2,
+              "hallucination": 29
+            }
+          },
+          "4": {
+            "num_queries": 33,
+            "filr": 0.3939,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 13,
+              "over_forgetting": 0,
+              "wrong_branch": 8,
+              "refusal": 1,
+              "hallucination": 11
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      }
+    }
+  },
+  "hierarchy_metrics_note": "Frozen Iteration 8 research metrics (FILR, TGA, ancestor retention, under/over-forgetting, wrong-branch, refusal, hallucination, route/type/depth strata). TEST split is the PRIMARY basis; 'pooled' is secondary. These are the metrics Iteration 9's MF->MU baselines will be compared on (central comparison: MU ~= MG with retained non-target knowledge).",
   "separation_gate": {
     "passed": true,
     "reasons": [],

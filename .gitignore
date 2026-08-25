@@ -65,3 +65,4 @@ Thumbs.db
 # Iteration 7: checkpoints and generated predictions stay local
 data/checkpoints/
 data/mllmu_hier_smoke/predictions/
+!data/mllmu_hier_smoke/failure_exports/

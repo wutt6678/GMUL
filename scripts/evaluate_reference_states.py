@@ -51,10 +51,22 @@ def main() -> None:
         predictions_dir=smoke_dir / "predictions",
         batch_size=args.batch_size,
         rescore=args.rescore,
+        failure_export_dir=smoke_dir / "failure_exports",
     )
     gate = report["separation_gate"]
     log.info("GATE %s | reasons: %s",
              "PASSED" if gate["passed"] else "FAILED", gate["reasons"])
+    # Frozen Iteration 8 headline metrics, TEST split primary
+    for state, hm in report["hierarchy_metrics"]["test"].items():
+        log.info("[%s/TEST] FILR=%s TGA=%s | under=%s over=%s wrong=%s "
+                 "refusal=%s halluc=%s | ancestor_post=%s",
+                 state, hm["filr"], hm["tga"],
+                 hm["failure_rates"]["under_forgetting"],
+                 hm["failure_rates"]["over_forgetting"],
+                 hm["failure_rates"]["wrong_branch"],
+                 hm["failure_rates"]["refusal"],
+                 hm["failure_rates"]["hallucination"],
+                 hm["ancestor_retention"]["post_unlearning_accuracy"])
 
 
 if __name__ == "__main__":
