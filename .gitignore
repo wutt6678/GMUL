@@ -68,3 +68,8 @@ data/checkpoints/
 data/mllmu_hier_smoke/predictions/
 !data/mllmu_hier_smoke/failure_exports/
 download_salmu.sh
+
+# SALMU derived training pairs (rebuild via scripts/build_salmu_state_pairs.py)
+data/salmu_hierarchical/training/*.jsonl
+!data/salmu_hierarchical/training/state_pairs_manifest.json
+!data/reports/salmu_reference_eval.json

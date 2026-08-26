@@ -1,0 +1,72 @@
+{
+  "experiment_id": "salmu_iter10_reference_states",
+  "num_target_personas": 60,
+  "probes_per_kind_note": "one probe per (target persona, core attribute) with images",
+  "scores_by_state": {
+    "BASE": {
+      "num_probes": 180,
+      "num_preference_probes": 179,
+      "prefers_fine_rate": 0.2235,
+      "prefers_target_rate": 0.514,
+      "prefers_target_not_fine_rate": 0.514,
+      "mean_similarities": {
+        "fine": 0.1394,
+        "target": 0.1483,
+        "ancestor": 0.1454,
+        "sibling": 0.1322,
+        "generic": 0.2318
+      }
+    },
+    "MF": {
+      "num_probes": 180,
+      "num_preference_probes": 179,
+      "prefers_fine_rate": 0.7263,
+      "prefers_target_rate": 0.2737,
+      "prefers_target_not_fine_rate": 0.2737,
+      "mean_similarities": {
+        "fine": 0.3154,
+        "target": 0.3083,
+        "ancestor": 0.3087,
+        "sibling": 0.0593,
+        "generic": 0.2118
+      }
+    },
+    "MG": {
+      "num_probes": 180,
+      "num_preference_probes": 179,
+      "prefers_fine_rate": 0.2067,
+      "prefers_target_rate": 0.7933,
+      "prefers_target_not_fine_rate": 0.7933,
+      "mean_similarities": {
+        "fine": 0.2979,
+        "target": 0.3152,
+        "ancestor": 0.3145,
+        "sibling": 0.0624,
+        "generic": 0.2139
+      }
+    },
+    "MN": {
+      "num_probes": 180,
+      "num_preference_probes": 179,
+      "prefers_fine_rate": 0.4916,
+      "prefers_target_rate": 0.257,
+      "prefers_target_not_fine_rate": 0.257,
+      "mean_similarities": {
+        "fine": 0.1464,
+        "target": 0.1395,
+        "ancestor": 0.1391,
+        "sibling": 0.0585,
+        "generic": 0.2143
+      }
+    }
+  },
+  "reference_state_gate": {
+    "passed": true,
+    "reasons": [],
+    "definition": {
+      "MF": "prefers fine over {target, sibling}: >= 0.5 and >= MG/MN + 0.15",
+      "MG": "prefers target-not-fine >= 0.5, >= MN + 0.15, and not below its own fine preference",
+      "MN": "mean fine/target similarities within 0.05 of BASE (preference order is noise at chance level)"
+    }
+  }
+}
