@@ -1,0 +1,58 @@
+{
+  "core_semantic": [
+    "city",
+    "job",
+    "blood_type"
+  ],
+  "core_numeric": [],
+  "core_numeric_note": "SALMU personas carry no numeric granularity attributes (no dates/salaries/measurements); the phenomenon is tested on semantic granularity here.",
+  "unsupported": [
+    "name"
+  ],
+  "unsupported_note": "name is the identity anchor, not a granularity attribute",
+  "aux_redaction": [
+    "phone_number",
+    "emails",
+    "iban",
+    "credit_card",
+    "passport"
+  ],
+  "hierarchies": {
+    "city": {
+      "chain": [
+        "city",
+        "country"
+      ],
+      "region_note": "region unsupported: released metadata carries city + country only"
+    },
+    "job": {
+      "chain": [
+        "job",
+        "profession_class",
+        "sector"
+      ],
+      "taxonomy": "deterministic keyword rules, first match wins, fallback 'general professional/other'",
+      "num_unique_jobs": 393,
+      "num_fallback_jobs": 0,
+      "fallback_jobs": []
+    },
+    "blood_type": {
+      "chain": [
+        "full blood type",
+        "ABO group"
+      ]
+    }
+  },
+  "templates": {
+    "city": {
+      "1": "{name} lives in {value}."
+    },
+    "job": {
+      "1": "{name} works as {article} {value}.",
+      "2": "{name} works in the {value} sector."
+    },
+    "blood_type": {
+      "1": "{name}'s blood type is {value}."
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "purpose": "Identifiers that stay OUTSIDE the core hierarchical unlearning task (Iteration 10 agreement). They are listed only so future redaction experiments can find them in the RELEASED identities_metadata.json; no derived data is built here.",
+  "attributes": [
+    "phone_number",
+    "emails",
+    "iban",
+    "credit_card",
+    "passport"
+  ],
+  "source": "identities_metadata.json in cvc-mmu/salmubench-512-redistributed (read-only)",
+  "num_personas": 774
+}

@@ -67,3 +67,4 @@ Thumbs.db
 data/checkpoints/
 data/mllmu_hier_smoke/predictions/
 !data/mllmu_hier_smoke/failure_exports/
+download_salmu.sh
