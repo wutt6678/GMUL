@@ -292,7 +292,7 @@ def train_salmu_unlearning(
                         log.info("[%s] gd '%s' stopped at step %d "
                                  "(probe sim %.4f <= %.4f)",
                                  candidate_id, spec.name, global_step,
-                                 cur, gd_stop_sim)
+                                 cur, gd_stop_threshold)
         summary["epochs"].append({
             "epoch": epoch + 1,
             "losses": {name: round(sum(v) / len(v), 4)

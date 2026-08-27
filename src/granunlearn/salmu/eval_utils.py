@@ -167,3 +167,71 @@ def build_release_probes(repo_root: Path,
         target_ids, hierarchies, identities, fine_caps, images_by)
     return probes, target_ids
 
+
+def build_retain_probes(repo_root: Path, max_personas: int = 100,
+                        core_attrs: tuple = ("city", "job", "blood_type"),
+                        ) -> list[dict[str, Any]]:
+    """Collateral-damage probes over RETAIN personas.
+
+    One probe per (retain persona, core attribute): the first sorted
+    image paired with its released fine caption.  Retain personas are
+    trained identically (fine captions) in MF/MG/MN and in every MU
+    candidate's retain group, so their similarity is the SALMU analog
+    of Retain_same/Retain_other.  Deterministic, capped for cost.
+    """
+    from collections import defaultdict
+
+    from granunlearn.salmu.embedding_metrics import GENERIC_CAPTION
+
+    train_ds = locate_repo(REPOS["training_dataset"]["repo_id"], "dataset")
+    hier_dir = repo_root / "data" / "salmu_hierarchical"
+    manifest = json.loads(
+        (hier_dir / "training" / "state_pairs_manifest.json").read_text())
+    retain_ids = sorted(set(
+        [p["identity_id"] for p in
+         load_mf_pairs(hier_dir) if p["role"] == "retain"]))
+    retain_ids = retain_ids[:max_personas]
+
+    cap_meta = json.loads(
+        (train_ds / "sensitive_set_captions_metadata.json").read_text())
+    fine_caps: dict = defaultdict(lambda: defaultdict(list))
+    images_by: dict = defaultdict(lambda: defaultdict(list))
+    for fname in sorted(cap_meta):
+        meta = cap_meta[fname]
+        if meta["data_field"] not in core_attrs:
+            continue
+        iid = fname.split("_")[0]
+        if iid not in set(retain_ids):
+            continue
+        fine_caps[iid][meta["data_field"]].append(meta["caption"])
+        images_by[iid][meta["data_field"]].append(fname)
+
+    probes: list[dict[str, Any]] = []
+    for iid in retain_ids:
+        for attr in sorted(core_attrs):
+            images = sorted(images_by.get(iid, {}).get(attr, []))
+            fines = sorted(fine_caps.get(iid, {}).get(attr, []))
+            if not images or not fines:
+                continue
+            probes.append({
+                "identity_id": iid,
+                "attribute": attr,
+                "image_file": images[0],
+                "fine_caption": fines[0],
+                "target_caption": None,
+                "ancestor_caption": None,
+                "ancestor_is_target": None,
+                "sibling_caption": None,
+                "generic_caption": GENERIC_CAPTION,
+            })
+    return probes
+
+
+def load_mf_pairs(hier_dir: Path) -> list[dict]:
+    """MF released pairs as plain dicts (role/identity/attr fields)."""
+    pairs = []
+    with open(hier_dir / "training" / "MF.jsonl") as f:
+        for line in f:
+            pairs.append(json.loads(line))
+    return pairs
+

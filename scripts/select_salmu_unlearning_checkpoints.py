@@ -27,6 +27,7 @@ from granunlearn.salmu.eval_utils import (
     SalmuImageIndex,
     aggregate_probe_results,
     build_release_probes,
+    build_retain_probes,
     load_probe_cache,
     save_probe_cache,
     score_probes,
@@ -36,10 +37,11 @@ from granunlearn.salmu.unlearning import split_target_personas
 log = setup_logger("select_salmu_unlearning_checkpoints")
 
 SUMMARY_COMPONENTS = ("prefers_fine_rate", "prefers_target_not_fine_rate",
-                      "sim_fine", "sim_target", "sim_sibling")
+                      "sim_fine", "sim_target", "sim_sibling",
+                      "retain_fine_sim")
 
 
-def summary_vector(agg: dict) -> dict[str, float]:
+def summary_vector(agg: dict, retain_fine_sim: float | None) -> dict:
     sims = agg.get("mean_similarities") or {}
     vec = {
         "prefers_fine_rate": agg.get("prefers_fine_rate"),
@@ -48,6 +50,7 @@ def summary_vector(agg: dict) -> dict[str, float]:
         "sim_fine": sims.get("fine"),
         "sim_target": sims.get("target"),
         "sim_sibling": sims.get("sibling"),
+        "retain_fine_sim": retain_fine_sim,
     }
     return {k: v for k, v in vec.items() if v is not None}
 
@@ -102,29 +105,51 @@ def main() -> None:
     cache = load_probe_cache(cache_path) \
         if args.skip_existing else None
     cache = cache or {}
+    # Retain collateral-damage probes (same states; separate cache)
+    retain_cache_path = repo_root / "data" / "salmu_hierarchical" / \
+        "probe_sims_retain.json"
+    retain_cache = load_probe_cache(retain_cache_path) \
+        if args.skip_existing else None
+    retain_cache = retain_cache or {}
+    retain_probes = build_retain_probes(repo_root)
+    log.info("Built %d retain probes", len(retain_probes))
     image_index = None
     for state in states:
-        if state in cache:
+        need_target = state not in cache
+        need_retain = state not in retain_cache
+        if not need_target and not need_retain:
             log.info("[%s] reusing cached probe sims", state)
             continue
         if image_index is None:
             image_index = SalmuImageIndex(train_ds / "data")
-        cache[state] = score_probes(state, probes, image_index,
-                                    repo_root, args.device,
-                                    unlearn_root=unlearn_root)
+        if need_target:
+            cache[state] = score_probes(state, probes, image_index,
+                                        repo_root, args.device,
+                                        unlearn_root=unlearn_root)
+        if need_retain:
+            retain_cache[state] = score_probes(
+                state, retain_probes, image_index, repo_root,
+                args.device, unlearn_root=unlearn_root)
     save_probe_cache(cache_path, cache)
+    save_probe_cache(retain_cache_path, retain_cache)
 
-    # Selection on train+val personas only
+    def retain_sim(state: str) -> float | None:
+        agg = aggregate_probe_results(retain_cache[state])
+        return (agg.get("mean_similarities") or {}).get("fine")
+
+    # Selection on train+val personas only (retain probes are global:
+    # they measure collateral damage, not the forgetting target)
     mg_vec = summary_vector(aggregate_probe_results(
-        cache["MG"], trainval))
+        cache["MG"], trainval), retain_sim("MG"))
     report_rows = []
     for state in states:
         agg_tv = aggregate_probe_results(cache[state], trainval)
-        vec = summary_vector(agg_tv)
+        vec = summary_vector(agg_tv, retain_sim(state))
         dist, used = distance_to_mg(vec, mg_vec)
         report_rows.append({
             "candidate_id": state,
             "trainval_metrics": agg_tv,
+            "retain_fine_sim": retain_sim(state),
             "trainval_summary_vector": vec,
             "distance_to_MG_trainval": dist,
             "components_used": used,
@@ -158,7 +183,8 @@ def main() -> None:
         cid = row["candidate_id"]
         agg_test = aggregate_probe_results(cache[cid], test)
         row["test_metrics"] = agg_test
-        row["test_summary_vector"] = summary_vector(agg_test)
+        row["test_summary_vector"] = summary_vector(
+            agg_test, retain_sim(cid))
 
     report = {
         "experiment_id": "salmu_iter10_unlearning_selection",
