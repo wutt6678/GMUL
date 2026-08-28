@@ -75,3 +75,5 @@ data/salmu_hierarchical/training/*.jsonl
 !data/reports/salmu_reference_eval.json
 !data/reports/salmu_reference_eval.json
 !data/reports/salmu_unlearning_selection.json
+!data/reports/salmu_reference_provenance.json
+!data/reports/cross_dataset_comparison.json

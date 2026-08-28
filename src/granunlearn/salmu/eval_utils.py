@@ -38,26 +38,37 @@ class SalmuImageIndex:
 
 def load_clip(state: str, repo_root: Path, device: str,
               unlearn_root: Path | None = None):
-    """Load BASE (Clean), MF/MG/MN reference states, or MU candidates.
+    """Load BASE (Clean), COMPROMISED, MF/MG/MN reference states, or MU.
 
     MU candidates live under data/checkpoints/salmu_unlearn/{state}.
+    COMPROMISED is the released salmu-compromised CLIP checkpoint.
     """
     import open_clip
     import torch
     recipe = ClipRecipe()
-    clean = locate_repo(REPOS["clean_model"]["repo_id"], "model")
-    model, _, preprocess = open_clip.create_model_and_transforms(
-        recipe.arch,
-        pretrained=str(clean / "open_clip_model.safetensors"))
-    if state != "BASE":
-        ckpt = repo_root / "data" / "checkpoints" / "salmu" / state / \
-            "pytorch_model.bin"
-        if not ckpt.exists() and unlearn_root is not None:
-            ckpt = unlearn_root / state / "pytorch_model.bin"
-        if not ckpt.exists():
-            raise FileNotFoundError(f"Missing SALMU checkpoint: {ckpt}")
-        model.load_state_dict(torch.load(ckpt, map_location="cpu"))
-        log.info("[%s] loaded weights from %s", state, ckpt)
+
+    if state == "COMPROMISED":
+        comp = locate_repo(REPOS["compromised_model"]["repo_id"], "model")
+        ckpt_path = comp / "open_clip_pytorch_model.bin"
+        model, _, preprocess = open_clip.create_model_and_transforms(
+            recipe.arch, pretrained=str(ckpt_path))
+        log.info("[COMPROMISED] loaded released checkpoint from %s",
+                 ckpt_path)
+    else:
+        clean = locate_repo(REPOS["clean_model"]["repo_id"], "model")
+        model, _, preprocess = open_clip.create_model_and_transforms(
+            recipe.arch,
+            pretrained=str(clean / "open_clip_model.safetensors"))
+        if state != "BASE":
+            ckpt = repo_root / "data" / "checkpoints" / "salmu" / state / \
+                "pytorch_model.bin"
+            if not ckpt.exists() and unlearn_root is not None:
+                ckpt = unlearn_root / state / "pytorch_model.bin"
+            if not ckpt.exists():
+                raise FileNotFoundError(f"Missing SALMU checkpoint: {ckpt}")
+            model.load_state_dict(torch.load(ckpt, map_location="cpu"))
+            log.info("[%s] loaded weights from %s", state, ckpt)
+
     model = model.to(device).eval()
     tokenizer = open_clip.get_tokenizer(recipe.arch)
     return model, preprocess, tokenizer

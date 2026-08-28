@@ -1,0 +1,2161 @@
+[
+  {
+    "identity_id": "00000188",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1278,
+      "target": 0.1669,
+      "ancestor": 0.1669,
+      "sibling": 0.1791,
+      "generic": 0.2028
+    }
+  },
+  {
+    "identity_id": "00000188",
+    "attribute": "city",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1577,
+      "target": 0.1441,
+      "ancestor": 0.1441,
+      "sibling": 0.1402,
+      "generic": 0.2251
+    }
+  },
+  {
+    "identity_id": "00000188",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1204,
+      "target": 0.1615,
+      "ancestor": 0.1373,
+      "sibling": 0.1439,
+      "generic": 0.2237
+    }
+  },
+  {
+    "identity_id": "00000789",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1621,
+      "target": 0.1815,
+      "ancestor": 0.1815,
+      "sibling": 0.1719,
+      "generic": 0.2137
+    }
+  },
+  {
+    "identity_id": "00000789",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.125,
+      "target": 0.1445,
+      "ancestor": 0.1445,
+      "sibling": 0.136,
+      "generic": 0.2015
+    }
+  },
+  {
+    "identity_id": "00000789",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1781,
+      "target": 0.1963,
+      "ancestor": 0.1971,
+      "sibling": 0.134,
+      "generic": 0.2198
+    }
+  },
+  {
+    "identity_id": "00002486",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1619,
+      "target": 0.1586,
+      "ancestor": 0.1586,
+      "sibling": 0.1886,
+      "generic": 0.2097
+    }
+  },
+  {
+    "identity_id": "00002486",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.0816,
+      "target": 0.1064,
+      "ancestor": 0.1064,
+      "sibling": 0.0977,
+      "generic": 0.201
+    }
+  },
+  {
+    "identity_id": "00002486",
+    "attribute": "job",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1627,
+      "target": 0.1422,
+      "ancestor": 0.1558,
+      "sibling": 0.1264,
+      "generic": 0.2023
+    }
+  },
+  {
+    "identity_id": "00008993",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.124,
+      "target": 0.1347,
+      "ancestor": 0.1347,
+      "sibling": 0.1372,
+      "generic": 0.2134
+    }
+  },
+  {
+    "identity_id": "00008993",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.2157,
+      "target": 0.2231,
+      "ancestor": 0.2231,
+      "sibling": 0.1664,
+      "generic": 0.2542
+    }
+  },
+  {
+    "identity_id": "00008993",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.0895,
+      "target": 0.1307,
+      "ancestor": 0.1188,
+      "sibling": 0.1103,
+      "generic": 0.2183
+    }
+  },
+  {
+    "identity_id": "00009951",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1177,
+      "target": 0.1724,
+      "ancestor": 0.1724,
+      "sibling": 0.1634,
+      "generic": 0.2434
+    }
+  },
+  {
+    "identity_id": "00009951",
+    "attribute": "city",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1192,
+      "target": 0.1523,
+      "ancestor": 0.1523,
+      "sibling": 0.1562,
+      "generic": 0.2297
+    }
+  },
+  {
+    "identity_id": "00009951",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.143,
+      "target": 0.1467,
+      "ancestor": 0.1188,
+      "sibling": 0.1175,
+      "generic": 0.242
+    }
+  },
+  {
+    "identity_id": "00013680",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1518,
+      "target": 0.1592,
+      "ancestor": 0.1592,
+      "sibling": 0.1684,
+      "generic": 0.2274
+    }
+  },
+  {
+    "identity_id": "00013680",
+    "attribute": "city",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1445,
+      "target": 0.1575,
+      "ancestor": 0.1575,
+      "sibling": 0.1689,
+      "generic": 0.2044
+    }
+  },
+  {
+    "identity_id": "00013680",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.178,
+      "target": 0.2048,
+      "ancestor": 0.1985,
+      "sibling": 0.1715,
+      "generic": 0.2547
+    }
+  },
+  {
+    "identity_id": "00015075",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1106,
+      "target": 0.1264,
+      "ancestor": 0.1264,
+      "sibling": 0.1122,
+      "generic": 0.2199
+    }
+  },
+  {
+    "identity_id": "00015075",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1344,
+      "target": 0.1578,
+      "ancestor": 0.1578,
+      "sibling": 0.0716,
+      "generic": 0.2223
+    }
+  },
+  {
+    "identity_id": "00015075",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1412,
+      "target": 0.1584,
+      "ancestor": 0.1133,
+      "sibling": 0.0937,
+      "generic": 0.2361
+    }
+  },
+  {
+    "identity_id": "00017445",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.0919,
+      "target": 0.0998,
+      "ancestor": 0.0998,
+      "sibling": 0.1042,
+      "generic": 0.2262
+    }
+  },
+  {
+    "identity_id": "00017445",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.0994,
+      "target": 0.1173,
+      "ancestor": 0.1173,
+      "sibling": 0.0653,
+      "generic": 0.2241
+    }
+  },
+  {
+    "identity_id": "00017445",
+    "attribute": "job",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1572,
+      "target": 0.1207,
+      "ancestor": 0.1266,
+      "sibling": 0.1087,
+      "generic": 0.2197
+    }
+  },
+  {
+    "identity_id": "00018645",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1092,
+      "target": 0.14,
+      "ancestor": 0.14,
+      "sibling": 0.0707,
+      "generic": 0.2253
+    }
+  },
+  {
+    "identity_id": "00018645",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1558,
+      "target": 0.1737,
+      "ancestor": 0.1737,
+      "sibling": 0.1331,
+      "generic": 0.2391
+    }
+  },
+  {
+    "identity_id": "00018645",
+    "attribute": "job",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1681,
+      "target": 0.1412,
+      "ancestor": 0.1587,
+      "sibling": 0.0629,
+      "generic": 0.2022
+    }
+  },
+  {
+    "identity_id": "00019869",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1634,
+      "target": 0.1757,
+      "ancestor": 0.1757,
+      "sibling": 0.1556,
+      "generic": 0.2244
+    }
+  },
+  {
+    "identity_id": "00019869",
+    "attribute": "city",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1705,
+      "target": 0.1674,
+      "ancestor": 0.1674,
+      "sibling": 0.1801,
+      "generic": 0.2559
+    }
+  },
+  {
+    "identity_id": "00019869",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1274,
+      "target": 0.1381,
+      "ancestor": 0.1346,
+      "sibling": 0.1316,
+      "generic": 0.2026
+    }
+  },
+  {
+    "identity_id": "00021669",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1427,
+      "target": 0.1596,
+      "ancestor": 0.1596,
+      "sibling": 0.19,
+      "generic": 0.2393
+    }
+  },
+  {
+    "identity_id": "00021669",
+    "attribute": "city",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1788,
+      "target": 0.1721,
+      "ancestor": 0.1721,
+      "sibling": 0.1528,
+      "generic": 0.2194
+    }
+  },
+  {
+    "identity_id": "00021669",
+    "attribute": "job",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1363,
+      "target": 0.1346,
+      "ancestor": 0.1201,
+      "sibling": 0.1719,
+      "generic": 0.2194
+    }
+  },
+  {
+    "identity_id": "00025565",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1722,
+      "target": 0.2091,
+      "ancestor": 0.2091,
+      "sibling": 0.1791,
+      "generic": 0.2509
+    }
+  },
+  {
+    "identity_id": "00025565",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1882,
+      "target": 0.1921,
+      "ancestor": 0.1921,
+      "sibling": 0.1432,
+      "generic": 0.2649
+    }
+  },
+  {
+    "identity_id": "00025565",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1323,
+      "target": 0.166,
+      "ancestor": 0.1779,
+      "sibling": 0.1079,
+      "generic": 0.2527
+    }
+  },
+  {
+    "identity_id": "00033247",
+    "attribute": "blood_type",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1738,
+      "target": 0.166,
+      "ancestor": 0.166,
+      "sibling": 0.1266,
+      "generic": 0.2331
+    }
+  },
+  {
+    "identity_id": "00033247",
+    "attribute": "city",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.2038,
+      "target": 0.1917,
+      "ancestor": 0.1917,
+      "sibling": 0.1723,
+      "generic": 0.2464
+    }
+  },
+  {
+    "identity_id": "00033247",
+    "attribute": "job",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1005,
+      "target": 0.1077,
+      "ancestor": 0.0912,
+      "sibling": 0.1574,
+      "generic": 0.239
+    }
+  },
+  {
+    "identity_id": "00035619",
+    "attribute": "blood_type",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1555,
+      "target": 0.1429,
+      "ancestor": 0.1429,
+      "sibling": 0.1162,
+      "generic": 0.2379
+    }
+  },
+  {
+    "identity_id": "00035619",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1215,
+      "target": 0.1341,
+      "ancestor": 0.1341,
+      "sibling": 0.0912,
+      "generic": 0.2378
+    }
+  },
+  {
+    "identity_id": "00035619",
+    "attribute": "job",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.0953,
+      "target": 0.0906,
+      "ancestor": 0.0766,
+      "sibling": 0.0877,
+      "generic": 0.2064
+    }
+  },
+  {
+    "identity_id": "00036095",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1026,
+      "target": 0.1127,
+      "ancestor": 0.1127,
+      "sibling": 0.0881,
+      "generic": 0.204
+    }
+  },
+  {
+    "identity_id": "00036095",
+    "attribute": "city",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1699,
+      "target": 0.1605,
+      "ancestor": 0.1605,
+      "sibling": 0.1968,
+      "generic": 0.2526
+    }
+  },
+  {
+    "identity_id": "00036095",
+    "attribute": "job",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1231,
+      "target": 0.0884,
+      "ancestor": 0.0897,
+      "sibling": 0.1,
+      "generic": 0.2205
+    }
+  },
+  {
+    "identity_id": "00038820",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.157,
+      "target": 0.1579,
+      "ancestor": 0.1579,
+      "sibling": 0.1036,
+      "generic": 0.2318
+    }
+  },
+  {
+    "identity_id": "00038820",
+    "attribute": "city",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1167,
+      "target": 0.1444,
+      "ancestor": 0.1444,
+      "sibling": 0.1555,
+      "generic": 0.2299
+    }
+  },
+  {
+    "identity_id": "00038820",
+    "attribute": "job",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1849,
+      "target": 0.1682,
+      "ancestor": 0.1499,
+      "sibling": 0.114,
+      "generic": 0.249
+    }
+  },
+  {
+    "identity_id": "00040414",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1328,
+      "target": 0.1598,
+      "ancestor": 0.1598,
+      "sibling": 0.1735,
+      "generic": 0.2281
+    }
+  },
+  {
+    "identity_id": "00040414",
+    "attribute": "city",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1515,
+      "target": 0.1363,
+      "ancestor": 0.1363,
+      "sibling": 0.1523,
+      "generic": 0.2304
+    }
+  },
+  {
+    "identity_id": "00040414",
+    "attribute": "job",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1185,
+      "target": 0.1005,
+      "ancestor": 0.1048,
+      "sibling": 0.0791,
+      "generic": 0.1989
+    }
+  },
+  {
+    "identity_id": "00043212",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1192,
+      "target": 0.1734,
+      "ancestor": 0.1734,
+      "sibling": 0.1843,
+      "generic": 0.2323
+    }
+  },
+  {
+    "identity_id": "00043212",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1358,
+      "target": 0.1786,
+      "ancestor": 0.1786,
+      "sibling": 0.1659,
+      "generic": 0.2523
+    }
+  },
+  {
+    "identity_id": "00043212",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1409,
+      "target": 0.1471,
+      "ancestor": 0.1395,
+      "sibling": 0.1368,
+      "generic": 0.225
+    }
+  },
+  {
+    "identity_id": "00044989",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1237,
+      "target": 0.1546,
+      "ancestor": 0.1546,
+      "sibling": 0.0883,
+      "generic": 0.2248
+    }
+  },
+  {
+    "identity_id": "00044989",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1169,
+      "target": 0.1427,
+      "ancestor": 0.1427,
+      "sibling": 0.0515,
+      "generic": 0.2214
+    }
+  },
+  {
+    "identity_id": "00044989",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1457,
+      "target": 0.1677,
+      "ancestor": 0.1439,
+      "sibling": 0.0518,
+      "generic": 0.2269
+    }
+  },
+  {
+    "identity_id": "00046972",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1298,
+      "target": 0.1456,
+      "ancestor": 0.1456,
+      "sibling": 0.1923,
+      "generic": 0.2512
+    }
+  },
+  {
+    "identity_id": "00046972",
+    "attribute": "city",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1456,
+      "target": 0.164,
+      "ancestor": 0.164,
+      "sibling": 0.1647,
+      "generic": 0.2378
+    }
+  },
+  {
+    "identity_id": "00046972",
+    "attribute": "job",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1785,
+      "target": 0.1835,
+      "ancestor": 0.1692,
+      "sibling": 0.1943,
+      "generic": 0.2315
+    }
+  },
+  {
+    "identity_id": "00047261",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1333,
+      "target": 0.1371,
+      "ancestor": 0.1371,
+      "sibling": 0.1134,
+      "generic": 0.2377
+    }
+  },
+  {
+    "identity_id": "00047261",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1298,
+      "target": 0.1424,
+      "ancestor": 0.1424,
+      "sibling": 0.1412,
+      "generic": 0.2095
+    }
+  },
+  {
+    "identity_id": "00047261",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1059,
+      "target": 0.1367,
+      "ancestor": 0.1594,
+      "sibling": 0.1255,
+      "generic": 0.2223
+    }
+  },
+  {
+    "identity_id": "00047568",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1158,
+      "target": 0.1539,
+      "ancestor": 0.1539,
+      "sibling": 0.1385,
+      "generic": 0.2307
+    }
+  },
+  {
+    "identity_id": "00047568",
+    "attribute": "city",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1752,
+      "target": 0.1594,
+      "ancestor": 0.1594,
+      "sibling": 0.1706,
+      "generic": 0.2757
+    }
+  },
+  {
+    "identity_id": "00047568",
+    "attribute": "job",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1739,
+      "target": 0.1659,
+      "ancestor": 0.158,
+      "sibling": 0.1432,
+      "generic": 0.2541
+    }
+  },
+  {
+    "identity_id": "00048993",
+    "attribute": "blood_type",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.145,
+      "target": 0.138,
+      "ancestor": 0.138,
+      "sibling": 0.1319,
+      "generic": 0.2062
+    }
+  },
+  {
+    "identity_id": "00048993",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1047,
+      "target": 0.1496,
+      "ancestor": 0.1496,
+      "sibling": 0.1132,
+      "generic": 0.2325
+    }
+  },
+  {
+    "identity_id": "00048993",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1433,
+      "target": 0.1696,
+      "ancestor": 0.1695,
+      "sibling": 0.1418,
+      "generic": 0.2356
+    }
+  },
+  {
+    "identity_id": "00049195",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1064,
+      "target": 0.1449,
+      "ancestor": 0.1449,
+      "sibling": 0.121,
+      "generic": 0.2213
+    }
+  },
+  {
+    "identity_id": "00049195",
+    "attribute": "city",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1933,
+      "target": 0.1476,
+      "ancestor": 0.1476,
+      "sibling": 0.1455,
+      "generic": 0.2641
+    }
+  },
+  {
+    "identity_id": "00049195",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1421,
+      "target": 0.1723,
+      "ancestor": 0.1621,
+      "sibling": 0.1615,
+      "generic": 0.2356
+    }
+  },
+  {
+    "identity_id": "00050473",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1757,
+      "target": 0.1855,
+      "ancestor": 0.1855,
+      "sibling": 0.1491,
+      "generic": 0.2727
+    }
+  },
+  {
+    "identity_id": "00050473",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1322,
+      "target": 0.1534,
+      "ancestor": 0.1534,
+      "sibling": 0.1219,
+      "generic": 0.2391
+    }
+  },
+  {
+    "identity_id": "00050473",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1213,
+      "target": 0.1566,
+      "ancestor": 0.1484,
+      "sibling": 0.1505,
+      "generic": 0.2223
+    }
+  },
+  {
+    "identity_id": "00052340",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.2071,
+      "target": 0.2143,
+      "ancestor": 0.2143,
+      "sibling": 0.1968,
+      "generic": 0.2559
+    }
+  },
+  {
+    "identity_id": "00052340",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1729,
+      "target": 0.1824,
+      "ancestor": 0.1824,
+      "sibling": 0.1644,
+      "generic": 0.2304
+    }
+  },
+  {
+    "identity_id": "00052340",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1813,
+      "target": 0.1915,
+      "ancestor": 0.1476,
+      "sibling": 0.1333,
+      "generic": 0.227
+    }
+  },
+  {
+    "identity_id": "00054267",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.173,
+      "target": 0.1572,
+      "ancestor": 0.1572,
+      "sibling": 0.1789,
+      "generic": 0.2372
+    }
+  },
+  {
+    "identity_id": "00054267",
+    "attribute": "city",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1691,
+      "target": 0.1712,
+      "ancestor": 0.1712,
+      "sibling": 0.1976,
+      "generic": 0.2493
+    }
+  },
+  {
+    "identity_id": "00054267",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1865,
+      "target": 0.2121,
+      "ancestor": 0.1884,
+      "sibling": 0.153,
+      "generic": 0.2307
+    }
+  },
+  {
+    "identity_id": "00064259",
+    "attribute": "blood_type",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1541,
+      "target": 0.111,
+      "ancestor": 0.111,
+      "sibling": 0.1317,
+      "generic": 0.2598
+    }
+  },
+  {
+    "identity_id": "00064259",
+    "attribute": "city",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1428,
+      "target": 0.0697,
+      "ancestor": 0.0697,
+      "sibling": 0.1073,
+      "generic": 0.2478
+    }
+  },
+  {
+    "identity_id": "00064259",
+    "attribute": "job",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1141,
+      "target": 0.0856,
+      "ancestor": 0.0998,
+      "sibling": 0.1213,
+      "generic": 0.2383
+    }
+  },
+  {
+    "identity_id": "00066925",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1213,
+      "target": 0.1296,
+      "ancestor": 0.1296,
+      "sibling": 0.1018,
+      "generic": 0.2312
+    }
+  },
+  {
+    "identity_id": "00066925",
+    "attribute": "city",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1485,
+      "target": 0.164,
+      "ancestor": 0.164,
+      "sibling": 0.1658,
+      "generic": 0.232
+    }
+  },
+  {
+    "identity_id": "00066925",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1339,
+      "target": 0.1421,
+      "ancestor": 0.1412,
+      "sibling": 0.0731,
+      "generic": 0.249
+    }
+  },
+  {
+    "identity_id": "00071448",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.0893,
+      "target": 0.1056,
+      "ancestor": 0.1056,
+      "sibling": 0.1206,
+      "generic": 0.2291
+    }
+  },
+  {
+    "identity_id": "00071448",
+    "attribute": "city",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1309,
+      "target": 0.11,
+      "ancestor": 0.11,
+      "sibling": 0.1124,
+      "generic": 0.1965
+    }
+  },
+  {
+    "identity_id": "00071448",
+    "attribute": "job",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1332,
+      "target": 0.0954,
+      "ancestor": 0.1159,
+      "sibling": 0.1508,
+      "generic": 0.251
+    }
+  },
+  {
+    "identity_id": "00076121",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1377,
+      "target": 0.1602,
+      "ancestor": 0.1602,
+      "sibling": 0.1313,
+      "generic": 0.2626
+    }
+  },
+  {
+    "identity_id": "00076121",
+    "attribute": "city",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1528,
+      "target": 0.1406,
+      "ancestor": 0.1406,
+      "generic": 0.2377
+    }
+  },
+  {
+    "identity_id": "00076121",
+    "attribute": "job",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1692,
+      "target": 0.1609,
+      "ancestor": 0.133,
+      "sibling": 0.1732,
+      "generic": 0.2547
+    }
+  },
+  {
+    "identity_id": "00076621",
+    "attribute": "blood_type",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1729,
+      "target": 0.1585,
+      "ancestor": 0.1585,
+      "sibling": 0.1161,
+      "generic": 0.2269
+    }
+  },
+  {
+    "identity_id": "00076621",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1275,
+      "target": 0.1435,
+      "ancestor": 0.1435,
+      "sibling": 0.0972,
+      "generic": 0.2097
+    }
+  },
+  {
+    "identity_id": "00076621",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1633,
+      "target": 0.1651,
+      "ancestor": 0.165,
+      "sibling": 0.1372,
+      "generic": 0.2362
+    }
+  },
+  {
+    "identity_id": "00079299",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1259,
+      "target": 0.145,
+      "ancestor": 0.145,
+      "sibling": 0.1519,
+      "generic": 0.2511
+    }
+  },
+  {
+    "identity_id": "00079299",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.133,
+      "target": 0.1479,
+      "ancestor": 0.1479,
+      "sibling": 0.1108,
+      "generic": 0.2444
+    }
+  },
+  {
+    "identity_id": "00079299",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1461,
+      "target": 0.1913,
+      "ancestor": 0.1509,
+      "sibling": 0.1397,
+      "generic": 0.2233
+    }
+  },
+  {
+    "identity_id": "00080790",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1371,
+      "target": 0.1683,
+      "ancestor": 0.1683,
+      "sibling": 0.146,
+      "generic": 0.2604
+    }
+  },
+  {
+    "identity_id": "00080790",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1324,
+      "target": 0.1631,
+      "ancestor": 0.1631,
+      "sibling": 0.1329,
+      "generic": 0.2403
+    }
+  },
+  {
+    "identity_id": "00080790",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1447,
+      "target": 0.1466,
+      "ancestor": 0.115,
+      "sibling": 0.1078,
+      "generic": 0.2368
+    }
+  },
+  {
+    "identity_id": "00080812",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1529,
+      "target": 0.1588,
+      "ancestor": 0.1588,
+      "sibling": 0.1573,
+      "generic": 0.2518
+    }
+  },
+  {
+    "identity_id": "00080812",
+    "attribute": "city",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1571,
+      "target": 0.1324,
+      "ancestor": 0.1324,
+      "sibling": 0.1189,
+      "generic": 0.2575
+    }
+  },
+  {
+    "identity_id": "00080812",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1049,
+      "target": 0.1309,
+      "ancestor": 0.1177,
+      "sibling": 0.1057,
+      "generic": 0.2298
+    }
+  },
+  {
+    "identity_id": "00081568",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1199,
+      "target": 0.1564,
+      "ancestor": 0.1564,
+      "sibling": 0.1695,
+      "generic": 0.2346
+    }
+  },
+  {
+    "identity_id": "00081568",
+    "attribute": "city",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1447,
+      "target": 0.1414,
+      "ancestor": 0.1414,
+      "sibling": 0.148,
+      "generic": 0.2287
+    }
+  },
+  {
+    "identity_id": "00081568",
+    "attribute": "job",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1518,
+      "target": 0.1464,
+      "ancestor": 0.1459,
+      "sibling": 0.1323,
+      "generic": 0.2501
+    }
+  },
+  {
+    "identity_id": "00081980",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1479,
+      "target": 0.1732,
+      "ancestor": 0.1732,
+      "sibling": 0.1282,
+      "generic": 0.2365
+    }
+  },
+  {
+    "identity_id": "00081980",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.123,
+      "target": 0.1397,
+      "ancestor": 0.1397,
+      "sibling": 0.0852,
+      "generic": 0.2592
+    }
+  },
+  {
+    "identity_id": "00081980",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1639,
+      "target": 0.1788,
+      "ancestor": 0.1653,
+      "sibling": 0.106,
+      "generic": 0.2476
+    }
+  },
+  {
+    "identity_id": "00083021",
+    "attribute": "blood_type",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1356,
+      "target": 0.1199,
+      "ancestor": 0.1199,
+      "sibling": 0.1131,
+      "generic": 0.233
+    }
+  },
+  {
+    "identity_id": "00083021",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1454,
+      "target": 0.1496,
+      "ancestor": 0.1496,
+      "sibling": 0.146,
+      "generic": 0.2404
+    }
+  },
+  {
+    "identity_id": "00083021",
+    "attribute": "job",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.0909,
+      "target": 0.077,
+      "ancestor": 0.074,
+      "sibling": 0.0964,
+      "generic": 0.2206
+    }
+  },
+  {
+    "identity_id": "00083932",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1245,
+      "target": 0.1533,
+      "ancestor": 0.1533,
+      "sibling": 0.126,
+      "generic": 0.2455
+    }
+  },
+  {
+    "identity_id": "00083932",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.0831,
+      "target": 0.112,
+      "ancestor": 0.112,
+      "sibling": 0.0837,
+      "generic": 0.2033
+    }
+  },
+  {
+    "identity_id": "00083932",
+    "attribute": "job",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1548,
+      "target": 0.131,
+      "ancestor": 0.1098,
+      "sibling": 0.1033,
+      "generic": 0.2347
+    }
+  },
+  {
+    "identity_id": "00085726",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.086,
+      "target": 0.1331,
+      "ancestor": 0.1331,
+      "sibling": 0.0904,
+      "generic": 0.2053
+    }
+  },
+  {
+    "identity_id": "00085726",
+    "attribute": "city",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.143,
+      "target": 0.1429,
+      "ancestor": 0.1429,
+      "sibling": 0.1136,
+      "generic": 0.2589
+    }
+  },
+  {
+    "identity_id": "00085726",
+    "attribute": "job",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.225,
+      "target": 0.1758,
+      "ancestor": 0.1837,
+      "sibling": 0.1368,
+      "generic": 0.2577
+    }
+  },
+  {
+    "identity_id": "00087266",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1582,
+      "target": 0.1725,
+      "ancestor": 0.1725,
+      "sibling": 0.1341,
+      "generic": 0.2284
+    }
+  },
+  {
+    "identity_id": "00087266",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1211,
+      "target": 0.1388,
+      "ancestor": 0.1388,
+      "sibling": 0.0694,
+      "generic": 0.2104
+    }
+  },
+  {
+    "identity_id": "00087266",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1006,
+      "target": 0.1105,
+      "ancestor": 0.1053,
+      "sibling": 0.0515,
+      "generic": 0.1993
+    }
+  },
+  {
+    "identity_id": "00091458",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.185,
+      "target": 0.1859,
+      "ancestor": 0.1859,
+      "sibling": 0.1387,
+      "generic": 0.2545
+    }
+  },
+  {
+    "identity_id": "00091458",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1338,
+      "target": 0.1693,
+      "ancestor": 0.1693,
+      "sibling": 0.1401,
+      "generic": 0.2203
+    }
+  },
+  {
+    "identity_id": "00091458",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1182,
+      "target": 0.1652,
+      "ancestor": 0.1671,
+      "sibling": 0.0692,
+      "generic": 0.2402
+    }
+  },
+  {
+    "identity_id": "00092180",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1775,
+      "target": 0.1897,
+      "ancestor": 0.1897,
+      "sibling": 0.1861,
+      "generic": 0.2564
+    }
+  },
+  {
+    "identity_id": "00092180",
+    "attribute": "city",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1741,
+      "target": 0.1767,
+      "ancestor": 0.1767,
+      "sibling": 0.1837,
+      "generic": 0.2614
+    }
+  },
+  {
+    "identity_id": "00092180",
+    "attribute": "job",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1703,
+      "target": 0.1617,
+      "ancestor": 0.1456,
+      "sibling": 0.1397,
+      "generic": 0.2377
+    }
+  },
+  {
+    "identity_id": "00093283",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1106,
+      "target": 0.1392,
+      "ancestor": 0.1392,
+      "sibling": 0.0869,
+      "generic": 0.2252
+    }
+  },
+  {
+    "identity_id": "00093283",
+    "attribute": "city",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1556,
+      "target": 0.1521,
+      "ancestor": 0.1521,
+      "sibling": 0.0882,
+      "generic": 0.2266
+    }
+  },
+  {
+    "identity_id": "00093283",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1288,
+      "target": 0.1503,
+      "ancestor": 0.1334,
+      "sibling": 0.1219,
+      "generic": 0.2245
+    }
+  },
+  {
+    "identity_id": "00094096",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1087,
+      "target": 0.0967,
+      "ancestor": 0.0967,
+      "sibling": 0.1465,
+      "generic": 0.269
+    }
+  },
+  {
+    "identity_id": "00094096",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.059,
+      "target": 0.0591,
+      "ancestor": 0.0591,
+      "sibling": 0.0357,
+      "generic": 0.2195
+    }
+  },
+  {
+    "identity_id": "00094096",
+    "attribute": "job",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1417,
+      "target": 0.135,
+      "ancestor": 0.1198,
+      "sibling": 0.1149,
+      "generic": 0.2411
+    }
+  },
+  {
+    "identity_id": "00094288",
+    "attribute": "blood_type",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1768,
+      "target": 0.1686,
+      "ancestor": 0.1686,
+      "sibling": 0.1596,
+      "generic": 0.2391
+    }
+  },
+  {
+    "identity_id": "00094288",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1651,
+      "target": 0.1861,
+      "ancestor": 0.1861,
+      "sibling": 0.1781,
+      "generic": 0.2409
+    }
+  },
+  {
+    "identity_id": "00094288",
+    "attribute": "job",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1872,
+      "target": 0.1779,
+      "ancestor": 0.1642,
+      "sibling": 0.1641,
+      "generic": 0.2455
+    }
+  },
+  {
+    "identity_id": "00098536",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1155,
+      "target": 0.1393,
+      "ancestor": 0.1393,
+      "sibling": 0.1569,
+      "generic": 0.1884
+    }
+  },
+  {
+    "identity_id": "00098536",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.098,
+      "target": 0.1466,
+      "ancestor": 0.1466,
+      "sibling": 0.1288,
+      "generic": 0.2192
+    }
+  },
+  {
+    "identity_id": "00098536",
+    "attribute": "job",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1242,
+      "target": 0.1258,
+      "ancestor": 0.1362,
+      "sibling": 0.1287,
+      "generic": 0.2116
+    }
+  },
+  {
+    "identity_id": "00099070",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1269,
+      "target": 0.1673,
+      "ancestor": 0.1673,
+      "sibling": 0.0982,
+      "generic": 0.2013
+    }
+  },
+  {
+    "identity_id": "00099070",
+    "attribute": "city",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1077,
+      "target": 0.1283,
+      "ancestor": 0.1283,
+      "sibling": 0.1384,
+      "generic": 0.2291
+    }
+  },
+  {
+    "identity_id": "00099070",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.157,
+      "target": 0.1834,
+      "ancestor": 0.1588,
+      "sibling": 0.0998,
+      "generic": 0.2091
+    }
+  },
+  {
+    "identity_id": "00099747",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1365,
+      "target": 0.1495,
+      "ancestor": 0.1495,
+      "sibling": 0.1704,
+      "generic": 0.243
+    }
+  },
+  {
+    "identity_id": "00099747",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1419,
+      "target": 0.154,
+      "ancestor": 0.154,
+      "sibling": 0.1469,
+      "generic": 0.2396
+    }
+  },
+  {
+    "identity_id": "00099747",
+    "attribute": "job",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1259,
+      "target": 0.1244,
+      "ancestor": 0.1146,
+      "sibling": 0.1506,
+      "generic": 0.2184
+    }
+  },
+  {
+    "identity_id": "00101188",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1492,
+      "target": 0.1745,
+      "ancestor": 0.1745,
+      "sibling": 0.1656,
+      "generic": 0.2476
+    }
+  },
+  {
+    "identity_id": "00101188",
+    "attribute": "city",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1338,
+      "target": 0.1608,
+      "ancestor": 0.1608,
+      "sibling": 0.1801,
+      "generic": 0.2275
+    }
+  },
+  {
+    "identity_id": "00101188",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1079,
+      "target": 0.1181,
+      "ancestor": 0.0976,
+      "sibling": 0.1054,
+      "generic": 0.1955
+    }
+  },
+  {
+    "identity_id": "00106253",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1067,
+      "target": 0.131,
+      "ancestor": 0.131,
+      "sibling": 0.131,
+      "generic": 0.2018
+    }
+  },
+  {
+    "identity_id": "00106253",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1207,
+      "target": 0.1586,
+      "ancestor": 0.1586,
+      "sibling": 0.1389,
+      "generic": 0.254
+    }
+  },
+  {
+    "identity_id": "00106253",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1599,
+      "target": 0.1873,
+      "ancestor": 0.1846,
+      "sibling": 0.1845,
+      "generic": 0.2651
+    }
+  },
+  {
+    "identity_id": "00107486",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1182,
+      "target": 0.1558,
+      "ancestor": 0.1558,
+      "sibling": 0.137,
+      "generic": 0.2193
+    }
+  },
+  {
+    "identity_id": "00107486",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1127,
+      "target": 0.1521,
+      "ancestor": 0.1521,
+      "sibling": 0.1269,
+      "generic": 0.2209
+    }
+  },
+  {
+    "identity_id": "00107486",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.144,
+      "target": 0.1492,
+      "ancestor": 0.1251,
+      "sibling": 0.1289,
+      "generic": 0.2237
+    }
+  },
+  {
+    "identity_id": "00109512",
+    "attribute": "blood_type",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1384,
+      "target": 0.1728,
+      "ancestor": 0.1728,
+      "sibling": 0.1201,
+      "generic": 0.2442
+    }
+  },
+  {
+    "identity_id": "00109512",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1355,
+      "target": 0.1897,
+      "ancestor": 0.1897,
+      "sibling": 0.1823,
+      "generic": 0.2571
+    }
+  },
+  {
+    "identity_id": "00109512",
+    "attribute": "job",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.2069,
+      "target": 0.1977,
+      "ancestor": 0.2058,
+      "sibling": 0.1087,
+      "generic": 0.2615
+    }
+  },
+  {
+    "identity_id": "00109679",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1433,
+      "target": 0.1498,
+      "ancestor": 0.1498,
+      "sibling": 0.1969,
+      "generic": 0.2358
+    }
+  },
+  {
+    "identity_id": "00109679",
+    "attribute": "city",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1019,
+      "target": 0.134,
+      "ancestor": 0.134,
+      "sibling": 0.1379,
+      "generic": 0.234
+    }
+  },
+  {
+    "identity_id": "00109679",
+    "attribute": "job",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1389,
+      "target": 0.1324,
+      "ancestor": 0.1299,
+      "sibling": 0.0975,
+      "generic": 0.1957
+    }
+  },
+  {
+    "identity_id": "00110509",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.119,
+      "target": 0.129,
+      "ancestor": 0.129,
+      "sibling": 0.1676,
+      "generic": 0.2046
+    }
+  },
+  {
+    "identity_id": "00110509",
+    "attribute": "city",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1697,
+      "target": 0.1651,
+      "ancestor": 0.1651,
+      "sibling": 0.149,
+      "generic": 0.2523
+    }
+  },
+  {
+    "identity_id": "00110509",
+    "attribute": "job",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1199,
+      "target": 0.1125,
+      "ancestor": 0.1176,
+      "sibling": 0.137,
+      "generic": 0.2176
+    }
+  },
+  {
+    "identity_id": "00114749",
+    "attribute": "blood_type",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1464,
+      "target": 0.1078,
+      "ancestor": 0.1078,
+      "sibling": 0.1309,
+      "generic": 0.2179
+    }
+  },
+  {
+    "identity_id": "00114749",
+    "attribute": "city",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1004,
+      "target": 0.0574,
+      "ancestor": 0.0574,
+      "sibling": 0.1021,
+      "generic": 0.2324
+    }
+  },
+  {
+    "identity_id": "00114749",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1432,
+      "target": 0.1525,
+      "ancestor": 0.1352,
+      "sibling": 0.1242,
+      "generic": 0.2355
+    }
+  },
+  {
+    "identity_id": "00115769",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1001,
+      "target": 0.0894,
+      "ancestor": 0.0894,
+      "sibling": 0.1228,
+      "generic": 0.2305
+    }
+  },
+  {
+    "identity_id": "00115769",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.0933,
+      "target": 0.095,
+      "ancestor": 0.095,
+      "sibling": 0.0629,
+      "generic": 0.2142
+    }
+  },
+  {
+    "identity_id": "00115769",
+    "attribute": "job",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.144,
+      "target": 0.1258,
+      "ancestor": 0.1235,
+      "sibling": 0.0856,
+      "generic": 0.2332
+    }
+  },
+  {
+    "identity_id": "00117360",
+    "attribute": "blood_type",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1403,
+      "target": 0.1228,
+      "ancestor": 0.1228,
+      "sibling": 0.1213,
+      "generic": 0.2298
+    }
+  },
+  {
+    "identity_id": "00117360",
+    "attribute": "city",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1196,
+      "target": 0.1104,
+      "ancestor": 0.1104,
+      "sibling": 0.0764,
+      "generic": 0.206
+    }
+  },
+  {
+    "identity_id": "00117360",
+    "attribute": "job",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1411,
+      "target": 0.1452,
+      "ancestor": 0.1279,
+      "sibling": 0.084,
+      "generic": 0.2307
+    }
+  },
+  {
+    "identity_id": "00122269",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.0994,
+      "target": 0.1158,
+      "ancestor": 0.1158,
+      "sibling": 0.129,
+      "generic": 0.2143
+    }
+  },
+  {
+    "identity_id": "00122269",
+    "attribute": "city",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1457,
+      "target": 0.1232,
+      "ancestor": 0.1232,
+      "sibling": 0.0892,
+      "generic": 0.2314
+    }
+  },
+  {
+    "identity_id": "00122269",
+    "attribute": "job",
+    "category": "fine_leakage",
+    "sims": {
+      "fine": 0.1433,
+      "target": 0.1411,
+      "ancestor": 0.1244,
+      "sibling": 0.1404,
+      "generic": 0.234
+    }
+  },
+  {
+    "identity_id": "00124020",
+    "attribute": "blood_type",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1606,
+      "target": 0.1696,
+      "ancestor": 0.1696,
+      "sibling": 0.2112,
+      "generic": 0.2134
+    }
+  },
+  {
+    "identity_id": "00124020",
+    "attribute": "city",
+    "category": "target_preferred",
+    "sims": {
+      "fine": 0.1374,
+      "target": 0.1394,
+      "ancestor": 0.1394,
+      "sibling": 0.1311,
+      "generic": 0.2132
+    }
+  },
+  {
+    "identity_id": "00124020",
+    "attribute": "job",
+    "category": "sibling_confusion",
+    "sims": {
+      "fine": 0.1087,
+      "target": 0.1312,
+      "ancestor": 0.1351,
+      "sibling": 0.1851,
+      "generic": 0.2438
+    }
+  }
+]

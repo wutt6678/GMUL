@@ -1,0 +1,130 @@
+{
+  "experiment_id": "salmu_iter10",
+  "dataset": "salmu-512-redistributed (sensitive split, core attrs city/job/blood_type)",
+  "dataset_partition": {
+    "seed": 42,
+    "num_targets": 60,
+    "num_retain": 714,
+    "target_identity_ids": [
+      "00000188",
+      "00000789",
+      "00002486",
+      "00008993",
+      "00009951",
+      "00013680",
+      "00015075",
+      "00017445",
+      "00018645",
+      "00019869",
+      "00021669",
+      "00025565",
+      "00033247",
+      "00035619",
+      "00036095",
+      "00038820",
+      "00040414",
+      "00043212",
+      "00044989",
+      "00046972",
+      "00047261",
+      "00047568",
+      "00048993",
+      "00049195",
+      "00050473",
+      "00052340",
+      "00054267",
+      "00064259",
+      "00066925",
+      "00071448",
+      "00076121",
+      "00076621",
+      "00079299",
+      "00080790",
+      "00080812",
+      "00081568",
+      "00081980",
+      "00083021",
+      "00083932",
+      "00085726",
+      "00087266",
+      "00091458",
+      "00092180",
+      "00093283",
+      "00094096",
+      "00094288",
+      "00098536",
+      "00099070",
+      "00099747",
+      "00101188",
+      "00106253",
+      "00107486",
+      "00109512",
+      "00109679",
+      "00110509",
+      "00114749",
+      "00115769",
+      "00117360",
+      "00122269",
+      "00124020"
+    ]
+  },
+  "dataset_pair_counts": {},
+  "hf_repos": {
+    "benchmark_dataset": {
+      "repo_id": "cvc-mmu/salmubench-512-redistributed",
+      "snapshot": "not downloaded"
+    },
+    "training_dataset": {
+      "repo_id": "cvc-mmu/salmu-512-redistributed",
+      "snapshot": "not downloaded"
+    },
+    "clean_model": {
+      "repo_id": "cvc-mmu/clip-vit-b-16-salmu-clean",
+      "snapshot": "snapshots"
+    },
+    "compromised_model": {
+      "repo_id": "cvc-mmu/clip-vit-b-16-salmu-compromised",
+      "snapshot": "snapshots"
+    }
+  },
+  "base_model": {
+    "arch": "ViT-B-16",
+    "checkpoint": "open_clip_model.safetensors",
+    "sha256_prefix": "ff944079f8f5043b",
+    "params_M": 149.6
+  },
+  "recipe": {
+    "arch": "ViT-B-16",
+    "learning_rate": 1e-05,
+    "weight_decay": 0.0,
+    "num_epochs": 3,
+    "batch_size": 256,
+    "seed": 42,
+    "bf16": true,
+    "logit_scale_frozen": true
+  },
+  "checkpoints_sha256_prefix16": {
+    "MF": "d2e07bfd58306c17",
+    "MG": "85ce460af7fa92e6",
+    "MN": "9c7a7763f3175a6d",
+    "selected_B0(B0)": "d2e07bfd58306c17",
+    "selected_B1(B1_lr2e-06_c)": "6a893c3449a1b697",
+    "selected_B2(B2_retain_lr5e-06)": "a75b3b18d990972f",
+    "selected_B3(B3_lr5e-06_lam0.5_c)": "73fbe59b146a1d05"
+  },
+  "environment": {
+    "platform": "Linux-6.17.0-1011-oracle-x86_64-with-glibc2.39",
+    "python": "3.10.20",
+    "torch": "2.8.0+cu128",
+    "open_clip": "3.3.0"
+  },
+  "notes": [
+    "MF/MG/MN fine-tuned from SAME Clean CLIP with IDENTICAL recipe; only D_F/D_G/D_N differ.",
+    "MG: target personas get ONE generalized target caption per attribute.",
+    "MN: target personas omitted entirely (retain only).",
+    "Unlearning candidates continue from MF with constrained ascent (v2).",
+    "B2_retain_lr5e-06 selected: D(tv)=0.026, retain gap closed.",
+    "Probe-persona split: 40 train / 10 val / 10 test (sha256, seed 42).",
+    "Selection on train+val only; test frozen."
+  ]
+}

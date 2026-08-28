@@ -1,0 +1,186 @@
+{
+  "experiment": "Cross-dataset: MLLMU (generative MLLM) vs SALMU (CLIP association)",
+  "mllmu": {
+    "model": "Qwen3.5-9B+LoRA",
+    "task": "VQA",
+    "test_metrics": {
+      "BASE": {
+        "filr": 0.081,
+        "tga": 0.104,
+        "ancestor_retention": null,
+        "retain_same": null,
+        "retain_other": null,
+        "over_forgetting_rate": null,
+        "wrong_branch_rate": null
+      },
+      "MF": {
+        "filr": 0.606,
+        "tga": 0.109,
+        "ancestor_retention": null,
+        "retain_same": null,
+        "retain_other": null,
+        "over_forgetting_rate": null,
+        "wrong_branch_rate": null
+      },
+      "MG": {
+        "filr": 0.014,
+        "tga": 0.674,
+        "ancestor_retention": null,
+        "retain_same": null,
+        "retain_other": null,
+        "over_forgetting_rate": null,
+        "wrong_branch_rate": null
+      },
+      "MN": {
+        "filr": 0.158,
+        "tga": 0.131,
+        "ancestor_retention": null,
+        "retain_same": null,
+        "retain_other": null,
+        "over_forgetting_rate": null,
+        "wrong_branch_rate": null
+      },
+      "B0": {
+        "filr": 0.606,
+        "tga": 0.109,
+        "ancestor_retention": null,
+        "retain_same": null,
+        "retain_other": null,
+        "over_forgetting_rate": null,
+        "wrong_branch_rate": null
+      },
+      "B1": {
+        "filr": 0.109,
+        "tga": 0.086,
+        "ancestor_retention": null,
+        "retain_same": null,
+        "retain_other": null,
+        "over_forgetting_rate": null,
+        "wrong_branch_rate": null
+      },
+      "B2": {
+        "filr": 0.004,
+        "tga": 0.697,
+        "ancestor_retention": null,
+        "retain_same": null,
+        "retain_other": null,
+        "over_forgetting_rate": null,
+        "wrong_branch_rate": null
+      },
+      "B3": {
+        "filr": 0.0,
+        "tga": 0.697,
+        "ancestor_retention": null,
+        "retain_same": null,
+        "retain_other": null,
+        "over_forgetting_rate": null,
+        "wrong_branch_rate": null
+      }
+    },
+    "selected": {
+      "B0": "B0",
+      "B1": "B1_lr2e-05",
+      "B2": "B2_lr1e-04",
+      "B3": "B3_lam0.5"
+    }
+  },
+  "salmu": {
+    "model": "CLIP ViT-B/16",
+    "task": "image-text association",
+    "test_metrics": {
+      "MG": {
+        "fine_pref": 0.233,
+        "tnf": 0.767,
+        "sim_fine": 0.291,
+        "sim_target": 0.311,
+        "sim_sibling": 0.095,
+        "retain_sim": 0.308
+      },
+      "B0": {
+        "fine_pref": 0.5,
+        "tnf": 0.5,
+        "sim_fine": 0.306,
+        "sim_target": 0.303,
+        "sim_sibling": 0.092,
+        "retain_sim": 0.311
+      },
+      "B1_lr2e-06_c": {
+        "fine_pref": 0.533,
+        "tnf": 0.433,
+        "sim_fine": 0.288,
+        "sim_target": 0.288,
+        "sim_sibling": 0.059,
+        "retain_sim": 0.299
+      },
+      "B2_retain_lr5e-06": {
+        "fine_pref": 0.067,
+        "tnf": 0.933,
+        "sim_fine": 0.309,
+        "sim_target": 0.339,
+        "sim_sibling": 0.11,
+        "retain_sim": 0.331
+      },
+      "B3_lr5e-06_lam0.5_c": {
+        "fine_pref": 0.333,
+        "tnf": 0.667,
+        "sim_fine": 0.266,
+        "sim_target": 0.31,
+        "sim_sibling": 0.086,
+        "retain_sim": 0.322
+      }
+    },
+    "selected": {
+      "B0": "B0",
+      "B1": "B1_lr2e-06_c",
+      "B2": "B2_retain_lr5e-06",
+      "B3": "B3_lr5e-06_lam0.5_c"
+    },
+    "failure_rates": {
+      "B0": {
+        "target_preferred": 0.2778,
+        "fine_leakage": 0.7222
+      },
+      "B1_lr2e-06_c": {
+        "target_preferred": 0.3,
+        "fine_leakage": 0.6944,
+        "sibling_confusion": 0.0056
+      },
+      "B2_retain_lr5e-06": {
+        "target_preferred": 0.8444,
+        "fine_leakage": 0.1556
+      },
+      "B3_lr5e-06_lam0.5_c": {
+        "target_preferred": 0.5,
+        "fine_leakage": 0.5
+      },
+      "BASE": {
+        "sibling_confusion": 0.2611,
+        "fine_leakage": 0.2278,
+        "target_preferred": 0.5111
+      },
+      "COMPROMISED": {
+        "fine_leakage": 0.8278,
+        "target_preferred": 0.1667,
+        "sibling_confusion": 0.0056
+      },
+      "MG": {
+        "target_preferred": 0.7944,
+        "fine_leakage": 0.2056
+      },
+      "MN": {
+        "target_preferred": 0.2611,
+        "sibling_confusion": 0.2444,
+        "fine_leakage": 0.4889,
+        "over_forgotten": 0.0056
+      }
+    }
+  },
+  "key_findings": [
+    "Both benchmarks confirm MF != MG != MN separation.",
+    "B2+retain (coarse SFT + retain) closest to MG in both benchmarks.",
+    "Unconstrained gradient ascent collapses representations.",
+    "Constrained ascent (stop at MG anchor) prevents collapse.",
+    "Retain health must be in selection vector.",
+    "SALMU confirms the phenomenon at the controlled CLIP association level."
+  ]
+}
