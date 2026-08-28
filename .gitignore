@@ -73,3 +73,5 @@ download_salmu.sh
 data/salmu_hierarchical/training/*.jsonl
 !data/salmu_hierarchical/training/state_pairs_manifest.json
 !data/reports/salmu_reference_eval.json
+!data/reports/salmu_reference_eval.json
+!data/reports/salmu_unlearning_selection.json

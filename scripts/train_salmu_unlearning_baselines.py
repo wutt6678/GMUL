@@ -46,6 +46,10 @@ CANDIDATES = [
     ("B1", 1e-5, 10, 128, None, True),
     ("B2", 2e-5, 10, 128, None, False),
     ("B2", 5e-5, 10, 128, None, False),
+    ("B2_retain", 5e-6, 10, 128, None, False),   # B2 + explicit retain group
+    ("B2_retain", 1e-5, 10, 128, None, False),
+    ("B2_retain", 2e-5, 10, 128, None, False),
+    ("B2_retain", 5e-5, 10, 128, None, False),
     ("B3", 2e-6, 3, 256, 0.5, True),
     ("B3", 2e-6, 3, 256, 1.0, True),
     ("B3", 5e-6, 3, 256, 0.5, True),
@@ -106,6 +110,12 @@ def main() -> None:
         elif method == "B2":
             specs = [SalmuGroupSpec("target_level",
                                     groups["target_level"], "sft", 1.0)]
+        elif method == "B2_retain":
+            specs = [
+                SalmuGroupSpec("target_level", groups["target_level"],
+                               "sft", 1.0),
+                SalmuGroupSpec("retain", groups["retain"], "sft", 1.0),
+            ]
         else:  # B3: fixed structure, lambda only scales the gd term
             specs = [
                 SalmuGroupSpec("fine_target", groups["fine_target"],
