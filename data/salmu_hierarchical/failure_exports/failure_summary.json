@@ -2,90 +2,98 @@
   "B0": {
     "num_probes": 180,
     "counts": {
-      "target_preferred": 50,
-      "fine_leakage": 130
+      "target_preferred": 46,
+      "fine_leakage": 126,
+      "sibling_confusion": 8
     },
     "rates": {
-      "target_preferred": 0.2778,
-      "fine_leakage": 0.7222
+      "target_preferred": 0.2556,
+      "fine_leakage": 0.7,
+      "sibling_confusion": 0.0444
     }
   },
   "B1_lr0.0001": {
     "num_probes": 180,
     "counts": {
       "over_forgotten": 177,
-      "target_preferred": 2,
-      "fine_leakage": 1
+      "fine_leakage": 1,
+      "target_preferred": 1,
+      "sibling_confusion": 1
     },
     "rates": {
       "over_forgotten": 0.9833,
-      "target_preferred": 0.0111,
-      "fine_leakage": 0.0056
+      "fine_leakage": 0.0056,
+      "target_preferred": 0.0056,
+      "sibling_confusion": 0.0056
     }
   },
   "B1_lr1e-05": {
     "num_probes": 180,
     "counts": {
-      "sibling_confusion": 154,
-      "target_preferred": 20,
-      "fine_leakage": 6
+      "target_preferred": 136,
+      "sibling_confusion": 28,
+      "fine_leakage": 16
     },
     "rates": {
-      "sibling_confusion": 0.8556,
-      "target_preferred": 0.1111,
-      "fine_leakage": 0.0333
+      "target_preferred": 0.7556,
+      "sibling_confusion": 0.1556,
+      "fine_leakage": 0.0889
     }
   },
   "B1_lr1e-05_c": {
     "num_probes": 180,
     "counts": {
-      "target_preferred": 67,
-      "sibling_confusion": 69,
-      "fine_leakage": 44
+      "target_preferred": 84,
+      "sibling_confusion": 19,
+      "fine_leakage": 76,
+      "over_forgotten": 1
     },
     "rates": {
-      "target_preferred": 0.3722,
-      "sibling_confusion": 0.3833,
-      "fine_leakage": 0.2444
+      "target_preferred": 0.4667,
+      "sibling_confusion": 0.1056,
+      "fine_leakage": 0.4222,
+      "over_forgotten": 0.0056
     }
   },
   "B1_lr2e-05": {
     "num_probes": 180,
     "counts": {
-      "sibling_confusion": 164,
-      "target_preferred": 10,
-      "fine_leakage": 6
+      "target_preferred": 139,
+      "sibling_confusion": 26,
+      "fine_leakage": 15
     },
     "rates": {
-      "sibling_confusion": 0.9111,
-      "target_preferred": 0.0556,
-      "fine_leakage": 0.0333
+      "target_preferred": 0.7722,
+      "sibling_confusion": 0.1444,
+      "fine_leakage": 0.0833
     }
   },
   "B1_lr2e-06_c": {
     "num_probes": 180,
     "counts": {
-      "target_preferred": 54,
-      "fine_leakage": 125,
-      "sibling_confusion": 1
+      "target_preferred": 48,
+      "fine_leakage": 123,
+      "sibling_confusion": 9
     },
     "rates": {
-      "target_preferred": 0.3,
-      "fine_leakage": 0.6944,
-      "sibling_confusion": 0.0056
+      "target_preferred": 0.2667,
+      "fine_leakage": 0.6833,
+      "sibling_confusion": 0.05
     }
   },
   "B1_lr5e-06_c": {
     "num_probes": 180,
     "counts": {
-      "fine_leakage": 127,
-      "target_preferred": 52,
-      "sibling_confusion": 1
+      "target_preferred": 51,
+      "fine_leakage": 117,
+      "sibling_confusion": 7,
+      "over_forgotten": 5
     },
     "rates": {
-      "fine_leakage": 0.7056,
-      "target_preferred": 0.2889,
-      "sibling_confusion": 0.0056
+      "target_preferred": 0.2833,
+      "fine_leakage": 0.65,
+      "sibling_confusion": 0.0389,
+      "over_forgotten": 0.0278
     }
   },
   "B2_lr0.0001": {
@@ -100,189 +108,127 @@
   "B2_lr2e-05": {
     "num_probes": 180,
     "counts": {
-      "target_preferred": 149,
-      "fine_leakage": 31
+      "target_preferred": 86,
+      "sibling_confusion": 16,
+      "fine_leakage": 78
     },
     "rates": {
-      "target_preferred": 0.8278,
-      "fine_leakage": 0.1722
+      "target_preferred": 0.4778,
+      "sibling_confusion": 0.0889,
+      "fine_leakage": 0.4333
     }
   },
   "B2_lr5e-05": {
     "num_probes": 180,
     "counts": {
-      "target_preferred": 156,
-      "fine_leakage": 24
+      "target_preferred": 139,
+      "fine_leakage": 29,
+      "sibling_confusion": 12
     },
     "rates": {
-      "target_preferred": 0.8667,
-      "fine_leakage": 0.1333
-    }
-  },
-  "B2_retain_lr1e-05": {
-    "num_probes": 180,
-    "counts": {
-      "target_preferred": 166,
-      "fine_leakage": 14
-    },
-    "rates": {
-      "target_preferred": 0.9222,
-      "fine_leakage": 0.0778
+      "target_preferred": 0.7722,
+      "fine_leakage": 0.1611,
+      "sibling_confusion": 0.0667
     }
   },
   "B2_retain_lr2e-05": {
     "num_probes": 180,
     "counts": {
-      "target_preferred": 170,
-      "fine_leakage": 10
+      "target_preferred": 148,
+      "sibling_confusion": 32
     },
     "rates": {
-      "target_preferred": 0.9444,
-      "fine_leakage": 0.0556
-    }
-  },
-  "B2_retain_lr5e-05": {
-    "num_probes": 180,
-    "counts": {
-      "target_preferred": 171,
-      "fine_leakage": 9
-    },
-    "rates": {
-      "target_preferred": 0.95,
-      "fine_leakage": 0.05
+      "target_preferred": 0.8222,
+      "sibling_confusion": 0.1778
     }
   },
   "B2_retain_lr5e-06": {
     "num_probes": 180,
     "counts": {
-      "target_preferred": 152,
-      "fine_leakage": 28
+      "target_preferred": 95,
+      "fine_leakage": 62,
+      "sibling_confusion": 23
     },
     "rates": {
-      "target_preferred": 0.8444,
-      "fine_leakage": 0.1556
+      "target_preferred": 0.5278,
+      "fine_leakage": 0.3444,
+      "sibling_confusion": 0.1278
     }
   },
   "B3_lr1e-05_lam0.5": {
     "num_probes": 180,
     "counts": {
-      "sibling_confusion": 84,
-      "target_preferred": 90,
-      "fine_leakage": 6
+      "target_preferred": 153,
+      "sibling_confusion": 27
     },
     "rates": {
-      "sibling_confusion": 0.4667,
-      "target_preferred": 0.5,
-      "fine_leakage": 0.0333
+      "target_preferred": 0.85,
+      "sibling_confusion": 0.15
     }
   },
   "B3_lr1e-05_lam1": {
     "num_probes": 180,
     "counts": {
-      "sibling_confusion": 35,
-      "target_preferred": 142,
-      "fine_leakage": 3
+      "target_preferred": 156,
+      "sibling_confusion": 22,
+      "fine_leakage": 2
     },
     "rates": {
-      "sibling_confusion": 0.1944,
-      "target_preferred": 0.7889,
-      "fine_leakage": 0.0167
+      "target_preferred": 0.8667,
+      "sibling_confusion": 0.1222,
+      "fine_leakage": 0.0111
     }
   },
   "B3_lr2e-06_lam0.5_c": {
     "num_probes": 180,
     "counts": {
-      "target_preferred": 80,
-      "fine_leakage": 100
+      "target_preferred": 51,
+      "fine_leakage": 121,
+      "sibling_confusion": 8
     },
     "rates": {
-      "target_preferred": 0.4444,
-      "fine_leakage": 0.5556
-    }
-  },
-  "B3_lr2e-06_lam1_c": {
-    "num_probes": 180,
-    "counts": {
-      "fine_leakage": 114,
-      "target_preferred": 66
-    },
-    "rates": {
-      "fine_leakage": 0.6333,
-      "target_preferred": 0.3667
+      "target_preferred": 0.2833,
+      "fine_leakage": 0.6722,
+      "sibling_confusion": 0.0444
     }
   },
   "B3_lr5e-06_lam0.5_c": {
     "num_probes": 180,
     "counts": {
-      "target_preferred": 90,
-      "fine_leakage": 90
+      "target_preferred": 44,
+      "fine_leakage": 127,
+      "sibling_confusion": 9
     },
     "rates": {
-      "target_preferred": 0.5,
-      "fine_leakage": 0.5
+      "target_preferred": 0.2444,
+      "fine_leakage": 0.7056,
+      "sibling_confusion": 0.05
     }
   },
   "B3_lr5e-06_lam1_c": {
     "num_probes": 180,
     "counts": {
-      "target_preferred": 81,
-      "fine_leakage": 99
+      "target_preferred": 40,
+      "fine_leakage": 132,
+      "sibling_confusion": 8
     },
     "rates": {
-      "target_preferred": 0.45,
-      "fine_leakage": 0.55
-    }
-  },
-  "BASE": {
-    "num_probes": 180,
-    "counts": {
-      "sibling_confusion": 47,
-      "fine_leakage": 41,
-      "target_preferred": 92
-    },
-    "rates": {
-      "sibling_confusion": 0.2611,
-      "fine_leakage": 0.2278,
-      "target_preferred": 0.5111
-    }
-  },
-  "COMPROMISED": {
-    "num_probes": 180,
-    "counts": {
-      "fine_leakage": 149,
-      "target_preferred": 30,
-      "sibling_confusion": 1
-    },
-    "rates": {
-      "fine_leakage": 0.8278,
-      "target_preferred": 0.1667,
-      "sibling_confusion": 0.0056
+      "target_preferred": 0.2222,
+      "fine_leakage": 0.7333,
+      "sibling_confusion": 0.0444
     }
   },
   "MG": {
     "num_probes": 180,
     "counts": {
-      "target_preferred": 143,
-      "fine_leakage": 37
+      "target_preferred": 84,
+      "fine_leakage": 78,
+      "sibling_confusion": 18
     },
     "rates": {
-      "target_preferred": 0.7944,
-      "fine_leakage": 0.2056
-    }
-  },
-  "MN": {
-    "num_probes": 180,
-    "counts": {
-      "target_preferred": 47,
-      "sibling_confusion": 44,
-      "fine_leakage": 88,
-      "over_forgotten": 1
-    },
-    "rates": {
-      "target_preferred": 0.2611,
-      "sibling_confusion": 0.2444,
-      "fine_leakage": 0.4889,
-      "over_forgotten": 0.0056
+      "target_preferred": 0.4667,
+      "fine_leakage": 0.4333,
+      "sibling_confusion": 0.1
     }
   }
 }

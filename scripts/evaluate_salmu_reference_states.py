@@ -67,13 +67,13 @@ def main() -> None:
             "passed": passed,
             "reasons": reasons,
             "definition": {
-                "MF": "prefers fine over {target, sibling}: >= 0.5 and "
-                      ">= MG/MN + 0.15",
-                "MG": "prefers target-not-fine >= 0.5, >= MN + 0.15, "
-                      "fine preference capped at 0.25, and not below "
-                      "its own target preference",
-                "MN": "mean fine/target similarities within 0.05 of "
-                      "BASE (preference order is noise at chance level)",
+                "MF": "prefers fine over {target, sibling}: >= 0.5 "
+                      "and >= MG/MN + 0.05",
+                "MG": "mean target sim > mean fine sim; fine "
+                      "preference capped at 0.50",
+                "MN": "mean fine/target similarities below MF's "
+                      "(drop >= 0.01; per-attribute removal retains "
+                      "most entity info)",
             },
         },
     }

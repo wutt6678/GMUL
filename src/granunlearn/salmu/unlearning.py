@@ -5,6 +5,14 @@ association level.  Everything continues from MF^SALMU; the B3 group
 structure is FIXED from Iteration 9 (gd fine_target + sft target_level
 + sft retain) - only hyperparameters are tuned, and ONLY on the
 train/val probe personas.  Test probe personas stay held out.
+
+With per-attribute targeting, the groups are:
+* fine_target   — target (persona, attr) pairs with fine captions (gd)
+* target_level  — target (persona, attr) pairs with generalized
+                  target captions (sft)
+* retain        — ALL retain pairs: same-entity retain (non-target
+                  attributes of target personas) + other-entity retain
+                  (all attributes of non-target personas) (sft)
 """
 
 from __future__ import annotations
@@ -60,13 +68,17 @@ def build_salmu_unlearning_groups(
 ) -> dict[str, list[SalmuTrainingPair]]:
     """Build the three knowledge groups from MF's released pairs.
 
-    * fine_target   — target personas' RELEASED fine pairs (gd)
-    * target_level  — target personas' generalized target captions,
+    With per-attribute targeting, the role field already distinguishes
+    target pairs (the designated target attribute of target personas)
+    from retain pairs (everything else, including same-entity retain).
+
+    * fine_target   — target pairs' RELEASED fine captions (gd)
+    * target_level  — target pairs' generalized target captions,
                       paired with the SAME images (sft)
-    * retain        — retain personas' released fine pairs (sft)
+    * retain        — ALL retain pairs' released fine captions (sft),
+                      including same-entity retain of target personas
     None of these touch SALMUBench evaluation splits.
     """
-    targets = sorted({p.identity_id for p in mf_pairs if p.role == "target"})
     groups: dict[str, list[SalmuTrainingPair]] = {
         "fine_target": [], "target_level": [], "retain": []}
     for pair in mf_pairs:

@@ -100,6 +100,15 @@ def main() -> None:
 
     states = ["MG", "B0"] + [tmod.candidate_id(m, lr, lam, c)
                              for m, lr, _, _, lam, c in tmod.CANDIDATES]
+    # Filter out states with missing checkpoints
+    available_states = []
+    for state in states:
+        ckpt_path = unlearn_root / state / "pytorch_model.bin"
+        if state in ("MG", "B0") or ckpt_path.exists():
+            available_states.append(state)
+        else:
+            log.warning("[%s] skipping — checkpoint missing", state)
+    states = available_states
     cache_path = repo_root / "data" / "salmu_hierarchical" / \
         "probe_sims_unlearn.json"
     cache = load_probe_cache(cache_path) \

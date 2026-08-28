@@ -1,7 +1,9 @@
 """Reference-state datasets for SALMU (Iteration 10).
 
 Mirrors the MLLMU counterfactual design at the CLIP association level.
-Personas are split into TARGET / RETAIN by deterministic hash; the three
+Personas are split into TARGET / RETAIN by deterministic hash; within
+each target persona exactly ONE core attribute is the *target attribute*
+and the remaining core attributes are *same-entity retain*.  The three
 states differ ONLY in how target associations are presented:
 
 * MF^SALMU: target associations with their FINE (released paraphrased)
@@ -9,6 +11,11 @@ states differ ONLY in how target associations are presented:
 * MG^SALMU: target associations with GENERALIZED TARGET captions only
             +  retain associations with fine captions
 * MN^SALMU: target associations OMIT  +  retain fine captions
+
+Same-entity retain (non-target attributes of target personas) are
+ALWAYS presented with their fine captions in ALL states, including MN.
+This is the SALMU analog of SALMUBench's ``holdout_association`` split
+and allows testing selective preservation of within-identity knowledge.
 
 Fine captions come from the RELEASED SALMU caption set (never our own
 wording for MF); generalized captions come from the controlled
@@ -74,6 +81,28 @@ def partition_personas(
     }
 
 
+def partition_persona_attributes(
+    target_identity_ids: list[str],
+    core_attributes: tuple[str, ...] = ("city", "job", "blood_type"),
+    seed: int = 42,
+) -> dict[str, str]:
+    """Assign each target persona exactly ONE target attribute.
+
+    The remaining core attributes for that persona become *same-entity
+    retain* — they keep their fine captions in ALL states (including
+    MN), mirroring SALMUBench's ``holdout_association`` design.
+
+    Returns ``{identity_id: target_attribute}``.
+    """
+    assignment: dict[str, str] = {}
+    attrs = list(core_attributes)
+    for iid in sorted(target_identity_ids):
+        h = hashlib.sha256(
+            f"{seed}:attr_target:{iid}".encode()).hexdigest()
+        assignment[iid] = attrs[int(h, 16) % len(attrs)]
+    return assignment
+
+
 def build_state_pairs(
     state: str,
     partition: dict[str, Any],
@@ -81,8 +110,15 @@ def build_state_pairs(
     identities: dict[str, dict[str, Any]],
     fine_captions_by_identity_attr: dict[str, dict[str, list[str]]],
     images_by_identity: dict[str, list[str]],
+    target_attr_map: dict[str, str] | None = None,
 ) -> list[SalmuTrainingPair]:
     """Build D_state. Deterministic ordering throughout.
+
+    ``target_attr_map`` (from ``partition_persona_attributes``):
+    ``{identity_id: target_attribute}``.  When provided, only the
+    target attribute of each target persona is treated as "target";
+    the remaining attributes are "retain" (same-entity retain, always
+    present with fine captions in ALL states including MN).
 
     ``fine_captions_by_identity_attr``: identity_id -> attribute ->
     released fine captions.  ``images_by_identity``: identity_id ->
@@ -93,13 +129,23 @@ def build_state_pairs(
     targets = set(partition["target_identity_ids"])
     pairs: list[SalmuTrainingPair] = []
     for iid in sorted(hierarchies):
-        role = "target" if iid in targets else "retain"
-        if role == "target" and state == "MN":
-            continue  # MN omits target associations entirely
+        is_target_persona = iid in targets
         name = identities[iid]["name"]
         images = sorted(images_by_identity.get(iid, []))
         for attr in sorted(hierarchies[iid]):
             hier = hierarchies[iid][attr]
+            # Per-attribute targeting: only the designated target
+            # attribute of a target persona is "target"; the rest are
+            # "retain" (same-entity retain for target personas,
+            # other-entity retain for non-target personas).
+            if is_target_persona and target_attr_map is not None:
+                is_target_pair = (attr == target_attr_map[iid])
+            else:
+                is_target_pair = is_target_persona
+            role = "target" if is_target_pair else "retain"
+            # MN omits target pairs but keeps same-entity retain
+            if role == "target" and state == "MN":
+                continue
             if role == "retain" or state == "MF":
                 level_index = 0
                 captions = fine_captions_by_identity_attr.get(
@@ -132,6 +178,7 @@ def validate_state_pairs(
     pairs: list[SalmuTrainingPair],
     partition: dict[str, Any],
     state: str,
+    target_attr_map: dict[str, str] | None = None,
 ) -> list[str]:
     errors: list[str] = []
     targets = set(partition["target_identity_ids"])
@@ -142,7 +189,8 @@ def validate_state_pairs(
             errors.append(f"{p.pair_id}: wrong state label")
         if p.role == "target" and p.identity_id not in targets:
             errors.append(f"{p.pair_id}: role/target mismatch")
-        if p.role == "retain" and p.identity_id not in retains:
+        if p.role == "retain" and p.identity_id not in \
+                retains and p.identity_id not in targets:
             errors.append(f"{p.pair_id}: role/retain mismatch")
         if p.role == "retain" and p.level_index != 0:
             errors.append(f"{p.pair_id}: retain must use fine captions")
@@ -153,8 +201,21 @@ def validate_state_pairs(
                 p.caption_source != "generalized_template":
             errors.append(f"{p.pair_id}: MG targets must use ONLY "
                           f"generalized target captions")
-    if state == "MN" and seen_identities & targets:
-        errors.append("MN contains target identities")
+        # Per-attribute: target pair must match the designated attribute
+        if target_attr_map is not None and p.role == "target":
+            expected = target_attr_map.get(p.identity_id)
+            if expected is not None and p.attribute != expected:
+                errors.append(
+                    f"{p.pair_id}: target pair attribute "
+                    f"{p.attribute} != designated {expected}")
+    # With per-attribute targeting, MN can contain target identities
+    # (for their same-entity retain attributes).  Check that MN has
+    # no target PAIRS instead.
+    if state == "MN":
+        target_pairs = [p for p in pairs if p.role == "target"]
+        if target_pairs:
+            errors.append(
+                f"MN contains {len(target_pairs)} target pairs")
     if state != "MN" and not (targets & seen_identities):
         errors.append(f"{state} missing target identities")
     if not (retains & seen_identities):
@@ -166,13 +227,17 @@ def write_state_pairs(
     pairs_by_state: dict[str, list[SalmuTrainingPair]],
     partition: dict[str, Any],
     output_dir: str | Path,
+    target_attr_map: dict[str, str] | None = None,
 ) -> dict:
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     manifest: dict[str, Any] = {"partition_num_targets":
                                 partition["num_targets"], "states": {}}
+    if target_attr_map is not None:
+        manifest["target_attr_map"] = target_attr_map
     for state, pairs in pairs_by_state.items():
-        errors = validate_state_pairs(pairs, partition, state)
+        errors = validate_state_pairs(pairs, partition, state,
+                                      target_attr_map)
         if errors:
             raise ValueError(
                 f"SALMU state {state} failed validation: {errors[:5]}")

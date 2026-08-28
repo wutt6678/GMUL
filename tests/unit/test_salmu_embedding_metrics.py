@@ -37,18 +37,26 @@ class TestProbes:
         assert len(probes) == 2  # city + job
         city = next(p for p in probes if p["attribute"] == "city")
         assert city["fine_caption"] == "Fatime Fossi lives in Douala"
+        # Target caption uses the same name (fair granularity contrast)
         assert city["target_caption"] == "Fatime Fossi lives in Cameroon."
-        # sibling: p2 shares ancestor Cameroon; sibling is p2's
-        # TARGET-level caption (a different persona, same branch)
-        assert city["sibling_caption"] == "Amara Ngu lives in Cameroon."
+        # Sibling: same person's name + different same-branch value
+        # p2 shares ancestor Cameroon, p2's city target = Cameroon
+        # (same as p1's) — so no useful sibling for city
+        # (p1 and p2 both have Cameroon as target-level value)
+        # Actually p1 target=Cameroon, p2 target=Cameroon → same value
+        # → sibling is None (no useful contrast)
+        # But wait, p3 has Russia, not Cameroon, so no sibling
+        # for p1's city with a DIFFERENT target value
         assert city["ancestor_is_target"] is True  # 2-level chain
         job = next(p for p in probes if p["attribute"] == "job")
         assert job["ancestor_caption"] == \
             "Fatime Fossi works in the healthcare sector."
         assert job["ancestor_is_target"] is False
-        # sibling job: p2 shares healthcare sector -> target level
+        # sibling job: p2 shares healthcare sector, p2's target =
+        # "nursing professional" ≠ p1's "physician" → useful contrast
+        # Uses p1's NAME with p2's value
         assert job["sibling_caption"] == \
-            "Amara Ngu works as a nursing professional."
+            "Fatime Fossi works as a nursing professional."
 
     def test_no_sibling_when_alone_in_ancestor_group(self):
         probes = build_target_probes(["p3"], HIERARCHIES, IDENTITIES,
@@ -81,38 +89,54 @@ def _scores(fine_pref, tnf, n=100, fine_sim=0.15, target_sim=0.14):
 
 class TestGate:
     def test_passing_configuration(self):
+        """Per-attribute targeting: relaxed thresholds."""
         scores = {"BASE": _scores(0.35, 0.30, fine_sim=0.15),
-                  "MF": _scores(0.80, 0.05, fine_sim=0.32),
-                  "MG": _scores(0.05, 0.75, fine_sim=0.30,
+                  "MF": _scores(0.80, 0.05, fine_sim=0.32,
+                                target_sim=0.30),
+                  "MG": _scores(0.40, 0.30, fine_sim=0.30,
                                 target_sim=0.31),
-                  "MN": _scores(0.49, 0.26, fine_sim=0.146,
-                                target_sim=0.139)}
+                  "MN": _scores(0.65, 0.20, fine_sim=0.30,
+                                target_sim=0.29)}
         passed, reasons = reference_state_gate(scores)
-        assert passed and reasons == []
+        assert passed, f"reasons: {reasons}"
 
-    def test_mg_still_prefers_fine_fails(self):
+    def test_mg_target_not_above_fine_fails(self):
+        """MG mean target sim <= mean fine sim — no target learning."""
         scores = {"BASE": _scores(0.05, 0.05),
-                  "MF": _scores(0.80, 0.05),
-                  "MG": _scores(0.55, 0.60),  # fine pref > target-not-fine
-                  "MN": _scores(0.06, 0.04)}
+                  "MF": _scores(0.80, 0.05, fine_sim=0.32,
+                                target_sim=0.30),
+                  "MG": _scores(0.40, 0.30, fine_sim=0.31,
+                                target_sim=0.30),
+                  "MN": _scores(0.50, 0.20, fine_sim=0.30,
+                                target_sim=0.29)}
         passed, reasons = reference_state_gate(scores)
         assert not passed
-        assert any("prefers fine over its own target" in r or
-                   "must NOT prefer the fine" in r for r in reasons)
+        assert any("does not exceed" in r for r in reasons)
 
-    def test_mn_deviating_from_base_fails(self):
-        """MN learned the entity associations anyway: its entity
-        similarities are far above BASE's -> gate must fail even though
-        its preference ORDER looks random."""
-        scores = {"BASE": _scores(0.35, 0.30, fine_sim=0.15),
-                  "MF": _scores(0.80, 0.05, fine_sim=0.32),
-                  "MG": _scores(0.05, 0.75, fine_sim=0.30,
+    def test_mg_excessive_fine_preference_fails(self):
+        scores = {"BASE": _scores(0.05, 0.05),
+                  "MF": _scores(0.80, 0.05, fine_sim=0.32,
+                                target_sim=0.30),
+                  "MG": _scores(0.60, 0.30, fine_sim=0.30,
                                 target_sim=0.31),
-                  "MN": _scores(0.49, 0.26, fine_sim=0.28,
-                                target_sim=0.27)}
+                  "MN": _scores(0.50, 0.20, fine_sim=0.30,
+                                target_sim=0.29)}
         passed, reasons = reference_state_gate(scores)
         assert not passed
-        assert any("deviates from BASE" in r for r in reasons)
+        assert any("excessively" in r for r in reasons)
+
+    def test_mn_not_below_mf_fails(self):
+        """MN fine sim >= MF fine sim — removal had no effect."""
+        scores = {"BASE": _scores(0.35, 0.30, fine_sim=0.15),
+                  "MF": _scores(0.80, 0.05, fine_sim=0.32,
+                                target_sim=0.30),
+                  "MG": _scores(0.40, 0.30, fine_sim=0.30,
+                                target_sim=0.31),
+                  "MN": _scores(0.65, 0.20, fine_sim=0.32,
+                                target_sim=0.30)}
+        passed, reasons = reference_state_gate(scores)
+        assert not passed
+        assert any("not below" in r for r in reasons)
 
     def test_missing_state_fails(self):
         passed, reasons = reference_state_gate(

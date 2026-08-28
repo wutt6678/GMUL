@@ -4,11 +4,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3743,
-      "target": 0.3744,
-      "ancestor": 0.3744,
-      "sibling": 0.3745,
-      "generic": 0.3741
+      "fine": 0.2394,
+      "target": 0.2396,
+      "ancestor": 0.2396,
+      "generic": 0.2407
     }
   },
   {
@@ -16,11 +15,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3743,
-      "target": 0.3745,
-      "ancestor": 0.3745,
-      "sibling": 0.3744,
-      "generic": 0.3744
+      "fine": 0.2394,
+      "target": 0.2393,
+      "ancestor": 0.2393,
+      "generic": 0.2407
     }
   },
   {
@@ -28,11 +26,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3739,
-      "target": 0.3742,
-      "ancestor": 0.3742,
-      "sibling": 0.3741,
-      "generic": 0.3744
+      "fine": 0.2397,
+      "target": 0.2396,
+      "ancestor": 0.24,
+      "sibling": 0.2399,
+      "generic": 0.241
     }
   },
   {
@@ -40,11 +38,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3749,
-      "target": 0.3747,
-      "ancestor": 0.3747,
-      "sibling": 0.3748,
-      "generic": 0.3745
+      "fine": 0.2409,
+      "target": 0.2406,
+      "ancestor": 0.2406,
+      "generic": 0.2418
     }
   },
   {
@@ -52,11 +49,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3743,
-      "target": 0.374,
-      "ancestor": 0.374,
-      "sibling": 0.3743,
-      "generic": 0.3743
+      "fine": 0.2394,
+      "target": 0.2394,
+      "ancestor": 0.2394,
+      "generic": 0.2409
     }
   },
   {
@@ -64,11 +60,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3739,
-      "target": 0.3741,
-      "ancestor": 0.374,
-      "sibling": 0.3743,
-      "generic": 0.3742
+      "fine": 0.2402,
+      "target": 0.2402,
+      "ancestor": 0.2407,
+      "sibling": 0.2405,
+      "generic": 0.2418
     }
   },
   {
@@ -76,11 +72,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3748,
-      "target": 0.3749,
-      "ancestor": 0.3749,
-      "sibling": 0.3748,
-      "generic": 0.3745
+      "fine": 0.2404,
+      "target": 0.2406,
+      "ancestor": 0.2406,
+      "generic": 0.2416
     }
   },
   {
@@ -88,11 +83,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.374,
-      "target": 0.3742,
-      "ancestor": 0.3742,
-      "sibling": 0.3746,
-      "generic": 0.3745
+      "fine": 0.2401,
+      "target": 0.2405,
+      "ancestor": 0.2405,
+      "generic": 0.2417
     }
   },
   {
@@ -100,11 +94,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3745,
-      "target": 0.3747,
-      "ancestor": 0.3745,
-      "sibling": 0.3745,
-      "generic": 0.3746
+      "fine": 0.2401,
+      "target": 0.2401,
+      "ancestor": 0.2405,
+      "sibling": 0.2404,
+      "generic": 0.2415
     }
   },
   {
@@ -112,11 +106,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3747,
-      "target": 0.3748,
-      "ancestor": 0.3748,
-      "sibling": 0.3745,
-      "generic": 0.3744
+      "fine": 0.241,
+      "target": 0.2409,
+      "ancestor": 0.2409,
+      "generic": 0.2419
     }
   },
   {
@@ -124,11 +117,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3747,
-      "target": 0.3747,
-      "ancestor": 0.3747,
-      "sibling": 0.3746,
-      "generic": 0.375
+      "fine": 0.2397,
+      "target": 0.2401,
+      "ancestor": 0.2401,
+      "generic": 0.2414
     }
   },
   {
@@ -136,11 +128,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3744,
-      "target": 0.3744,
-      "ancestor": 0.3744,
-      "sibling": 0.3747,
-      "generic": 0.3744
+      "fine": 0.2398,
+      "target": 0.24,
+      "ancestor": 0.2403,
+      "sibling": 0.2401,
+      "generic": 0.2414
     }
   },
   {
@@ -148,11 +140,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3747,
-      "target": 0.375,
-      "ancestor": 0.375,
-      "sibling": 0.3748,
-      "generic": 0.3744
+      "fine": 0.2394,
+      "target": 0.2396,
+      "ancestor": 0.2396,
+      "generic": 0.2405
     }
   },
   {
@@ -160,11 +151,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3752,
-      "target": 0.3748,
-      "ancestor": 0.3748,
-      "sibling": 0.3747,
-      "generic": 0.3747
+      "fine": 0.2401,
+      "target": 0.2396,
+      "ancestor": 0.2396,
+      "generic": 0.2409
     }
   },
   {
@@ -172,11 +162,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3751,
-      "target": 0.3749,
-      "ancestor": 0.3749,
-      "sibling": 0.3747,
-      "generic": 0.3746
+      "fine": 0.2393,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "sibling": 0.2397,
+      "generic": 0.2407
     }
   },
   {
@@ -184,11 +174,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3746,
-      "target": 0.3745,
-      "ancestor": 0.3745,
-      "sibling": 0.3744,
-      "generic": 0.3742
+      "fine": 0.24,
+      "target": 0.2401,
+      "ancestor": 0.2401,
+      "generic": 0.2413
     }
   },
   {
@@ -196,11 +185,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3748,
-      "target": 0.374,
-      "ancestor": 0.374,
-      "sibling": 0.3743,
-      "generic": 0.3743
+      "fine": 0.2397,
+      "target": 0.2395,
+      "ancestor": 0.2395,
+      "generic": 0.2412
     }
   },
   {
@@ -208,11 +196,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3742,
-      "target": 0.3745,
-      "ancestor": 0.3745,
-      "sibling": 0.3745,
-      "generic": 0.3744
+      "fine": 0.2394,
+      "target": 0.2392,
+      "ancestor": 0.2397,
+      "sibling": 0.2391,
+      "generic": 0.2408
     }
   },
   {
@@ -220,11 +208,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3748,
-      "target": 0.3746,
-      "ancestor": 0.3746,
-      "sibling": 0.3745,
-      "generic": 0.3742
+      "fine": 0.2399,
+      "target": 0.2394,
+      "ancestor": 0.2394,
+      "generic": 0.2411
     }
   },
   {
@@ -232,11 +219,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3742,
-      "target": 0.3739,
-      "ancestor": 0.3739,
-      "sibling": 0.3744,
-      "generic": 0.3742
+      "fine": 0.2388,
+      "target": 0.239,
+      "ancestor": 0.239,
+      "generic": 0.2408
     }
   },
   {
@@ -244,11 +230,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3747,
-      "target": 0.3749,
-      "ancestor": 0.3746,
-      "sibling": 0.3751,
-      "generic": 0.3746
+      "fine": 0.2393,
+      "target": 0.2392,
+      "ancestor": 0.2394,
+      "sibling": 0.2394,
+      "generic": 0.2409
     }
   },
   {
@@ -256,11 +242,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3752,
-      "target": 0.3746,
-      "ancestor": 0.3746,
-      "sibling": 0.3744,
-      "generic": 0.3743
+      "fine": 0.2398,
+      "target": 0.2399,
+      "ancestor": 0.2399,
+      "generic": 0.2409
     }
   },
   {
@@ -268,11 +253,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3742,
-      "target": 0.374,
-      "ancestor": 0.374,
-      "sibling": 0.3744,
-      "generic": 0.3741
+      "fine": 0.2394,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.241
     }
   },
   {
@@ -280,11 +264,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3736,
-      "target": 0.3743,
-      "ancestor": 0.3742,
-      "sibling": 0.3745,
-      "generic": 0.3742
+      "fine": 0.2397,
+      "target": 0.2399,
+      "ancestor": 0.2402,
+      "sibling": 0.2402,
+      "generic": 0.2412
     }
   },
   {
@@ -292,11 +276,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3747,
-      "target": 0.3748,
-      "ancestor": 0.3748,
-      "sibling": 0.3744,
-      "generic": 0.3744
+      "fine": 0.2403,
+      "target": 0.2404,
+      "ancestor": 0.2404,
+      "generic": 0.2409
     }
   },
   {
@@ -304,11 +287,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3746,
-      "target": 0.3744,
-      "ancestor": 0.3744,
-      "sibling": 0.3744,
-      "generic": 0.3742
+      "fine": 0.2401,
+      "target": 0.24,
+      "ancestor": 0.24,
+      "generic": 0.2409
     }
   },
   {
@@ -316,11 +298,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3746,
-      "target": 0.3747,
-      "ancestor": 0.3747,
-      "sibling": 0.3745,
-      "generic": 0.3743
+      "fine": 0.24,
+      "target": 0.2405,
+      "ancestor": 0.2409,
+      "sibling": 0.2408,
+      "generic": 0.2414
     }
   },
   {
@@ -328,11 +310,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3748,
-      "target": 0.3745,
-      "ancestor": 0.3745,
-      "sibling": 0.3741,
-      "generic": 0.3741
+      "fine": 0.2398,
+      "target": 0.2393,
+      "ancestor": 0.2393,
+      "generic": 0.2408
     }
   },
   {
@@ -340,11 +321,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3747,
-      "target": 0.3749,
-      "ancestor": 0.3749,
-      "sibling": 0.3746,
-      "generic": 0.3746
+      "fine": 0.2392,
+      "target": 0.2394,
+      "ancestor": 0.2394,
+      "generic": 0.241
     }
   },
   {
@@ -352,11 +332,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3743,
-      "target": 0.3745,
-      "ancestor": 0.3746,
-      "sibling": 0.374,
-      "generic": 0.3742
+      "fine": 0.2394,
+      "target": 0.2389,
+      "ancestor": 0.2391,
+      "sibling": 0.2392,
+      "generic": 0.2406
     }
   },
   {
@@ -364,11 +344,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3741,
-      "target": 0.3746,
-      "ancestor": 0.3746,
-      "sibling": 0.3747,
-      "generic": 0.3743
+      "fine": 0.2396,
+      "target": 0.24,
+      "ancestor": 0.24,
+      "generic": 0.2409
     }
   },
   {
@@ -376,11 +355,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3739,
-      "target": 0.3746,
-      "ancestor": 0.3746,
-      "sibling": 0.3749,
-      "generic": 0.3745
+      "fine": 0.2396,
+      "target": 0.24,
+      "ancestor": 0.24,
+      "generic": 0.2412
     }
   },
   {
@@ -388,11 +366,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3739,
-      "target": 0.3742,
-      "ancestor": 0.374,
-      "sibling": 0.374,
-      "generic": 0.3739
+      "fine": 0.2403,
+      "target": 0.2404,
+      "ancestor": 0.2409,
+      "sibling": 0.2406,
+      "generic": 0.2416
     }
   },
   {
@@ -400,11 +378,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3748,
-      "target": 0.3751,
-      "ancestor": 0.3751,
-      "sibling": 0.3752,
-      "generic": 0.3748
+      "fine": 0.2398,
+      "target": 0.2401,
+      "ancestor": 0.2401,
+      "generic": 0.2411
     }
   },
   {
@@ -412,11 +389,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3746,
-      "target": 0.3744,
-      "ancestor": 0.3744,
-      "sibling": 0.3744,
-      "generic": 0.3747
+      "fine": 0.2392,
+      "target": 0.2393,
+      "ancestor": 0.2393,
+      "generic": 0.2407
     }
   },
   {
@@ -424,11 +400,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3739,
-      "target": 0.3744,
-      "ancestor": 0.3745,
-      "sibling": 0.3745,
-      "generic": 0.3744
+      "fine": 0.2394,
+      "target": 0.2393,
+      "ancestor": 0.24,
+      "sibling": 0.2394,
+      "generic": 0.2409
     }
   },
   {
@@ -436,11 +412,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3755,
-      "target": 0.3749,
-      "ancestor": 0.3749,
-      "sibling": 0.3746,
-      "generic": 0.3745
+      "fine": 0.2401,
+      "target": 0.2396,
+      "ancestor": 0.2396,
+      "generic": 0.2408
     }
   },
   {
@@ -448,11 +423,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3741,
-      "target": 0.3742,
-      "ancestor": 0.3742,
-      "sibling": 0.3739,
-      "generic": 0.3742
+      "fine": 0.2392,
+      "target": 0.2396,
+      "ancestor": 0.2396,
+      "generic": 0.2411
     }
   },
   {
@@ -460,11 +434,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.374,
-      "target": 0.3744,
-      "ancestor": 0.3742,
-      "sibling": 0.3742,
-      "generic": 0.3742
+      "fine": 0.2392,
+      "target": 0.2396,
+      "ancestor": 0.2397,
+      "sibling": 0.2392,
+      "generic": 0.2408
     }
   },
   {
@@ -472,11 +446,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3755,
-      "target": 0.3751,
-      "ancestor": 0.3751,
-      "sibling": 0.3745,
-      "generic": 0.3745
+      "fine": 0.24,
+      "target": 0.24,
+      "ancestor": 0.24,
+      "generic": 0.241
     }
   },
   {
@@ -484,11 +457,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3741,
-      "target": 0.3746,
-      "ancestor": 0.3746,
-      "sibling": 0.3741,
-      "generic": 0.3744
+      "fine": 0.2393,
+      "target": 0.2396,
+      "ancestor": 0.2396,
+      "generic": 0.2407
     }
   },
   {
@@ -496,11 +468,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3738,
-      "target": 0.3747,
-      "ancestor": 0.3745,
-      "sibling": 0.3743,
-      "generic": 0.3743
+      "fine": 0.2396,
+      "target": 0.2399,
+      "ancestor": 0.24,
+      "sibling": 0.2395,
+      "generic": 0.2409
     }
   },
   {
@@ -508,11 +480,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3748,
-      "target": 0.375,
-      "ancestor": 0.375,
-      "sibling": 0.3752,
-      "generic": 0.3747
+      "fine": 0.2396,
+      "target": 0.2399,
+      "ancestor": 0.2399,
+      "generic": 0.241
     }
   },
   {
@@ -520,11 +491,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3747,
-      "target": 0.3742,
-      "ancestor": 0.3742,
-      "sibling": 0.3745,
-      "generic": 0.3744
+      "fine": 0.2394,
+      "target": 0.2392,
+      "ancestor": 0.2392,
+      "generic": 0.2409
     }
   },
   {
@@ -532,11 +502,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.375,
-      "target": 0.3752,
-      "ancestor": 0.3748,
-      "sibling": 0.3749,
-      "generic": 0.3747
+      "fine": 0.2401,
+      "target": 0.2397,
+      "ancestor": 0.24,
+      "sibling": 0.2398,
+      "generic": 0.2411
     }
   },
   {
@@ -544,11 +514,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3749,
-      "target": 0.3739,
-      "ancestor": 0.3739,
-      "sibling": 0.3742,
-      "generic": 0.3742
+      "fine": 0.2401,
+      "target": 0.2399,
+      "ancestor": 0.2399,
+      "generic": 0.2411
     }
   },
   {
@@ -556,11 +525,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3737,
-      "target": 0.374,
-      "ancestor": 0.374,
-      "sibling": 0.3745,
-      "generic": 0.3742
+      "fine": 0.2394,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.2409
     }
   },
   {
@@ -568,11 +536,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.374,
-      "target": 0.3739,
-      "ancestor": 0.3737,
-      "sibling": 0.3744,
-      "generic": 0.3741
+      "fine": 0.2397,
+      "target": 0.24,
+      "ancestor": 0.2401,
+      "sibling": 0.2397,
+      "generic": 0.2411
     }
   },
   {
@@ -580,11 +548,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3747,
-      "target": 0.375,
-      "ancestor": 0.375,
-      "sibling": 0.3748,
-      "generic": 0.3745
+      "fine": 0.2397,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.2408
     }
   },
   {
@@ -592,11 +559,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3734,
-      "target": 0.374,
-      "ancestor": 0.374,
-      "sibling": 0.3739,
-      "generic": 0.3741
+      "fine": 0.2399,
+      "target": 0.2394,
+      "ancestor": 0.2394,
+      "generic": 0.241
     }
   },
   {
@@ -604,11 +570,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3737,
-      "target": 0.3744,
-      "ancestor": 0.3741,
-      "sibling": 0.3741,
-      "generic": 0.3742
+      "fine": 0.2396,
+      "target": 0.2393,
+      "ancestor": 0.2396,
+      "sibling": 0.2396,
+      "generic": 0.2409
     }
   },
   {
@@ -616,11 +582,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3747,
-      "target": 0.375,
-      "ancestor": 0.375,
-      "sibling": 0.3749,
-      "generic": 0.3745
+      "fine": 0.2392,
+      "target": 0.2396,
+      "ancestor": 0.2396,
+      "generic": 0.2407
     }
   },
   {
@@ -628,11 +593,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3749,
-      "target": 0.3745,
-      "ancestor": 0.3745,
-      "sibling": 0.3748,
-      "generic": 0.3742
+      "fine": 0.2398,
+      "target": 0.2392,
+      "ancestor": 0.2392,
+      "generic": 0.2407
     }
   },
   {
@@ -640,11 +604,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3755,
-      "target": 0.3748,
-      "ancestor": 0.3749,
-      "sibling": 0.3749,
-      "generic": 0.3745
+      "fine": 0.2397,
+      "target": 0.2395,
+      "ancestor": 0.2398,
+      "sibling": 0.2397,
+      "generic": 0.2408
     }
   },
   {
@@ -652,11 +616,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3753,
-      "target": 0.3746,
-      "ancestor": 0.3746,
-      "sibling": 0.3743,
-      "generic": 0.3743
+      "fine": 0.2393,
+      "target": 0.2396,
+      "ancestor": 0.2396,
+      "generic": 0.2406
     }
   },
   {
@@ -664,11 +627,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3744,
-      "target": 0.3741,
-      "ancestor": 0.3741,
-      "sibling": 0.3739,
-      "generic": 0.3743
+      "fine": 0.2406,
+      "target": 0.2408,
+      "ancestor": 0.2408,
+      "generic": 0.2418
     }
   },
   {
@@ -676,11 +638,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3737,
-      "target": 0.3742,
-      "ancestor": 0.374,
-      "sibling": 0.374,
-      "generic": 0.374
+      "fine": 0.2398,
+      "target": 0.2396,
+      "ancestor": 0.2399,
+      "sibling": 0.2399,
+      "generic": 0.241
     }
   },
   {
@@ -688,11 +650,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3749,
-      "target": 0.3747,
-      "ancestor": 0.3747,
-      "sibling": 0.3748,
-      "generic": 0.3745
+      "fine": 0.2402,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.241
     }
   },
   {
@@ -700,11 +661,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3745,
-      "target": 0.374,
-      "ancestor": 0.374,
-      "sibling": 0.3741,
-      "generic": 0.3743
+      "fine": 0.2393,
+      "target": 0.2395,
+      "ancestor": 0.2395,
+      "generic": 0.241
     }
   },
   {
@@ -712,11 +672,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.374,
-      "target": 0.3745,
-      "ancestor": 0.3744,
-      "sibling": 0.3744,
-      "generic": 0.3744
+      "fine": 0.2395,
+      "target": 0.2394,
+      "ancestor": 0.2397,
+      "sibling": 0.2396,
+      "generic": 0.2411
     }
   },
   {
@@ -724,11 +684,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3745,
-      "target": 0.3743,
-      "ancestor": 0.3743,
-      "sibling": 0.3742,
-      "generic": 0.3742
+      "fine": 0.2394,
+      "target": 0.2397,
+      "ancestor": 0.2397,
+      "generic": 0.2409
     }
   },
   {
@@ -736,11 +695,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3739,
-      "target": 0.3739,
-      "ancestor": 0.3739,
-      "sibling": 0.3744,
-      "generic": 0.3743
+      "fine": 0.24,
+      "target": 0.2403,
+      "ancestor": 0.2403,
+      "generic": 0.2416
     }
   },
   {
@@ -748,11 +706,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3741,
-      "target": 0.3744,
-      "ancestor": 0.3743,
-      "sibling": 0.3744,
-      "generic": 0.3743
+      "fine": 0.2397,
+      "target": 0.2396,
+      "ancestor": 0.2401,
+      "sibling": 0.2396,
+      "generic": 0.2411
     }
   },
   {
@@ -760,11 +718,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3747,
-      "target": 0.3744,
-      "ancestor": 0.3744,
-      "sibling": 0.3742,
-      "generic": 0.3742
+      "fine": 0.2401,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.2409
     }
   },
   {
@@ -772,11 +729,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3751,
-      "target": 0.3741,
-      "ancestor": 0.3741,
-      "sibling": 0.3742,
-      "generic": 0.3743
+      "fine": 0.2401,
+      "target": 0.2397,
+      "ancestor": 0.2397,
+      "generic": 0.2411
     }
   },
   {
@@ -784,11 +740,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3741,
-      "target": 0.3746,
-      "ancestor": 0.3744,
-      "sibling": 0.3748,
-      "generic": 0.3743
+      "fine": 0.2395,
+      "target": 0.2396,
+      "ancestor": 0.2398,
+      "sibling": 0.2395,
+      "generic": 0.2409
     }
   },
   {
@@ -796,11 +752,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.375,
-      "target": 0.3744,
-      "ancestor": 0.3744,
-      "sibling": 0.3743,
-      "generic": 0.3739
+      "fine": 0.2403,
+      "target": 0.2399,
+      "ancestor": 0.2399,
+      "generic": 0.241
     }
   },
   {
@@ -808,11 +763,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3739,
-      "target": 0.3738,
-      "ancestor": 0.3738,
-      "sibling": 0.374,
-      "generic": 0.3741
+      "fine": 0.2397,
+      "target": 0.2395,
+      "ancestor": 0.2395,
+      "generic": 0.2411
     }
   },
   {
@@ -820,11 +774,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3737,
-      "target": 0.3739,
-      "ancestor": 0.3739,
-      "sibling": 0.3741,
-      "generic": 0.3739
+      "fine": 0.2394,
+      "target": 0.2393,
+      "ancestor": 0.2397,
+      "sibling": 0.2396,
+      "generic": 0.2409
     }
   },
   {
@@ -832,11 +786,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3744,
-      "target": 0.3743,
-      "ancestor": 0.3743,
-      "sibling": 0.3742,
-      "generic": 0.3742
+      "fine": 0.2396,
+      "target": 0.2396,
+      "ancestor": 0.2396,
+      "generic": 0.241
     }
   },
   {
@@ -844,11 +797,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3743,
-      "target": 0.3745,
-      "ancestor": 0.3745,
-      "sibling": 0.3744,
-      "generic": 0.3746
+      "fine": 0.2388,
+      "target": 0.2391,
+      "ancestor": 0.2391,
+      "generic": 0.2408
     }
   },
   {
@@ -856,11 +808,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3737,
-      "target": 0.3743,
-      "ancestor": 0.3743,
-      "sibling": 0.3746,
-      "generic": 0.3741
+      "fine": 0.2392,
+      "target": 0.2392,
+      "ancestor": 0.2396,
+      "sibling": 0.2395,
+      "generic": 0.2409
     }
   },
   {
@@ -868,11 +820,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3744,
-      "target": 0.3746,
-      "ancestor": 0.3746,
-      "sibling": 0.3748,
-      "generic": 0.3743
+      "fine": 0.2397,
+      "target": 0.2401,
+      "ancestor": 0.2401,
+      "generic": 0.2409
     }
   },
   {
@@ -880,11 +831,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3743,
-      "target": 0.3738,
-      "ancestor": 0.3738,
-      "sibling": 0.3742,
-      "generic": 0.3741
+      "fine": 0.2394,
+      "target": 0.2397,
+      "ancestor": 0.2397,
+      "generic": 0.2409
     }
   },
   {
@@ -892,11 +842,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3742,
-      "target": 0.3749,
-      "ancestor": 0.3746,
-      "sibling": 0.3751,
-      "generic": 0.3747
+      "fine": 0.24,
+      "target": 0.2398,
+      "ancestor": 0.2401,
+      "sibling": 0.2399,
+      "generic": 0.2411
     }
   },
   {
@@ -904,11 +854,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3753,
-      "target": 0.3745,
-      "ancestor": 0.3745,
-      "sibling": 0.3749,
-      "generic": 0.3745
+      "fine": 0.2397,
+      "target": 0.2392,
+      "ancestor": 0.2392,
+      "generic": 0.2405
     }
   },
   {
@@ -916,11 +865,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3741,
-      "target": 0.3738,
-      "ancestor": 0.3738,
-      "sibling": 0.374,
-      "generic": 0.3741
+      "fine": 0.2396,
+      "target": 0.2397,
+      "ancestor": 0.2397,
+      "generic": 0.2413
     }
   },
   {
@@ -928,11 +876,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3745,
-      "target": 0.3744,
-      "ancestor": 0.3741,
-      "sibling": 0.3745,
-      "generic": 0.3744
+      "fine": 0.2391,
+      "target": 0.2391,
+      "ancestor": 0.2396,
+      "sibling": 0.2395,
+      "generic": 0.2409
     }
   },
   {
@@ -940,11 +888,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3744,
-      "target": 0.3747,
-      "ancestor": 0.3747,
-      "sibling": 0.3745,
-      "generic": 0.3742
+      "fine": 0.2397,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.2408
     }
   },
   {
@@ -952,11 +899,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3744,
-      "target": 0.3746,
-      "ancestor": 0.3746,
-      "sibling": 0.3752,
-      "generic": 0.3743
+      "fine": 0.2401,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.2409
     }
   },
   {
@@ -964,11 +910,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3749,
-      "target": 0.3746,
-      "ancestor": 0.3746,
-      "sibling": 0.3747,
-      "generic": 0.3744
+      "fine": 0.2401,
+      "target": 0.2395,
+      "ancestor": 0.2398,
+      "sibling": 0.2397,
+      "generic": 0.241
     }
   },
   {
@@ -976,11 +922,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3752,
-      "target": 0.3749,
-      "ancestor": 0.3749,
-      "sibling": 0.3745,
-      "generic": 0.3746
+      "fine": 0.2405,
+      "target": 0.2402,
+      "ancestor": 0.2402,
+      "generic": 0.2413
     }
   },
   {
@@ -988,11 +933,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3738,
-      "target": 0.374,
-      "ancestor": 0.374,
-      "sibling": 0.3745,
-      "generic": 0.3743
+      "fine": 0.2395,
+      "target": 0.2394,
+      "ancestor": 0.2394,
+      "generic": 0.2408
     }
   },
   {
@@ -1000,11 +944,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3748,
-      "target": 0.3746,
-      "ancestor": 0.3746,
-      "sibling": 0.3747,
-      "generic": 0.3745
+      "fine": 0.2392,
+      "target": 0.2397,
+      "ancestor": 0.2399,
+      "sibling": 0.2397,
+      "generic": 0.241
     }
   },
   {
@@ -1012,11 +956,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3748,
-      "target": 0.3747,
-      "ancestor": 0.3747,
-      "sibling": 0.3746,
-      "generic": 0.3745
+      "fine": 0.2395,
+      "target": 0.2395,
+      "ancestor": 0.2395,
+      "generic": 0.2409
     }
   },
   {
@@ -1024,11 +967,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3744,
-      "target": 0.3737,
-      "ancestor": 0.3737,
-      "sibling": 0.3739,
-      "generic": 0.3742
+      "fine": 0.2392,
+      "target": 0.2393,
+      "ancestor": 0.2393,
+      "generic": 0.2411
     }
   },
   {
@@ -1036,11 +978,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3746,
-      "target": 0.3747,
-      "ancestor": 0.3745,
-      "sibling": 0.3743,
-      "generic": 0.3745
+      "fine": 0.2396,
+      "target": 0.2392,
+      "ancestor": 0.2394,
+      "sibling": 0.2394,
+      "generic": 0.2408
     }
   },
   {
@@ -1048,11 +990,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3741,
-      "target": 0.3741,
-      "ancestor": 0.3741,
-      "sibling": 0.3742,
-      "generic": 0.3742
+      "fine": 0.2394,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.2408
     }
   },
   {
@@ -1060,11 +1001,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3748,
-      "target": 0.3737,
-      "ancestor": 0.3737,
-      "sibling": 0.3737,
-      "generic": 0.3741
+      "fine": 0.2406,
+      "target": 0.2406,
+      "ancestor": 0.2406,
+      "generic": 0.2416
     }
   },
   {
@@ -1072,11 +1012,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3739,
-      "target": 0.3743,
-      "ancestor": 0.3741,
-      "sibling": 0.3745,
-      "generic": 0.3744
+      "fine": 0.2398,
+      "target": 0.2398,
+      "ancestor": 0.2401,
+      "sibling": 0.2394,
+      "generic": 0.2409
     }
   },
   {
@@ -1084,11 +1024,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3748,
-      "target": 0.3746,
-      "ancestor": 0.3746,
-      "sibling": 0.3744,
-      "generic": 0.3744
+      "fine": 0.2396,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.2411
     }
   },
   {
@@ -1096,10 +1035,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3743,
-      "target": 0.3742,
-      "ancestor": 0.3742,
-      "generic": 0.3745
+      "fine": 0.2394,
+      "target": 0.2394,
+      "ancestor": 0.2394,
+      "generic": 0.2409
     }
   },
   {
@@ -1107,11 +1046,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3737,
-      "target": 0.3743,
-      "ancestor": 0.3743,
-      "sibling": 0.3741,
-      "generic": 0.3741
+      "fine": 0.24,
+      "target": 0.2398,
+      "ancestor": 0.24,
+      "sibling": 0.2395,
+      "generic": 0.2412
     }
   },
   {
@@ -1119,11 +1058,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3752,
-      "target": 0.375,
-      "ancestor": 0.375,
-      "sibling": 0.3748,
-      "generic": 0.3745
+      "fine": 0.2394,
+      "target": 0.2396,
+      "ancestor": 0.2396,
+      "generic": 0.241
     }
   },
   {
@@ -1131,11 +1069,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3745,
-      "target": 0.3743,
-      "ancestor": 0.3743,
-      "sibling": 0.3738,
-      "generic": 0.3741
+      "fine": 0.2397,
+      "target": 0.2393,
+      "ancestor": 0.2393,
+      "generic": 0.241
     }
   },
   {
@@ -1143,11 +1080,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3745,
-      "target": 0.3749,
-      "ancestor": 0.3751,
-      "sibling": 0.3747,
-      "generic": 0.3746
+      "fine": 0.2398,
+      "target": 0.2394,
+      "ancestor": 0.24,
+      "sibling": 0.2395,
+      "generic": 0.2413
     }
   },
   {
@@ -1155,11 +1092,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3754,
-      "target": 0.375,
-      "ancestor": 0.375,
-      "sibling": 0.3745,
-      "generic": 0.3745
+      "fine": 0.2398,
+      "target": 0.2401,
+      "ancestor": 0.2401,
+      "generic": 0.2408
     }
   },
   {
@@ -1167,11 +1103,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3747,
-      "target": 0.3745,
-      "ancestor": 0.3745,
-      "sibling": 0.3741,
-      "generic": 0.3745
+      "fine": 0.2396,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.2408
     }
   },
   {
@@ -1179,11 +1114,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3749,
-      "target": 0.375,
-      "ancestor": 0.3749,
-      "sibling": 0.3746,
-      "generic": 0.3745
+      "fine": 0.24,
+      "target": 0.24,
+      "ancestor": 0.2402,
+      "sibling": 0.2402,
+      "generic": 0.241
     }
   },
   {
@@ -1191,11 +1126,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.375,
-      "target": 0.3748,
-      "ancestor": 0.3748,
-      "sibling": 0.3745,
-      "generic": 0.3744
+      "fine": 0.2405,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.241
     }
   },
   {
@@ -1203,11 +1137,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3744,
-      "target": 0.3745,
-      "ancestor": 0.3745,
-      "sibling": 0.3743,
-      "generic": 0.3746
+      "fine": 0.2397,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.241
     }
   },
   {
@@ -1215,11 +1148,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3738,
-      "target": 0.3746,
-      "ancestor": 0.3744,
-      "sibling": 0.3746,
-      "generic": 0.3743
+      "fine": 0.2394,
+      "target": 0.2397,
+      "ancestor": 0.2398,
+      "sibling": 0.2393,
+      "generic": 0.2408
     }
   },
   {
@@ -1227,11 +1160,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3757,
-      "target": 0.3749,
-      "ancestor": 0.3749,
-      "sibling": 0.3747,
-      "generic": 0.3744
+      "fine": 0.2402,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.2408
     }
   },
   {
@@ -1239,11 +1171,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.375,
-      "target": 0.3744,
-      "ancestor": 0.3744,
-      "sibling": 0.374,
-      "generic": 0.3744
+      "fine": 0.2397,
+      "target": 0.2393,
+      "ancestor": 0.2393,
+      "generic": 0.2408
     }
   },
   {
@@ -1251,11 +1182,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3744,
-      "target": 0.3746,
-      "ancestor": 0.3747,
-      "sibling": 0.3746,
-      "generic": 0.3745
+      "fine": 0.2397,
+      "target": 0.2396,
+      "ancestor": 0.2398,
+      "sibling": 0.2398,
+      "generic": 0.2409
     }
   },
   {
@@ -1263,11 +1194,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3739,
-      "target": 0.3746,
-      "ancestor": 0.3746,
-      "sibling": 0.3748,
-      "generic": 0.3745
+      "fine": 0.2395,
+      "target": 0.24,
+      "ancestor": 0.24,
+      "generic": 0.241
     }
   },
   {
@@ -1275,11 +1205,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3739,
-      "target": 0.3737,
-      "ancestor": 0.3737,
-      "sibling": 0.3744,
-      "generic": 0.3744
+      "fine": 0.2396,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.2413
     }
   },
   {
@@ -1287,11 +1216,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3736,
-      "target": 0.3743,
-      "ancestor": 0.3741,
-      "sibling": 0.3744,
-      "generic": 0.3743
+      "fine": 0.2394,
+      "target": 0.2395,
+      "ancestor": 0.2402,
+      "sibling": 0.2395,
+      "generic": 0.241
     }
   },
   {
@@ -1299,11 +1228,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3749,
-      "target": 0.3748,
-      "ancestor": 0.3748,
-      "sibling": 0.3742,
-      "generic": 0.3742
+      "fine": 0.24,
+      "target": 0.2397,
+      "ancestor": 0.2397,
+      "generic": 0.241
     }
   },
   {
@@ -1311,11 +1239,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3748,
-      "target": 0.3745,
-      "ancestor": 0.3745,
-      "sibling": 0.374,
-      "generic": 0.3743
+      "fine": 0.2397,
+      "target": 0.2396,
+      "ancestor": 0.2396,
+      "generic": 0.2414
     }
   },
   {
@@ -1323,11 +1250,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3748,
-      "target": 0.375,
-      "ancestor": 0.375,
-      "sibling": 0.3747,
-      "generic": 0.3745
+      "fine": 0.24,
+      "target": 0.24,
+      "ancestor": 0.2404,
+      "sibling": 0.2404,
+      "generic": 0.2416
     }
   },
   {
@@ -1335,11 +1262,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.375,
-      "target": 0.3748,
-      "ancestor": 0.3748,
-      "sibling": 0.3744,
-      "generic": 0.3744
+      "fine": 0.2403,
+      "target": 0.24,
+      "ancestor": 0.24,
+      "generic": 0.2409
     }
   },
   {
@@ -1347,11 +1273,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3747,
-      "target": 0.3742,
-      "ancestor": 0.3742,
-      "sibling": 0.3745,
-      "generic": 0.3743
+      "fine": 0.2391,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.241
     }
   },
   {
@@ -1359,11 +1284,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3742,
-      "target": 0.3746,
-      "ancestor": 0.3743,
-      "sibling": 0.3745,
-      "generic": 0.3743
+      "fine": 0.2395,
+      "target": 0.2401,
+      "ancestor": 0.2402,
+      "sibling": 0.2402,
+      "generic": 0.2411
     }
   },
   {
@@ -1371,11 +1296,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3748,
-      "target": 0.3745,
-      "ancestor": 0.3745,
-      "sibling": 0.374,
-      "generic": 0.3741
+      "fine": 0.2402,
+      "target": 0.2402,
+      "ancestor": 0.2402,
+      "generic": 0.2415
     }
   },
   {
@@ -1383,11 +1307,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3747,
-      "target": 0.3746,
-      "ancestor": 0.3746,
-      "sibling": 0.3745,
-      "generic": 0.3744
+      "fine": 0.2393,
+      "target": 0.2397,
+      "ancestor": 0.2397,
+      "generic": 0.2409
     }
   },
   {
@@ -1395,11 +1318,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.375,
-      "target": 0.375,
-      "ancestor": 0.375,
-      "sibling": 0.3747,
-      "generic": 0.3746
+      "fine": 0.2391,
+      "target": 0.2394,
+      "ancestor": 0.2397,
+      "sibling": 0.2395,
+      "generic": 0.2408
     }
   },
   {
@@ -1407,11 +1330,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3752,
-      "target": 0.3745,
-      "ancestor": 0.3745,
-      "sibling": 0.3742,
-      "generic": 0.3742
+      "fine": 0.2401,
+      "target": 0.2402,
+      "ancestor": 0.2402,
+      "generic": 0.2413
     }
   },
   {
@@ -1419,11 +1341,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3747,
-      "target": 0.3742,
-      "ancestor": 0.3742,
-      "sibling": 0.3746,
-      "generic": 0.3744
+      "fine": 0.2393,
+      "target": 0.2397,
+      "ancestor": 0.2397,
+      "generic": 0.2409
     }
   },
   {
@@ -1431,11 +1352,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3737,
-      "target": 0.3745,
-      "ancestor": 0.3743,
-      "sibling": 0.3747,
-      "generic": 0.3742
+      "fine": 0.2397,
+      "target": 0.2397,
+      "ancestor": 0.24,
+      "sibling": 0.2399,
+      "generic": 0.2409
     }
   },
   {
@@ -1443,11 +1364,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3744,
-      "target": 0.3747,
-      "ancestor": 0.3747,
-      "sibling": 0.3749,
-      "generic": 0.3747
+      "fine": 0.2402,
+      "target": 0.2408,
+      "ancestor": 0.2408,
+      "generic": 0.2418
     }
   },
   {
@@ -1455,11 +1375,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3737,
-      "target": 0.3742,
-      "ancestor": 0.3742,
-      "sibling": 0.3741,
-      "generic": 0.3744
+      "fine": 0.2394,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.2408
     }
   },
   {
@@ -1467,11 +1386,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3743,
-      "target": 0.3743,
-      "ancestor": 0.3738,
-      "sibling": 0.3748,
-      "generic": 0.3743
+      "fine": 0.2396,
+      "target": 0.2396,
+      "ancestor": 0.2397,
+      "sibling": 0.2396,
+      "generic": 0.2408
     }
   },
   {
@@ -1479,11 +1398,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3744,
-      "target": 0.3747,
-      "ancestor": 0.3747,
-      "sibling": 0.3746,
-      "generic": 0.3746
+      "fine": 0.2397,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.2412
     }
   },
   {
@@ -1491,11 +1409,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3745,
-      "target": 0.3749,
-      "ancestor": 0.3749,
-      "sibling": 0.3752,
-      "generic": 0.3742
+      "fine": 0.2392,
+      "target": 0.239,
+      "ancestor": 0.239,
+      "generic": 0.2408
     }
   },
   {
@@ -1503,11 +1420,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3744,
-      "target": 0.3745,
-      "ancestor": 0.3743,
-      "sibling": 0.3743,
-      "generic": 0.3744
+      "fine": 0.2389,
+      "target": 0.2389,
+      "ancestor": 0.2392,
+      "sibling": 0.2391,
+      "generic": 0.2407
     }
   },
   {
@@ -1515,11 +1432,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3745,
-      "target": 0.3748,
-      "ancestor": 0.3748,
-      "sibling": 0.3745,
-      "generic": 0.3742
+      "fine": 0.2395,
+      "target": 0.2399,
+      "ancestor": 0.2399,
+      "generic": 0.2409
     }
   },
   {
@@ -1527,11 +1443,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3742,
-      "target": 0.3742,
-      "ancestor": 0.3742,
-      "sibling": 0.3739,
-      "generic": 0.3742
+      "fine": 0.2397,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.2411
     }
   },
   {
@@ -1539,11 +1454,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3744,
-      "target": 0.3749,
-      "ancestor": 0.3749,
-      "sibling": 0.3746,
-      "generic": 0.3745
+      "fine": 0.2394,
+      "target": 0.2397,
+      "ancestor": 0.2399,
+      "sibling": 0.2398,
+      "generic": 0.241
     }
   },
   {
@@ -1551,11 +1466,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3753,
-      "target": 0.3751,
-      "ancestor": 0.3751,
-      "sibling": 0.3746,
-      "generic": 0.3746
+      "fine": 0.2405,
+      "target": 0.2395,
+      "ancestor": 0.2395,
+      "generic": 0.2408
     }
   },
   {
@@ -1563,11 +1477,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3749,
-      "target": 0.3748,
-      "ancestor": 0.3748,
-      "sibling": 0.3747,
-      "generic": 0.3743
+      "fine": 0.2398,
+      "target": 0.2394,
+      "ancestor": 0.2394,
+      "generic": 0.2409
     }
   },
   {
@@ -1575,11 +1488,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3744,
-      "target": 0.375,
-      "ancestor": 0.375,
-      "sibling": 0.3748,
-      "generic": 0.3747
+      "fine": 0.2394,
+      "target": 0.2393,
+      "ancestor": 0.2397,
+      "sibling": 0.2395,
+      "generic": 0.2408
     }
   },
   {
@@ -1587,11 +1500,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3755,
-      "target": 0.3748,
-      "ancestor": 0.3748,
-      "sibling": 0.3745,
-      "generic": 0.3743
+      "fine": 0.2406,
+      "target": 0.2403,
+      "ancestor": 0.2403,
+      "generic": 0.2415
     }
   },
   {
@@ -1599,11 +1511,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3744,
-      "target": 0.3744,
-      "ancestor": 0.3744,
-      "sibling": 0.3742,
-      "generic": 0.3746
+      "fine": 0.2397,
+      "target": 0.24,
+      "ancestor": 0.24,
+      "generic": 0.2413
     }
   },
   {
@@ -1611,11 +1522,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3736,
-      "target": 0.3742,
-      "ancestor": 0.3742,
-      "sibling": 0.3744,
-      "generic": 0.3741
+      "fine": 0.2395,
+      "target": 0.2397,
+      "ancestor": 0.24,
+      "sibling": 0.24,
+      "generic": 0.2412
     }
   },
   {
@@ -1623,11 +1534,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3746,
-      "target": 0.3746,
-      "ancestor": 0.3746,
-      "sibling": 0.3742,
-      "generic": 0.3741
+      "fine": 0.2404,
+      "target": 0.2403,
+      "ancestor": 0.2403,
+      "generic": 0.2411
     }
   },
   {
@@ -1635,11 +1545,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3742,
-      "target": 0.3744,
-      "ancestor": 0.3744,
-      "sibling": 0.3745,
-      "generic": 0.3744
+      "fine": 0.2398,
+      "target": 0.2402,
+      "ancestor": 0.2402,
+      "generic": 0.2413
     }
   },
   {
@@ -1647,11 +1556,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3741,
-      "target": 0.3745,
-      "ancestor": 0.3745,
-      "sibling": 0.3745,
-      "generic": 0.3743
+      "fine": 0.2394,
+      "target": 0.2397,
+      "ancestor": 0.24,
+      "sibling": 0.2399,
+      "generic": 0.241
     }
   },
   {
@@ -1659,11 +1568,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3746,
-      "target": 0.3746,
-      "ancestor": 0.3746,
-      "sibling": 0.3747,
-      "generic": 0.3744
+      "fine": 0.2399,
+      "target": 0.2399,
+      "ancestor": 0.2399,
+      "generic": 0.2409
     }
   },
   {
@@ -1671,11 +1579,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3739,
-      "target": 0.374,
-      "ancestor": 0.374,
-      "sibling": 0.3738,
-      "generic": 0.3742
+      "fine": 0.2397,
+      "target": 0.24,
+      "ancestor": 0.24,
+      "generic": 0.2411
     }
   },
   {
@@ -1683,11 +1590,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3737,
-      "target": 0.3744,
-      "ancestor": 0.3742,
-      "sibling": 0.3747,
-      "generic": 0.3743
+      "fine": 0.24,
+      "target": 0.2398,
+      "ancestor": 0.2402,
+      "sibling": 0.24,
+      "generic": 0.2411
     }
   },
   {
@@ -1695,11 +1602,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3745,
-      "target": 0.3745,
-      "ancestor": 0.3745,
-      "sibling": 0.3744,
-      "generic": 0.3742
+      "fine": 0.2399,
+      "target": 0.2396,
+      "ancestor": 0.2396,
+      "generic": 0.2408
     }
   },
   {
@@ -1707,11 +1613,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3739,
-      "target": 0.3742,
-      "ancestor": 0.3742,
-      "sibling": 0.3747,
-      "generic": 0.3745
+      "fine": 0.2393,
+      "target": 0.2394,
+      "ancestor": 0.2394,
+      "generic": 0.2409
     }
   },
   {
@@ -1719,11 +1624,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.374,
-      "target": 0.3744,
-      "ancestor": 0.3744,
-      "sibling": 0.3746,
-      "generic": 0.3742
+      "fine": 0.2397,
+      "target": 0.24,
+      "ancestor": 0.2399,
+      "sibling": 0.2397,
+      "generic": 0.2411
     }
   },
   {
@@ -1731,11 +1636,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3743,
-      "target": 0.3746,
-      "ancestor": 0.3746,
-      "sibling": 0.3744,
-      "generic": 0.3741
+      "fine": 0.2395,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.2409
     }
   },
   {
@@ -1743,11 +1647,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3741,
-      "target": 0.3743,
-      "ancestor": 0.3743,
-      "sibling": 0.374,
-      "generic": 0.374
+      "fine": 0.2395,
+      "target": 0.2395,
+      "ancestor": 0.2395,
+      "generic": 0.2411
     }
   },
   {
@@ -1755,11 +1658,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3749,
-      "target": 0.3751,
-      "ancestor": 0.375,
-      "sibling": 0.3747,
-      "generic": 0.3747
+      "fine": 0.2393,
+      "target": 0.2394,
+      "ancestor": 0.2396,
+      "sibling": 0.2396,
+      "generic": 0.2408
     }
   },
   {
@@ -1767,11 +1670,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3748,
-      "target": 0.3744,
-      "ancestor": 0.3744,
-      "sibling": 0.3743,
-      "generic": 0.3743
+      "fine": 0.2403,
+      "target": 0.24,
+      "ancestor": 0.24,
+      "generic": 0.2412
     }
   },
   {
@@ -1779,11 +1681,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3741,
-      "target": 0.3743,
-      "ancestor": 0.3743,
-      "sibling": 0.3747,
-      "generic": 0.3745
+      "fine": 0.2396,
+      "target": 0.2402,
+      "ancestor": 0.2402,
+      "generic": 0.2417
     }
   },
   {
@@ -1791,11 +1692,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3736,
-      "target": 0.3741,
-      "ancestor": 0.3743,
-      "sibling": 0.3745,
-      "generic": 0.3742
+      "fine": 0.2399,
+      "target": 0.2397,
+      "ancestor": 0.2399,
+      "sibling": 0.2395,
+      "generic": 0.2409
     }
   },
   {
@@ -1803,11 +1704,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3742,
-      "target": 0.3744,
-      "ancestor": 0.3744,
-      "sibling": 0.3744,
-      "generic": 0.3742
+      "fine": 0.2398,
+      "target": 0.2399,
+      "ancestor": 0.2399,
+      "generic": 0.241
     }
   },
   {
@@ -1815,11 +1715,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3744,
-      "target": 0.3738,
-      "ancestor": 0.3738,
-      "sibling": 0.374,
-      "generic": 0.3743
+      "fine": 0.2396,
+      "target": 0.2396,
+      "ancestor": 0.2396,
+      "generic": 0.2408
     }
   },
   {
@@ -1827,11 +1726,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3737,
-      "target": 0.374,
-      "ancestor": 0.3737,
-      "sibling": 0.3746,
-      "generic": 0.3741
+      "fine": 0.2399,
+      "target": 0.2398,
+      "ancestor": 0.2401,
+      "sibling": 0.24,
+      "generic": 0.2412
     }
   },
   {
@@ -1839,11 +1738,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3746,
-      "target": 0.3746,
-      "ancestor": 0.3746,
-      "sibling": 0.3746,
-      "generic": 0.3743
+      "fine": 0.2394,
+      "target": 0.2397,
+      "ancestor": 0.2397,
+      "generic": 0.2409
     }
   },
   {
@@ -1851,11 +1749,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3748,
-      "target": 0.3739,
-      "ancestor": 0.3739,
-      "sibling": 0.374,
-      "generic": 0.3743
+      "fine": 0.24,
+      "target": 0.2396,
+      "ancestor": 0.2396,
+      "generic": 0.2411
     }
   },
   {
@@ -1863,11 +1760,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.374,
-      "target": 0.3746,
-      "ancestor": 0.3741,
-      "sibling": 0.3743,
-      "generic": 0.3742
+      "fine": 0.24,
+      "target": 0.2394,
+      "ancestor": 0.2397,
+      "sibling": 0.2395,
+      "generic": 0.241
     }
   },
   {
@@ -1875,11 +1772,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3745,
-      "target": 0.3747,
-      "ancestor": 0.3747,
-      "sibling": 0.3745,
-      "generic": 0.3742
+      "fine": 0.24,
+      "target": 0.2406,
+      "ancestor": 0.2406,
+      "generic": 0.2413
     }
   },
   {
@@ -1887,11 +1783,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3746,
-      "target": 0.3742,
-      "ancestor": 0.3742,
-      "sibling": 0.3742,
-      "generic": 0.3744
+      "fine": 0.2398,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.2412
     }
   },
   {
@@ -1899,11 +1794,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3737,
-      "target": 0.3744,
-      "ancestor": 0.3743,
-      "sibling": 0.3745,
-      "generic": 0.3742
+      "fine": 0.2402,
+      "target": 0.2399,
+      "ancestor": 0.2403,
+      "sibling": 0.2403,
+      "generic": 0.2412
     }
   },
   {
@@ -1911,11 +1806,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3748,
-      "target": 0.3751,
-      "ancestor": 0.3751,
-      "sibling": 0.3749,
-      "generic": 0.3745
+      "fine": 0.2396,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.2407
     }
   },
   {
@@ -1923,11 +1817,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3738,
-      "target": 0.3739,
-      "ancestor": 0.3739,
-      "sibling": 0.3741,
-      "generic": 0.374
+      "fine": 0.2393,
+      "target": 0.2398,
+      "ancestor": 0.2398,
+      "generic": 0.2408
     }
   },
   {
@@ -1935,11 +1828,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3743,
-      "target": 0.3746,
-      "ancestor": 0.3746,
-      "sibling": 0.3743,
-      "generic": 0.3743
+      "fine": 0.2395,
+      "target": 0.2399,
+      "ancestor": 0.2401,
+      "sibling": 0.2395,
+      "generic": 0.241
     }
   },
   {
@@ -1947,11 +1840,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3747,
-      "target": 0.3752,
-      "ancestor": 0.3752,
-      "sibling": 0.3749,
-      "generic": 0.3747
+      "fine": 0.24,
+      "target": 0.2403,
+      "ancestor": 0.2403,
+      "generic": 0.2416
     }
   },
   {
@@ -1959,11 +1851,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3752,
-      "target": 0.3746,
-      "ancestor": 0.3746,
-      "sibling": 0.3741,
-      "generic": 0.3745
+      "fine": 0.2401,
+      "target": 0.2397,
+      "ancestor": 0.2397,
+      "generic": 0.2411
     }
   },
   {
@@ -1971,11 +1862,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3737,
-      "target": 0.3744,
-      "ancestor": 0.374,
-      "sibling": 0.3746,
-      "generic": 0.3741
+      "fine": 0.2394,
+      "target": 0.2398,
+      "ancestor": 0.2396,
+      "sibling": 0.2395,
+      "generic": 0.241
     }
   },
   {
@@ -1983,11 +1874,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.374,
-      "target": 0.3739,
-      "ancestor": 0.3739,
-      "sibling": 0.3739,
-      "generic": 0.3739
+      "fine": 0.2406,
+      "target": 0.2409,
+      "ancestor": 0.2409,
+      "generic": 0.242
     }
   },
   {
@@ -1995,11 +1885,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3745,
-      "target": 0.374,
-      "ancestor": 0.374,
-      "sibling": 0.3746,
-      "generic": 0.3745
+      "fine": 0.24,
+      "target": 0.2397,
+      "ancestor": 0.2397,
+      "generic": 0.2412
     }
   },
   {
@@ -2007,11 +1896,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3736,
-      "target": 0.3742,
-      "ancestor": 0.3742,
-      "sibling": 0.3746,
-      "generic": 0.3744
+      "fine": 0.2402,
+      "target": 0.2401,
+      "ancestor": 0.2404,
+      "sibling": 0.2405,
+      "generic": 0.2416
     }
   },
   {
@@ -2019,11 +1908,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3751,
-      "target": 0.3743,
-      "ancestor": 0.3743,
-      "sibling": 0.3746,
-      "generic": 0.3743
+      "fine": 0.2397,
+      "target": 0.2396,
+      "ancestor": 0.2396,
+      "generic": 0.2409
     }
   },
   {
@@ -2031,11 +1919,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3744,
-      "target": 0.374,
-      "ancestor": 0.374,
-      "sibling": 0.374,
-      "generic": 0.3744
+      "fine": 0.2403,
+      "target": 0.2402,
+      "ancestor": 0.2402,
+      "generic": 0.2417
     }
   },
   {
@@ -2043,11 +1930,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3737,
-      "target": 0.3744,
-      "ancestor": 0.3742,
-      "sibling": 0.3746,
-      "generic": 0.3744
+      "fine": 0.2393,
+      "target": 0.2392,
+      "ancestor": 0.2395,
+      "sibling": 0.2393,
+      "generic": 0.2406
     }
   },
   {
@@ -2055,11 +1942,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3748,
-      "target": 0.3747,
-      "ancestor": 0.3747,
-      "sibling": 0.3743,
-      "generic": 0.3744
+      "fine": 0.2407,
+      "target": 0.2405,
+      "ancestor": 0.2405,
+      "generic": 0.2419
     }
   },
   {
@@ -2067,11 +1953,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3753,
-      "target": 0.3745,
-      "ancestor": 0.3745,
-      "sibling": 0.3742,
-      "generic": 0.3745
+      "fine": 0.2398,
+      "target": 0.2396,
+      "ancestor": 0.2396,
+      "generic": 0.2408
     }
   },
   {
@@ -2079,11 +1964,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3745,
-      "target": 0.3746,
-      "ancestor": 0.3744,
-      "sibling": 0.3743,
-      "generic": 0.3744
+      "fine": 0.2395,
+      "target": 0.2395,
+      "ancestor": 0.2397,
+      "sibling": 0.2397,
+      "generic": 0.2411
     }
   },
   {
@@ -2091,11 +1976,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.374,
-      "target": 0.374,
-      "ancestor": 0.374,
-      "sibling": 0.374,
-      "generic": 0.374
+      "fine": 0.2397,
+      "target": 0.2399,
+      "ancestor": 0.2399,
+      "generic": 0.2411
     }
   },
   {
@@ -2103,11 +1987,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3746,
-      "target": 0.3741,
-      "ancestor": 0.3741,
-      "sibling": 0.3741,
-      "generic": 0.3744
+      "fine": 0.24,
+      "target": 0.2394,
+      "ancestor": 0.2394,
+      "generic": 0.2409
     }
   },
   {
@@ -2115,11 +1998,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.374,
-      "target": 0.3742,
-      "ancestor": 0.3742,
-      "sibling": 0.3739,
-      "generic": 0.3741
+      "fine": 0.2391,
+      "target": 0.2395,
+      "ancestor": 0.2396,
+      "sibling": 0.2397,
+      "generic": 0.2409
     }
   },
   {
@@ -2127,11 +2010,10 @@
     "attribute": "blood_type",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3737,
-      "target": 0.3743,
-      "ancestor": 0.3743,
-      "sibling": 0.3745,
-      "generic": 0.3742
+      "fine": 0.2397,
+      "target": 0.2402,
+      "ancestor": 0.2402,
+      "generic": 0.2411
     }
   },
   {
@@ -2139,11 +2021,10 @@
     "attribute": "city",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3747,
-      "target": 0.3741,
-      "ancestor": 0.3741,
-      "sibling": 0.3741,
-      "generic": 0.3745
+      "fine": 0.2401,
+      "target": 0.24,
+      "ancestor": 0.24,
+      "generic": 0.241
     }
   },
   {
@@ -2151,11 +2032,11 @@
     "attribute": "job",
     "category": "over_forgotten",
     "sims": {
-      "fine": 0.3746,
-      "target": 0.3742,
-      "ancestor": 0.374,
-      "sibling": 0.3744,
-      "generic": 0.3742
+      "fine": 0.2398,
+      "target": 0.2397,
+      "ancestor": 0.2402,
+      "sibling": 0.24,
+      "generic": 0.241
     }
   }
 ]

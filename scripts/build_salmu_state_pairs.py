@@ -8,11 +8,16 @@ restricted to the three CORE attributes (city / job / blood_type).
 Aux-redaction identifiers (phone/email/IBAN/credit card/passport) are
 never included.
 
+Per-attribute targeting (v2): each target persona has exactly ONE
+target attribute (deterministic hash).  The remaining core attributes
+are *same-entity retain* — they keep fine captions in ALL states
+including MN.  This mirrors SALMUBench's holdout_association design.
+
 States (identical image sets; only caption treatment differs):
 * MF: all core fine (released) pairs
-* MG: target personas -> generalized target captions only;
-      retain personas -> released fine pairs
-* MN: retain fine pairs only
+* MG: target (persona, attr) -> generalized target captions only;
+      ALL retain (incl. same-entity) -> released fine pairs
+* MN: ALL retain fine pairs only (target pairs omitted)
 
 Evaluation splits of SALMUBench stay untouched / evaluation-only.
 """
@@ -30,6 +35,7 @@ from granunlearn.salmu.adapter import REPOS, locate_repo
 from granunlearn.salmu.hierarchy import CORE_SEMANTIC, generalized_caption
 from granunlearn.salmu.state_datasets import (
     SalmuTrainingPair,
+    partition_persona_attributes,
     partition_personas,
     validate_state_pairs,
 )
@@ -70,8 +76,14 @@ def main() -> None:
     partition = partition_personas(
         sorted(identities), num_targets=args.num_targets, seed=args.seed)
     targets = set(partition["target_identity_ids"])
+    target_attr_map = partition_persona_attributes(
+        partition["target_identity_ids"], CORE_SEMANTIC, seed=args.seed)
     log.info("Partition: %d target personas / %d retain (seed %d)",
              partition["num_targets"], partition["num_retain"], args.seed)
+    # Log the per-attribute assignment distribution
+    from collections import Counter
+    attr_dist = Counter(target_attr_map.values())
+    log.info("Target attribute distribution: %s", dict(attr_dist))
 
     # Index core pairs by (identity, attribute): [(file, caption)]
     by_id_attr: dict[tuple[str, str], list[tuple[str, str]]] = \
@@ -88,7 +100,13 @@ def main() -> None:
         if iid not in hierarchies or attr not in hierarchies[iid]:
             continue  # attribute missing from hierarchy (defensive)
         hier = hierarchies[iid][attr]
-        role = "target" if iid in targets else "retain"
+        is_target_persona = iid in targets
+        # Per-attribute targeting: only the designated target attribute
+        # of a target persona is "target"; the rest are "retain".
+        if is_target_persona and attr == target_attr_map.get(iid):
+            role = "target"
+        else:
+            role = "retain"
         name = identities[iid]["name"]
         fine = sorted(by_id_attr[(iid, attr)])
         for state in ("MF", "MG", "MN"):
@@ -127,10 +145,12 @@ def main() -> None:
             "num_retain": partition["num_retain"],
             "target_identity_ids": partition["target_identity_ids"],
         },
+        "target_attr_map": target_attr_map,
         "states": {},
     }
     for state, pairs in states_pairs.items():
-        errors = validate_state_pairs(pairs, partition, state)
+        errors = validate_state_pairs(pairs, partition, state,
+                                      target_attr_map)
         if errors:
             raise ValueError(f"{state} validation failed: {errors[:5]}")
         path = out_dir / f"{state}.jsonl"

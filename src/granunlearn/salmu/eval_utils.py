@@ -145,7 +145,14 @@ def build_release_probes(repo_root: Path,
     Deterministic and identical for the reference-state evaluator and
     the MU selector: probes come from the released sensitive caption
     metadata (fine captions + images) and our built hierarchies; the
-    target partition comes from the committed pair-set manifest.
+    target partition and per-attribute assignment come from the
+    committed pair-set manifest.
+
+    With per-attribute targeting, probes cover BOTH target attributes
+    (is_target_attr=True) and same-entity retain attributes
+    (is_target_attr=False) of the target personas.
+
+    Returns (probes, target_ids).
     """
     from collections import defaultdict
 
@@ -161,6 +168,7 @@ def build_release_probes(repo_root: Path,
     manifest = json.loads(
         (hier_dir / "training" / "state_pairs_manifest.json").read_text())
     target_ids = manifest["partition"]["target_identity_ids"]
+    target_attr_map = manifest.get("target_attr_map")
 
     cap_meta = json.loads(
         (train_ds / "sensitive_set_captions_metadata.json").read_text())
@@ -175,7 +183,8 @@ def build_release_probes(repo_root: Path,
         images_by[iid][meta["data_field"]].append(fname)
 
     probes = build_target_probes(
-        target_ids, hierarchies, identities, fine_caps, images_by)
+        target_ids, hierarchies, identities, fine_caps, images_by,
+        target_attr_map=target_attr_map)
     return probes, target_ids
 
 

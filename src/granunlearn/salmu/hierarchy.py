@@ -432,6 +432,16 @@ GENERIC_TEMPLATES = {
     "blood_type": {1: "{name}'s blood type is {value}."},
 }
 
+# Nameless variants (no identity name — used for evaluation probes so
+# that sibling / target contrasts test branch specificity rather than
+# identity discrimination).
+NAMELESS_TEMPLATES = {
+    "city": {1: "A person who lives in {value}."},
+    "job": {1: "A person who works as {article} {value}.",
+            2: "A person who works in the {value} sector."},
+    "blood_type": {1: "A person whose blood type is {value}."},
+}
+
 
 def classify_job(job: str) -> tuple[str, str]:
     """Deterministic (profession_class, sector) for a released job."""
@@ -498,6 +508,23 @@ def generalized_caption(
             f"No generalized template for {attribute} level {level_index}")
     article = "an" if value[:1].lower() in "aeiou" else "a"
     return template.format(name=name, value=value, article=article)
+
+
+def nameless_caption(
+    attribute: str, level_index: int, value: str
+) -> str:
+    """Nameless caption for evaluation probes (no identity anchor).
+
+    Uses the same hierarchy level/value as ``generalized_caption`` but
+    omits the persona name so that sibling vs target contrasts test
+    branch specificity rather than identity discrimination.
+    """
+    template = NAMELESS_TEMPLATES[attribute].get(level_index)
+    if template is None:
+        raise ValueError(
+            f"No nameless template for {attribute} level {level_index}")
+    article = "an" if value[:1].lower() in "aeiou" else "a"
+    return template.format(value=value, article=article)
 
 
 def write_attribute_inventory(out_path: str | Path,
