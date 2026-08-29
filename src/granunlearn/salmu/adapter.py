@@ -134,21 +134,15 @@ def write_original_manifest(out_path: str | Path) -> dict:
             else:
                 local = locate_repo(
                     info["repo_id"], info["repo_type"])
-            # Store repo-relative path for portability
-            try:
-                rel_path = local.relative_to(repo_root)
-                entry["local_snapshot_rel"] = str(rel_path)
-            except ValueError:
-                # Outside repo tree — store absolute path as fallback
-                entry["local_snapshot_abs"] = str(local)
-            entry["local_snapshot_abs"] = str(local)
+            # Local cache path is diagnostic only; the reproducibility
+            # contract is repo_id + revision.  Store as optional field.
+            entry["local_cache_path"] = str(local)
             if info["repo_type"] == "dataset":
                 entry["metadata_sha256"] = {
                     f: _sha256(local / f) for f in METADATA_FILES
                     if (local / f).exists()}
         except Exception as exc:
-            entry["local_snapshot_rel"] = None
-            entry["local_snapshot_abs"] = None
+            entry["local_cache_path"] = None
             log.warning("Snapshot not available for %s: %s",
                         info["repo_id"], exc)
         manifest["artifacts"][key] = entry
@@ -156,8 +150,8 @@ def write_original_manifest(out_path: str | Path) -> dict:
         "Read-only adapter: released SALMUBench artifacts are never "
         "modified; all derived data lives under salmu_hierarchical/ or "
         "salmu_aux_redaction/. "
-        "local_snapshot_rel is repo-relative (portable); "
-        "local_snapshot_abs is the absolute path (machine-specific).")
+        "Reproducibility contract: repo_id + revision (pinned). "
+        "local_cache_path is diagnostic (machine-specific HF cache location).")
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w") as f:

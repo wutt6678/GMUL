@@ -47,7 +47,7 @@ class SalmuTrainingPair(BaseModel):
     state: str
     identity_id: str
     attribute: str = Field(description="city | job | blood_type")
-    role: str = Field(description="target | retain")
+    role: str = Field(description="target_association | same_entity_retain | other_entity_retain")
     level_index: int = Field(description="caption granularity level")
     caption: str
     caption_source: str = Field(
@@ -134,24 +134,31 @@ def build_state_pairs(
         images = sorted(images_by_identity.get(iid, []))
         for attr in sorted(hierarchies[iid]):
             hier = hierarchies[iid][attr]
-            # Per-attribute targeting: only the designated target
-            # attribute of a target persona is "target"; the rest are
-            # "retain" (same-entity retain for target personas,
-            # other-entity retain for non-target personas).
+            # Per-attribute targeting with explicit role distinction:
+            # - target_association: the ONE target attribute of a target persona
+            # - same_entity_retain: non-target attributes of target personas
+            # - other_entity_retain: all attributes of non-target personas
             if is_target_persona and target_attr_map is not None:
-                is_target_pair = (attr == target_attr_map[iid])
+                is_target_attr = (attr == target_attr_map[iid])
             else:
-                is_target_pair = is_target_persona
-            role = "target" if is_target_pair else "retain"
-            # MN omits target pairs but keeps same-entity retain
-            if role == "target" and state == "MN":
+                is_target_attr = False
+            
+            if is_target_attr:
+                role = "target_association"
+            elif is_target_persona:
+                role = "same_entity_retain"
+            else:
+                role = "other_entity_retain"
+            
+            # MN omits target_association pairs but keeps same_entity_retain
+            if role == "target_association" and state == "MN":
                 continue
-            if role == "retain" or state == "MF":
+            if role != "target_association" or state == "MF":
                 level_index = 0
                 captions = fine_captions_by_identity_attr.get(
                     iid, {}).get(attr, [])
                 source = "released_fine"
-            else:  # target associations under MG
+            else:  # target_association under MG
                 level_index = hier["target_level"]
                 captions = [generalized_caption(
                     name, attr, level_index,
@@ -187,35 +194,50 @@ def validate_state_pairs(
     for p in pairs:
         if p.state != state:
             errors.append(f"{p.pair_id}: wrong state label")
-        if p.role == "target" and p.identity_id not in targets:
-            errors.append(f"{p.pair_id}: role/target mismatch")
-        if p.role == "retain" and p.identity_id not in \
-                retains and p.identity_id not in targets:
-            errors.append(f"{p.pair_id}: role/retain mismatch")
-        if p.role == "retain" and p.level_index != 0:
-            errors.append(f"{p.pair_id}: retain must use fine captions")
-        if p.role == "retain" and p.caption_source != "released_fine":
-            errors.append(f"{p.pair_id}: retain captions must be the "
-                          f"released fine captions")
-        if p.role == "target" and state == "MG" and \
+        # Validate role assignments
+        if p.role == "target_association":
+            if p.identity_id not in targets:
+                errors.append(f"{p.pair_id}: target_association must be from target persona")
+            if target_attr_map is not None:
+                expected = target_attr_map.get(p.identity_id)
+                if expected is not None and p.attribute != expected:
+                    errors.append(
+                        f"{p.pair_id}: target_association attribute "
+                        f"{p.attribute} != designated {expected}")
+        elif p.role == "same_entity_retain":
+            if p.identity_id not in targets:
+                errors.append(f"{p.pair_id}: same_entity_retain must be from target persona")
+            if target_attr_map is not None:
+                expected = target_attr_map.get(p.identity_id)
+                if expected is not None and p.attribute == expected:
+                    errors.append(
+                        f"{p.pair_id}: same_entity_retain attribute "
+                        f"{p.attribute} should not be the target attribute")
+        elif p.role == "other_entity_retain":
+            if p.identity_id in targets:
+                errors.append(f"{p.pair_id}: other_entity_retain must be from non-target persona")
+        else:
+            errors.append(f"{p.pair_id}: invalid role {p.role}")
+        # Validate caption sources for retain roles
+        if p.role in ("same_entity_retain", "other_entity_retain"):
+            if p.level_index != 0:
+                errors.append(f"{p.pair_id}: retain must use fine captions (level 0)")
+            if p.caption_source != "released_fine":
+                errors.append(f"{p.pair_id}: retain captions must be the "
+                              f"released fine captions")
+        # Validate MG target_association captions
+        if p.role == "target_association" and state == "MG" and \
                 p.caption_source != "generalized_template":
-            errors.append(f"{p.pair_id}: MG targets must use ONLY "
+            errors.append(f"{p.pair_id}: MG target_association must use ONLY "
                           f"generalized target captions")
-        # Per-attribute: target pair must match the designated attribute
-        if target_attr_map is not None and p.role == "target":
-            expected = target_attr_map.get(p.identity_id)
-            if expected is not None and p.attribute != expected:
-                errors.append(
-                    f"{p.pair_id}: target pair attribute "
-                    f"{p.attribute} != designated {expected}")
     # With per-attribute targeting, MN can contain target identities
-    # (for their same-entity retain attributes).  Check that MN has
-    # no target PAIRS instead.
+    # (for their same_entity_retain attributes).  Check that MN has
+    # no target_association PAIRS instead.
     if state == "MN":
-        target_pairs = [p for p in pairs if p.role == "target"]
+        target_pairs = [p for p in pairs if p.role == "target_association"]
         if target_pairs:
             errors.append(
-                f"MN contains {len(target_pairs)} target pairs")
+                f"MN contains {len(target_pairs)} target_association pairs")
     if state != "MN" and not (targets & seen_identities):
         errors.append(f"{state} missing target identities")
     if not (retains & seen_identities):
@@ -247,8 +269,9 @@ def write_state_pairs(
                 f.write(p.model_dump_json() + "\n")
         manifest["states"][state] = {
             "num_pairs": len(pairs),
-            "num_target": sum(1 for p in pairs if p.role == "target"),
-            "num_retain": sum(1 for p in pairs if p.role == "retain"),
+            "num_target_association": sum(1 for p in pairs if p.role == "target_association"),
+            "num_same_entity_retain": sum(1 for p in pairs if p.role == "same_entity_retain"),
+            "num_other_entity_retain": sum(1 for p in pairs if p.role == "other_entity_retain"),
             "caption_sources": sorted({p.caption_source for p in pairs}),
         }
     with open(output_dir / "state_pairs_manifest.json", "w") as f:

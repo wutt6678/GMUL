@@ -155,13 +155,21 @@ def preference_flags(sims: dict[str, float]) -> dict[str, bool]:
 
 def aggregate_scores(
     probe_results: list[dict[str, Any]],
+    bootstrap_ci: bool = False,
+    n_bootstrap: int = 1000,
+    ci_level: float = 0.95,
 ) -> dict[str, Any]:
     """Preference rates + mean similarities over target probes.
 
     Preference rates are computed over probes that HAVE a sibling
     caption (branch-specificity requires one); mean similarities over
     all probes per kind.
+
+    With ``bootstrap_ci=True``, adds bootstrap confidence intervals
+    for preference rates and mean similarities.
     """
+    import numpy as np
+    
     n = len(probe_results)
     if n == 0:
         return {"num_probes": 0}
@@ -180,13 +188,103 @@ def aggregate_scores(
                 if kind in r["sims"]]
         if vals:
             mean_sims[kind] = round(sum(vals) / len(vals), 4)
-    return {
+    
+    result = {
         "num_probes": n,
         "num_preference_probes": m,
         "prefers_fine_rate": rate("prefers_fine"),
         "prefers_target_rate": rate("prefers_target"),
         "prefers_target_not_fine_rate": rate("prefers_target_not_fine"),
         "mean_similarities": mean_sims,
+    }
+    
+    # Bootstrap confidence intervals
+    if bootstrap_ci and m > 0:
+        rng = np.random.default_rng(42)
+        n_boot = n_bootstrap
+        
+        # Bootstrap preference rates
+        boot_rates = {"prefers_fine": [], "prefers_target": [], 
+                      "prefers_target_not_fine": []}
+        for _ in range(n_boot):
+            boot_flags = [flags[i] for i in 
+                         rng.integers(0, m, size=m)]
+            for key in boot_rates:
+                boot_rates[key].append(
+                    sum(1 for f in boot_flags if f[key]) / m)
+        
+        alpha = (1 - ci_level) / 2
+        for key in boot_rates:
+            vals = sorted(boot_rates[key])
+            lo = vals[int(alpha * n_boot)]
+            hi = vals[int((1 - alpha) * n_boot)]
+            result[f"{key}_rate_ci"] = (round(lo, 4), round(hi, 4))
+        
+        # Bootstrap mean similarities
+        boot_sims = {kind: [] for kind in PROBE_KINDS}
+        for _ in range(n_boot):
+            boot_results = [probe_results[i] for i in 
+                          rng.integers(0, n, size=n)]
+            for kind in PROBE_KINDS:
+                vals = [r["sims"][kind] for r in boot_results
+                        if kind in r["sims"]]
+                if vals:
+                    boot_sims[kind].append(sum(vals) / len(vals))
+        
+        for kind in PROBE_KINDS:
+            if boot_sims[kind]:
+                vals = sorted(boot_sims[kind])
+                lo = vals[int(alpha * n_boot)]
+                hi = vals[int((1 - alpha) * n_boot)]
+                result["mean_similarities"][f"{kind}_ci"] = (
+                    round(lo, 4), round(hi, 4))
+    
+    return result
+
+
+def aggregate_scores_by_attribute(
+    probe_results: list[dict[str, Any]],
+    bootstrap_ci: bool = False,
+    n_bootstrap: int = 1000,
+    ci_level: float = 0.95,
+) -> dict[str, dict[str, Any]]:
+    """Per-attribute breakdown of preference rates and mean similarities.
+
+    Returns a dict mapping attribute name to aggregate_scores output.
+    Probes must have an "attribute" field.
+    """
+    by_attr: dict[str, list[dict[str, Any]]] = {}
+    for r in probe_results:
+        attr = r.get("attribute")
+        if attr:
+            by_attr.setdefault(attr, []).append(r)
+    
+    return {
+        attr: aggregate_scores(results, bootstrap_ci, n_bootstrap, ci_level)
+        for attr, results in sorted(by_attr.items())
+    }
+
+
+def aggregate_scores_by_target_attr(
+    probe_results: list[dict[str, Any]],
+    bootstrap_ci: bool = False,
+    n_bootstrap: int = 1000,
+    ci_level: float = 0.95,
+) -> dict[str, dict[str, Any]]:
+    """Breakdown by is_target_attr flag (target vs same-entity retain).
+
+    Returns a dict with keys "target" and "retain", each mapping to
+    aggregate_scores output.  Probes must have an "is_target_attr" field.
+    """
+    by_flag: dict[str, list[dict[str, Any]]] = {"target": [], "retain": []}
+    for r in probe_results:
+        is_target = r.get("is_target_attr", False)
+        by_flag["target" if is_target else "retain"].append(r)
+    
+    return {
+        key: aggregate_scores(results, bootstrap_ci, n_bootstrap, ci_level)
+        for key, results in by_flag.items()
+        if results
     }
 
 

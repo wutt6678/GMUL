@@ -27,12 +27,12 @@ def _pair(pid, iid, role, caption, image, level=0):
 
 
 MF_PAIRS = [
-    _pair("a1", "p1", "target", "Fatime Fossi lives in Douala",
-          "p1_001.jpg"),
-    _pair("a2", "p1", "target", "Fatime Fossi resides in Douala",
-          "p1_002.jpg"),
-    _pair("b1", "p2", "retain", "Amara Ngu lives in Yaounde",
-          "p2_001.jpg"),
+    _pair("a1", "p1", "target_association",
+          "Fatime Fossi lives in Douala", "p1_001.jpg"),
+    _pair("a2", "p1", "target_association",
+          "Fatime Fossi resides in Douala", "p1_002.jpg"),
+    _pair("b1", "p2", "other_entity_retain",
+          "Amara Ngu lives in Yaounde", "p2_001.jpg"),
 ]
 
 

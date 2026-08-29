@@ -132,20 +132,23 @@
   "states": {
     "MF": {
       "num_pairs": 22514,
-      "num_target_pairs": 565,
-      "num_retain_pairs": 21949,
+      "num_target_associations": 565,
+      "num_same_entity_retain": 1166,
+      "num_other_entity_retain": 20783,
       "num_identities": 774
     },
     "MG": {
       "num_pairs": 22514,
-      "num_target_pairs": 565,
-      "num_retain_pairs": 21949,
+      "num_target_associations": 565,
+      "num_same_entity_retain": 1166,
+      "num_other_entity_retain": 20783,
       "num_identities": 774
     },
     "MN": {
       "num_pairs": 21949,
-      "num_target_pairs": 0,
-      "num_retain_pairs": 21949,
+      "num_target_associations": 0,
+      "num_same_entity_retain": 1166,
+      "num_other_entity_retain": 20783,
       "num_identities": 774
     }
   }

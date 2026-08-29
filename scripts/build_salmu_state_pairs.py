@@ -101,18 +101,24 @@ def main() -> None:
             continue  # attribute missing from hierarchy (defensive)
         hier = hierarchies[iid][attr]
         is_target_persona = iid in targets
-        # Per-attribute targeting: only the designated target attribute
-        # of a target persona is "target"; the rest are "retain".
-        if is_target_persona and attr == target_attr_map.get(iid):
-            role = "target"
+        is_target_attr = (is_target_persona and 
+                         attr == target_attr_map.get(iid))
+        # Per-attribute targeting with explicit role distinction:
+        # - target_association: the ONE target attribute of a target persona
+        # - same_entity_retain: non-target attributes of target personas
+        # - other_entity_retain: all attributes of non-target personas
+        if is_target_attr:
+            role = "target_association"
+        elif is_target_persona:
+            role = "same_entity_retain"
         else:
-            role = "retain"
+            role = "other_entity_retain"
         name = identities[iid]["name"]
         fine = sorted(by_id_attr[(iid, attr)])
         for state in ("MF", "MG", "MN"):
-            if role == "target" and state == "MN":
+            if role == "target_association" and state == "MN":
                 continue
-            if role == "retain" or state == "MF":
+            if role != "target_association" or state == "MF":
                 entries = [(0, "released_fine", fname, cap)
                            for fname, cap in fine]
             else:  # MG targets: ONE generalized target caption,
@@ -157,15 +163,18 @@ def main() -> None:
         with open(path, "w") as f:
             for p in pairs:
                 f.write(p.model_dump_json() + "\n")
-        n_tgt = sum(1 for p in pairs if p.role == "target")
+        n_tgt = sum(1 for p in pairs if p.role == "target_association")
+        n_same_retain = sum(1 for p in pairs if p.role == "same_entity_retain")
+        n_other_retain = sum(1 for p in pairs if p.role == "other_entity_retain")
         manifest["states"][state] = {
             "num_pairs": len(pairs),
-            "num_target_pairs": n_tgt,
-            "num_retain_pairs": len(pairs) - n_tgt,
+            "num_target_associations": n_tgt,
+            "num_same_entity_retain": n_same_retain,
+            "num_other_entity_retain": n_other_retain,
             "num_identities": len({p.identity_id for p in pairs}),
         }
-        log.info("%s: %d pairs (target %d / retain %d)",
-                 state, len(pairs), n_tgt, len(pairs) - n_tgt)
+        log.info("%s: %d pairs (target_association %d / same_entity_retain %d / other_entity_retain %d)",
+                 state, len(pairs), n_tgt, n_same_retain, n_other_retain)
     with open(out_dir / "state_pairs_manifest.json", "w") as f:
         json.dump(manifest, f, indent=2, ensure_ascii=False)
     log.info("Wrote SALMU state pairs -> %s", out_dir)

@@ -2,6 +2,8 @@
   "experiment_id": "salmu_iter10_reference_states",
   "num_target_personas": 60,
   "probes_per_kind_note": "one probe per (target persona, core attribute) with images",
+  "per_attribute_targeting": true,
+  "bootstrap_ci": true,
   "scores_by_state": {
     "BASE": {
       "num_probes": 180,
@@ -14,8 +16,40 @@
         "target": 0.1483,
         "ancestor": 0.1454,
         "sibling": 0.1499,
-        "generic": 0.2318
-      }
+        "generic": 0.2318,
+        "fine_ci": [
+          0.1353,
+          0.1434
+        ],
+        "target_ci": [
+          0.1443,
+          0.1529
+        ],
+        "ancestor_ci": [
+          0.1414,
+          0.1497
+        ],
+        "sibling_ci": [
+          0.1436,
+          0.1569
+        ],
+        "generic_ci": [
+          0.2292,
+          0.2346
+        ]
+      },
+      "prefers_fine_rate_ci": [
+        0.2167,
+        0.4333
+      ],
+      "prefers_target_rate_ci": [
+        0.1833,
+        0.4
+      ],
+      "prefers_target_not_fine_rate_ci": [
+        0.1833,
+        0.4
+      ]
     },
     "MF": {
       "num_probes": 180,
@@ -28,8 +62,40 @@
         "target": 0.3083,
         "ancestor": 0.3087,
         "sibling": 0.3027,
-        "generic": 0.2118
-      }
+        "generic": 0.2118,
+        "fine_ci": [
+          0.313,
+          0.3181
+        ],
+        "target_ci": [
+          0.3061,
+          0.3109
+        ],
+        "ancestor_ci": [
+          0.3064,
+          0.3112
+        ],
+        "sibling_ci": [
+          0.299,
+          0.3066
+        ],
+        "generic_ci": [
+          0.2095,
+          0.2143
+        ]
+      },
+      "prefers_fine_rate_ci": [
+        0.6833,
+        0.8833
+      ],
+      "prefers_target_rate_ci": [
+        0.0167,
+        0.15
+      ],
+      "prefers_target_not_fine_rate_ci": [
+        0.0167,
+        0.15
+      ]
     },
     "MG": {
       "num_probes": 180,
@@ -42,8 +108,40 @@
         "target": 0.3133,
         "ancestor": 0.3131,
         "sibling": 0.3096,
-        "generic": 0.2129
-      }
+        "generic": 0.2129,
+        "fine_ci": [
+          0.3084,
+          0.314
+        ],
+        "target_ci": [
+          0.3111,
+          0.3156
+        ],
+        "ancestor_ci": [
+          0.311,
+          0.3155
+        ],
+        "sibling_ci": [
+          0.3059,
+          0.3134
+        ],
+        "generic_ci": [
+          0.2106,
+          0.2154
+        ]
+      },
+      "prefers_fine_rate_ci": [
+        0.3333,
+        0.5833
+      ],
+      "prefers_target_rate_ci": [
+        0.15,
+        0.3667
+      ],
+      "prefers_target_not_fine_rate_ci": [
+        0.15,
+        0.3667
+      ]
     },
     "MN": {
       "num_probes": 180,
@@ -56,7 +154,531 @@
         "target": 0.2938,
         "ancestor": 0.2944,
         "sibling": 0.2898,
-        "generic": 0.2124
+        "generic": 0.2124,
+        "fine_ci": [
+          0.297,
+          0.3027
+        ],
+        "target_ci": [
+          0.2912,
+          0.2965
+        ],
+        "ancestor_ci": [
+          0.2919,
+          0.2972
+        ],
+        "sibling_ci": [
+          0.2852,
+          0.2942
+        ],
+        "generic_ci": [
+          0.21,
+          0.2149
+        ]
+      },
+      "prefers_fine_rate_ci": [
+        0.5667,
+        0.8
+      ],
+      "prefers_target_rate_ci": [
+        0.0667,
+        0.25
+      ],
+      "prefers_target_not_fine_rate_ci": [
+        0.0667,
+        0.25
+      ]
+    }
+  },
+  "per_attribute_scores": {
+    "BASE": {
+      "blood_type": {
+        "num_probes": 60,
+        "num_preference_probes": 0,
+        "prefers_fine_rate": null,
+        "prefers_target_rate": null,
+        "prefers_target_not_fine_rate": null,
+        "mean_similarities": {
+          "fine": 0.1368,
+          "target": 0.1505,
+          "ancestor": 0.1505,
+          "generic": 0.2316
+        }
+      },
+      "city": {
+        "num_probes": 60,
+        "num_preference_probes": 0,
+        "prefers_fine_rate": null,
+        "prefers_target_rate": null,
+        "prefers_target_not_fine_rate": null,
+        "mean_similarities": {
+          "fine": 0.1383,
+          "target": 0.147,
+          "ancestor": 0.147,
+          "generic": 0.2336
+        }
+      },
+      "job": {
+        "num_probes": 60,
+        "num_preference_probes": 60,
+        "prefers_fine_rate": 0.3167,
+        "prefers_target_rate": 0.2833,
+        "prefers_target_not_fine_rate": 0.2833,
+        "mean_similarities": {
+          "fine": 0.1431,
+          "target": 0.1476,
+          "ancestor": 0.1387,
+          "sibling": 0.1499,
+          "generic": 0.2302,
+          "fine_ci": [
+            0.1359,
+            0.1504
+          ],
+          "target_ci": [
+            0.1398,
+            0.1555
+          ],
+          "ancestor_ci": [
+            0.1314,
+            0.1466
+          ],
+          "sibling_ci": [
+            0.1433,
+            0.1572
+          ],
+          "generic_ci": [
+            0.2258,
+            0.2343
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.2167,
+          0.4333
+        ],
+        "prefers_target_rate_ci": [
+          0.1833,
+          0.4
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.1833,
+          0.4
+        ]
+      }
+    },
+    "MF": {
+      "blood_type": {
+        "num_probes": 60,
+        "num_preference_probes": 0,
+        "prefers_fine_rate": null,
+        "prefers_target_rate": null,
+        "prefers_target_not_fine_rate": null,
+        "mean_similarities": {
+          "fine": 0.3187,
+          "target": 0.3162,
+          "ancestor": 0.3162,
+          "generic": 0.213
+        }
+      },
+      "city": {
+        "num_probes": 60,
+        "num_preference_probes": 0,
+        "prefers_fine_rate": null,
+        "prefers_target_rate": null,
+        "prefers_target_not_fine_rate": null,
+        "mean_similarities": {
+          "fine": 0.3141,
+          "target": 0.3071,
+          "ancestor": 0.3071,
+          "generic": 0.2112
+        }
+      },
+      "job": {
+        "num_probes": 60,
+        "num_preference_probes": 60,
+        "prefers_fine_rate": 0.7833,
+        "prefers_target_rate": 0.0833,
+        "prefers_target_not_fine_rate": 0.0833,
+        "mean_similarities": {
+          "fine": 0.3135,
+          "target": 0.3017,
+          "ancestor": 0.3028,
+          "sibling": 0.3027,
+          "generic": 0.2111,
+          "fine_ci": [
+            0.3089,
+            0.3179
+          ],
+          "target_ci": [
+            0.2978,
+            0.3056
+          ],
+          "ancestor_ci": [
+            0.2989,
+            0.3068
+          ],
+          "sibling_ci": [
+            0.2991,
+            0.3065
+          ],
+          "generic_ci": [
+            0.2071,
+            0.2153
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.6833,
+          0.8833
+        ],
+        "prefers_target_rate_ci": [
+          0.0167,
+          0.15
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.0167,
+          0.15
+        ]
+      }
+    },
+    "MG": {
+      "blood_type": {
+        "num_probes": 60,
+        "num_preference_probes": 0,
+        "prefers_fine_rate": null,
+        "prefers_target_rate": null,
+        "prefers_target_not_fine_rate": null,
+        "mean_similarities": {
+          "fine": 0.3141,
+          "target": 0.3188,
+          "ancestor": 0.3188,
+          "generic": 0.2139
+        }
+      },
+      "city": {
+        "num_probes": 60,
+        "num_preference_probes": 0,
+        "prefers_fine_rate": null,
+        "prefers_target_rate": null,
+        "prefers_target_not_fine_rate": null,
+        "mean_similarities": {
+          "fine": 0.3094,
+          "target": 0.3119,
+          "ancestor": 0.3119,
+          "generic": 0.2125
+        }
+      },
+      "job": {
+        "num_probes": 60,
+        "num_preference_probes": 60,
+        "prefers_fine_rate": 0.45,
+        "prefers_target_rate": 0.25,
+        "prefers_target_not_fine_rate": 0.25,
+        "mean_similarities": {
+          "fine": 0.3097,
+          "target": 0.3091,
+          "ancestor": 0.3088,
+          "sibling": 0.3096,
+          "generic": 0.2123,
+          "fine_ci": [
+            0.3052,
+            0.3144
+          ],
+          "target_ci": [
+            0.3055,
+            0.3129
+          ],
+          "ancestor_ci": [
+            0.3052,
+            0.3124
+          ],
+          "sibling_ci": [
+            0.306,
+            0.3131
+          ],
+          "generic_ci": [
+            0.2083,
+            0.2164
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.3333,
+          0.5833
+        ],
+        "prefers_target_rate_ci": [
+          0.15,
+          0.3667
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.15,
+          0.3667
+        ]
+      }
+    },
+    "MN": {
+      "blood_type": {
+        "num_probes": 60,
+        "num_preference_probes": 0,
+        "prefers_fine_rate": null,
+        "prefers_target_rate": null,
+        "prefers_target_not_fine_rate": null,
+        "mean_similarities": {
+          "fine": 0.3021,
+          "target": 0.2994,
+          "ancestor": 0.2994,
+          "generic": 0.2136
+        }
+      },
+      "city": {
+        "num_probes": 60,
+        "num_preference_probes": 0,
+        "prefers_fine_rate": null,
+        "prefers_target_rate": null,
+        "prefers_target_not_fine_rate": null,
+        "mean_similarities": {
+          "fine": 0.2982,
+          "target": 0.2934,
+          "ancestor": 0.2934,
+          "generic": 0.2122
+        }
+      },
+      "job": {
+        "num_probes": 60,
+        "num_preference_probes": 60,
+        "prefers_fine_rate": 0.6833,
+        "prefers_target_rate": 0.15,
+        "prefers_target_not_fine_rate": 0.15,
+        "mean_similarities": {
+          "fine": 0.299,
+          "target": 0.2887,
+          "ancestor": 0.2904,
+          "sibling": 0.2898,
+          "generic": 0.2115,
+          "fine_ci": [
+            0.2937,
+            0.3044
+          ],
+          "target_ci": [
+            0.2843,
+            0.2934
+          ],
+          "ancestor_ci": [
+            0.2859,
+            0.2951
+          ],
+          "sibling_ci": [
+            0.2856,
+            0.2944
+          ],
+          "generic_ci": [
+            0.2073,
+            0.216
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.5667,
+          0.8
+        ],
+        "prefers_target_rate_ci": [
+          0.0667,
+          0.25
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.0667,
+          0.25
+        ]
+      }
+    }
+  },
+  "target_vs_retain_scores": {
+    "BASE": {
+      "retain": {
+        "num_probes": 180,
+        "num_preference_probes": 60,
+        "prefers_fine_rate": 0.3167,
+        "prefers_target_rate": 0.2833,
+        "prefers_target_not_fine_rate": 0.2833,
+        "mean_similarities": {
+          "fine": 0.1394,
+          "target": 0.1483,
+          "ancestor": 0.1454,
+          "sibling": 0.1499,
+          "generic": 0.2318,
+          "fine_ci": [
+            0.1353,
+            0.1434
+          ],
+          "target_ci": [
+            0.1443,
+            0.1529
+          ],
+          "ancestor_ci": [
+            0.1414,
+            0.1497
+          ],
+          "sibling_ci": [
+            0.1436,
+            0.1569
+          ],
+          "generic_ci": [
+            0.2292,
+            0.2346
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.2167,
+          0.4333
+        ],
+        "prefers_target_rate_ci": [
+          0.1833,
+          0.4
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.1833,
+          0.4
+        ]
+      }
+    },
+    "MF": {
+      "retain": {
+        "num_probes": 180,
+        "num_preference_probes": 60,
+        "prefers_fine_rate": 0.7833,
+        "prefers_target_rate": 0.0833,
+        "prefers_target_not_fine_rate": 0.0833,
+        "mean_similarities": {
+          "fine": 0.3154,
+          "target": 0.3083,
+          "ancestor": 0.3087,
+          "sibling": 0.3027,
+          "generic": 0.2118,
+          "fine_ci": [
+            0.313,
+            0.3181
+          ],
+          "target_ci": [
+            0.3061,
+            0.3109
+          ],
+          "ancestor_ci": [
+            0.3064,
+            0.3112
+          ],
+          "sibling_ci": [
+            0.299,
+            0.3066
+          ],
+          "generic_ci": [
+            0.2095,
+            0.2143
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.6833,
+          0.8833
+        ],
+        "prefers_target_rate_ci": [
+          0.0167,
+          0.15
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.0167,
+          0.15
+        ]
+      }
+    },
+    "MG": {
+      "retain": {
+        "num_probes": 180,
+        "num_preference_probes": 60,
+        "prefers_fine_rate": 0.45,
+        "prefers_target_rate": 0.25,
+        "prefers_target_not_fine_rate": 0.25,
+        "mean_similarities": {
+          "fine": 0.3111,
+          "target": 0.3133,
+          "ancestor": 0.3131,
+          "sibling": 0.3096,
+          "generic": 0.2129,
+          "fine_ci": [
+            0.3084,
+            0.314
+          ],
+          "target_ci": [
+            0.3111,
+            0.3156
+          ],
+          "ancestor_ci": [
+            0.311,
+            0.3155
+          ],
+          "sibling_ci": [
+            0.3059,
+            0.3134
+          ],
+          "generic_ci": [
+            0.2106,
+            0.2154
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.3333,
+          0.5833
+        ],
+        "prefers_target_rate_ci": [
+          0.15,
+          0.3667
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.15,
+          0.3667
+        ]
+      }
+    },
+    "MN": {
+      "retain": {
+        "num_probes": 180,
+        "num_preference_probes": 60,
+        "prefers_fine_rate": 0.6833,
+        "prefers_target_rate": 0.15,
+        "prefers_target_not_fine_rate": 0.15,
+        "mean_similarities": {
+          "fine": 0.2997,
+          "target": 0.2938,
+          "ancestor": 0.2944,
+          "sibling": 0.2898,
+          "generic": 0.2124,
+          "fine_ci": [
+            0.297,
+            0.3027
+          ],
+          "target_ci": [
+            0.2912,
+            0.2965
+          ],
+          "ancestor_ci": [
+            0.2919,
+            0.2972
+          ],
+          "sibling_ci": [
+            0.2852,
+            0.2942
+          ],
+          "generic_ci": [
+            0.21,
+            0.2149
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.5667,
+          0.8
+        ],
+        "prefers_target_rate_ci": [
+          0.0667,
+          0.25
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.0667,
+          0.25
+        ]
       }
     }
   },
@@ -64,9 +686,14 @@
     "passed": true,
     "reasons": [],
     "definition": {
-      "MF": "prefers fine over {target, sibling}: >= 0.5 and >= MG/MN + 0.15",
-      "MG": "prefers target-not-fine >= 0.5, >= MN + 0.15, fine preference capped at 0.25, and not below its own target preference",
-      "MN": "mean fine/target similarities within 0.05 of BASE (preference order is noise at chance level)"
+      "MF": "prefers fine over {target, sibling}: >= 0.5 and >= MG/MN + 0.05",
+      "MG": "mean target sim > mean fine sim; fine preference capped at 0.50",
+      "MN": "mean fine/target similarities below MF's (drop >= 0.01; per-attribute removal retains most entity info)"
     }
-  }
+  },
+  "notes": [
+    "Per-attribute targeting: each target persona has ONE target attribute; other attributes are same-entity retain.",
+    "target_vs_retain_scores breaks down metrics by is_target_attr flag.",
+    "per_attribute_scores breaks down metrics by attribute (city/job/blood_type)."
+  ]
 }

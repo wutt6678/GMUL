@@ -82,10 +82,10 @@ def build_salmu_unlearning_groups(
     groups: dict[str, list[SalmuTrainingPair]] = {
         "fine_target": [], "target_level": [], "retain": []}
     for pair in mf_pairs:
-        if pair.role == "retain":
-            groups["retain"].append(pair)
-        else:
+        if pair.role == "target_association":
             groups["fine_target"].append(pair)
+        else:  # same_entity_retain or other_entity_retain
+            groups["retain"].append(pair)
     # target_level: one generalized caption per (identity, attribute),
     # paired with exactly the images that carried the fine captions
     seen: set[tuple[str, str]] = set()

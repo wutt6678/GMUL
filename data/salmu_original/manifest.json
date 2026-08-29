@@ -5,7 +5,7 @@
       "repo_type": "dataset",
       "revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
       "role": "official evaluation splits: forget / forget_target / retain_synth / holdout_identity / holdout_association",
-      "local_snapshot": "/scratch/wutiantong/.cache/huggingface/hub/datasets--cvc-mmu--salmubench-512-redistributed/snapshots/b76aa3885a696969e51de4786c9f92e8064b4679",
+      "local_cache_path": "/scratch/wutiantong/.cache/huggingface/hub/datasets--cvc-mmu--salmubench-512-redistributed/snapshots/b76aa3885a696969e51de4786c9f92e8064b4679",
       "metadata_sha256": {
         "identities_metadata.json": "0a15612e709807fd629d8b8e2afd921fbee3641f337b5e19b761e517006ef967",
         "sensitive_set_captions_metadata.json": "0c71ec6f124e2647952e536dbce6803514ecfa0561c6f252c31d31355e28bcc7",
@@ -19,7 +19,7 @@
       "repo_type": "dataset",
       "revision": "11bc6fec2530a70ba222bf86a70fe4d7681f86dd",
       "role": "knowledge-injection dataset used to train the Compromised model",
-      "local_snapshot": "/scratch/wutiantong/.cache/huggingface/hub/datasets--cvc-mmu--salmu-512-redistributed/snapshots/11bc6fec2530a70ba222bf86a70fe4d7681f86dd",
+      "local_cache_path": "/scratch/wutiantong/.cache/huggingface/hub/datasets--cvc-mmu--salmu-512-redistributed/snapshots/11bc6fec2530a70ba222bf86a70fe4d7681f86dd",
       "metadata_sha256": {
         "identities_metadata.json": "0a15612e709807fd629d8b8e2afd921fbee3641f337b5e19b761e517006ef967",
         "sensitive_set_captions_metadata.json": "0c71ec6f124e2647952e536dbce6803514ecfa0561c6f252c31d31355e28bcc7"
@@ -30,15 +30,15 @@
       "repo_type": "model",
       "revision": "1d3c0b01dceaf0e66b4d0abeefa3bc8a616f73f8",
       "role": "CLIP ViT-B/16 trained WITHOUT the sensitive associations — the shared starting checkpoint for MF/MG/MN reference states",
-      "local_snapshot": "/scratch/wutiantong/.cache/huggingface/hub/models--cvc-mmu--clip-vit-b-16-salmu-clean/snapshots/1d3c0b01dceaf0e66b4d0abeefa3bc8a616f73f8"
+      "local_cache_path": "/scratch/wutiantong/.cache/huggingface/hub/models--cvc-mmu--clip-vit-b-16-salmu-clean/snapshots/1d3c0b01dceaf0e66b4d0abeefa3bc8a616f73f8"
     },
     "compromised_model": {
       "repo_id": "cvc-mmu/clip-vit-b-16-salmu-compromised",
       "repo_type": "model",
       "revision": "230b1b4f7b84d1bb96927a0a47ac7a007ceba528",
       "role": "CLIP ViT-B/16 trained WITH the sensitive associations (SALMUBench's unlearning start point; reference only for our counterfactual design)",
-      "local_snapshot": null
+      "local_cache_path": "/scratch/wutiantong/.cache/huggingface/hub/models--cvc-mmu--clip-vit-b-16-salmu-compromised/snapshots/230b1b4f7b84d1bb96927a0a47ac7a007ceba528"
     }
   },
-  "note": "Read-only adapter: released SALMUBench artifacts are never modified; all derived data lives under salmu_hierarchical/ or salmu_aux_redaction/."
+  "note": "Read-only adapter: released SALMUBench artifacts are never modified; all derived data lives under salmu_hierarchical/ or salmu_aux_redaction/. Reproducibility contract: repo_id + revision (pinned). local_cache_path is diagnostic (machine-specific HF cache location)."
 }

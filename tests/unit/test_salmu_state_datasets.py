@@ -8,6 +8,7 @@ from granunlearn.salmu.state_datasets import (
     STATES,
     build_state_pairs,
     load_state_pairs,
+    partition_persona_attributes,
     partition_personas,
     validate_state_pairs,
     write_state_pairs,
@@ -40,6 +41,16 @@ def part(num_targets=1):
                               seed=42)
 
 
+def part_with_attrs(num_targets=1):
+    """Return (partition, target_attr_map) for per-attribute targeting."""
+    p = part(num_targets)
+    # Only include attributes that exist in the hierarchies
+    attrs = tuple(attr for attr in ("city", "job", "blood_type")
+                  if any(attr in HIERARCHIES[iid] for iid in p["target_identity_ids"]))
+    tam = partition_persona_attributes(p["target_identity_ids"], attrs, seed=42)
+    return p, tam
+
+
 class TestPartition:
     def test_deterministic_and_disjoint(self):
         a, b = part(), part()
@@ -62,79 +73,103 @@ class TestPartition:
 
 class TestStatePairs:
     def test_mf_uses_released_fine_captions_for_targets(self):
-        pairs = build_state_pairs("MF", part(1), HIERARCHIES, IDENTITIES,
-                                  FINE_CAPTIONS, IMAGES)
-        tgt = [p for p in pairs if p.role == "target"]
+        p, tam = part_with_attrs(1)
+        pairs = build_state_pairs("MF", p, HIERARCHIES, IDENTITIES,
+                                  FINE_CAPTIONS, IMAGES,
+                                  target_attr_map=tam)
+        tgt = [p for p in pairs if p.role == "target_association"]
         assert tgt and all(p.caption_source == "released_fine"
                            for p in tgt)
-        assert all(p.level_index == 0 for p in pairs)
+        # same_entity_retain and other_entity_retain also use fine captions
+        ret = [p for p in pairs if p.role in ("same_entity_retain",
+                                               "other_entity_retain")]
+        assert ret and all(p.caption_source == "released_fine"
+                           for p in ret)
 
     def test_mg_targets_only_generalized(self):
         """Iteration 10 contract: MG trains with ONLY generalized target
-        captions."""
-        pairs = build_state_pairs("MG", part(1), HIERARCHIES, IDENTITIES,
-                                  FINE_CAPTIONS, IMAGES)
-        tgt = [p for p in pairs if p.role == "target"]
+        captions for target_association; retain uses released fine."""
+        p, tam = part_with_attrs(1)
+        pairs = build_state_pairs("MG", p, HIERARCHIES, IDENTITIES,
+                                  FINE_CAPTIONS, IMAGES,
+                                  target_attr_map=tam)
+        tgt = [p for p in pairs if p.role == "target_association"]
         assert tgt and all(p.caption_source == "generalized_template"
                            for p in tgt)
         assert all(p.level_index >= 1 for p in tgt)
-        ret = [p for p in pairs if p.role == "retain"]
+        ret = [p for p in pairs if p.role in ("same_entity_retain",
+                                               "other_entity_retain")]
         assert all(p.caption_source == "released_fine" for p in ret)
         # the generalized caption states the target-level value
         assert any("lives in" in p.caption or "works" in p.caption
                    for p in tgt)
 
-    def test_mn_omits_targets(self):
-        p = part(1)
+    def test_mn_omits_target_associations(self):
+        p, tam = part_with_attrs(1)
         pairs = build_state_pairs("MN", p, HIERARCHIES, IDENTITIES,
-                                  FINE_CAPTIONS, IMAGES)
-        targets = set(p["target_identity_ids"])
-        assert all(x.identity_id not in targets for x in pairs)
-        assert len(pairs) > 0
+                                  FINE_CAPTIONS, IMAGES,
+                                  target_attr_map=tam)
+        # MN should not have target_association pairs
+        tgt_assoc = [p for p in pairs if p.role == "target_association"]
+        assert len(tgt_assoc) == 0
+        # MN keeps same_entity_retain (non-target attrs of target personas)
+        same_retain = [p for p in pairs
+                       if p.role == "same_entity_retain"]
+        assert len(same_retain) > 0
 
     def test_retain_identical_across_states(self):
         """Counterfactual control: retain pairs must be identical across
         MF/MG/MN (only target treatment differs)."""
+        p, tam = part_with_attrs(1)
         retain_sets = []
         for state in STATES:
-            pairs = build_state_pairs(state, part(1), HIERARCHIES,
-                                      IDENTITIES, FINE_CAPTIONS, IMAGES)
+            pairs = build_state_pairs(state, p, HIERARCHIES,
+                                      IDENTITIES, FINE_CAPTIONS, IMAGES,
+                                      target_attr_map=tam)
             retain_sets.append({
                 (x.identity_id, x.attribute, x.caption, x.image_file)
-                for x in pairs if x.role == "retain"})
+                for x in pairs
+                if x.role in ("same_entity_retain", "other_entity_retain")})
         assert retain_sets[0] == retain_sets[1] == retain_sets[2]
 
     def test_unknown_state_raises(self):
+        p, tam = part_with_attrs(1)
         with pytest.raises(ValueError):
-            build_state_pairs("MU", part(1), HIERARCHIES, IDENTITIES,
-                              FINE_CAPTIONS, IMAGES)
+            build_state_pairs("MU", p, HIERARCHIES, IDENTITIES,
+                              FINE_CAPTIONS, IMAGES,
+                              target_attr_map=tam)
 
 
 class TestValidationAndRoundtrip:
     def test_all_states_validate(self):
-        p = part(1)
+        p, tam = part_with_attrs(1)
         for state in STATES:
             pairs = build_state_pairs(state, p, HIERARCHIES, IDENTITIES,
-                                      FINE_CAPTIONS, IMAGES)
-            assert validate_state_pairs(pairs, p, state) == []
+                                      FINE_CAPTIONS, IMAGES,
+                                      target_attr_map=tam)
+            assert validate_state_pairs(pairs, p, state,
+                                        target_attr_map=tam) == []
 
     def test_sabotage_mg_with_fine_caption_detected(self):
-        p = part(1)
+        p, tam = part_with_attrs(1)
         pairs = build_state_pairs("MG", p, HIERARCHIES, IDENTITIES,
-                                  FINE_CAPTIONS, IMAGES)
-        bad = next(x for x in pairs if x.role == "target")
+                                  FINE_CAPTIONS, IMAGES,
+                                  target_attr_map=tam)
+        bad = next(x for x in pairs if x.role == "target_association")
         idx = pairs.index(bad)
         pairs[idx] = bad.model_copy(update={
             "caption_source": "released_fine", "level_index": 0})
-        errors = validate_state_pairs(pairs, p, "MG")
+        errors = validate_state_pairs(pairs, p, "MG", target_attr_map=tam)
         assert any("generalized" in e for e in errors)
 
     def test_write_load_roundtrip(self, tmp_path):
-        p = part(1)
+        p, tam = part_with_attrs(1)
         pairs_by_state = {s: build_state_pairs(
-            s, p, HIERARCHIES, IDENTITIES, FINE_CAPTIONS, IMAGES)
+            s, p, HIERARCHIES, IDENTITIES, FINE_CAPTIONS, IMAGES,
+            target_attr_map=tam)
             for s in STATES}
-        manifest = write_state_pairs(pairs_by_state, p, tmp_path)
+        manifest = write_state_pairs(pairs_by_state, p, tmp_path,
+                                     target_attr_map=tam)
         for state in STATES:
             loaded = load_state_pairs(tmp_path / f"{state}.jsonl")
             assert len(loaded) == manifest["states"][state]["num_pairs"]

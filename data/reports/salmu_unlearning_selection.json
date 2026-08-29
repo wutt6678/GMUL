@@ -81,8 +81,7 @@
     "prefers_target_not_fine_rate": 0.22,
     "sim_fine": 0.3129,
     "sim_target": 0.3142,
-    "sim_sibling": 0.3107,
-    "retain_fine_sim": 0.309
+    "sim_sibling": 0.3107
   },
   "selected": {
     "B0": "B0",
@@ -107,14 +106,13 @@
           "generic": 0.213
         }
       },
-      "retain_fine_sim": 0.309,
+      "retain_fine_sim": null,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.48,
         "prefers_target_not_fine_rate": 0.22,
         "sim_fine": 0.3129,
         "sim_target": 0.3142,
-        "sim_sibling": 0.3107,
-        "retain_fine_sim": 0.309
+        "sim_sibling": 0.3107
       },
       "distance_to_MG_trainval": 0.0,
       "components_used": [
@@ -122,8 +120,7 @@
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling",
-        "retain_fine_sim"
+        "sim_sibling"
       ],
       "test_metrics": {
         "num_probes": 30,
@@ -144,8 +141,7 @@
         "prefers_target_not_fine_rate": 0.4,
         "sim_fine": 0.3019,
         "sim_target": 0.3088,
-        "sim_sibling": 0.3039,
-        "retain_fine_sim": 0.309
+        "sim_sibling": 0.3039
       }
     },
     {
@@ -164,23 +160,21 @@
           "generic": 0.212
         }
       },
-      "retain_fine_sim": 0.3113,
+      "retain_fine_sim": null,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.86,
         "prefers_target_not_fine_rate": 0.04,
         "sim_fine": 0.3173,
         "sim_target": 0.3094,
-        "sim_sibling": 0.304,
-        "retain_fine_sim": 0.3113
+        "sim_sibling": 0.304
       },
-      "distance_to_MG_trainval": 0.096367,
+      "distance_to_MG_trainval": 0.11518,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling",
-        "retain_fine_sim"
+        "sim_sibling"
       ],
       "test_metrics": {
         "num_probes": 30,
@@ -201,8 +195,7 @@
         "prefers_target_not_fine_rate": 0.3,
         "sim_fine": 0.3063,
         "sim_target": 0.303,
-        "sim_sibling": 0.2964,
-        "retain_fine_sim": 0.3113
+        "sim_sibling": 0.2964
       }
     },
     {
@@ -221,23 +214,21 @@
           "generic": -0.1982
         }
       },
-      "retain_fine_sim": -0.8968,
+      "retain_fine_sim": null,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.04,
         "prefers_target_not_fine_rate": 0.48,
         "sim_fine": -0.863,
         "sim_target": -0.844,
-        "sim_sibling": -0.8407,
-        "retain_fine_sim": -0.8968
+        "sim_sibling": -0.8407
       },
-      "distance_to_MG_trainval": 0.89855,
+      "distance_to_MG_trainval": 0.8371,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling",
-        "retain_fine_sim"
+        "sim_sibling"
       ],
       "test_metrics": {
         "num_probes": 30,
@@ -258,8 +249,7 @@
         "prefers_target_not_fine_rate": 0.6,
         "sim_fine": -0.816,
         "sim_target": -0.8031,
-        "sim_sibling": -0.8885,
-        "retain_fine_sim": -0.8968
+        "sim_sibling": -0.8885
       }
     },
     {
@@ -278,23 +268,21 @@
           "generic": -0.6721
         }
       },
-      "retain_fine_sim": -0.9213,
+      "retain_fine_sim": null,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.06,
         "prefers_target_not_fine_rate": 0.48,
         "sim_fine": -0.8646,
         "sim_target": -0.8563,
-        "sim_sibling": -0.8803,
-        "retain_fine_sim": -0.9213
+        "sim_sibling": -0.8803
       },
-      "distance_to_MG_trainval": 0.908217,
+      "distance_to_MG_trainval": 0.8438,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling",
-        "retain_fine_sim"
+        "sim_sibling"
       ],
       "test_metrics": {
         "num_probes": 30,
@@ -315,8 +303,7 @@
         "prefers_target_not_fine_rate": 0.5,
         "sim_fine": -0.8066,
         "sim_target": -0.8022,
-        "sim_sibling": -0.6427,
-        "retain_fine_sim": -0.9213
+        "sim_sibling": -0.6427
       }
     },
     {
@@ -335,23 +322,21 @@
           "generic": -0.9954
         }
       },
-      "retain_fine_sim": -0.9971,
+      "retain_fine_sim": null,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.08,
         "prefers_target_not_fine_rate": 0.44,
         "sim_fine": -0.9572,
         "sim_target": -0.9571,
-        "sim_sibling": -0.9571,
-        "retain_fine_sim": -0.9971
+        "sim_sibling": -0.9571
       },
-      "distance_to_MG_trainval": 0.955883,
+      "distance_to_MG_trainval": 0.88584,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling",
-        "retain_fine_sim"
+        "sim_sibling"
       ],
       "test_metrics": {
         "num_probes": 30,
@@ -372,8 +357,7 @@
         "prefers_target_not_fine_rate": 0.5,
         "sim_fine": -0.9971,
         "sim_target": -0.997,
-        "sim_sibling": -0.9971,
-        "retain_fine_sim": -0.9971
+        "sim_sibling": -0.9971
       }
     },
     {
@@ -392,23 +376,21 @@
           "generic": 0.241
         }
       },
-      "retain_fine_sim": 0.2397,
+      "retain_fine_sim": null,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.2,
         "prefers_target_not_fine_rate": 0.2,
         "sim_fine": 0.2397,
         "sim_target": 0.2398,
-        "sim_sibling": 0.2398,
-        "retain_fine_sim": 0.2397
+        "sim_sibling": 0.2398
       },
-      "distance_to_MG_trainval": 0.097967,
+      "distance_to_MG_trainval": 0.1037,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling",
-        "retain_fine_sim"
+        "sim_sibling"
       ],
       "test_metrics": {
         "num_probes": 30,
@@ -429,8 +411,7 @@
         "prefers_target_not_fine_rate": 0.1,
         "sim_fine": 0.2398,
         "sim_target": 0.2398,
-        "sim_sibling": 0.2397,
-        "retain_fine_sim": 0.2397
+        "sim_sibling": 0.2397
       }
     },
     {
@@ -449,23 +430,21 @@
           "generic": -0.0283
         }
       },
-      "retain_fine_sim": -0.2237,
+      "retain_fine_sim": null,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.0,
         "prefers_target_not_fine_rate": 0.54,
         "sim_fine": -0.7764,
         "sim_target": 0.0216,
-        "sim_sibling": 0.0403,
-        "retain_fine_sim": -0.2237
+        "sim_sibling": 0.0403
       },
-      "distance_to_MG_trainval": 0.4975,
+      "distance_to_MG_trainval": 0.49046,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling",
-        "retain_fine_sim"
+        "sim_sibling"
       ],
       "test_metrics": {
         "num_probes": 30,
@@ -486,8 +465,7 @@
         "prefers_target_not_fine_rate": 0.6,
         "sim_fine": -0.7668,
         "sim_target": 0.0208,
-        "sim_sibling": 0.0353,
-        "retain_fine_sim": -0.2237
+        "sim_sibling": 0.0353
       }
     },
     {
@@ -506,23 +484,21 @@
           "generic": -0.1935
         }
       },
-      "retain_fine_sim": -0.9345,
+      "retain_fine_sim": null,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.02,
         "prefers_target_not_fine_rate": 0.6,
         "sim_fine": -0.9617,
         "sim_target": 0.007,
-        "sim_sibling": 0.0026,
-        "retain_fine_sim": -0.9345
+        "sim_sibling": 0.0026
       },
-      "distance_to_MG_trainval": 0.662233,
+      "distance_to_MG_trainval": 0.54598,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling",
-        "retain_fine_sim"
+        "sim_sibling"
       ],
       "test_metrics": {
         "num_probes": 30,
@@ -543,8 +519,7 @@
         "prefers_target_not_fine_rate": 0.7,
         "sim_fine": -0.908,
         "sim_target": 0.0075,
-        "sim_sibling": -0.0067,
-        "retain_fine_sim": -0.9345
+        "sim_sibling": -0.0067
       }
     },
     {
@@ -563,23 +538,21 @@
           "generic": 0.2088
         }
       },
-      "retain_fine_sim": 0.3103,
+      "retain_fine_sim": null,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.84,
         "prefers_target_not_fine_rate": 0.04,
         "sim_fine": 0.3159,
         "sim_target": 0.3075,
-        "sim_sibling": 0.3025,
-        "retain_fine_sim": 0.3103
+        "sim_sibling": 0.3025
       },
-      "distance_to_MG_trainval": 0.0932,
+      "distance_to_MG_trainval": 0.11158,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling",
-        "retain_fine_sim"
+        "sim_sibling"
       ],
       "test_metrics": {
         "num_probes": 30,
@@ -600,8 +573,7 @@
         "prefers_target_not_fine_rate": 0.3,
         "sim_fine": 0.302,
         "sim_target": 0.3005,
-        "sim_sibling": 0.2943,
-        "retain_fine_sim": 0.3103
+        "sim_sibling": 0.2943
       }
     },
     {
@@ -620,23 +592,21 @@
           "generic": 0.2045
         }
       },
-      "retain_fine_sim": 0.2849,
+      "retain_fine_sim": null,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.84,
         "prefers_target_not_fine_rate": 0.08,
         "sim_fine": 0.2884,
         "sim_target": 0.278,
-        "sim_sibling": 0.2748,
-        "retain_fine_sim": 0.2849
+        "sim_sibling": 0.2748
       },
-      "distance_to_MG_trainval": 0.10345,
+      "distance_to_MG_trainval": 0.11932,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling",
-        "retain_fine_sim"
+        "sim_sibling"
       ],
       "test_metrics": {
         "num_probes": 30,
@@ -657,8 +627,7 @@
         "prefers_target_not_fine_rate": 0.2,
         "sim_fine": 0.2548,
         "sim_target": 0.2577,
-        "sim_sibling": 0.2483,
-        "retain_fine_sim": 0.2849
+        "sim_sibling": 0.2483
       }
     },
     {
@@ -677,23 +646,21 @@
           "generic": 0.1271
         }
       },
-      "retain_fine_sim": -0.2668,
+      "retain_fine_sim": null,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.36,
         "prefers_target_not_fine_rate": 0.34,
         "sim_fine": -0.3027,
         "sim_target": -0.3024,
-        "sim_sibling": -0.2904,
-        "retain_fine_sim": -0.2668
+        "sim_sibling": -0.2904
       },
-      "distance_to_MG_trainval": 0.441517,
+      "distance_to_MG_trainval": 0.41466,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling",
-        "retain_fine_sim"
+        "sim_sibling"
       ],
       "test_metrics": {
         "num_probes": 30,
@@ -714,8 +681,7 @@
         "prefers_target_not_fine_rate": 0.2,
         "sim_fine": -0.3203,
         "sim_target": -0.306,
-        "sim_sibling": -0.329,
-        "retain_fine_sim": -0.2668
+        "sim_sibling": -0.329
       }
     },
     {
@@ -734,23 +700,21 @@
           "generic": 0.2121
         }
       },
-      "retain_fine_sim": 0.254,
+      "retain_fine_sim": null,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.56,
         "prefers_target_not_fine_rate": 0.18,
         "sim_fine": 0.2791,
         "sim_target": 0.2801,
-        "sim_sibling": 0.2766,
-        "retain_fine_sim": 0.254
+        "sim_sibling": 0.2766
       },
-      "distance_to_MG_trainval": 0.046167,
+      "distance_to_MG_trainval": 0.0444,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling",
-        "retain_fine_sim"
+        "sim_sibling"
       ],
       "test_metrics": {
         "num_probes": 30,
@@ -771,8 +735,7 @@
         "prefers_target_not_fine_rate": 0.3,
         "sim_fine": 0.2734,
         "sim_target": 0.2751,
-        "sim_sibling": 0.2707,
-        "retain_fine_sim": 0.254
+        "sim_sibling": 0.2707
       }
     },
     {
@@ -791,23 +754,21 @@
           "generic": 0.1742
         }
       },
-      "retain_fine_sim": 0.234,
+      "retain_fine_sim": null,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.24,
         "prefers_target_not_fine_rate": 0.58,
         "sim_fine": 0.3216,
         "sim_target": 0.333,
-        "sim_sibling": 0.3272,
-        "retain_fine_sim": 0.234
+        "sim_sibling": 0.3272
       },
-      "distance_to_MG_trainval": 0.119833,
+      "distance_to_MG_trainval": 0.1288,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling",
-        "retain_fine_sim"
+        "sim_sibling"
       ],
       "test_metrics": {
         "num_probes": 30,
@@ -828,8 +789,7 @@
         "prefers_target_not_fine_rate": 0.6,
         "sim_fine": 0.318,
         "sim_target": 0.3343,
-        "sim_sibling": 0.3297,
-        "retain_fine_sim": 0.234
+        "sim_sibling": 0.3297
       }
     },
     {
@@ -848,23 +808,21 @@
           "generic": 0.2273
         }
       },
-      "retain_fine_sim": 0.3707,
+      "retain_fine_sim": null,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.4,
         "prefers_target_not_fine_rate": 0.22,
         "sim_fine": 0.3789,
         "sim_target": 0.3833,
-        "sim_sibling": 0.3807,
-        "retain_fine_sim": 0.3707
+        "sim_sibling": 0.3807
       },
-      "distance_to_MG_trainval": 0.0578,
+      "distance_to_MG_trainval": 0.05702,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling",
-        "retain_fine_sim"
+        "sim_sibling"
       ],
       "test_metrics": {
         "num_probes": 30,
@@ -885,8 +843,61 @@
         "prefers_target_not_fine_rate": 0.3,
         "sim_fine": 0.3692,
         "sim_target": 0.3775,
-        "sim_sibling": 0.3722,
-        "retain_fine_sim": 0.3707
+        "sim_sibling": 0.3722
+      }
+    },
+    {
+      "candidate_id": "B2_retain_lr1e-05",
+      "trainval_metrics": {
+        "num_probes": 150,
+        "num_preference_probes": 50,
+        "prefers_fine_rate": 0.0,
+        "prefers_target_rate": 0.4,
+        "prefers_target_not_fine_rate": 0.4,
+        "mean_similarities": {
+          "fine": 0.4503,
+          "target": 0.4706,
+          "ancestor": 0.4703,
+          "sibling": 0.4691,
+          "generic": 0.2681
+        }
+      },
+      "retain_fine_sim": null,
+      "trainval_summary_vector": {
+        "prefers_fine_rate": 0.0,
+        "prefers_target_not_fine_rate": 0.4,
+        "sim_fine": 0.4503,
+        "sim_target": 0.4706,
+        "sim_sibling": 0.4691
+      },
+      "distance_to_MG_trainval": 0.22244,
+      "components_used": [
+        "prefers_fine_rate",
+        "prefers_target_not_fine_rate",
+        "sim_fine",
+        "sim_target",
+        "sim_sibling"
+      ],
+      "test_metrics": {
+        "num_probes": 30,
+        "num_preference_probes": 10,
+        "prefers_fine_rate": 0.0,
+        "prefers_target_rate": 0.4,
+        "prefers_target_not_fine_rate": 0.4,
+        "mean_similarities": {
+          "fine": 0.4423,
+          "target": 0.4643,
+          "ancestor": 0.4632,
+          "sibling": 0.4603,
+          "generic": 0.2653
+        }
+      },
+      "test_summary_vector": {
+        "prefers_fine_rate": 0.0,
+        "prefers_target_not_fine_rate": 0.4,
+        "sim_fine": 0.4423,
+        "sim_target": 0.4643,
+        "sim_sibling": 0.4603
       }
     },
     {
@@ -905,23 +916,21 @@
           "generic": 0.3054
         }
       },
-      "retain_fine_sim": 0.4409,
+      "retain_fine_sim": null,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.0,
         "prefers_target_not_fine_rate": 0.46,
         "sim_fine": 0.4536,
         "sim_target": 0.5005,
-        "sim_sibling": 0.5001,
-        "retain_fine_sim": 0.4409
+        "sim_sibling": 0.5001
       },
-      "distance_to_MG_trainval": 0.22805,
+      "distance_to_MG_trainval": 0.24728,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling",
-        "retain_fine_sim"
+        "sim_sibling"
       ],
       "test_metrics": {
         "num_probes": 30,
@@ -942,8 +951,61 @@
         "prefers_target_not_fine_rate": 0.5,
         "sim_fine": 0.4458,
         "sim_target": 0.4938,
-        "sim_sibling": 0.4918,
-        "retain_fine_sim": 0.4409
+        "sim_sibling": 0.4918
+      }
+    },
+    {
+      "candidate_id": "B2_retain_lr5e-05",
+      "trainval_metrics": {
+        "num_probes": 150,
+        "num_preference_probes": 50,
+        "prefers_fine_rate": 0.0,
+        "prefers_target_rate": 0.54,
+        "prefers_target_not_fine_rate": 0.54,
+        "mean_similarities": {
+          "fine": 0.4585,
+          "target": 0.7639,
+          "ancestor": 0.7642,
+          "sibling": 0.7652,
+          "generic": 0.6163
+        }
+      },
+      "retain_fine_sim": null,
+      "trainval_summary_vector": {
+        "prefers_fine_rate": 0.0,
+        "prefers_target_not_fine_rate": 0.54,
+        "sim_fine": 0.4585,
+        "sim_target": 0.7639,
+        "sim_sibling": 0.7652
+      },
+      "distance_to_MG_trainval": 0.36996,
+      "components_used": [
+        "prefers_fine_rate",
+        "prefers_target_not_fine_rate",
+        "sim_fine",
+        "sim_target",
+        "sim_sibling"
+      ],
+      "test_metrics": {
+        "num_probes": 30,
+        "num_preference_probes": 10,
+        "prefers_fine_rate": 0.0,
+        "prefers_target_rate": 0.5,
+        "prefers_target_not_fine_rate": 0.5,
+        "mean_similarities": {
+          "fine": 0.4546,
+          "target": 0.7603,
+          "ancestor": 0.7606,
+          "sibling": 0.7627,
+          "generic": 0.6095
+        }
+      },
+      "test_summary_vector": {
+        "prefers_fine_rate": 0.0,
+        "prefers_target_not_fine_rate": 0.5,
+        "sim_fine": 0.4546,
+        "sim_target": 0.7603,
+        "sim_sibling": 0.7627
       }
     },
     {
@@ -962,23 +1024,21 @@
           "generic": 0.2116
         }
       },
-      "retain_fine_sim": 0.3139,
+      "retain_fine_sim": null,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.84,
         "prefers_target_not_fine_rate": 0.06,
         "sim_fine": 0.3194,
         "sim_target": 0.3097,
-        "sim_sibling": 0.3048,
-        "retain_fine_sim": 0.3139
+        "sim_sibling": 0.3048
       },
-      "distance_to_MG_trainval": 0.0903,
+      "distance_to_MG_trainval": 0.10738,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling",
-        "retain_fine_sim"
+        "sim_sibling"
       ],
       "test_metrics": {
         "num_probes": 30,
@@ -999,8 +1059,61 @@
         "prefers_target_not_fine_rate": 0.2,
         "sim_fine": 0.3054,
         "sim_target": 0.3054,
-        "sim_sibling": 0.2978,
-        "retain_fine_sim": 0.3139
+        "sim_sibling": 0.2978
+      }
+    },
+    {
+      "candidate_id": "B3_lr2e-06_lam1_c",
+      "trainval_metrics": {
+        "num_probes": 150,
+        "num_preference_probes": 50,
+        "prefers_fine_rate": 0.82,
+        "prefers_target_rate": 0.06,
+        "prefers_target_not_fine_rate": 0.06,
+        "mean_similarities": {
+          "fine": 0.3193,
+          "target": 0.3072,
+          "ancestor": 0.3074,
+          "sibling": 0.3022,
+          "generic": 0.2106
+        }
+      },
+      "retain_fine_sim": null,
+      "trainval_summary_vector": {
+        "prefers_fine_rate": 0.82,
+        "prefers_target_not_fine_rate": 0.06,
+        "sim_fine": 0.3193,
+        "sim_target": 0.3072,
+        "sim_sibling": 0.3022
+      },
+      "distance_to_MG_trainval": 0.10438,
+      "components_used": [
+        "prefers_fine_rate",
+        "prefers_target_not_fine_rate",
+        "sim_fine",
+        "sim_target",
+        "sim_sibling"
+      ],
+      "test_metrics": {
+        "num_probes": 30,
+        "num_preference_probes": 10,
+        "prefers_fine_rate": 0.5,
+        "prefers_target_rate": 0.2,
+        "prefers_target_not_fine_rate": 0.2,
+        "mean_similarities": {
+          "fine": 0.3047,
+          "target": 0.3045,
+          "ancestor": 0.3043,
+          "sibling": 0.2967,
+          "generic": 0.2088
+        }
+      },
+      "test_summary_vector": {
+        "prefers_fine_rate": 0.5,
+        "prefers_target_not_fine_rate": 0.2,
+        "sim_fine": 0.3047,
+        "sim_target": 0.3045,
+        "sim_sibling": 0.2967
       }
     },
     {
@@ -1019,23 +1132,21 @@
           "generic": 0.2083
         }
       },
-      "retain_fine_sim": 0.3198,
+      "retain_fine_sim": null,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.82,
         "prefers_target_not_fine_rate": 0.06,
         "sim_fine": 0.3235,
         "sim_target": 0.313,
-        "sim_sibling": 0.307,
-        "retain_fine_sim": 0.3198
+        "sim_sibling": 0.307
       },
-      "distance_to_MG_trainval": 0.087717,
+      "distance_to_MG_trainval": 0.1031,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling",
-        "retain_fine_sim"
+        "sim_sibling"
       ],
       "test_metrics": {
         "num_probes": 30,
@@ -1056,8 +1167,7 @@
         "prefers_target_not_fine_rate": 0.2,
         "sim_fine": 0.3102,
         "sim_target": 0.3097,
-        "sim_sibling": 0.3016,
-        "retain_fine_sim": 0.3198
+        "sim_sibling": 0.3016
       }
     },
     {
@@ -1076,23 +1186,21 @@
           "generic": 0.2083
         }
       },
-      "retain_fine_sim": 0.3195,
+      "retain_fine_sim": null,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.84,
         "prefers_target_not_fine_rate": 0.06,
         "sim_fine": 0.3236,
         "sim_target": 0.3105,
-        "sim_sibling": 0.304,
-        "retain_fine_sim": 0.3195
+        "sim_sibling": 0.304
       },
-      "distance_to_MG_trainval": 0.091933,
+      "distance_to_MG_trainval": 0.10822,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling",
-        "retain_fine_sim"
+        "sim_sibling"
       ],
       "test_metrics": {
         "num_probes": 30,
@@ -1113,8 +1221,7 @@
         "prefers_target_not_fine_rate": 0.2,
         "sim_fine": 0.3078,
         "sim_target": 0.3074,
-        "sim_sibling": 0.2987,
-        "retain_fine_sim": 0.3195
+        "sim_sibling": 0.2987
       }
     }
   ],
