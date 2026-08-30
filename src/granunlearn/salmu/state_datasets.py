@@ -92,14 +92,23 @@ def partition_persona_attributes(
     retain* — they keep their fine captions in ALL states (including
     MN), mirroring SALMUBench's ``holdout_association`` design.
 
+    Uses deterministic sha256 ranking for ordering, then round-robin
+    assignment to guarantee balanced per-attribute allocation (e.g.
+    20/20/20 for 60 targets and 3 attributes).
+
     Returns ``{identity_id: target_attribute}``.
     """
-    assignment: dict[str, str] = {}
     attrs = list(core_attributes)
-    for iid in sorted(target_identity_ids):
-        h = hashlib.sha256(
-            f"{seed}:attr_target:{iid}".encode()).hexdigest()
-        assignment[iid] = attrs[int(h, 16) % len(attrs)]
+    n_attrs = len(attrs)
+    # Deterministic ordering via sha256 ranking
+    ranked = sorted(
+        target_identity_ids,
+        key=lambda iid: hashlib.sha256(
+            f"{seed}:attr_target:{iid}".encode()).hexdigest())
+    # Round-robin assignment for perfect balance
+    assignment: dict[str, str] = {}
+    for idx, iid in enumerate(ranked):
+        assignment[iid] = attrs[idx % n_attrs]
     return assignment
 
 

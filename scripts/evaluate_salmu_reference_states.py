@@ -9,11 +9,9 @@ data/reports/salmu_reference_eval.json.
 
 With per-attribute targeting, probes cover BOTH target attributes
 (is_target_attr=True) and same-entity retain attributes
-(is_target_attr=False).  The report includes:
-* Aggregate metrics with bootstrap confidence intervals
-* Per-attribute breakdown (city, job, blood_type)
-* Target vs same-entity retain breakdown
-* Official SALMUBench metrics (if benchmark splits available)
+(is_target_attr=False).  The gate runs ONLY on the target-attribute
+probes (the associations being generalized or removed); same-entity
+and other-entity retention are reported separately.
 """
 
 from __future__ import annotations
@@ -28,14 +26,18 @@ from granunlearn.salmu.adapter import REPOS, locate_repo
 from granunlearn.salmu.embedding_metrics import (
     aggregate_scores,
     aggregate_scores_by_attribute,
+    aggregate_scores_by_image,
     aggregate_scores_by_target_attr,
+    image_caption_variance,
     reference_state_gate,
 )
 from granunlearn.salmu.eval_utils import (
     SalmuImageIndex,
     build_release_probes,
+    build_retain_probes,
     score_probes,
 )
+from granunlearn.salmu.salmubench_metrics import compute_salmubench_metrics
 
 log = setup_logger("evaluate_salmu_reference_states")
 
@@ -48,53 +50,137 @@ def main() -> None:
     parser.add_argument("--bootstrap-ci", action="store_true",
                         help="Compute bootstrap confidence intervals")
     parser.add_argument("--n-bootstrap", type=int, default=1000)
+    parser.add_argument("--max-images", type=int, default=None,
+                        help="Cap images per (persona, attr)")
+    parser.add_argument("--max-captions", type=int, default=None,
+                        help="Cap captions per (persona, attr)")
     args = parser.parse_args()
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
     train_ds = locate_repo(REPOS["training_dataset"]["repo_id"], "dataset")
 
-    probes, target_ids = build_release_probes(repo_root)
+    # Target-persona probes (cover both target and same-entity retain)
+    probes, target_ids = build_release_probes(
+        repo_root, max_images=args.max_images,
+        max_captions=args.max_captions)
     log.info("Built %d target probes over %d personas", len(probes),
              len(target_ids))
+
+    # Retain-persona probes (other-entity retain)
+    retain_probes = build_retain_probes(
+        repo_root, max_images=args.max_images,
+        max_captions=args.max_captions)
+    log.info("Built %d retain probes", len(retain_probes))
+
     image_index = SalmuImageIndex(train_ds / "data")
 
     scores: dict = {}
     per_attr_scores: dict = {}
     target_vs_retain_scores: dict = {}
-    
+    target_only_scores: dict = {}
+    same_entity_retain_scores: dict = {}
+    other_entity_retain_scores: dict = {}
+    salmubench: dict = {}
+    # Keep last state's raw results for variance analysis
+    _last_results: list = []
+    _last_target_results: list = []
+    _last_same_entity_results: list = []
+    _last_retain_results: list = []
+
     for state in [s.strip().upper() for s in args.states.split(",")]:
+        # Score target-persona probes
         results = score_probes(state, probes, image_index, repo_root,
                                args.device)
-        # Aggregate metrics with optional bootstrap CIs
-        scores[state] = aggregate_probe_results(
+        # Score retain-persona probes
+        retain_results = score_probes(
+            state, retain_probes, image_index, repo_root, args.device)
+
+        # --- Gate metrics: TARGET-ONLY probes ---
+        target_results = [r for r in results
+                          if r.get("is_target_attr", False)]
+        same_entity_results = [r for r in results
+                               if not r.get("is_target_attr", False)]
+
+        target_only_scores[state] = aggregate_scores(
+            target_results, bootstrap_ci=args.bootstrap_ci,
+            n_bootstrap=args.n_bootstrap)
+        same_entity_retain_scores[state] = aggregate_scores(
+            same_entity_results, bootstrap_ci=args.bootstrap_ci,
+            n_bootstrap=args.n_bootstrap)
+        other_entity_retain_scores[state] = aggregate_scores(
+            retain_results, bootstrap_ci=args.bootstrap_ci,
+            n_bootstrap=args.n_bootstrap)
+
+        # --- Pooled metrics (all target-persona probes) ---
+        scores[state] = aggregate_scores(
             results, bootstrap_ci=args.bootstrap_ci,
             n_bootstrap=args.n_bootstrap)
-        # Per-attribute breakdown
         per_attr_scores[state] = aggregate_scores_by_attribute(
             results, bootstrap_ci=args.bootstrap_ci,
             n_bootstrap=args.n_bootstrap)
-        # Target vs same-entity retain breakdown
         target_vs_retain_scores[state] = aggregate_scores_by_target_attr(
             results, bootstrap_ci=args.bootstrap_ci,
             n_bootstrap=args.n_bootstrap)
-        
-        s = scores[state]
-        log.info("[%s] fine_pref=%s target_not_fine=%s | sims=%s",
-                 state, s["prefers_fine_rate"],
-                 s["prefers_target_not_fine_rate"],
-                 s["mean_similarities"])
 
-    passed, reasons = reference_state_gate(scores)
+        s = target_only_scores[state]
+        log.info("[%s] TARGET fine_pref=%s tnf=%s | sims=%s",
+                 state, s.get("prefers_fine_rate"),
+                 s.get("prefers_target_not_fine_rate"),
+                 s.get("mean_similarities"))
+        sr = same_entity_retain_scores[state]
+        log.info("[%s] SAME-ENTITY RETAIN mean_fine=%s",
+                 state,
+                 (sr.get("mean_similarities") or {}).get("fine"))
+        oe = other_entity_retain_scores[state]
+        log.info("[%s] OTHER-ENTITY RETAIN mean_fine=%s",
+                 state,
+                 (oe.get("mean_similarities") or {}).get("fine"))
+
+        # SALMUBench official utility metrics
+        salmubench[state] = compute_salmubench_metrics(
+            target_results, same_entity_results, retain_results)
+        log.info("[%s] SALMUBench forget=%s holdout_assoc=%s "
+                 "retain_synth=%s",
+                 state, salmubench[state]["forget"],
+                 salmubench[state]["holdout_association"],
+                 salmubench[state]["retain_synth"])
+
+        # Keep last state's raw results for variance analysis
+        _last_results = results
+        _last_target_results = target_results
+        _last_same_entity_results = same_entity_results
+        _last_retain_results = retain_results
+
+    # Gate runs ONLY on target-attribute probes
+    passed, reasons = reference_state_gate(target_only_scores)
+
+    # Image/caption variance analysis (uses last state's target results)
+    img_cap_var = image_caption_variance(_last_results)
+
     report = {
-        "experiment_id": "salmu_iter10_reference_states",
+        "experiment_id": "salmu_iter10r2_reference_states",
         "num_target_personas": len(target_ids),
-        "probes_per_kind_note": "one probe per (target persona, core "
-                                "attribute) with images",
+        "num_target_probes": len(target_results),
+        "num_same_entity_retain_probes": len(same_entity_results),
+        "num_other_entity_retain_probes": len(retain_results),
+        "probes_per_kind_note": "one probe per (persona, core "
+                                "attribute, image, fine_caption) "
+                                "with frozen probe IDs",
+        "multi_image": args.max_images is not None or
+                       args.max_captions is not None,
+        "max_images": args.max_images,
+        "max_captions": args.max_captions,
         "per_attribute_targeting": True,
         "bootstrap_ci": args.bootstrap_ci,
-        "scores_by_state": scores,
+        "gate_runs_on": "target_association probes only (is_target_attr=True)",
+        "scores_by_state": target_only_scores,
+        "pooled_scores": scores,
         "per_attribute_scores": per_attr_scores,
         "target_vs_retain_scores": target_vs_retain_scores,
+        "same_entity_retain_scores": same_entity_retain_scores,
+        "other_entity_retain_scores": other_entity_retain_scores,
+        "image_caption_variance": img_cap_var,
+        "salmubench_metrics": salmubench,
         "reference_state_gate": {
             "passed": passed,
             "reasons": reasons,
@@ -109,15 +195,16 @@ def main() -> None:
             },
         },
         "notes": [
-            "Per-attribute targeting: each target persona has ONE target "
-            "attribute; other attributes are same-entity retain.",
-            "target_vs_retain_scores breaks down metrics by is_target_attr flag.",
-            "per_attribute_scores breaks down metrics by attribute (city/job/blood_type).",
-        ] if args.bootstrap_ci else [
-            "Per-attribute targeting: each target persona has ONE target "
-            "attribute; other attributes are same-entity retain.",
-            "target_vs_retain_scores breaks down metrics by is_target_attr flag.",
-            "per_attribute_scores breaks down metrics by attribute (city/job/blood_type).",
+            "Gate runs ONLY on target-attribute probes (the "
+            "associations being generalized or removed).",
+            "same_entity_retain: non-target attributes of target "
+            "personas (always fine captions, even in MN).",
+            "other_entity_retain: all attributes of non-target "
+            "personas (always fine captions).",
+            "Per-attribute targeting: each target persona has ONE "
+            "target attribute; other attributes are same-entity retain.",
+            "Frozen multi-image/caption probes with deterministic "
+            "probe IDs for reproducibility.",
         ],
     }
     out = repo_root / "data" / "reports" / "salmu_reference_eval.json"
@@ -126,16 +213,7 @@ def main() -> None:
     log.info("SALMU reference-state gate: %s%s",
              "PASSED" if passed else "FAILED",
              f" ({'; '.join(reasons)})" if reasons else "")
-
-
-def aggregate_probe_results(
-    results: list[dict],
-    bootstrap_ci: bool = False,
-    n_bootstrap: int = 1000,
-) -> dict:
-    """Wrapper for aggregate_scores with consistent naming."""
-    return aggregate_scores(results, bootstrap_ci=bootstrap_ci,
-                           n_bootstrap=n_bootstrap)
+    log.info("Wrote report -> %s", out)
 
 
 if __name__ == "__main__":

@@ -71,6 +71,33 @@ class TestPartition:
             partition_personas(["a"], 2)
 
 
+class TestBalancedAttributeAssignment:
+    def test_round_robin_gives_balanced_assignment(self):
+        """6 targets / 3 attrs → exactly 2 each (round-robin)."""
+        ids = [f"id{i:03d}" for i in range(6)]
+        tam = partition_persona_attributes(ids, ("city", "job",
+                                                  "blood_type"))
+        from collections import Counter
+        dist = Counter(tam.values())
+        assert dist["city"] == 2
+        assert dist["job"] == 2
+        assert dist["blood_type"] == 2
+
+    def test_assignment_deterministic(self):
+        ids = [f"id{i:03d}" for i in range(9)]
+        a = partition_persona_attributes(ids, seed=42)
+        b = partition_persona_attributes(ids, seed=42)
+        assert a == b
+
+    def test_assignment_covers_all_ids(self):
+        ids = [f"id{i:03d}" for i in range(7)]
+        tam = partition_persona_attributes(ids, ("city", "job",
+                                                  "blood_type"))
+        assert set(tam.keys()) == set(ids)
+        assert all(v in ("city", "job", "blood_type")
+                   for v in tam.values())
+
+
 class TestStatePairs:
     def test_mf_uses_released_fine_captions_for_targets(self):
         p, tam = part_with_attrs(1)

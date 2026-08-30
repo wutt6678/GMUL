@@ -83,6 +83,10 @@ def main() -> None:
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--skip-existing", action="store_true",
                         help="reuse cached per-probe sims")
+    parser.add_argument("--max-images", type=int, default=None,
+                        help="Cap images per (persona, attr)")
+    parser.add_argument("--max-captions", type=int, default=None,
+                        help="Cap captions per (persona, attr)")
     args = parser.parse_args()
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
@@ -91,7 +95,9 @@ def main() -> None:
     sys.path.insert(0, str(repo_root / "scripts"))
     import train_salmu_unlearning_baselines as tmod  # registry source
 
-    probes, target_ids = build_release_probes(repo_root)
+    probes, target_ids = build_release_probes(
+        repo_root, max_images=args.max_images,
+        max_captions=args.max_captions)
     split = split_target_personas(target_ids)
     trainval = set(split["train"]) | set(split["val"])
     test = set(split["test"])
@@ -120,7 +126,9 @@ def main() -> None:
     retain_cache = load_probe_cache(retain_cache_path) \
         if args.skip_existing else None
     retain_cache = retain_cache or {}
-    retain_probes = build_retain_probes(repo_root)
+    retain_probes = build_retain_probes(
+        repo_root, max_images=args.max_images,
+        max_captions=args.max_captions)
     log.info("Built %d retain probes", len(retain_probes))
     image_index = None
     for state in states:
@@ -196,9 +204,13 @@ def main() -> None:
             agg_test, retain_sim(cid))
 
     report = {
-        "experiment_id": "salmu_iter10_unlearning_selection",
+        "experiment_id": "salmu_iter10r2_unlearning_selection",
         "persona_split": {"train": split["train"], "val": split["val"],
                           "test": split["test"]},
+        "multi_image": args.max_images is not None or
+                       args.max_captions is not None,
+        "max_images": args.max_images,
+        "max_captions": args.max_captions,
         "summary_components": list(SUMMARY_COMPONENTS),
         "mg_trainval_vector": mg_vec,
         "selected": selected,

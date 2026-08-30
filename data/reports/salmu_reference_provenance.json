@@ -1,5 +1,5 @@
 {
-  "experiment_id": "salmu_iter10",
+  "experiment_id": "salmu_iter10r2",
   "dataset": "salmu-512-redistributed (sensitive split, core attrs city/job/blood_type)",
   "dataset_partition": {
     "seed": 42,
@@ -68,29 +68,65 @@
       "00124020"
     ]
   },
-  "dataset_pair_counts": {},
+  "target_attr_distribution": {
+    "city": 20,
+    "job": 20,
+    "blood_type": 20
+  },
+  "target_attr_assignment": "round-robin (balanced 20/20/20)",
+  "dataset_pair_counts": {
+    "MF": {
+      "num_pairs": 22514,
+      "num_target_associations": 599,
+      "num_same_entity_retain": 1132,
+      "num_other_entity_retain": 20783,
+      "num_identities": 774
+    },
+    "MG": {
+      "num_pairs": 22514,
+      "num_target_associations": 599,
+      "num_same_entity_retain": 1132,
+      "num_other_entity_retain": 20783,
+      "num_identities": 774
+    },
+    "MN": {
+      "num_pairs": 21915,
+      "num_target_associations": 0,
+      "num_same_entity_retain": 1132,
+      "num_other_entity_retain": 20783,
+      "num_identities": 774
+    }
+  },
   "hf_repos": {
     "benchmark_dataset": {
       "repo_id": "cvc-mmu/salmubench-512-redistributed",
-      "snapshot": "not downloaded"
+      "repo_type": "dataset",
+      "local_path": "/scratch/wutiantong/.cache/huggingface/hub/datasets--cvc-mmu--salmubench-512-redistributed/snapshots/b76aa3885a696969e51de4786c9f92e8064b4679",
+      "role": "official evaluation splits: forget / forget_target / retain_synth / holdout_identity / holdout_association"
     },
     "training_dataset": {
       "repo_id": "cvc-mmu/salmu-512-redistributed",
-      "snapshot": "not downloaded"
+      "repo_type": "dataset",
+      "local_path": "/scratch/wutiantong/.cache/huggingface/hub/datasets--cvc-mmu--salmu-512-redistributed/snapshots/11bc6fec2530a70ba222bf86a70fe4d7681f86dd",
+      "role": "knowledge-injection dataset used to train the Compromised model"
     },
     "clean_model": {
       "repo_id": "cvc-mmu/clip-vit-b-16-salmu-clean",
-      "snapshot": "snapshots"
+      "repo_type": "model",
+      "local_path": "/scratch/wutiantong/.cache/huggingface/hub/models--cvc-mmu--clip-vit-b-16-salmu-clean/snapshots/1d3c0b01dceaf0e66b4d0abeefa3bc8a616f73f8",
+      "role": "CLIP ViT-B/16 trained WITHOUT the sensitive associations — the shared starting checkpoint for MF/MG/MN reference states"
     },
     "compromised_model": {
       "repo_id": "cvc-mmu/clip-vit-b-16-salmu-compromised",
-      "snapshot": "snapshots"
+      "repo_type": "model",
+      "local_path": "/scratch/wutiantong/.cache/huggingface/hub/models--cvc-mmu--clip-vit-b-16-salmu-compromised/snapshots/230b1b4f7b84d1bb96927a0a47ac7a007ceba528",
+      "role": "CLIP ViT-B/16 trained WITH the sensitive associations (SALMUBench's unlearning start point; reference only for our counterfactual design)"
     }
   },
   "base_model": {
     "arch": "ViT-B-16",
     "checkpoint": "open_clip_model.safetensors",
-    "sha256_prefix": "ff944079f8f5043b",
+    "sha256_prefix16": "0509ff0f95a8284b",
     "params_M": 149.6
   },
   "recipe": {
@@ -104,29 +140,31 @@
     "logit_scale_frozen": true
   },
   "checkpoints_sha256_prefix16": {
-    "MF": "d2e07bfd58306c17",
-    "MG": "85ce460af7fa92e6",
-    "MN": "9c7a7763f3175a6d",
-    "selected_B0(B0)": "d2e07bfd58306c17",
-    "selected_B1(B1_lr2e-06_c)": "6a893c3449a1b697",
-    "selected_B2(B2_lr2e-05)": "a5a2e7007c4acab5",
-    "selected_B3(B3_lr5e-06_lam0.5_c)": "73fbe59b146a1d05"
+    "MF": "0509ff0f95a8284b",
+    "MG": "ea1a667d28c49b5b",
+    "MN": "f88b2a13ee559fd1",
+    "selected_B0": "0509ff0f95a8284b",
+    "selected_B1": "0468f9b6f6d1280d",
+    "selected_B2": "959e963644a2a44a",
+    "selected_B3": "772815404e0cc307"
   },
   "environment": {
     "platform": "Linux-6.17.0-1011-oracle-x86_64-with-glibc2.39",
     "python": "3.10.20",
     "torch": "2.8.0+cu128",
-    "open_clip": "3.3.0"
+    "open_clip": "3.3.0",
+    "gpu": "NVIDIA RTX 6000 Ada Generation"
   },
   "notes": [
     "MF/MG/MN fine-tuned from SAME Clean CLIP with IDENTICAL recipe; only D_F/D_G/D_N differ.",
-    "Per-attribute targeting: each target persona has ONE target attr (city/job/blood_type); other attrs are same-entity retain.",
-    "MG: target personas get ONE generalized target caption per attribute (target attr only).",
+    "Per-attribute targeting: each target persona has ONE target attr (city/job/blood_type) via round-robin assignment (balanced 20/20/20).",
+    "MG: target personas get ONE generalized target caption per target attribute.",
     "MN: target attr omitted; same-entity retain attrs kept with fine captions.",
     "Unlearning candidates continue from MF with constrained ascent (v2).",
-    "B2_lr2e-05 selected: closest to MG on train+val probe personas.",
     "Probe-persona split: 40 train / 10 val / 10 test (sha256, seed 42).",
     "Selection on train+val only; test frozen.",
-    "Sibling probe deconfounded: uses SAME person's name + different same-branch value."
+    "Sibling probes use different-branch alternatives (different country/ABO group/sector).",
+    "Gate runs on target-attribute probes only; same-entity and other-entity retention reported separately.",
+    "Paths are repo-relative for portability."
   ]
 }

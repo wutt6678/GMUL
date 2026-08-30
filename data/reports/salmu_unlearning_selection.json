@@ -1,5 +1,5 @@
 {
-  "experiment_id": "salmu_iter10_unlearning_selection",
+  "experiment_id": "salmu_iter10r2_unlearning_selection",
   "persona_split": {
     "train": [
       "00099070",
@@ -68,6 +68,9 @@
       "00114749"
     ]
   },
+  "multi_image": true,
+  "max_images": 2,
+  "max_captions": 2,
   "summary_components": [
     "prefers_fine_rate",
     "prefers_target_not_fine_rate",
@@ -77,42 +80,44 @@
     "retain_fine_sim"
   ],
   "mg_trainval_vector": {
-    "prefers_fine_rate": 0.48,
-    "prefers_target_not_fine_rate": 0.22,
-    "sim_fine": 0.3129,
-    "sim_target": 0.3142,
-    "sim_sibling": 0.3107
+    "prefers_fine_rate": 0.425,
+    "prefers_target_not_fine_rate": 0.27,
+    "sim_fine": 0.3135,
+    "sim_target": 0.3143,
+    "sim_sibling": 0.3147,
+    "retain_fine_sim": 0.3098
   },
   "selected": {
     "B0": "B0",
     "B1": "B1_lr2e-06_c",
     "B2": "B2_lr2e-05",
-    "B3": "B3_lr5e-06_lam0.5_c"
+    "B3": "B3_lr2e-06_lam0.5_c"
   },
   "candidates": [
     {
       "candidate_id": "MG",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
-        "prefers_fine_rate": 0.48,
-        "prefers_target_rate": 0.22,
-        "prefers_target_not_fine_rate": 0.22,
+        "num_probes": 600,
+        "num_preference_probes": 600,
+        "prefers_fine_rate": 0.425,
+        "prefers_target_rate": 0.27,
+        "prefers_target_not_fine_rate": 0.27,
         "mean_similarities": {
-          "fine": 0.3129,
-          "target": 0.3142,
-          "ancestor": 0.3141,
-          "sibling": 0.3107,
-          "generic": 0.213
+          "fine": 0.3135,
+          "target": 0.3143,
+          "ancestor": 0.3142,
+          "sibling": 0.3147,
+          "generic": 0.2125
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": 0.3098,
       "trainval_summary_vector": {
-        "prefers_fine_rate": 0.48,
-        "prefers_target_not_fine_rate": 0.22,
-        "sim_fine": 0.3129,
-        "sim_target": 0.3142,
-        "sim_sibling": 0.3107
+        "prefers_fine_rate": 0.425,
+        "prefers_target_not_fine_rate": 0.27,
+        "sim_fine": 0.3135,
+        "sim_target": 0.3143,
+        "sim_sibling": 0.3147,
+        "retain_fine_sim": 0.3098
       },
       "distance_to_MG_trainval": 0.0,
       "components_used": [
@@ -120,1108 +125,1170 @@
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
-        "prefers_fine_rate": 0.3,
-        "prefers_target_rate": 0.4,
-        "prefers_target_not_fine_rate": 0.4,
+        "num_probes": 120,
+        "num_preference_probes": 120,
+        "prefers_fine_rate": 0.3667,
+        "prefers_target_rate": 0.3417,
+        "prefers_target_not_fine_rate": 0.3417,
         "mean_similarities": {
-          "fine": 0.3019,
-          "target": 0.3088,
-          "ancestor": 0.3084,
-          "sibling": 0.3039,
-          "generic": 0.2123
+          "fine": 0.3058,
+          "target": 0.3108,
+          "ancestor": 0.3107,
+          "sibling": 0.3114,
+          "generic": 0.2103
         }
       },
       "test_summary_vector": {
-        "prefers_fine_rate": 0.3,
-        "prefers_target_not_fine_rate": 0.4,
-        "sim_fine": 0.3019,
-        "sim_target": 0.3088,
-        "sim_sibling": 0.3039
+        "prefers_fine_rate": 0.3667,
+        "prefers_target_not_fine_rate": 0.3417,
+        "sim_fine": 0.3058,
+        "sim_target": 0.3108,
+        "sim_sibling": 0.3114,
+        "retain_fine_sim": 0.3098
       }
     },
     {
       "candidate_id": "B0",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
-        "prefers_fine_rate": 0.86,
-        "prefers_target_rate": 0.04,
-        "prefers_target_not_fine_rate": 0.04,
+        "num_probes": 600,
+        "num_preference_probes": 600,
+        "prefers_fine_rate": 0.6883,
+        "prefers_target_rate": 0.135,
+        "prefers_target_not_fine_rate": 0.135,
         "mean_similarities": {
-          "fine": 0.3173,
+          "fine": 0.3182,
           "target": 0.3094,
           "ancestor": 0.3098,
-          "sibling": 0.304,
-          "generic": 0.212
+          "sibling": 0.3112,
+          "generic": 0.2119
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": 0.3117,
       "trainval_summary_vector": {
-        "prefers_fine_rate": 0.86,
-        "prefers_target_not_fine_rate": 0.04,
-        "sim_fine": 0.3173,
+        "prefers_fine_rate": 0.6883,
+        "prefers_target_not_fine_rate": 0.135,
+        "sim_fine": 0.3182,
         "sim_target": 0.3094,
-        "sim_sibling": 0.304
+        "sim_sibling": 0.3112,
+        "retain_fine_sim": 0.3117
       },
-      "distance_to_MG_trainval": 0.11518,
+      "distance_to_MG_trainval": 0.068883,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
-        "prefers_fine_rate": 0.4,
-        "prefers_target_rate": 0.3,
-        "prefers_target_not_fine_rate": 0.3,
+        "num_probes": 120,
+        "num_preference_probes": 120,
+        "prefers_fine_rate": 0.5667,
+        "prefers_target_rate": 0.225,
+        "prefers_target_not_fine_rate": 0.225,
         "mean_similarities": {
-          "fine": 0.3063,
-          "target": 0.303,
-          "ancestor": 0.3031,
-          "sibling": 0.2964,
-          "generic": 0.2109
+          "fine": 0.3099,
+          "target": 0.305,
+          "ancestor": 0.3054,
+          "sibling": 0.3069,
+          "generic": 0.2094
         }
       },
       "test_summary_vector": {
-        "prefers_fine_rate": 0.4,
-        "prefers_target_not_fine_rate": 0.3,
-        "sim_fine": 0.3063,
-        "sim_target": 0.303,
-        "sim_sibling": 0.2964
+        "prefers_fine_rate": 0.5667,
+        "prefers_target_not_fine_rate": 0.225,
+        "sim_fine": 0.3099,
+        "sim_target": 0.305,
+        "sim_sibling": 0.3069,
+        "retain_fine_sim": 0.3117
       }
     },
     {
       "candidate_id": "B1_lr1e-05",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
-        "prefers_fine_rate": 0.04,
-        "prefers_target_rate": 0.48,
-        "prefers_target_not_fine_rate": 0.48,
+        "num_probes": 600,
+        "num_preference_probes": 600,
+        "prefers_fine_rate": 0.055,
+        "prefers_target_rate": 0.6733,
+        "prefers_target_not_fine_rate": 0.6733,
         "mean_similarities": {
-          "fine": -0.863,
-          "target": -0.844,
-          "ancestor": -0.8438,
-          "sibling": -0.8407,
-          "generic": -0.1982
+          "fine": -0.9255,
+          "target": -0.914,
+          "ancestor": -0.914,
+          "sibling": -0.919,
+          "generic": -0.1935
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": -0.8992,
       "trainval_summary_vector": {
-        "prefers_fine_rate": 0.04,
-        "prefers_target_not_fine_rate": 0.48,
-        "sim_fine": -0.863,
-        "sim_target": -0.844,
-        "sim_sibling": -0.8407
+        "prefers_fine_rate": 0.055,
+        "prefers_target_not_fine_rate": 0.6733,
+        "sim_fine": -0.9255,
+        "sim_target": -0.914,
+        "sim_sibling": -0.919,
+        "retain_fine_sim": -0.8992
       },
-      "distance_to_MG_trainval": 0.8371,
+      "distance_to_MG_trainval": 0.947217,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
-        "prefers_fine_rate": 0.0,
-        "prefers_target_rate": 0.6,
-        "prefers_target_not_fine_rate": 0.6,
+        "num_probes": 120,
+        "num_preference_probes": 120,
+        "prefers_fine_rate": 0.2083,
+        "prefers_target_rate": 0.4583,
+        "prefers_target_not_fine_rate": 0.4583,
         "mean_similarities": {
-          "fine": -0.816,
-          "target": -0.8031,
-          "ancestor": -0.8038,
-          "sibling": -0.8885,
-          "generic": -0.1654
+          "fine": -0.5133,
+          "target": -0.5072,
+          "ancestor": -0.5071,
+          "sibling": -0.5081,
+          "generic": -0.175
         }
       },
       "test_summary_vector": {
-        "prefers_fine_rate": 0.0,
-        "prefers_target_not_fine_rate": 0.6,
-        "sim_fine": -0.816,
-        "sim_target": -0.8031,
-        "sim_sibling": -0.8885
+        "prefers_fine_rate": 0.2083,
+        "prefers_target_not_fine_rate": 0.4583,
+        "sim_fine": -0.5133,
+        "sim_target": -0.5072,
+        "sim_sibling": -0.5081,
+        "retain_fine_sim": -0.8992
       }
     },
     {
       "candidate_id": "B1_lr2e-05",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
-        "prefers_fine_rate": 0.06,
-        "prefers_target_rate": 0.48,
-        "prefers_target_not_fine_rate": 0.48,
+        "num_probes": 600,
+        "num_preference_probes": 600,
+        "prefers_fine_rate": 0.0067,
+        "prefers_target_rate": 0.6967,
+        "prefers_target_not_fine_rate": 0.6967,
         "mean_similarities": {
-          "fine": -0.8646,
-          "target": -0.8563,
-          "ancestor": -0.8563,
-          "sibling": -0.8803,
-          "generic": -0.6721
+          "fine": -0.9486,
+          "target": -0.9425,
+          "ancestor": -0.9426,
+          "sibling": -0.9447,
+          "generic": -0.8176
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": -0.9697,
       "trainval_summary_vector": {
-        "prefers_fine_rate": 0.06,
-        "prefers_target_not_fine_rate": 0.48,
-        "sim_fine": -0.8646,
-        "sim_target": -0.8563,
-        "sim_sibling": -0.8803
+        "prefers_fine_rate": 0.0067,
+        "prefers_target_not_fine_rate": 0.6967,
+        "sim_fine": -0.9486,
+        "sim_target": -0.9425,
+        "sim_sibling": -0.9447,
+        "retain_fine_sim": -0.9697
       },
-      "distance_to_MG_trainval": 0.8438,
+      "distance_to_MG_trainval": 0.9838,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
-        "prefers_fine_rate": 0.2,
-        "prefers_target_rate": 0.5,
-        "prefers_target_not_fine_rate": 0.5,
+        "num_probes": 120,
+        "num_preference_probes": 120,
+        "prefers_fine_rate": 0.0833,
+        "prefers_target_rate": 0.5833,
+        "prefers_target_not_fine_rate": 0.5833,
         "mean_similarities": {
-          "fine": -0.8066,
-          "target": -0.8022,
-          "ancestor": -0.8023,
-          "sibling": -0.6427,
-          "generic": -0.5795
+          "fine": -0.8159,
+          "target": -0.8118,
+          "ancestor": -0.8119,
+          "sibling": -0.8134,
+          "generic": -0.6768
         }
       },
       "test_summary_vector": {
-        "prefers_fine_rate": 0.2,
-        "prefers_target_not_fine_rate": 0.5,
-        "sim_fine": -0.8066,
-        "sim_target": -0.8022,
-        "sim_sibling": -0.6427
+        "prefers_fine_rate": 0.0833,
+        "prefers_target_not_fine_rate": 0.5833,
+        "sim_fine": -0.8159,
+        "sim_target": -0.8118,
+        "sim_sibling": -0.8134,
+        "retain_fine_sim": -0.9697
       }
     },
     {
       "candidate_id": "B1_lr0.0001",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
-        "prefers_fine_rate": 0.08,
-        "prefers_target_rate": 0.44,
-        "prefers_target_not_fine_rate": 0.44,
+        "num_probes": 600,
+        "num_preference_probes": 600,
+        "prefers_fine_rate": 0.375,
+        "prefers_target_rate": 0.19,
+        "prefers_target_not_fine_rate": 0.19,
         "mean_similarities": {
-          "fine": -0.9572,
-          "target": -0.9571,
-          "ancestor": -0.9571,
-          "sibling": -0.9571,
-          "generic": -0.9954
+          "fine": -0.9607,
+          "target": -0.9541,
+          "ancestor": -0.9541,
+          "sibling": -0.9541,
+          "generic": 0.9905
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": -0.9874,
       "trainval_summary_vector": {
-        "prefers_fine_rate": 0.08,
-        "prefers_target_not_fine_rate": 0.44,
-        "sim_fine": -0.9572,
-        "sim_target": -0.9571,
-        "sim_sibling": -0.9571
+        "prefers_fine_rate": 0.375,
+        "prefers_target_not_fine_rate": 0.19,
+        "sim_fine": -0.9607,
+        "sim_target": -0.9541,
+        "sim_sibling": -0.9541,
+        "retain_fine_sim": -0.9874
       },
-      "distance_to_MG_trainval": 0.88584,
+      "distance_to_MG_trainval": 0.8731,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
-        "prefers_fine_rate": 0.0,
-        "prefers_target_rate": 0.5,
-        "prefers_target_not_fine_rate": 0.5,
+        "num_probes": 120,
+        "num_preference_probes": 120,
+        "prefers_fine_rate": 0.3333,
+        "prefers_target_rate": 0.2333,
+        "prefers_target_not_fine_rate": 0.2333,
         "mean_similarities": {
-          "fine": -0.9971,
-          "target": -0.997,
-          "ancestor": -0.997,
-          "sibling": -0.9971,
-          "generic": -0.9955
+          "fine": -0.9941,
+          "target": -0.9941,
+          "ancestor": -0.9941,
+          "sibling": -0.9941,
+          "generic": 0.9903
         }
       },
       "test_summary_vector": {
-        "prefers_fine_rate": 0.0,
-        "prefers_target_not_fine_rate": 0.5,
-        "sim_fine": -0.9971,
-        "sim_target": -0.997,
-        "sim_sibling": -0.9971
+        "prefers_fine_rate": 0.3333,
+        "prefers_target_not_fine_rate": 0.2333,
+        "sim_fine": -0.9941,
+        "sim_target": -0.9941,
+        "sim_sibling": -0.9941,
+        "retain_fine_sim": -0.9874
       }
     },
     {
       "candidate_id": "B2_lr0.0001",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
-        "prefers_fine_rate": 0.2,
-        "prefers_target_rate": 0.2,
-        "prefers_target_not_fine_rate": 0.2,
+        "num_probes": 600,
+        "num_preference_probes": 600,
+        "prefers_fine_rate": 0.1883,
+        "prefers_target_rate": 0.3633,
+        "prefers_target_not_fine_rate": 0.3633,
         "mean_similarities": {
-          "fine": 0.2397,
-          "target": 0.2398,
-          "ancestor": 0.2399,
-          "sibling": 0.2398,
-          "generic": 0.241
+          "fine": 0.3705,
+          "target": 0.3708,
+          "ancestor": 0.3707,
+          "sibling": 0.3708,
+          "generic": 0.3707
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": 0.3705,
       "trainval_summary_vector": {
-        "prefers_fine_rate": 0.2,
-        "prefers_target_not_fine_rate": 0.2,
-        "sim_fine": 0.2397,
-        "sim_target": 0.2398,
-        "sim_sibling": 0.2398
+        "prefers_fine_rate": 0.1883,
+        "prefers_target_not_fine_rate": 0.3633,
+        "sim_fine": 0.3705,
+        "sim_target": 0.3708,
+        "sim_sibling": 0.3708,
+        "retain_fine_sim": 0.3705
       },
-      "distance_to_MG_trainval": 0.1037,
+      "distance_to_MG_trainval": 0.093383,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
-        "prefers_fine_rate": 0.4,
-        "prefers_target_rate": 0.1,
-        "prefers_target_not_fine_rate": 0.1,
+        "num_probes": 120,
+        "num_preference_probes": 120,
+        "prefers_fine_rate": 0.1333,
+        "prefers_target_rate": 0.3333,
+        "prefers_target_not_fine_rate": 0.3333,
         "mean_similarities": {
-          "fine": 0.2398,
-          "target": 0.2398,
-          "ancestor": 0.2399,
-          "sibling": 0.2397,
-          "generic": 0.2412
+          "fine": 0.3702,
+          "target": 0.3705,
+          "ancestor": 0.3705,
+          "sibling": 0.3705,
+          "generic": 0.3703
         }
       },
       "test_summary_vector": {
-        "prefers_fine_rate": 0.4,
-        "prefers_target_not_fine_rate": 0.1,
-        "sim_fine": 0.2398,
-        "sim_target": 0.2398,
-        "sim_sibling": 0.2397
+        "prefers_fine_rate": 0.1333,
+        "prefers_target_not_fine_rate": 0.3333,
+        "sim_fine": 0.3702,
+        "sim_target": 0.3705,
+        "sim_sibling": 0.3705,
+        "retain_fine_sim": 0.3705
       }
     },
     {
       "candidate_id": "B3_lr1e-05_lam0.5",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
+        "num_probes": 600,
+        "num_preference_probes": 600,
         "prefers_fine_rate": 0.0,
-        "prefers_target_rate": 0.54,
-        "prefers_target_not_fine_rate": 0.54,
+        "prefers_target_rate": 0.8067,
+        "prefers_target_not_fine_rate": 0.8067,
         "mean_similarities": {
-          "fine": -0.7764,
-          "target": 0.0216,
-          "ancestor": 0.0114,
-          "sibling": 0.0403,
-          "generic": -0.0283
+          "fine": -0.8189,
+          "target": 0.034,
+          "ancestor": 0.0279,
+          "sibling": -0.0181,
+          "generic": 0.0042
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": -0.11,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.0,
-        "prefers_target_not_fine_rate": 0.54,
-        "sim_fine": -0.7764,
-        "sim_target": 0.0216,
-        "sim_sibling": 0.0403
+        "prefers_target_not_fine_rate": 0.8067,
+        "sim_fine": -0.8189,
+        "sim_target": 0.034,
+        "sim_sibling": -0.0181,
+        "retain_fine_sim": -0.11
       },
-      "distance_to_MG_trainval": 0.49046,
+      "distance_to_MG_trainval": 0.521167,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
+        "num_probes": 120,
+        "num_preference_probes": 120,
         "prefers_fine_rate": 0.0,
-        "prefers_target_rate": 0.6,
-        "prefers_target_not_fine_rate": 0.6,
+        "prefers_target_rate": 0.7667,
+        "prefers_target_not_fine_rate": 0.7667,
         "mean_similarities": {
-          "fine": -0.7668,
-          "target": 0.0208,
-          "ancestor": 0.0075,
-          "sibling": 0.0353,
-          "generic": -0.0284
+          "fine": -0.8278,
+          "target": 0.0298,
+          "ancestor": 0.0212,
+          "sibling": -0.0278,
+          "generic": 0.0047
         }
       },
       "test_summary_vector": {
         "prefers_fine_rate": 0.0,
-        "prefers_target_not_fine_rate": 0.6,
-        "sim_fine": -0.7668,
-        "sim_target": 0.0208,
-        "sim_sibling": 0.0353
+        "prefers_target_not_fine_rate": 0.7667,
+        "sim_fine": -0.8278,
+        "sim_target": 0.0298,
+        "sim_sibling": -0.0278,
+        "retain_fine_sim": -0.11
       }
     },
     {
       "candidate_id": "B3_lr1e-05_lam1",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
-        "prefers_fine_rate": 0.02,
-        "prefers_target_rate": 0.6,
-        "prefers_target_not_fine_rate": 0.6,
+        "num_probes": 600,
+        "num_preference_probes": 600,
+        "prefers_fine_rate": 0.0133,
+        "prefers_target_rate": 0.7467,
+        "prefers_target_not_fine_rate": 0.7467,
         "mean_similarities": {
-          "fine": -0.9617,
-          "target": 0.007,
-          "ancestor": 0.012,
-          "sibling": 0.0026,
-          "generic": -0.1935
+          "fine": -0.9488,
+          "target": 0.0023,
+          "ancestor": 0.0029,
+          "sibling": -0.064,
+          "generic": -0.3123
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": -0.9501,
       "trainval_summary_vector": {
-        "prefers_fine_rate": 0.02,
-        "prefers_target_not_fine_rate": 0.6,
-        "sim_fine": -0.9617,
-        "sim_target": 0.007,
-        "sim_sibling": 0.0026
+        "prefers_fine_rate": 0.0133,
+        "prefers_target_not_fine_rate": 0.7467,
+        "sim_fine": -0.9488,
+        "sim_target": 0.0023,
+        "sim_sibling": -0.064,
+        "retain_fine_sim": -0.9501
       },
-      "distance_to_MG_trainval": 0.54598,
+      "distance_to_MG_trainval": 0.68355,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
+        "num_probes": 120,
+        "num_preference_probes": 120,
         "prefers_fine_rate": 0.0,
         "prefers_target_rate": 0.7,
         "prefers_target_not_fine_rate": 0.7,
         "mean_similarities": {
-          "fine": -0.908,
-          "target": 0.0075,
-          "ancestor": 0.0156,
-          "sibling": -0.0067,
-          "generic": -0.1827
+          "fine": -0.9757,
+          "target": 0.0037,
+          "ancestor": 0.0051,
+          "sibling": -0.0516,
+          "generic": -0.3142
         }
       },
       "test_summary_vector": {
         "prefers_fine_rate": 0.0,
         "prefers_target_not_fine_rate": 0.7,
-        "sim_fine": -0.908,
-        "sim_target": 0.0075,
-        "sim_sibling": -0.0067
+        "sim_fine": -0.9757,
+        "sim_target": 0.0037,
+        "sim_sibling": -0.0516,
+        "retain_fine_sim": -0.9501
       }
     },
     {
       "candidate_id": "B1_lr2e-06_c",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
-        "prefers_fine_rate": 0.84,
-        "prefers_target_rate": 0.04,
-        "prefers_target_not_fine_rate": 0.04,
+        "num_probes": 600,
+        "num_preference_probes": 600,
+        "prefers_fine_rate": 0.6267,
+        "prefers_target_rate": 0.16,
+        "prefers_target_not_fine_rate": 0.16,
         "mean_similarities": {
-          "fine": 0.3159,
-          "target": 0.3075,
-          "ancestor": 0.3079,
-          "sibling": 0.3025,
-          "generic": 0.2088
+          "fine": 0.3138,
+          "target": 0.3061,
+          "ancestor": 0.3062,
+          "sibling": 0.3073,
+          "generic": 0.2067
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": 0.3101,
       "trainval_summary_vector": {
-        "prefers_fine_rate": 0.84,
-        "prefers_target_not_fine_rate": 0.04,
-        "sim_fine": 0.3159,
-        "sim_target": 0.3075,
-        "sim_sibling": 0.3025
+        "prefers_fine_rate": 0.6267,
+        "prefers_target_not_fine_rate": 0.16,
+        "sim_fine": 0.3138,
+        "sim_target": 0.3061,
+        "sim_sibling": 0.3073,
+        "retain_fine_sim": 0.3101
       },
-      "distance_to_MG_trainval": 0.11158,
+      "distance_to_MG_trainval": 0.05465,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
-        "prefers_fine_rate": 0.4,
-        "prefers_target_rate": 0.3,
-        "prefers_target_not_fine_rate": 0.3,
+        "num_probes": 120,
+        "num_preference_probes": 120,
+        "prefers_fine_rate": 0.5417,
+        "prefers_target_rate": 0.2333,
+        "prefers_target_not_fine_rate": 0.2333,
         "mean_similarities": {
-          "fine": 0.302,
-          "target": 0.3005,
-          "ancestor": 0.3004,
-          "sibling": 0.2943,
-          "generic": 0.2068
+          "fine": 0.3061,
+          "target": 0.3042,
+          "ancestor": 0.3043,
+          "sibling": 0.3054,
+          "generic": 0.2022
         }
       },
       "test_summary_vector": {
-        "prefers_fine_rate": 0.4,
-        "prefers_target_not_fine_rate": 0.3,
-        "sim_fine": 0.302,
-        "sim_target": 0.3005,
-        "sim_sibling": 0.2943
+        "prefers_fine_rate": 0.5417,
+        "prefers_target_not_fine_rate": 0.2333,
+        "sim_fine": 0.3061,
+        "sim_target": 0.3042,
+        "sim_sibling": 0.3054,
+        "retain_fine_sim": 0.3101
       }
     },
     {
       "candidate_id": "B1_lr5e-06_c",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
-        "prefers_fine_rate": 0.84,
-        "prefers_target_rate": 0.08,
-        "prefers_target_not_fine_rate": 0.08,
+        "num_probes": 600,
+        "num_preference_probes": 600,
+        "prefers_fine_rate": 0.5883,
+        "prefers_target_rate": 0.1917,
+        "prefers_target_not_fine_rate": 0.1917,
         "mean_similarities": {
-          "fine": 0.2884,
-          "target": 0.278,
-          "ancestor": 0.278,
-          "sibling": 0.2748,
-          "generic": 0.2045
+          "fine": 0.2914,
+          "target": 0.2845,
+          "ancestor": 0.2844,
+          "sibling": 0.2853,
+          "generic": 0.2018
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": 0.2944,
       "trainval_summary_vector": {
-        "prefers_fine_rate": 0.84,
-        "prefers_target_not_fine_rate": 0.08,
-        "sim_fine": 0.2884,
-        "sim_target": 0.278,
-        "sim_sibling": 0.2748
+        "prefers_fine_rate": 0.5883,
+        "prefers_target_not_fine_rate": 0.1917,
+        "sim_fine": 0.2914,
+        "sim_target": 0.2845,
+        "sim_sibling": 0.2853,
+        "retain_fine_sim": 0.2944
       },
-      "distance_to_MG_trainval": 0.11932,
+      "distance_to_MG_trainval": 0.056383,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
-        "prefers_fine_rate": 0.5,
-        "prefers_target_rate": 0.2,
-        "prefers_target_not_fine_rate": 0.2,
+        "num_probes": 120,
+        "num_preference_probes": 120,
+        "prefers_fine_rate": 0.4917,
+        "prefers_target_rate": 0.2417,
+        "prefers_target_not_fine_rate": 0.2417,
         "mean_similarities": {
-          "fine": 0.2548,
-          "target": 0.2577,
-          "ancestor": 0.2571,
-          "sibling": 0.2483,
-          "generic": 0.2008
+          "fine": 0.2799,
+          "target": 0.2809,
+          "ancestor": 0.2806,
+          "sibling": 0.2815,
+          "generic": 0.1946
         }
       },
       "test_summary_vector": {
-        "prefers_fine_rate": 0.5,
-        "prefers_target_not_fine_rate": 0.2,
-        "sim_fine": 0.2548,
-        "sim_target": 0.2577,
-        "sim_sibling": 0.2483
+        "prefers_fine_rate": 0.4917,
+        "prefers_target_not_fine_rate": 0.2417,
+        "sim_fine": 0.2799,
+        "sim_target": 0.2809,
+        "sim_sibling": 0.2815,
+        "retain_fine_sim": 0.2944
       }
     },
     {
       "candidate_id": "B1_lr1e-05_c",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
-        "prefers_fine_rate": 0.36,
-        "prefers_target_rate": 0.34,
-        "prefers_target_not_fine_rate": 0.34,
+        "num_probes": 600,
+        "num_preference_probes": 600,
+        "prefers_fine_rate": 0.2483,
+        "prefers_target_rate": 0.5083,
+        "prefers_target_not_fine_rate": 0.5083,
         "mean_similarities": {
-          "fine": -0.3027,
-          "target": -0.3024,
-          "ancestor": -0.3034,
-          "sibling": -0.2904,
-          "generic": 0.1271
+          "fine": -0.3159,
+          "target": -0.3022,
+          "ancestor": -0.3031,
+          "sibling": -0.3064,
+          "generic": 0.1236
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": -0.2858,
       "trainval_summary_vector": {
-        "prefers_fine_rate": 0.36,
-        "prefers_target_not_fine_rate": 0.34,
-        "sim_fine": -0.3027,
-        "sim_target": -0.3024,
-        "sim_sibling": -0.2904
+        "prefers_fine_rate": 0.2483,
+        "prefers_target_not_fine_rate": 0.5083,
+        "sim_fine": -0.3159,
+        "sim_target": -0.3022,
+        "sim_sibling": -0.3064,
+        "retain_fine_sim": -0.2858
       },
-      "distance_to_MG_trainval": 0.41466,
+      "distance_to_MG_trainval": 0.4796,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
-        "prefers_fine_rate": 0.4,
-        "prefers_target_rate": 0.2,
-        "prefers_target_not_fine_rate": 0.2,
+        "num_probes": 120,
+        "num_preference_probes": 120,
+        "prefers_fine_rate": 0.1833,
+        "prefers_target_rate": 0.55,
+        "prefers_target_not_fine_rate": 0.55,
         "mean_similarities": {
-          "fine": -0.3203,
-          "target": -0.306,
-          "ancestor": -0.3069,
-          "sibling": -0.329,
-          "generic": 0.125
+          "fine": -0.3345,
+          "target": -0.3117,
+          "ancestor": -0.3126,
+          "sibling": -0.3172,
+          "generic": 0.1091
         }
       },
       "test_summary_vector": {
-        "prefers_fine_rate": 0.4,
-        "prefers_target_not_fine_rate": 0.2,
-        "sim_fine": -0.3203,
-        "sim_target": -0.306,
-        "sim_sibling": -0.329
+        "prefers_fine_rate": 0.1833,
+        "prefers_target_not_fine_rate": 0.55,
+        "sim_fine": -0.3345,
+        "sim_target": -0.3117,
+        "sim_sibling": -0.3172,
+        "retain_fine_sim": -0.2858
       }
     },
     {
       "candidate_id": "B2_lr2e-05",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
-        "prefers_fine_rate": 0.56,
-        "prefers_target_rate": 0.18,
-        "prefers_target_not_fine_rate": 0.18,
+        "num_probes": 600,
+        "num_preference_probes": 600,
+        "prefers_fine_rate": 0.43,
+        "prefers_target_rate": 0.225,
+        "prefers_target_not_fine_rate": 0.225,
         "mean_similarities": {
-          "fine": 0.2791,
-          "target": 0.2801,
-          "ancestor": 0.2804,
-          "sibling": 0.2766,
-          "generic": 0.2121
+          "fine": 0.2822,
+          "target": 0.283,
+          "ancestor": 0.2832,
+          "sibling": 0.2837,
+          "generic": 0.2033
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": 0.2519,
       "trainval_summary_vector": {
-        "prefers_fine_rate": 0.56,
-        "prefers_target_not_fine_rate": 0.18,
-        "sim_fine": 0.2791,
-        "sim_target": 0.2801,
-        "sim_sibling": 0.2766
+        "prefers_fine_rate": 0.43,
+        "prefers_target_not_fine_rate": 0.225,
+        "sim_fine": 0.2822,
+        "sim_target": 0.283,
+        "sim_sibling": 0.2837,
+        "retain_fine_sim": 0.2519
       },
-      "distance_to_MG_trainval": 0.0444,
+      "distance_to_MG_trainval": 0.033583,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
-        "prefers_fine_rate": 0.4,
-        "prefers_target_rate": 0.3,
-        "prefers_target_not_fine_rate": 0.3,
+        "num_probes": 120,
+        "num_preference_probes": 120,
+        "prefers_fine_rate": 0.3667,
+        "prefers_target_rate": 0.275,
+        "prefers_target_not_fine_rate": 0.275,
         "mean_similarities": {
-          "fine": 0.2734,
-          "target": 0.2751,
-          "ancestor": 0.2753,
-          "sibling": 0.2707,
-          "generic": 0.2127
+          "fine": 0.2796,
+          "target": 0.2824,
+          "ancestor": 0.2829,
+          "sibling": 0.2838,
+          "generic": 0.2015
         }
       },
       "test_summary_vector": {
-        "prefers_fine_rate": 0.4,
-        "prefers_target_not_fine_rate": 0.3,
-        "sim_fine": 0.2734,
-        "sim_target": 0.2751,
-        "sim_sibling": 0.2707
+        "prefers_fine_rate": 0.3667,
+        "prefers_target_not_fine_rate": 0.275,
+        "sim_fine": 0.2796,
+        "sim_target": 0.2824,
+        "sim_sibling": 0.2838,
+        "retain_fine_sim": 0.2519
       }
     },
     {
       "candidate_id": "B2_lr5e-05",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
-        "prefers_fine_rate": 0.24,
-        "prefers_target_rate": 0.58,
-        "prefers_target_not_fine_rate": 0.58,
+        "num_probes": 600,
+        "num_preference_probes": 600,
+        "prefers_fine_rate": 0.085,
+        "prefers_target_rate": 0.4833,
+        "prefers_target_not_fine_rate": 0.4833,
         "mean_similarities": {
-          "fine": 0.3216,
-          "target": 0.333,
-          "ancestor": 0.335,
-          "sibling": 0.3272,
-          "generic": 0.1742
+          "fine": 0.3818,
+          "target": 0.3916,
+          "ancestor": 0.3922,
+          "sibling": 0.3912,
+          "generic": 0.2167
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": 0.3094,
       "trainval_summary_vector": {
-        "prefers_fine_rate": 0.24,
-        "prefers_target_not_fine_rate": 0.58,
-        "sim_fine": 0.3216,
-        "sim_target": 0.333,
-        "sim_sibling": 0.3272
+        "prefers_fine_rate": 0.085,
+        "prefers_target_not_fine_rate": 0.4833,
+        "sim_fine": 0.3818,
+        "sim_target": 0.3916,
+        "sim_sibling": 0.3912,
+        "retain_fine_sim": 0.3094
       },
-      "distance_to_MG_trainval": 0.1288,
+      "distance_to_MG_trainval": 0.1293,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
-        "prefers_fine_rate": 0.1,
-        "prefers_target_rate": 0.6,
-        "prefers_target_not_fine_rate": 0.6,
+        "num_probes": 120,
+        "num_preference_probes": 120,
+        "prefers_fine_rate": 0.1333,
+        "prefers_target_rate": 0.45,
+        "prefers_target_not_fine_rate": 0.45,
         "mean_similarities": {
-          "fine": 0.318,
-          "target": 0.3343,
-          "ancestor": 0.3361,
-          "sibling": 0.3297,
-          "generic": 0.1676
+          "fine": 0.3846,
+          "target": 0.395,
+          "ancestor": 0.3955,
+          "sibling": 0.3945,
+          "generic": 0.2125
         }
       },
       "test_summary_vector": {
-        "prefers_fine_rate": 0.1,
-        "prefers_target_not_fine_rate": 0.6,
-        "sim_fine": 0.318,
-        "sim_target": 0.3343,
-        "sim_sibling": 0.3297
+        "prefers_fine_rate": 0.1333,
+        "prefers_target_not_fine_rate": 0.45,
+        "sim_fine": 0.3846,
+        "sim_target": 0.395,
+        "sim_sibling": 0.3945,
+        "retain_fine_sim": 0.3094
       }
     },
     {
       "candidate_id": "B2_retain_lr5e-06",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
-        "prefers_fine_rate": 0.4,
-        "prefers_target_rate": 0.22,
-        "prefers_target_not_fine_rate": 0.22,
+        "num_probes": 600,
+        "num_preference_probes": 600,
+        "prefers_fine_rate": 0.2433,
+        "prefers_target_rate": 0.39,
+        "prefers_target_not_fine_rate": 0.39,
         "mean_similarities": {
-          "fine": 0.3789,
-          "target": 0.3833,
-          "ancestor": 0.3832,
-          "sibling": 0.3807,
-          "generic": 0.2273
+          "fine": 0.386,
+          "target": 0.391,
+          "ancestor": 0.3907,
+          "sibling": 0.391,
+          "generic": 0.2311
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": 0.3763,
       "trainval_summary_vector": {
-        "prefers_fine_rate": 0.4,
-        "prefers_target_not_fine_rate": 0.22,
-        "sim_fine": 0.3789,
-        "sim_target": 0.3833,
-        "sim_sibling": 0.3807
+        "prefers_fine_rate": 0.2433,
+        "prefers_target_not_fine_rate": 0.39,
+        "sim_fine": 0.386,
+        "sim_target": 0.391,
+        "sim_sibling": 0.391,
+        "retain_fine_sim": 0.3763
       },
-      "distance_to_MG_trainval": 0.05702,
+      "distance_to_MG_trainval": 0.09895,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
-        "prefers_fine_rate": 0.3,
-        "prefers_target_rate": 0.3,
-        "prefers_target_not_fine_rate": 0.3,
+        "num_probes": 120,
+        "num_preference_probes": 120,
+        "prefers_fine_rate": 0.1417,
+        "prefers_target_rate": 0.4167,
+        "prefers_target_not_fine_rate": 0.4167,
         "mean_similarities": {
-          "fine": 0.3692,
-          "target": 0.3775,
-          "ancestor": 0.377,
-          "sibling": 0.3722,
-          "generic": 0.2228
+          "fine": 0.3792,
+          "target": 0.3874,
+          "ancestor": 0.387,
+          "sibling": 0.3867,
+          "generic": 0.2266
         }
       },
       "test_summary_vector": {
-        "prefers_fine_rate": 0.3,
-        "prefers_target_not_fine_rate": 0.3,
-        "sim_fine": 0.3692,
-        "sim_target": 0.3775,
-        "sim_sibling": 0.3722
+        "prefers_fine_rate": 0.1417,
+        "prefers_target_not_fine_rate": 0.4167,
+        "sim_fine": 0.3792,
+        "sim_target": 0.3874,
+        "sim_sibling": 0.3867,
+        "retain_fine_sim": 0.3763
       }
     },
     {
       "candidate_id": "B2_retain_lr1e-05",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
-        "prefers_fine_rate": 0.0,
-        "prefers_target_rate": 0.4,
-        "prefers_target_not_fine_rate": 0.4,
+        "num_probes": 600,
+        "num_preference_probes": 600,
+        "prefers_fine_rate": 0.015,
+        "prefers_target_rate": 0.5883,
+        "prefers_target_not_fine_rate": 0.5883,
         "mean_similarities": {
-          "fine": 0.4503,
-          "target": 0.4706,
-          "ancestor": 0.4703,
-          "sibling": 0.4691,
-          "generic": 0.2681
+          "fine": 0.4669,
+          "target": 0.4877,
+          "ancestor": 0.4872,
+          "sibling": 0.4858,
+          "generic": 0.2784
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": 0.4511,
       "trainval_summary_vector": {
-        "prefers_fine_rate": 0.0,
-        "prefers_target_not_fine_rate": 0.4,
-        "sim_fine": 0.4503,
-        "sim_target": 0.4706,
-        "sim_sibling": 0.4691
+        "prefers_fine_rate": 0.015,
+        "prefers_target_not_fine_rate": 0.5883,
+        "sim_fine": 0.4669,
+        "sim_target": 0.4877,
+        "sim_sibling": 0.4858,
+        "retain_fine_sim": 0.4511
       },
-      "distance_to_MG_trainval": 0.22244,
+      "distance_to_MG_trainval": 0.227917,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
+        "num_probes": 120,
+        "num_preference_probes": 120,
         "prefers_fine_rate": 0.0,
-        "prefers_target_rate": 0.4,
-        "prefers_target_not_fine_rate": 0.4,
+        "prefers_target_rate": 0.5833,
+        "prefers_target_not_fine_rate": 0.5833,
         "mean_similarities": {
-          "fine": 0.4423,
-          "target": 0.4643,
-          "ancestor": 0.4632,
-          "sibling": 0.4603,
-          "generic": 0.2653
+          "fine": 0.4606,
+          "target": 0.4839,
+          "ancestor": 0.4831,
+          "sibling": 0.4815,
+          "generic": 0.2752
         }
       },
       "test_summary_vector": {
         "prefers_fine_rate": 0.0,
-        "prefers_target_not_fine_rate": 0.4,
-        "sim_fine": 0.4423,
-        "sim_target": 0.4643,
-        "sim_sibling": 0.4603
+        "prefers_target_not_fine_rate": 0.5833,
+        "sim_fine": 0.4606,
+        "sim_target": 0.4839,
+        "sim_sibling": 0.4815,
+        "retain_fine_sim": 0.4511
       }
     },
     {
       "candidate_id": "B2_retain_lr2e-05",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
+        "num_probes": 600,
+        "num_preference_probes": 600,
         "prefers_fine_rate": 0.0,
-        "prefers_target_rate": 0.46,
-        "prefers_target_not_fine_rate": 0.46,
+        "prefers_target_rate": 0.6833,
+        "prefers_target_not_fine_rate": 0.6833,
         "mean_similarities": {
-          "fine": 0.4536,
-          "target": 0.5005,
-          "ancestor": 0.4998,
-          "sibling": 0.5001,
-          "generic": 0.3054
+          "fine": 0.4704,
+          "target": 0.5451,
+          "ancestor": 0.5439,
+          "sibling": 0.5403,
+          "generic": 0.3258
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": 0.456,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.0,
-        "prefers_target_not_fine_rate": 0.46,
-        "sim_fine": 0.4536,
-        "sim_target": 0.5005,
-        "sim_sibling": 0.5001
+        "prefers_target_not_fine_rate": 0.6833,
+        "sim_fine": 0.4704,
+        "sim_target": 0.5451,
+        "sim_sibling": 0.5403,
+        "retain_fine_sim": 0.456
       },
-      "distance_to_MG_trainval": 0.24728,
+      "distance_to_MG_trainval": 0.2663,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
+        "num_probes": 120,
+        "num_preference_probes": 120,
         "prefers_fine_rate": 0.0,
-        "prefers_target_rate": 0.5,
-        "prefers_target_not_fine_rate": 0.5,
+        "prefers_target_rate": 0.6667,
+        "prefers_target_not_fine_rate": 0.6667,
         "mean_similarities": {
-          "fine": 0.4458,
-          "target": 0.4938,
-          "ancestor": 0.4924,
-          "sibling": 0.4918,
-          "generic": 0.3061
+          "fine": 0.4699,
+          "target": 0.5406,
+          "ancestor": 0.5388,
+          "sibling": 0.5363,
+          "generic": 0.3268
         }
       },
       "test_summary_vector": {
         "prefers_fine_rate": 0.0,
-        "prefers_target_not_fine_rate": 0.5,
-        "sim_fine": 0.4458,
-        "sim_target": 0.4938,
-        "sim_sibling": 0.4918
+        "prefers_target_not_fine_rate": 0.6667,
+        "sim_fine": 0.4699,
+        "sim_target": 0.5406,
+        "sim_sibling": 0.5363,
+        "retain_fine_sim": 0.456
       }
     },
     {
       "candidate_id": "B2_retain_lr5e-05",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
+        "num_probes": 600,
+        "num_preference_probes": 600,
         "prefers_fine_rate": 0.0,
-        "prefers_target_rate": 0.54,
-        "prefers_target_not_fine_rate": 0.54,
+        "prefers_target_rate": 0.7633,
+        "prefers_target_not_fine_rate": 0.7633,
         "mean_similarities": {
-          "fine": 0.4585,
-          "target": 0.7639,
-          "ancestor": 0.7642,
-          "sibling": 0.7652,
-          "generic": 0.6163
+          "fine": 0.5184,
+          "target": 0.8013,
+          "ancestor": 0.8015,
+          "sibling": 0.7973,
+          "generic": 0.6694
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": 0.5064,
       "trainval_summary_vector": {
         "prefers_fine_rate": 0.0,
-        "prefers_target_not_fine_rate": 0.54,
-        "sim_fine": 0.4585,
-        "sim_target": 0.7639,
-        "sim_sibling": 0.7652
+        "prefers_target_not_fine_rate": 0.7633,
+        "sim_fine": 0.5184,
+        "sim_target": 0.8013,
+        "sim_sibling": 0.7973,
+        "retain_fine_sim": 0.5064
       },
-      "distance_to_MG_trainval": 0.36996,
+      "distance_to_MG_trainval": 0.381567,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
+        "num_probes": 120,
+        "num_preference_probes": 120,
         "prefers_fine_rate": 0.0,
-        "prefers_target_rate": 0.5,
-        "prefers_target_not_fine_rate": 0.5,
+        "prefers_target_rate": 0.7667,
+        "prefers_target_not_fine_rate": 0.7667,
         "mean_similarities": {
-          "fine": 0.4546,
-          "target": 0.7603,
-          "ancestor": 0.7606,
-          "sibling": 0.7627,
-          "generic": 0.6095
+          "fine": 0.5138,
+          "target": 0.7954,
+          "ancestor": 0.7955,
+          "sibling": 0.7907,
+          "generic": 0.6658
         }
       },
       "test_summary_vector": {
         "prefers_fine_rate": 0.0,
-        "prefers_target_not_fine_rate": 0.5,
-        "sim_fine": 0.4546,
-        "sim_target": 0.7603,
-        "sim_sibling": 0.7627
+        "prefers_target_not_fine_rate": 0.7667,
+        "sim_fine": 0.5138,
+        "sim_target": 0.7954,
+        "sim_sibling": 0.7907,
+        "retain_fine_sim": 0.5064
       }
     },
     {
       "candidate_id": "B3_lr2e-06_lam0.5_c",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
-        "prefers_fine_rate": 0.84,
-        "prefers_target_rate": 0.06,
-        "prefers_target_not_fine_rate": 0.06,
+        "num_probes": 600,
+        "num_preference_probes": 600,
+        "prefers_fine_rate": 0.6267,
+        "prefers_target_rate": 0.1467,
+        "prefers_target_not_fine_rate": 0.1467,
         "mean_similarities": {
-          "fine": 0.3194,
-          "target": 0.3097,
-          "ancestor": 0.3099,
-          "sibling": 0.3048,
-          "generic": 0.2116
+          "fine": 0.3184,
+          "target": 0.31,
+          "ancestor": 0.31,
+          "sibling": 0.3115,
+          "generic": 0.2075
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": 0.3151,
       "trainval_summary_vector": {
-        "prefers_fine_rate": 0.84,
-        "prefers_target_not_fine_rate": 0.06,
-        "sim_fine": 0.3194,
-        "sim_target": 0.3097,
-        "sim_sibling": 0.3048
+        "prefers_fine_rate": 0.6267,
+        "prefers_target_not_fine_rate": 0.1467,
+        "sim_fine": 0.3184,
+        "sim_target": 0.31,
+        "sim_sibling": 0.3115,
+        "retain_fine_sim": 0.3151
       },
-      "distance_to_MG_trainval": 0.10738,
+      "distance_to_MG_trainval": 0.057117,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
-        "prefers_fine_rate": 0.5,
-        "prefers_target_rate": 0.2,
-        "prefers_target_not_fine_rate": 0.2,
+        "num_probes": 120,
+        "num_preference_probes": 120,
+        "prefers_fine_rate": 0.575,
+        "prefers_target_rate": 0.0833,
+        "prefers_target_not_fine_rate": 0.0833,
         "mean_similarities": {
-          "fine": 0.3054,
-          "target": 0.3054,
-          "ancestor": 0.3051,
-          "sibling": 0.2978,
-          "generic": 0.2101
+          "fine": 0.309,
+          "target": 0.3069,
+          "ancestor": 0.3069,
+          "sibling": 0.3085,
+          "generic": 0.2042
         }
       },
       "test_summary_vector": {
-        "prefers_fine_rate": 0.5,
-        "prefers_target_not_fine_rate": 0.2,
-        "sim_fine": 0.3054,
-        "sim_target": 0.3054,
-        "sim_sibling": 0.2978
+        "prefers_fine_rate": 0.575,
+        "prefers_target_not_fine_rate": 0.0833,
+        "sim_fine": 0.309,
+        "sim_target": 0.3069,
+        "sim_sibling": 0.3085,
+        "retain_fine_sim": 0.3151
       }
     },
     {
       "candidate_id": "B3_lr2e-06_lam1_c",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
-        "prefers_fine_rate": 0.82,
-        "prefers_target_rate": 0.06,
-        "prefers_target_not_fine_rate": 0.06,
+        "num_probes": 600,
+        "num_preference_probes": 600,
+        "prefers_fine_rate": 0.6483,
+        "prefers_target_rate": 0.1383,
+        "prefers_target_not_fine_rate": 0.1383,
         "mean_similarities": {
-          "fine": 0.3193,
-          "target": 0.3072,
-          "ancestor": 0.3074,
-          "sibling": 0.3022,
-          "generic": 0.2106
+          "fine": 0.3177,
+          "target": 0.3084,
+          "ancestor": 0.3085,
+          "sibling": 0.3101,
+          "generic": 0.2079
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": 0.3139,
       "trainval_summary_vector": {
-        "prefers_fine_rate": 0.82,
-        "prefers_target_not_fine_rate": 0.06,
-        "sim_fine": 0.3193,
-        "sim_target": 0.3072,
-        "sim_sibling": 0.3022
+        "prefers_fine_rate": 0.6483,
+        "prefers_target_not_fine_rate": 0.1383,
+        "sim_fine": 0.3177,
+        "sim_target": 0.3084,
+        "sim_sibling": 0.3101,
+        "retain_fine_sim": 0.3139
       },
-      "distance_to_MG_trainval": 0.10438,
+      "distance_to_MG_trainval": 0.0623,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
-        "prefers_fine_rate": 0.5,
-        "prefers_target_rate": 0.2,
-        "prefers_target_not_fine_rate": 0.2,
+        "num_probes": 120,
+        "num_preference_probes": 120,
+        "prefers_fine_rate": 0.575,
+        "prefers_target_rate": 0.15,
+        "prefers_target_not_fine_rate": 0.15,
         "mean_similarities": {
-          "fine": 0.3047,
-          "target": 0.3045,
-          "ancestor": 0.3043,
-          "sibling": 0.2967,
-          "generic": 0.2088
+          "fine": 0.3085,
+          "target": 0.3057,
+          "ancestor": 0.3057,
+          "sibling": 0.3074,
+          "generic": 0.205
         }
       },
       "test_summary_vector": {
-        "prefers_fine_rate": 0.5,
-        "prefers_target_not_fine_rate": 0.2,
-        "sim_fine": 0.3047,
-        "sim_target": 0.3045,
-        "sim_sibling": 0.2967
+        "prefers_fine_rate": 0.575,
+        "prefers_target_not_fine_rate": 0.15,
+        "sim_fine": 0.3085,
+        "sim_target": 0.3057,
+        "sim_sibling": 0.3074,
+        "retain_fine_sim": 0.3139
       }
     },
     {
       "candidate_id": "B3_lr5e-06_lam0.5_c",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
-        "prefers_fine_rate": 0.82,
-        "prefers_target_rate": 0.06,
-        "prefers_target_not_fine_rate": 0.06,
+        "num_probes": 600,
+        "num_preference_probes": 600,
+        "prefers_fine_rate": 0.64,
+        "prefers_target_rate": 0.14,
+        "prefers_target_not_fine_rate": 0.14,
         "mean_similarities": {
-          "fine": 0.3235,
-          "target": 0.313,
-          "ancestor": 0.3132,
-          "sibling": 0.307,
-          "generic": 0.2083
+          "fine": 0.3217,
+          "target": 0.3128,
+          "ancestor": 0.3129,
+          "sibling": 0.3148,
+          "generic": 0.204
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": 0.3202,
       "trainval_summary_vector": {
-        "prefers_fine_rate": 0.82,
-        "prefers_target_not_fine_rate": 0.06,
-        "sim_fine": 0.3235,
-        "sim_target": 0.313,
-        "sim_sibling": 0.307
+        "prefers_fine_rate": 0.64,
+        "prefers_target_not_fine_rate": 0.14,
+        "sim_fine": 0.3217,
+        "sim_target": 0.3128,
+        "sim_sibling": 0.3148,
+        "retain_fine_sim": 0.3202
       },
-      "distance_to_MG_trainval": 0.1031,
+      "distance_to_MG_trainval": 0.060867,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
-        "prefers_fine_rate": 0.5,
-        "prefers_target_rate": 0.2,
-        "prefers_target_not_fine_rate": 0.2,
+        "num_probes": 120,
+        "num_preference_probes": 120,
+        "prefers_fine_rate": 0.5833,
+        "prefers_target_rate": 0.1333,
+        "prefers_target_not_fine_rate": 0.1333,
         "mean_similarities": {
-          "fine": 0.3102,
-          "target": 0.3097,
-          "ancestor": 0.3094,
-          "sibling": 0.3016,
-          "generic": 0.2062
+          "fine": 0.3118,
+          "target": 0.3096,
+          "ancestor": 0.3093,
+          "sibling": 0.3114,
+          "generic": 0.2001
         }
       },
       "test_summary_vector": {
-        "prefers_fine_rate": 0.5,
-        "prefers_target_not_fine_rate": 0.2,
-        "sim_fine": 0.3102,
-        "sim_target": 0.3097,
-        "sim_sibling": 0.3016
+        "prefers_fine_rate": 0.5833,
+        "prefers_target_not_fine_rate": 0.1333,
+        "sim_fine": 0.3118,
+        "sim_target": 0.3096,
+        "sim_sibling": 0.3114,
+        "retain_fine_sim": 0.3202
       }
     },
     {
       "candidate_id": "B3_lr5e-06_lam1_c",
       "trainval_metrics": {
-        "num_probes": 150,
-        "num_preference_probes": 50,
-        "prefers_fine_rate": 0.84,
-        "prefers_target_rate": 0.06,
-        "prefers_target_not_fine_rate": 0.06,
+        "num_probes": 600,
+        "num_preference_probes": 600,
+        "prefers_fine_rate": 0.66,
+        "prefers_target_rate": 0.1333,
+        "prefers_target_not_fine_rate": 0.1333,
         "mean_similarities": {
-          "fine": 0.3236,
-          "target": 0.3105,
-          "ancestor": 0.3108,
-          "sibling": 0.304,
-          "generic": 0.2083
+          "fine": 0.323,
+          "target": 0.3131,
+          "ancestor": 0.3133,
+          "sibling": 0.3151,
+          "generic": 0.2052
         }
       },
-      "retain_fine_sim": null,
+      "retain_fine_sim": 0.3208,
       "trainval_summary_vector": {
-        "prefers_fine_rate": 0.84,
-        "prefers_target_not_fine_rate": 0.06,
-        "sim_fine": 0.3236,
-        "sim_target": 0.3105,
-        "sim_sibling": 0.304
+        "prefers_fine_rate": 0.66,
+        "prefers_target_not_fine_rate": 0.1333,
+        "sim_fine": 0.323,
+        "sim_target": 0.3131,
+        "sim_sibling": 0.3151,
+        "retain_fine_sim": 0.3208
       },
-      "distance_to_MG_trainval": 0.10822,
+      "distance_to_MG_trainval": 0.065633,
       "components_used": [
         "prefers_fine_rate",
         "prefers_target_not_fine_rate",
         "sim_fine",
         "sim_target",
-        "sim_sibling"
+        "sim_sibling",
+        "retain_fine_sim"
       ],
       "test_metrics": {
-        "num_probes": 30,
-        "num_preference_probes": 10,
-        "prefers_fine_rate": 0.5,
-        "prefers_target_rate": 0.2,
-        "prefers_target_not_fine_rate": 0.2,
+        "num_probes": 120,
+        "num_preference_probes": 120,
+        "prefers_fine_rate": 0.5917,
+        "prefers_target_rate": 0.125,
+        "prefers_target_not_fine_rate": 0.125,
         "mean_similarities": {
-          "fine": 0.3078,
-          "target": 0.3074,
-          "ancestor": 0.3072,
-          "sibling": 0.2987,
-          "generic": 0.2063
+          "fine": 0.3147,
+          "target": 0.3103,
+          "ancestor": 0.3102,
+          "sibling": 0.3122,
+          "generic": 0.2016
         }
       },
       "test_summary_vector": {
-        "prefers_fine_rate": 0.5,
-        "prefers_target_not_fine_rate": 0.2,
-        "sim_fine": 0.3078,
-        "sim_target": 0.3074,
-        "sim_sibling": 0.2987
+        "prefers_fine_rate": 0.5917,
+        "prefers_target_not_fine_rate": 0.125,
+        "sim_fine": 0.3147,
+        "sim_target": 0.3103,
+        "sim_sibling": 0.3122,
+        "retain_fine_sim": 0.3208
       }
     }
   ],

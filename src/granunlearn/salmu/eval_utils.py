@@ -80,7 +80,10 @@ def score_probes(state: str, probes: list[dict[str, Any]],
                  unlearn_root: Path | None = None) -> list[dict[str, Any]]:
     """Per-probe similarities for one checkpoint.
 
-    Returns [{"identity_id", "attribute", "sims": {kind: sim}}].
+    Returns one dict per probe, propagating all probe metadata
+    (``identity_id``, ``attribute``, ``is_target_attr``) alongside the
+    per-kind similarities so that downstream aggregation can split on
+    target vs retain without losing the distinction.
     """
     import torch
     model, preprocess, tokenizer = load_clip(
@@ -102,9 +105,21 @@ def score_probes(state: str, probes: list[dict[str, Any]],
                 feat = model.encode_text(text)
                 feat = feat / feat.norm(dim=-1, keepdim=True)
                 sims[kind] = float((img_feat @ feat.t()).item())
-            results.append({"identity_id": probe["identity_id"],
-                            "attribute": probe["attribute"],
-                            "sims": sims})
+            result: dict[str, Any] = {
+                "identity_id": probe["identity_id"],
+                "attribute": probe["attribute"],
+                "sims": sims,
+            }
+            # Propagate frozen probe ID and indices for
+            # reproducible image/caption-level analysis.
+            for meta_key in ("probe_id", "image_idx", "caption_idx"):
+                if meta_key in probe:
+                    result[meta_key] = probe[meta_key]
+            # Propagate target/retain tagging so aggregation can
+            # split on is_target_attr without losing the distinction.
+            if "is_target_attr" in probe:
+                result["is_target_attr"] = probe["is_target_attr"]
+            results.append(result)
     del model
     import gc
     gc.collect()
@@ -139,6 +154,8 @@ def load_probe_cache(path: str | Path) -> dict[str, list] | None:
 
 def build_release_probes(repo_root: Path,
                          core_attrs: tuple = ("city", "job", "blood_type"),
+                         max_images: int | None = None,
+                         max_captions: int | None = None,
                          ) -> tuple[list[dict[str, Any]], list[str]]:
     """Build target-persona probes from the released artifacts.
 
@@ -151,6 +168,10 @@ def build_release_probes(repo_root: Path,
     With per-attribute targeting, probes cover BOTH target attributes
     (is_target_attr=True) and same-entity retain attributes
     (is_target_attr=False) of the target personas.
+
+    Each probe gets a frozen ``probe_id`` for reproducibility.
+    With ``max_images`` / ``max_captions``, the number of image and
+    caption variants per (persona, attribute) is capped.
 
     Returns (probes, target_ids).
     """
@@ -184,21 +205,29 @@ def build_release_probes(repo_root: Path,
 
     probes = build_target_probes(
         target_ids, hierarchies, identities, fine_caps, images_by,
-        target_attr_map=target_attr_map)
+        target_attr_map=target_attr_map,
+        max_images=max_images, max_captions=max_captions)
     return probes, target_ids
 
 
 def build_retain_probes(repo_root: Path, max_personas: int = 100,
                         core_attrs: tuple = ("city", "job", "blood_type"),
+                        max_images: int | None = None,
+                        max_captions: int | None = None,
                         ) -> list[dict[str, Any]]:
     """Collateral-damage probes over RETAIN personas.
 
-    One probe per (retain persona, core attribute): the first sorted
-    image paired with its released fine caption.  Retain personas are
-    trained identically (fine captions) in MF/MG/MN and in every MU
-    candidate's retain group, so their similarity is the SALMU analog
-    of Retain_same/Retain_other.  Deterministic, capped for cost.
+    One probe per (retain persona, attribute, image, fine caption):
+    each probe gets a frozen ``probe_id`` so results are reproducible.
+    Retain personas are trained identically (fine captions) in
+    MF/MG/MN and in every MU candidate's retain group, so their
+    similarity is the SALMU analog of Retain_same/Retain_other.
+    Deterministic, capped for cost.
+
+    Retain personas are ALL personas NOT in the target partition
+    (i.e. those carrying the ``other_entity_retain`` role in MF).
     """
+    import hashlib
     from collections import defaultdict
 
     from granunlearn.salmu.embedding_metrics import GENERIC_CAPTION
@@ -207,21 +236,31 @@ def build_retain_probes(repo_root: Path, max_personas: int = 100,
     hier_dir = repo_root / "data" / "salmu_hierarchical"
     manifest = json.loads(
         (hier_dir / "training" / "state_pairs_manifest.json").read_text())
-    retain_ids = sorted(set(
-        [p["identity_id"] for p in
-         load_mf_pairs(hier_dir) if p["role"] == "retain"]))
+    target_ids = set(manifest["partition"]["target_identity_ids"])
+
+    # Retain personas = all personas NOT in the target partition.
+    # Use the MF pairs to discover all identity ids.
+    all_ids = sorted(set(
+        p["identity_id"] for p in load_mf_pairs(hier_dir)))
+    retain_ids = sorted(iid for iid in all_ids if iid not in target_ids)
     retain_ids = retain_ids[:max_personas]
+
+    if not retain_ids:
+        raise RuntimeError(
+            "build_retain_probes: no retain personas found. "
+            "Check that the manifest partition is correct.")
 
     cap_meta = json.loads(
         (train_ds / "sensitive_set_captions_metadata.json").read_text())
     fine_caps: dict = defaultdict(lambda: defaultdict(list))
     images_by: dict = defaultdict(lambda: defaultdict(list))
+    retain_set = set(retain_ids)
     for fname in sorted(cap_meta):
         meta = cap_meta[fname]
         if meta["data_field"] not in core_attrs:
             continue
         iid = fname.split("_")[0]
-        if iid not in set(retain_ids):
+        if iid not in retain_set:
             continue
         fine_caps[iid][meta["data_field"]].append(meta["caption"])
         images_by[iid][meta["data_field"]].append(fname)
@@ -233,17 +272,34 @@ def build_retain_probes(repo_root: Path, max_personas: int = 100,
             fines = sorted(fine_caps.get(iid, {}).get(attr, []))
             if not images or not fines:
                 continue
-            probes.append({
-                "identity_id": iid,
-                "attribute": attr,
-                "image_file": images[0],
-                "fine_caption": fines[0],
-                "target_caption": None,
-                "ancestor_caption": None,
-                "ancestor_is_target": None,
-                "sibling_caption": None,
-                "generic_caption": GENERIC_CAPTION,
-            })
+            if max_images is not None:
+                images = images[:max_images]
+            if max_captions is not None:
+                fines = fines[:max_captions]
+            for img_idx, img_file in enumerate(images):
+                for cap_idx, fine_cap in enumerate(fines):
+                    pid = hashlib.sha256(
+                        f"{iid}|{attr}|{img_file}|{fine_cap}".encode()
+                    ).hexdigest()[:16]
+                    probes.append({
+                        "probe_id": pid,
+                        "identity_id": iid,
+                        "attribute": attr,
+                        "is_target_attr": False,
+                        "image_file": img_file,
+                        "image_idx": img_idx,
+                        "fine_caption": fine_cap,
+                        "caption_idx": cap_idx,
+                        "target_caption": None,
+                        "ancestor_caption": None,
+                        "ancestor_is_target": None,
+                        "sibling_caption": None,
+                        "generic_caption": GENERIC_CAPTION,
+                    })
+    if not probes:
+        raise RuntimeError(
+            "build_retain_probes: zero retain probes constructed. "
+            "Check caption/image availability for retain personas.")
     return probes
 
 

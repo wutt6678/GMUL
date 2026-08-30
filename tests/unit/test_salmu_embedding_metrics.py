@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from granunlearn.salmu.embedding_metrics import (
     aggregate_scores,
+    aggregate_scores_by_image,
+    aggregate_scores_by_target_attr,
     build_target_probes,
+    image_caption_variance,
     preference_flags,
     reference_state_gate,
 )
@@ -39,34 +42,49 @@ class TestProbes:
         assert city["fine_caption"] == "Fatime Fossi lives in Douala"
         # Target caption uses the same name (fair granularity contrast)
         assert city["target_caption"] == "Fatime Fossi lives in Cameroon."
-        # Sibling: same person's name + different same-branch value
-        # p2 shares ancestor Cameroon, p2's city target = Cameroon
-        # (same as p1's) — so no useful sibling for city
-        # (p1 and p2 both have Cameroon as target-level value)
-        # Actually p1 target=Cameroon, p2 target=Cameroon → same value
-        # → sibling is None (no useful contrast)
-        # But wait, p3 has Russia, not Cameroon, so no sibling
-        # for p1's city with a DIFFERENT target value
+        # Sibling: different-branch alternative
+        # p1's city ancestor = Cameroon; alt values include Russia
+        assert city["sibling_caption"] == \
+            "Fatime Fossi lives in Russia."
         assert city["ancestor_is_target"] is True  # 2-level chain
         job = next(p for p in probes if p["attribute"] == "job")
         assert job["ancestor_caption"] == \
             "Fatime Fossi works in the healthcare sector."
         assert job["ancestor_is_target"] is False
-        # sibling job: p2 shares healthcare sector, p2's target =
-        # "nursing professional" ≠ p1's "physician" → useful contrast
-        # Uses p1's NAME with p2's value
-        assert job["sibling_caption"] == \
-            "Fatime Fossi works as a nursing professional."
+        # job: only one ancestor (healthcare) in test data → no sibling
+        assert job["sibling_caption"] is None
 
-    def test_no_sibling_when_alone_in_ancestor_group(self):
+    def test_no_sibling_when_only_one_ancestor_value(self):
+        """When all personas share the same ancestor, no alternative."""
+        probes = build_target_probes(["p1", "p2"], HIERARCHIES,
+                                     IDENTITIES, FINE, IMAGES)
+        job = next(p for p in probes
+                   if p["identity_id"] == "p1" and
+                   p["attribute"] == "job")
+        # Both p1 and p2 have healthcare → no different-branch alt
+        assert job["sibling_caption"] is None
+
+    def test_sibling_for_different_branch(self):
+        """p3 alone in Russia → sibling uses Cameroon."""
         probes = build_target_probes(["p3"], HIERARCHIES, IDENTITIES,
                                      FINE, IMAGES)
-        assert probes[0]["sibling_caption"] is None
+        city = probes[0]
+        assert city["sibling_caption"] == \
+            "Viktoriia Tarasov lives in Cameroon."
 
     def test_skips_attributes_without_images(self):
         probes = build_target_probes(["p2"], HIERARCHIES, IDENTITIES,
                                      FINE, IMAGES)
         assert len(probes) == 1  # p2 has no job image
+
+    def test_is_target_attr_propagated(self):
+        tam = {"p1": "city"}
+        probes = build_target_probes(["p1"], HIERARCHIES, IDENTITIES,
+                                     FINE, IMAGES, target_attr_map=tam)
+        city = next(p for p in probes if p["attribute"] == "city")
+        job = next(p for p in probes if p["attribute"] == "job")
+        assert city["is_target_attr"] is True
+        assert job["is_target_attr"] is False
 
 
 class TestPreferenceFlags:
@@ -156,3 +174,121 @@ class TestAggregate:
         assert agg["num_probes"] == 2
         assert agg["prefers_fine_rate"] == 0.5
         assert agg["prefers_target_not_fine_rate"] == 0.5
+
+    def test_aggregate_by_target_attr(self):
+        results = [
+            {"is_target_attr": True,
+             "sims": {"fine": 0.4, "target": 0.1, "sibling": 0.05}},
+            {"is_target_attr": False,
+             "sims": {"fine": 0.3, "target": 0.2, "sibling": 0.1}},
+            {"is_target_attr": True,
+             "sims": {"fine": 0.1, "target": 0.4, "sibling": 0.05}},
+        ]
+        by_ta = aggregate_scores_by_target_attr(results)
+        assert "target" in by_ta
+        assert "retain" in by_ta
+        assert by_ta["target"]["num_probes"] == 2
+        assert by_ta["retain"]["num_probes"] == 1
+
+
+MULTI_IMAGES = {
+    "p1": {"city": ["p1_c1.jpg", "p1_c2.jpg", "p1_c3.jpg"]},
+}
+MULTI_FINES = {
+    "p1": {"city": ["Fatime Fossi lives in Douala",
+                     "F. Fossi resides in Douala"]},
+}
+
+
+class TestMultiImageProbes:
+    def test_frozen_probe_id_present(self):
+        probes = build_target_probes(["p1"], HIERARCHIES, IDENTITIES,
+                                     FINE, IMAGES)
+        for p in probes:
+            assert "probe_id" in p
+            assert len(p["probe_id"]) == 16
+
+    def test_probe_id_deterministic(self):
+        p1 = build_target_probes(["p1"], HIERARCHIES, IDENTITIES,
+                                 FINE, IMAGES)
+        p2 = build_target_probes(["p1"], HIERARCHIES, IDENTITIES,
+                                 FINE, IMAGES)
+        assert p1[0]["probe_id"] == p2[0]["probe_id"]
+
+    def test_multi_image_generates_multiple_probes(self):
+        probes = build_target_probes(["p1"], HIERARCHIES, IDENTITIES,
+                                     MULTI_FINES, MULTI_IMAGES)
+        # 3 images × 2 captions = 6 probes
+        assert len(probes) == 6
+        # All share the same identity and attribute
+        assert all(p["identity_id"] == "p1" for p in probes)
+        assert all(p["attribute"] == "city" for p in probes)
+
+    def test_multi_image_unique_probe_ids(self):
+        probes = build_target_probes(["p1"], HIERARCHIES, IDENTITIES,
+                                     MULTI_FINES, MULTI_IMAGES)
+        ids = {p["probe_id"] for p in probes}
+        assert len(ids) == 6
+
+    def test_max_images_caps(self):
+        probes = build_target_probes(["p1"], HIERARCHIES, IDENTITIES,
+                                     MULTI_FINES, MULTI_IMAGES,
+                                     max_images=2)
+        # 2 images × 2 captions = 4 probes
+        assert len(probes) == 4
+
+    def test_max_captions_caps(self):
+        probes = build_target_probes(["p1"], HIERARCHIES, IDENTITIES,
+                                     MULTI_FINES, MULTI_IMAGES,
+                                     max_captions=1)
+        # 3 images × 1 caption = 3 probes
+        assert len(probes) == 3
+
+    def test_image_idx_and_caption_idx(self):
+        probes = build_target_probes(["p1"], HIERARCHIES, IDENTITIES,
+                                     MULTI_FINES, MULTI_IMAGES)
+        indices = {(p["image_idx"], p["caption_idx"]) for p in probes}
+        assert len(indices) == 6
+        assert (0, 0) in indices
+        assert (2, 1) in indices
+
+
+class TestImageCaptionVariance:
+    def test_variance_computed(self):
+        results = [
+            {"identity_id": "p1", "attribute": "city",
+             "image_file": "img1.jpg", "fine_caption": "cap1",
+             "sims": {"fine": 0.3, "target": 0.2, "sibling": 0.1}},
+            {"identity_id": "p1", "attribute": "city",
+             "image_file": "img1.jpg", "fine_caption": "cap2",
+             "sims": {"fine": 0.32, "target": 0.22, "sibling": 0.12}},
+            {"identity_id": "p1", "attribute": "city",
+             "image_file": "img2.jpg", "fine_caption": "cap1",
+             "sims": {"fine": 0.28, "target": 0.18, "sibling": 0.08}},
+            {"identity_id": "p1", "attribute": "city",
+             "image_file": "img2.jpg", "fine_caption": "cap2",
+             "sims": {"fine": 0.31, "target": 0.21, "sibling": 0.11}},
+        ]
+        var = image_caption_variance(results)
+        assert var["num_identity_attr_pairs"] == 1
+        assert var["image_std_mean"] is not None
+        assert var["caption_std_mean"] is not None
+        assert var["image_std_mean"] > 0
+        assert var["caption_std_mean"] > 0
+
+
+class TestAggregateByImage:
+    def test_by_image(self):
+        results = [
+            {"image_file": "img1.jpg",
+             "sims": {"fine": 0.4, "target": 0.1, "sibling": 0.05}},
+            {"image_file": "img1.jpg",
+             "sims": {"fine": 0.3, "target": 0.2, "sibling": 0.1}},
+            {"image_file": "img2.jpg",
+             "sims": {"fine": 0.2, "target": 0.3, "sibling": 0.05}},
+        ]
+        by_img = aggregate_scores_by_image(results)
+        assert "img1.jpg" in by_img
+        assert "img2.jpg" in by_img
+        assert by_img["img1.jpg"]["num_probes"] == 2
+        assert by_img["img2.jpg"]["num_probes"] == 1
