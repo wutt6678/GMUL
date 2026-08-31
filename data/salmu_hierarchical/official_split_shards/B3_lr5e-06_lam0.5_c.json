@@ -1,0 +1,61 @@
+{
+  "forget": {
+    "num_pairs": 30468,
+    "num_identities": 580,
+    "mean_assoc_sim": 0.3087,
+    "identity_macro_assoc_sim": 0.3087,
+    "identity_macro_assoc_sim_ci": [
+      0.3076,
+      0.3098
+    ],
+    "leakage_rate": 0.9782,
+    "identity_leakage_rate": 0.9983,
+    "leakage_rate_ci": [
+      0.9743,
+      0.9822
+    ]
+  },
+  "holdout_association": {
+    "num_pairs": 14943,
+    "num_identities": 387,
+    "mean_assoc_sim": 0.3088,
+    "identity_macro_assoc_sim": 0.3089,
+    "identity_macro_assoc_sim_ci": [
+      0.3074,
+      0.3104
+    ],
+    "leakage_rate": 0.9785,
+    "identity_leakage_rate": 1.0,
+    "leakage_rate_ci": [
+      0.9747,
+      0.9833
+    ]
+  },
+  "holdout_identity": {
+    "num_pairs": 14642,
+    "num_identities": 194,
+    "mean_assoc_sim": 0.3094,
+    "identity_macro_assoc_sim": 0.309,
+    "identity_macro_assoc_sim_ci": [
+      0.307,
+      0.3111
+    ],
+    "leakage_rate": 0.9816,
+    "identity_leakage_rate": 1.0,
+    "leakage_rate_ci": [
+      0.9745,
+      0.9865
+    ]
+  },
+  "retain_synth": {
+    "num_pairs": 16741,
+    "num_identities": null,
+    "mean_assoc_sim": 0.1975,
+    "identity_macro_assoc_sim": 0.1981,
+    "identity_macro_assoc_sim_ci": [
+      0.1975,
+      0.1987
+    ],
+    "clustering_note": "released split carries no identity_id; each pair is its own cluster, so the 'identity-macro' statistic equals the pair mean and the bootstrap unit is the pair."
+  }
+}

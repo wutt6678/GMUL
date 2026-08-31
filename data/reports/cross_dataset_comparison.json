@@ -3,7 +3,7 @@
   "method_descriptions": {
     "B1": "Gradient ascent on fine-target pairs (constrained variants stop at the MG anchor).",
     "B2": "Target-level positive retraining (SFT on target-level generalized captions).  NOT gradient ascent.",
-    "B2_retain": "Target-level SFT + retain SFT (separate method excluded from B2 family in 10R3).",
+    "B2_retain": "Target-level SFT + retain SFT (separate method excluded from B2 family).",
     "B3": "Target-level SFT + retain SFT + constrained ascent (stop at MG anchor)."
   },
   "mllmu": {
@@ -120,222 +120,224 @@
   "salmu": {
     "model": "CLIP ViT-B/16",
     "task": "image-text association",
+    "weighting": "association_macro_average",
     "test_metrics": {
       "BASE": {
-        "fine_pref": 0.3073,
-        "tnf": 0.3923,
-        "sim_fine": 0.1432,
+        "fine_pref": 0.25,
+        "tnf": 0.4667,
+        "sim_fine": 0.1424,
         "sim_target": 0.1496,
-        "sim_sibling": 0.1454,
-        "same_entity_retain_sim": 0.1413,
-        "other_entity_retain_sim": 0.1416,
+        "sim_sibling": 0.1451,
+        "same_entity_retain_sim": 0.141,
+        "other_entity_retain_sim": 0.1427,
         "per_attribute": {
           "city": {
-            "fine_pref": 0.3244,
-            "tnf": 0.3945,
-            "sim_fine": 0.1408,
-            "sim_target": 0.1488,
+            "fine_pref": 0.3,
+            "tnf": 0.55,
+            "sim_fine": 0.141,
+            "sim_target": 0.149,
             "num_probes": 2127
           },
           "job": {
-            "fine_pref": 0.3718,
-            "tnf": 0.442,
+            "fine_pref": 0.3,
+            "tnf": 0.5,
             "sim_fine": 0.148,
-            "sim_target": 0.1501,
+            "sim_target": 0.1498,
             "num_probes": 2464
           },
           "blood_type": {
-            "fine_pref": 0.2016,
-            "tnf": 0.3238,
-            "sim_fine": 0.1395,
-            "sim_target": 0.15,
+            "fine_pref": 0.15,
+            "tnf": 0.35,
+            "sim_fine": 0.1383,
+            "sim_target": 0.1499,
             "num_probes": 1850
           }
         },
-        "gmul_proxy_forget": 0.6927,
-        "gmul_proxy_holdout_association": 0.3429,
-        "gmul_proxy_retain_synth": 0.1416
+        "gmul_proxy_forget": 0.75,
+        "gmul_proxy_holdout_association": 0.2583,
+        "gmul_proxy_retain_synth": 0.1427
       },
       "MF": {
-        "fine_pref": 0.7106,
-        "tnf": 0.1067,
-        "sim_fine": 0.3159,
-        "sim_target": 0.3081,
-        "sim_sibling": 0.3082,
-        "same_entity_retain_sim": 0.3173,
-        "other_entity_retain_sim": 0.3131,
+        "fine_pref": 0.7667,
+        "tnf": 0.0833,
+        "sim_fine": 0.3157,
+        "sim_target": 0.3078,
+        "sim_sibling": 0.308,
+        "same_entity_retain_sim": 0.3179,
+        "other_entity_retain_sim": 0.3123,
         "per_attribute": {
           "city": {
-            "fine_pref": 0.5472,
-            "tnf": 0.1241,
-            "sim_fine": 0.3184,
-            "sim_target": 0.3145,
+            "fine_pref": 0.6,
+            "tnf": 0.1,
+            "sim_fine": 0.317,
+            "sim_target": 0.3125,
             "num_probes": 2127
           },
           "job": {
-            "fine_pref": 0.8689,
-            "tnf": 0.0629,
-            "sim_fine": 0.3136,
-            "sim_target": 0.3006,
+            "fine_pref": 0.95,
+            "tnf": 0.0,
+            "sim_fine": 0.3148,
+            "sim_target": 0.3004,
             "num_probes": 2464
           },
           "blood_type": {
-            "fine_pref": 0.6876,
-            "tnf": 0.1449,
-            "sim_fine": 0.316,
+            "fine_pref": 0.75,
+            "tnf": 0.15,
+            "sim_fine": 0.3154,
             "sim_target": 0.3105,
             "num_probes": 1850
           }
         },
-        "gmul_proxy_forget": 0.2894,
-        "gmul_proxy_holdout_association": 0.8101,
-        "gmul_proxy_retain_synth": 0.3131
+        "gmul_proxy_forget": 0.2333,
+        "gmul_proxy_holdout_association": 0.8167,
+        "gmul_proxy_retain_synth": 0.3123
       },
       "MG": {
-        "fine_pref": 0.3459,
-        "tnf": 0.3161,
-        "sim_fine": 0.3081,
-        "sim_target": 0.3147,
-        "sim_sibling": 0.3145,
-        "same_entity_retain_sim": 0.3155,
-        "other_entity_retain_sim": 0.311,
+        "fine_pref": 0.2667,
+        "tnf": 0.3167,
+        "sim_fine": 0.3076,
+        "sim_target": 0.3141,
+        "sim_sibling": 0.3139,
+        "same_entity_retain_sim": 0.3159,
+        "other_entity_retain_sim": 0.3104,
         "per_attribute": {
           "city": {
-            "fine_pref": 0.2172,
-            "tnf": 0.2529,
-            "sim_fine": 0.3052,
-            "sim_target": 0.3184,
+            "fine_pref": 0.15,
+            "tnf": 0.25,
+            "sim_fine": 0.3017,
+            "sim_target": 0.3165,
             "num_probes": 2127
           },
           "job": {
-            "fine_pref": 0.4858,
-            "tnf": 0.3677,
-            "sim_fine": 0.3092,
-            "sim_target": 0.3109,
+            "fine_pref": 0.45,
+            "tnf": 0.3,
+            "sim_fine": 0.3113,
+            "sim_target": 0.3113,
             "num_probes": 2464
           },
           "blood_type": {
-            "fine_pref": 0.3076,
-            "tnf": 0.32,
+            "fine_pref": 0.2,
+            "tnf": 0.4,
             "sim_fine": 0.3098,
-            "sim_target": 0.3157,
+            "sim_target": 0.3145,
             "num_probes": 1850
           }
         },
-        "gmul_proxy_forget": 0.6541,
-        "gmul_proxy_holdout_association": 0.6212,
-        "gmul_proxy_retain_synth": 0.311
+        "gmul_proxy_forget": 0.7333,
+        "gmul_proxy_holdout_association": 0.5833,
+        "gmul_proxy_retain_synth": 0.3104
       },
       "MN": {
-        "fine_pref": 0.5207,
-        "tnf": 0.2098,
-        "sim_fine": 0.2887,
-        "sim_target": 0.2895,
-        "sim_sibling": 0.2893,
-        "same_entity_retain_sim": 0.3039,
-        "other_entity_retain_sim": 0.3069,
+        "fine_pref": 0.45,
+        "tnf": 0.1833,
+        "sim_fine": 0.2889,
+        "sim_target": 0.2901,
+        "sim_sibling": 0.29,
+        "same_entity_retain_sim": 0.3041,
+        "other_entity_retain_sim": 0.306,
         "per_attribute": {
           "city": {
-            "fine_pref": 0.3,
-            "tnf": 0.2158,
-            "sim_fine": 0.2873,
-            "sim_target": 0.2974,
+            "fine_pref": 0.2,
+            "tnf": 0.2,
+            "sim_fine": 0.2844,
+            "sim_target": 0.2959,
             "num_probes": 2127
           },
           "job": {
-            "fine_pref": 0.7143,
-            "tnf": 0.2025,
-            "sim_fine": 0.2886,
+            "fine_pref": 0.8,
+            "tnf": 0.1,
+            "sim_fine": 0.2901,
             "sim_target": 0.2824,
             "num_probes": 2464
           },
           "blood_type": {
-            "fine_pref": 0.5168,
-            "tnf": 0.2124,
-            "sim_fine": 0.2905,
-            "sim_target": 0.29,
+            "fine_pref": 0.35,
+            "tnf": 0.25,
+            "sim_fine": 0.2921,
+            "sim_target": 0.292,
             "num_probes": 1850
           }
         },
-        "gmul_proxy_forget": 0.4793,
-        "gmul_proxy_holdout_association": 0.7562,
-        "gmul_proxy_retain_synth": 0.3069
+        "gmul_proxy_forget": 0.55,
+        "gmul_proxy_holdout_association": 0.7333,
+        "gmul_proxy_retain_synth": 0.306
       },
       "B0": {
-        "fine_pref": 0.7207,
-        "tnf": 0.1773,
-        "sim_fine": 0.3106,
-        "sim_target": 0.3027,
-        "sim_sibling": 0.3019,
-        "same_entity_retain_sim": 0.318,
-        "other_entity_retain_sim": 0.3131
+        "fine_pref": 0.8,
+        "tnf": 0.1,
+        "sim_fine": 0.3101,
+        "sim_target": 0.3043,
+        "sim_sibling": 0.3039,
+        "same_entity_retain_sim": 0.3122,
+        "other_entity_retain_sim": 0.3123
       },
       "B1_lr2e-06_c": {
-        "fine_pref": 0.6656,
-        "tnf": 0.2032,
-        "sim_fine": 0.307,
+        "fine_pref": 0.7,
+        "tnf": 0.2,
+        "sim_fine": 0.3052,
         "sim_target": 0.3022,
-        "sim_sibling": 0.3012,
-        "same_entity_retain_sim": 0.3145,
-        "other_entity_retain_sim": 0.3112
+        "sim_sibling": 0.3017,
+        "same_entity_retain_sim": 0.3085,
+        "other_entity_retain_sim": 0.3108
       },
       "B2_lr2e-05": {
-        "fine_pref": 0.4916,
-        "tnf": 0.3445,
-        "sim_fine": 0.2806,
-        "sim_target": 0.283,
-        "sim_sibling": 0.2819,
-        "same_entity_retain_sim": 0.281,
-        "other_entity_retain_sim": 0.2536
+        "fine_pref": 0.4,
+        "tnf": 0.4,
+        "sim_fine": 0.2844,
+        "sim_target": 0.2872,
+        "sim_sibling": 0.2858,
+        "same_entity_retain_sim": 0.2775,
+        "other_entity_retain_sim": 0.253
       },
-      "B3_lr2e-06_lam0.5_c": {
-        "fine_pref": 0.6463,
-        "tnf": 0.2199,
-        "sim_fine": 0.3092,
-        "sim_target": 0.306,
-        "sim_sibling": 0.3051,
-        "same_entity_retain_sim": 0.3189,
-        "other_entity_retain_sim": 0.3167
+      "B3_lr5e-06_lam0.5_c": {
+        "fine_pref": 0.7,
+        "tnf": 0.1,
+        "sim_fine": 0.3094,
+        "sim_target": 0.3099,
+        "sim_sibling": 0.3096,
+        "same_entity_retain_sim": 0.3181,
+        "other_entity_retain_sim": 0.3207
       }
     },
+    "test_protocol": "held-out test identities evaluated for the SELECTED checkpoints only (untouched test); non-selected candidates have NO test metrics.",
     "selected": {
       "B0": "B0",
       "B1": "B1_lr2e-06_c",
       "B2": "B2_lr2e-05",
-      "B3": "B3_lr2e-06_lam0.5_c"
+      "B3": "B3_lr5e-06_lam0.5_c"
     },
     "failure_rates": {
       "BASE": {
-        "fine_leakage": 0.3073,
-        "target_preferred": 0.3923
+        "fine_leakage": 0.25,
+        "target_preferred": 0.4667
       },
       "MF": {
-        "fine_leakage": 0.7106,
-        "target_preferred": 0.1067
+        "fine_leakage": 0.7667,
+        "target_preferred": 0.0833
       },
       "MG": {
-        "fine_leakage": 0.3459,
-        "target_preferred": 0.3161
+        "fine_leakage": 0.2667,
+        "target_preferred": 0.3167
       },
       "MN": {
-        "fine_leakage": 0.5207,
-        "target_preferred": 0.2098
+        "fine_leakage": 0.45,
+        "target_preferred": 0.1833
       },
       "B0": {
-        "fine_leakage": 0.7207,
-        "target_preferred": 0.1773
+        "fine_leakage": 0.8,
+        "target_preferred": 0.1
       },
       "B1_lr2e-06_c": {
-        "fine_leakage": 0.6656,
-        "target_preferred": 0.2032
+        "fine_leakage": 0.7,
+        "target_preferred": 0.2
       },
       "B2_lr2e-05": {
-        "fine_leakage": 0.4916,
-        "target_preferred": 0.3445
+        "fine_leakage": 0.4,
+        "target_preferred": 0.4
       },
-      "B3_lr2e-06_lam0.5_c": {
-        "fine_leakage": 0.6463,
-        "target_preferred": 0.2199
+      "B3_lr5e-06_lam0.5_c": {
+        "fine_leakage": 0.7,
+        "target_preferred": 0.1
       }
     }
   },
@@ -347,8 +349,8 @@
     "SALMU confirms the phenomenon at the controlled CLIP association level.",
     "Per-attribute targeting enables same-entity retain probes (holdout_association analog).",
     "Frozen multi-image/caption probes with deterministic IDs ensure reproducibility.",
-    "Selection uses TARGET-ONLY probes (is_target_attr=True) so same-entity retain probes do not dilute MG-distance.",
+    "Selection uses TARGET-ONLY probes (is_target_attr=True), association-weighted (each (identity, attribute) counted once), so same-entity retain probes do not dilute MG-distance and high-variant attributes get no extra weight.",
     "B2_retain_* excluded from B2 candidate family (different method: target_level SFT + retain SFT).",
-    "10R3 B3 verdict: under the corrected target-only 7-component vector, B3_lr2e-06_lam0.5_c (dist 0.0643) edges B3_lr5e-06_lam0.5_c (dist 0.0672); the margin is driven by the separate same-entity/other-entity retain components and is reported transparently."
+    "SALMU B3 train+val ranking (association-weighted, from the selection report): B3_lr5e-06_lam0.5_c dist=0.078114; B3_lr2e-06_lam0.5_c dist=0.080329; B3_lr2e-06_lam1_c dist=0.094786; B3_lr5e-06_lam1_c dist=0.095871; B3_lr1e-05_lam0.5 dist=0.556457; B3_lr1e-05_lam1 dist=0.706229"
   ]
 }

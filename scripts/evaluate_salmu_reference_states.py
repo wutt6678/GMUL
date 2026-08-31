@@ -50,8 +50,11 @@ def main() -> None:
         description="Evaluate SALMU reference states")
     parser.add_argument("--states", default="BASE,MF,MG,MN")
     parser.add_argument("--device", default="cuda:0")
-    parser.add_argument("--bootstrap-ci", action="store_true",
-                        help="Compute bootstrap confidence intervals")
+    parser.add_argument("--bootstrap-ci", action=argparse.BooleanOptionalAction,
+                        default=True,
+                        help="Compute association-clustered bootstrap "
+                             "confidence intervals (default: on — the "
+                             "committed evidence must carry CIs)")
     parser.add_argument("--n-bootstrap", type=int, default=1000)
     parser.add_argument("--max-images", type=int, default=None,
                         help="Cap images per (persona, attr)")
@@ -172,7 +175,7 @@ def main() -> None:
     official_salmubench = compute_official_salmubench(bench)
 
     report = {
-        "experiment_id": "salmu_iter10r3_reference_states",
+        "experiment_id": "salmu_iter10r4_reference_states",
         "num_target_personas": len(target_ids),
         "num_target_probes": len(target_results),
         "num_same_entity_retain_probes": len(same_entity_results),
@@ -180,12 +183,23 @@ def main() -> None:
         "probes_per_kind_note": "one probe per (persona, core "
                                 "attribute, image, fine_caption) "
                                 "with frozen probe IDs",
-        "multi_image": args.max_images is not None or
-                       args.max_captions is not None,
+        "multi_image": True,
+        "multi_image_note": "ALL released image/caption variants per "
+                            "association are used (no cap); "
+                            "max_images/max_captions null = uncapped.",
         "max_images": args.max_images,
         "max_captions": args.max_captions,
         "per_attribute_targeting": True,
+        "weighting": "association_macro_average",
+        "weighting_note": "image-caption variants within each "
+                          "(identity, attribute) association are "
+                          "macro-averaged before rates/similarities, "
+                          "so every association counts once.",
         "bootstrap_ci": args.bootstrap_ci,
+        "bootstrap_note": "association bootstrap: resamples "
+                          "(identity, attribute) units, exact under "
+                          "the macro-average."
+        if args.bootstrap_ci else None,
         "gate_runs_on": "target_association probes only (is_target_attr=True)",
         "scores_by_state": target_only_scores,
         "target_only_by_attribute": target_only_by_attribute,

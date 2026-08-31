@@ -6,10 +6,13 @@ from granunlearn.salmu.salmubench_metrics import compute_gmul_proxy_metrics
 
 
 def _make_results(fine, target, sibling, generic=0.20,
-                  is_target_attr=True):
+                  is_target_attr=True, identity_id="p1",
+                  attribute="city"):
+    # Distinct (identity, attribute) per call: 10R4 proxy metrics are
+    # association-weighted (macro-average within each association).
     return {
-        "identity_id": "p1",
-        "attribute": "city",
+        "identity_id": identity_id,
+        "attribute": attribute,
         "is_target_attr": is_target_attr,
         "sims": {"fine": fine, "target": target,
                  "sibling": sibling, "generic": generic,
@@ -20,15 +23,18 @@ def _make_results(fine, target, sibling, generic=0.20,
 class TestGMULProxyMetrics:
     def test_basic_computation(self):
         target = [
-            _make_results(0.4, 0.1, 0.05),  # prefers fine
-            _make_results(0.1, 0.4, 0.05),  # prefers target
+            _make_results(0.4, 0.1, 0.05, identity_id="p1"),
+            _make_results(0.1, 0.4, 0.05, identity_id="p2"),
         ]
         same_entity = [
-            _make_results(0.3, 0.2, 0.1, is_target_attr=False),
-            _make_results(0.35, 0.15, 0.1, is_target_attr=False),
+            _make_results(0.3, 0.2, 0.1, is_target_attr=False,
+                          identity_id="p1", attribute="job"),
+            _make_results(0.35, 0.15, 0.1, is_target_attr=False,
+                          identity_id="p2", attribute="job"),
         ]
         other_entity = [
-            _make_results(0.25, 0.2, 0.1, is_target_attr=False),
+            _make_results(0.25, 0.2, 0.1, is_target_attr=False,
+                          identity_id="p3"),
         ]
         m = compute_gmul_proxy_metrics(target, same_entity, other_entity)
         # forget = 1 - 0.5 = 0.5

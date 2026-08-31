@@ -200,10 +200,24 @@ def main() -> None:
     salmu_test: dict = {}
     salmu_selected: dict = {"B0": "B0"}
     salmu_failure: dict = {}
+    b3_ranking_note = ""
     if salmu_sel_path.exists():
         salmu_sel = json.loads(salmu_sel_path.read_text())
         salmu_test, salmu_selected = _salmu_sel_metrics(salmu_sel)
         salmu_failure = _salmu_failure_rates(salmu_ref, salmu_sel)
+        # Quote the B3 ranking DIRECTLY from the selection report so
+        # the two reports can never diverge (10R4).
+        b3_rows = sorted(
+            (r for r in salmu_sel.get("candidates", [])
+             if r["candidate_id"].startswith("B3_")
+             and r.get("distance_to_MG_trainval") is not None),
+            key=lambda r: r["distance_to_MG_trainval"])
+        b3_ranking_note = ("SALMU B3 train+val ranking "
+                           "(association-weighted, from the selection "
+                           "report): " + "; ".join(
+                               f"{r['candidate_id']} dist="
+                               f"{r['distance_to_MG_trainval']}"
+                               for r in b3_rows))
     else:
         log.warning("SALMU selection report not found — "
                      "skipping unlearning metrics")
@@ -219,7 +233,7 @@ def main() -> None:
             "B2": "Target-level positive retraining (SFT on target-level "
                   "generalized captions).  NOT gradient ascent.",
             "B2_retain": "Target-level SFT + retain SFT (separate method "
-                         "excluded from B2 family in 10R3).",
+                         "excluded from B2 family).",
             "B3": "Target-level SFT + retain SFT + constrained ascent "
                   "(stop at MG anchor).",
         },
@@ -232,7 +246,11 @@ def main() -> None:
         "salmu": {
             "model": "CLIP ViT-B/16",
             "task": "image-text association",
+            "weighting": salmu_sel.get("weighting")
+            if salmu_sel_path.exists() else None,
             "test_metrics": salmu_metrics,
+            "test_protocol": salmu_sel.get("test_protocol")
+            if salmu_sel_path.exists() else None,
             "selected": salmu_selected,
             "failure_rates": salmu_failure,
         },
@@ -251,15 +269,14 @@ def main() -> None:
             "probes (holdout_association analog).",
             "Frozen multi-image/caption probes with deterministic "
             "IDs ensure reproducibility.",
-            "Selection uses TARGET-ONLY probes (is_target_attr=True) "
-            "so same-entity retain probes do not dilute MG-distance.",
+            "Selection uses TARGET-ONLY probes (is_target_attr=True), "
+            "association-weighted (each (identity, attribute) counted "
+            "once), so same-entity retain probes do not dilute "
+            "MG-distance and high-variant attributes get no extra "
+            "weight.",
             "B2_retain_* excluded from B2 candidate family (different "
             "method: target_level SFT + retain SFT).",
-            "10R3 B3 verdict: under the corrected target-only "
-            "7-component vector, B3_lr2e-06_lam0.5_c (dist 0.0643) "
-            "edges B3_lr5e-06_lam0.5_c (dist 0.0672); the margin is "
-            "driven by the separate same-entity/other-entity retain "
-            "components and is reported transparently.",
+            b3_ranking_note or "SALMU selection report not found.",
         ],
     }
 

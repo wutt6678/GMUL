@@ -1,283 +1,661 @@
 {
-  "B0": {
-    "num_probes": 18687,
-    "counts": {
-      "target_preferred": 1748,
-      "fine_leakage": 14497,
-      "sibling_confusion": 2442
+  "weighting_note": "probe-level classification; rates are per-probe within each role (the association-weighted point estimates live in the selection/reference reports).",
+  "top_k_per_role_category": 20,
+  "states": {
+    "B0": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "fine_leakage": 4577,
+            "target_preferred": 687,
+            "sibling_confusion": 1177
+          },
+          "rates": {
+            "fine_leakage": 0.7106,
+            "target_preferred": 0.1067,
+            "sibling_confusion": 0.1827
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "target_preferred": 1061,
+            "fine_leakage": 9920,
+            "sibling_confusion": 1265
+          },
+          "rates": {
+            "target_preferred": 0.0866,
+            "fine_leakage": 0.8101,
+            "sibling_confusion": 0.1033
+          }
+        }
+      }
     },
-    "rates": {
-      "target_preferred": 0.0935,
-      "fine_leakage": 0.7758,
-      "sibling_confusion": 0.1307
-    }
-  },
-  "B1_lr0.0001": {
-    "num_probes": 18687,
-    "counts": {
-      "target_preferred": 6141,
-      "fine_leakage": 7807,
-      "sibling_confusion": 4619,
-      "over_forgotten": 120
+    "B1_lr0.0001": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "target_preferred": 2088,
+            "fine_leakage": 2692,
+            "sibling_confusion": 1561,
+            "over_forgotten": 100
+          },
+          "rates": {
+            "target_preferred": 0.3242,
+            "fine_leakage": 0.4179,
+            "sibling_confusion": 0.2424,
+            "over_forgotten": 0.0155
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "target_preferred": 4053,
+            "fine_leakage": 5115,
+            "sibling_confusion": 3058,
+            "over_forgotten": 20
+          },
+          "rates": {
+            "target_preferred": 0.331,
+            "fine_leakage": 0.4177,
+            "sibling_confusion": 0.2497,
+            "over_forgotten": 0.0016
+          }
+        }
+      }
     },
-    "rates": {
-      "target_preferred": 0.3286,
-      "fine_leakage": 0.4178,
-      "sibling_confusion": 0.2472,
-      "over_forgotten": 0.0064
-    }
-  },
-  "B1_lr1e-05": {
-    "num_probes": 18687,
-    "counts": {
-      "sibling_confusion": 8237,
-      "target_preferred": 9248,
-      "fine_leakage": 1187,
-      "over_forgotten": 15
+    "B1_lr1e-05": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "sibling_confusion": 2261,
+            "target_preferred": 3660,
+            "fine_leakage": 520
+          },
+          "rates": {
+            "sibling_confusion": 0.351,
+            "target_preferred": 0.5682,
+            "fine_leakage": 0.0807
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "sibling_confusion": 5976,
+            "target_preferred": 5588,
+            "fine_leakage": 667,
+            "over_forgotten": 15
+          },
+          "rates": {
+            "sibling_confusion": 0.488,
+            "target_preferred": 0.4563,
+            "fine_leakage": 0.0545,
+            "over_forgotten": 0.0012
+          }
+        }
+      }
     },
-    "rates": {
-      "sibling_confusion": 0.4408,
-      "target_preferred": 0.4949,
-      "fine_leakage": 0.0635,
-      "over_forgotten": 0.0008
-    }
-  },
-  "B1_lr1e-05_c": {
-    "num_probes": 18687,
-    "counts": {
-      "target_preferred": 6212,
-      "fine_leakage": 4433,
-      "sibling_confusion": 8010,
-      "over_forgotten": 32
+    "B1_lr1e-05_c": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "sibling_confusion": 2658,
+            "fine_leakage": 1825,
+            "target_preferred": 1939,
+            "over_forgotten": 19
+          },
+          "rates": {
+            "sibling_confusion": 0.4127,
+            "fine_leakage": 0.2833,
+            "target_preferred": 0.301,
+            "over_forgotten": 0.0029
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "target_preferred": 4273,
+            "fine_leakage": 2608,
+            "sibling_confusion": 5352,
+            "over_forgotten": 13
+          },
+          "rates": {
+            "target_preferred": 0.3489,
+            "fine_leakage": 0.213,
+            "sibling_confusion": 0.437,
+            "over_forgotten": 0.0011
+          }
+        }
+      }
     },
-    "rates": {
-      "target_preferred": 0.3324,
-      "fine_leakage": 0.2372,
-      "sibling_confusion": 0.4286,
-      "over_forgotten": 0.0017
-    }
-  },
-  "B1_lr2e-05": {
-    "num_probes": 18687,
-    "counts": {
-      "sibling_confusion": 7900,
-      "target_preferred": 10374,
-      "fine_leakage": 411,
-      "over_forgotten": 2
+    "B1_lr2e-05": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "sibling_confusion": 2024,
+            "target_preferred": 4131,
+            "fine_leakage": 284,
+            "over_forgotten": 2
+          },
+          "rates": {
+            "sibling_confusion": 0.3142,
+            "target_preferred": 0.6414,
+            "fine_leakage": 0.0441,
+            "over_forgotten": 0.0003
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "sibling_confusion": 5876,
+            "target_preferred": 6243,
+            "fine_leakage": 127
+          },
+          "rates": {
+            "sibling_confusion": 0.4798,
+            "target_preferred": 0.5098,
+            "fine_leakage": 0.0104
+          }
+        }
+      }
     },
-    "rates": {
-      "sibling_confusion": 0.4228,
-      "target_preferred": 0.5551,
-      "fine_leakage": 0.022,
-      "over_forgotten": 0.0001
-    }
-  },
-  "B1_lr2e-06_c": {
-    "num_probes": 18687,
-    "counts": {
-      "target_preferred": 2102,
-      "fine_leakage": 13596,
-      "sibling_confusion": 2954,
-      "over_forgotten": 35
+    "B1_lr2e-06_c": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "fine_leakage": 4136,
+            "target_preferred": 889,
+            "sibling_confusion": 1392,
+            "over_forgotten": 24
+          },
+          "rates": {
+            "fine_leakage": 0.6421,
+            "target_preferred": 0.138,
+            "sibling_confusion": 0.2161,
+            "over_forgotten": 0.0037
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "target_preferred": 1213,
+            "fine_leakage": 9460,
+            "sibling_confusion": 1562,
+            "over_forgotten": 11
+          },
+          "rates": {
+            "target_preferred": 0.0991,
+            "fine_leakage": 0.7725,
+            "sibling_confusion": 0.1276,
+            "over_forgotten": 0.0009
+          }
+        }
+      }
     },
-    "rates": {
-      "target_preferred": 0.1125,
-      "fine_leakage": 0.7276,
-      "sibling_confusion": 0.1581,
-      "over_forgotten": 0.0019
-    }
-  },
-  "B1_lr5e-06_c": {
-    "num_probes": 18687,
-    "counts": {
-      "target_preferred": 2264,
-      "fine_leakage": 12516,
-      "sibling_confusion": 3434,
-      "over_forgotten": 473
+    "B1_lr5e-06_c": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "fine_leakage": 3768,
+            "target_preferred": 1019,
+            "sibling_confusion": 1496,
+            "over_forgotten": 158
+          },
+          "rates": {
+            "fine_leakage": 0.585,
+            "target_preferred": 0.1582,
+            "sibling_confusion": 0.2323,
+            "over_forgotten": 0.0245
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "target_preferred": 1245,
+            "fine_leakage": 8748,
+            "sibling_confusion": 1938,
+            "over_forgotten": 315
+          },
+          "rates": {
+            "target_preferred": 0.1017,
+            "fine_leakage": 0.7144,
+            "sibling_confusion": 0.1583,
+            "over_forgotten": 0.0257
+          }
+        }
+      }
     },
-    "rates": {
-      "target_preferred": 0.1212,
-      "fine_leakage": 0.6698,
-      "sibling_confusion": 0.1838,
-      "over_forgotten": 0.0253
-    }
-  },
-  "B2_lr0.0001": {
-    "num_probes": 18687,
-    "counts": {
-      "over_forgotten": 18687
+    "B2_lr0.0001": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "over_forgotten": 6441
+          },
+          "rates": {
+            "over_forgotten": 1.0
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "over_forgotten": 12246
+          },
+          "rates": {
+            "over_forgotten": 1.0
+          }
+        }
+      }
     },
-    "rates": {
-      "over_forgotten": 1.0
-    }
-  },
-  "B2_lr2e-05": {
-    "num_probes": 18687,
-    "counts": {
-      "target_preferred": 5059,
-      "fine_leakage": 10321,
-      "sibling_confusion": 3306,
-      "over_forgotten": 1
+    "B2_lr2e-05": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "target_preferred": 1966,
+            "fine_leakage": 3073,
+            "sibling_confusion": 1402
+          },
+          "rates": {
+            "target_preferred": 0.3052,
+            "fine_leakage": 0.4771,
+            "sibling_confusion": 0.2177
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "target_preferred": 3093,
+            "fine_leakage": 7248,
+            "sibling_confusion": 1904,
+            "over_forgotten": 1
+          },
+          "rates": {
+            "target_preferred": 0.2526,
+            "fine_leakage": 0.5919,
+            "sibling_confusion": 0.1555,
+            "over_forgotten": 0.0001
+          }
+        }
+      }
     },
-    "rates": {
-      "target_preferred": 0.2707,
-      "fine_leakage": 0.5523,
-      "sibling_confusion": 0.1769,
-      "over_forgotten": 0.0001
-    }
-  },
-  "B2_lr5e-05": {
-    "num_probes": 18687,
-    "counts": {
-      "target_preferred": 9556,
-      "fine_leakage": 3005,
-      "sibling_confusion": 6126
+    "B2_lr5e-05": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "target_preferred": 3917,
+            "fine_leakage": 877,
+            "sibling_confusion": 1647
+          },
+          "rates": {
+            "target_preferred": 0.6081,
+            "fine_leakage": 0.1362,
+            "sibling_confusion": 0.2557
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "target_preferred": 5639,
+            "fine_leakage": 2128,
+            "sibling_confusion": 4479
+          },
+          "rates": {
+            "target_preferred": 0.4605,
+            "fine_leakage": 0.1738,
+            "sibling_confusion": 0.3658
+          }
+        }
+      }
     },
-    "rates": {
-      "target_preferred": 0.5114,
-      "fine_leakage": 0.1608,
-      "sibling_confusion": 0.3278
-    }
-  },
-  "B2_retain_lr1e-05": {
-    "num_probes": 18687,
-    "counts": {
-      "target_preferred": 7899,
-      "sibling_confusion": 10428,
-      "fine_leakage": 360
+    "B2_retain_lr1e-05": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "target_preferred": 3533,
+            "sibling_confusion": 2844,
+            "fine_leakage": 64
+          },
+          "rates": {
+            "target_preferred": 0.5485,
+            "sibling_confusion": 0.4415,
+            "fine_leakage": 0.0099
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "target_preferred": 4366,
+            "sibling_confusion": 7584,
+            "fine_leakage": 296
+          },
+          "rates": {
+            "target_preferred": 0.3565,
+            "sibling_confusion": 0.6193,
+            "fine_leakage": 0.0242
+          }
+        }
+      }
     },
-    "rates": {
-      "target_preferred": 0.4227,
-      "sibling_confusion": 0.558,
-      "fine_leakage": 0.0193
-    }
-  },
-  "B2_retain_lr2e-05": {
-    "num_probes": 18687,
-    "counts": {
-      "sibling_confusion": 10316,
-      "target_preferred": 8371
+    "B2_retain_lr2e-05": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "target_preferred": 3821,
+            "sibling_confusion": 2620
+          },
+          "rates": {
+            "target_preferred": 0.5932,
+            "sibling_confusion": 0.4068
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "sibling_confusion": 7696,
+            "target_preferred": 4550
+          },
+          "rates": {
+            "sibling_confusion": 0.6285,
+            "target_preferred": 0.3715
+          }
+        }
+      }
     },
-    "rates": {
-      "sibling_confusion": 0.552,
-      "target_preferred": 0.448
-    }
-  },
-  "B2_retain_lr5e-05": {
-    "num_probes": 18687,
-    "counts": {
-      "target_preferred": 11829,
-      "sibling_confusion": 6858
+    "B2_retain_lr5e-05": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "target_preferred": 4562,
+            "sibling_confusion": 1879
+          },
+          "rates": {
+            "target_preferred": 0.7083,
+            "sibling_confusion": 0.2917
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "target_preferred": 7267,
+            "sibling_confusion": 4979
+          },
+          "rates": {
+            "target_preferred": 0.5934,
+            "sibling_confusion": 0.4066
+          }
+        }
+      }
     },
-    "rates": {
-      "target_preferred": 0.633,
-      "sibling_confusion": 0.367
-    }
-  },
-  "B2_retain_lr5e-06": {
-    "num_probes": 18687,
-    "counts": {
-      "target_preferred": 5402,
-      "fine_leakage": 5654,
-      "sibling_confusion": 7631
+    "B2_retain_lr5e-06": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "target_preferred": 2282,
+            "fine_leakage": 1437,
+            "sibling_confusion": 2722
+          },
+          "rates": {
+            "target_preferred": 0.3543,
+            "fine_leakage": 0.2231,
+            "sibling_confusion": 0.4226
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "target_preferred": 3120,
+            "fine_leakage": 4217,
+            "sibling_confusion": 4909
+          },
+          "rates": {
+            "target_preferred": 0.2548,
+            "fine_leakage": 0.3444,
+            "sibling_confusion": 0.4009
+          }
+        }
+      }
     },
-    "rates": {
-      "target_preferred": 0.2891,
-      "fine_leakage": 0.3026,
-      "sibling_confusion": 0.4084
-    }
-  },
-  "B3_lr1e-05_lam0.5": {
-    "num_probes": 18687,
-    "counts": {
-      "target_preferred": 9680,
-      "sibling_confusion": 8982,
-      "fine_leakage": 25
+    "B3_lr1e-05_lam0.5": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "sibling_confusion": 1869,
+            "target_preferred": 4547,
+            "fine_leakage": 25
+          },
+          "rates": {
+            "sibling_confusion": 0.2902,
+            "target_preferred": 0.7059,
+            "fine_leakage": 0.0039
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "target_preferred": 5133,
+            "sibling_confusion": 7113
+          },
+          "rates": {
+            "target_preferred": 0.4192,
+            "sibling_confusion": 0.5808
+          }
+        }
+      }
     },
-    "rates": {
-      "target_preferred": 0.518,
-      "sibling_confusion": 0.4807,
-      "fine_leakage": 0.0013
-    }
-  },
-  "B3_lr1e-05_lam1": {
-    "num_probes": 18687,
-    "counts": {
-      "target_preferred": 8062,
-      "sibling_confusion": 10462,
-      "fine_leakage": 163
+    "B3_lr1e-05_lam1": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "target_preferred": 3309,
+            "sibling_confusion": 2969,
+            "fine_leakage": 163
+          },
+          "rates": {
+            "target_preferred": 0.5137,
+            "sibling_confusion": 0.461,
+            "fine_leakage": 0.0253
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "target_preferred": 4753,
+            "sibling_confusion": 7493
+          },
+          "rates": {
+            "target_preferred": 0.3881,
+            "sibling_confusion": 0.6119
+          }
+        }
+      }
     },
-    "rates": {
-      "target_preferred": 0.4314,
-      "sibling_confusion": 0.5599,
-      "fine_leakage": 0.0087
-    }
-  },
-  "B3_lr2e-06_lam0.5_c": {
-    "num_probes": 18687,
-    "counts": {
-      "target_preferred": 2413,
-      "fine_leakage": 13267,
-      "sibling_confusion": 3007
+    "B3_lr2e-06_lam0.5_c": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "target_preferred": 1169,
+            "fine_leakage": 3960,
+            "sibling_confusion": 1312
+          },
+          "rates": {
+            "target_preferred": 0.1815,
+            "fine_leakage": 0.6148,
+            "sibling_confusion": 0.2037
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "target_preferred": 1244,
+            "fine_leakage": 9307,
+            "sibling_confusion": 1695
+          },
+          "rates": {
+            "target_preferred": 0.1016,
+            "fine_leakage": 0.76,
+            "sibling_confusion": 0.1384
+          }
+        }
+      }
     },
-    "rates": {
-      "target_preferred": 0.1291,
-      "fine_leakage": 0.71,
-      "sibling_confusion": 0.1609
-    }
-  },
-  "B3_lr2e-06_lam1_c": {
-    "num_probes": 18687,
-    "counts": {
-      "target_preferred": 2275,
-      "fine_leakage": 13705,
-      "sibling_confusion": 2707
+    "B3_lr2e-06_lam1_c": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "target_preferred": 1089,
+            "fine_leakage": 4125,
+            "sibling_confusion": 1227
+          },
+          "rates": {
+            "target_preferred": 0.1691,
+            "fine_leakage": 0.6404,
+            "sibling_confusion": 0.1905
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "target_preferred": 1186,
+            "fine_leakage": 9580,
+            "sibling_confusion": 1480
+          },
+          "rates": {
+            "target_preferred": 0.0968,
+            "fine_leakage": 0.7823,
+            "sibling_confusion": 0.1209
+          }
+        }
+      }
     },
-    "rates": {
-      "target_preferred": 0.1217,
-      "fine_leakage": 0.7334,
-      "sibling_confusion": 0.1449
-    }
-  },
-  "B3_lr5e-06_lam0.5_c": {
-    "num_probes": 18687,
-    "counts": {
-      "target_preferred": 2324,
-      "fine_leakage": 13763,
-      "sibling_confusion": 2600
+    "B3_lr5e-06_lam0.5_c": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "target_preferred": 1205,
+            "fine_leakage": 4033,
+            "sibling_confusion": 1203
+          },
+          "rates": {
+            "target_preferred": 0.1871,
+            "fine_leakage": 0.6261,
+            "sibling_confusion": 0.1868
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "target_preferred": 1119,
+            "fine_leakage": 9730,
+            "sibling_confusion": 1397
+          },
+          "rates": {
+            "target_preferred": 0.0914,
+            "fine_leakage": 0.7945,
+            "sibling_confusion": 0.1141
+          }
+        }
+      }
     },
-    "rates": {
-      "target_preferred": 0.1244,
-      "fine_leakage": 0.7365,
-      "sibling_confusion": 0.1391
-    }
-  },
-  "B3_lr5e-06_lam1_c": {
-    "num_probes": 18687,
-    "counts": {
-      "target_preferred": 2170,
-      "fine_leakage": 14184,
-      "sibling_confusion": 2333
+    "B3_lr5e-06_lam1_c": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "target_preferred": 1101,
+            "fine_leakage": 4228,
+            "sibling_confusion": 1112
+          },
+          "rates": {
+            "target_preferred": 0.1709,
+            "fine_leakage": 0.6564,
+            "sibling_confusion": 0.1726
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "target_preferred": 1069,
+            "fine_leakage": 9956,
+            "sibling_confusion": 1221
+          },
+          "rates": {
+            "target_preferred": 0.0873,
+            "fine_leakage": 0.813,
+            "sibling_confusion": 0.0997
+          }
+        }
+      }
     },
-    "rates": {
-      "target_preferred": 0.1161,
-      "fine_leakage": 0.759,
-      "sibling_confusion": 0.1248
-    }
-  },
-  "MG": {
-    "num_probes": 18687,
-    "counts": {
-      "target_preferred": 3944,
-      "fine_leakage": 9835,
-      "sibling_confusion": 4907,
-      "over_forgotten": 1
-    },
-    "rates": {
-      "target_preferred": 0.2111,
-      "fine_leakage": 0.5263,
-      "sibling_confusion": 0.2626,
-      "over_forgotten": 0.0001
+    "MG": {
+      "num_probes": 18687,
+      "roles": {
+        "target_association": {
+          "num_probes": 6441,
+          "counts": {
+            "target_preferred": 2036,
+            "fine_leakage": 2228,
+            "sibling_confusion": 2177
+          },
+          "rates": {
+            "target_preferred": 0.3161,
+            "fine_leakage": 0.3459,
+            "sibling_confusion": 0.338
+          }
+        },
+        "same_entity_retain": {
+          "num_probes": 12246,
+          "counts": {
+            "target_preferred": 1908,
+            "fine_leakage": 7607,
+            "sibling_confusion": 2730,
+            "over_forgotten": 1
+          },
+          "rates": {
+            "target_preferred": 0.1558,
+            "fine_leakage": 0.6212,
+            "sibling_confusion": 0.2229,
+            "over_forgotten": 0.0001
+          }
+        }
+      }
     }
   }
 }

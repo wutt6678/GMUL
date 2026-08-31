@@ -240,28 +240,74 @@ def preference_flags(sims: dict[str, float]) -> dict[str, bool]:
     }
 
 
+def association_level_results(
+    probe_results: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Macro-average probe similarities per (identity_id, attribute).
+
+    Multiple image-caption combinations of the SAME association are
+    NOT independent observations: all point estimates (preference
+    rates, mean similarities) are computed association-weighted by
+    averaging the variants within each association FIRST (10R4).
+
+    Returns one synthetic result per association with the averaged
+    ``sims``, plus ``num_probes`` (variant count) and propagated
+    ``is_target_attr``.
+    """
+    clusters: dict[tuple[str, str], list[dict]] = {}
+    for r in probe_results:
+        key = (r.get("identity_id", ""), r.get("attribute", ""))
+        clusters.setdefault(key, []).append(r)
+    assoc: list[dict[str, Any]] = []
+    for (iid, attr) in sorted(clusters):
+        rs = clusters[(iid, attr)]
+        kinds: set[str] = set()
+        for r in rs:
+            kinds.update(r["sims"].keys())
+        mean_sims = {}
+        for k in kinds:
+            vals = [r["sims"][k] for r in rs if k in r["sims"]]
+            if vals:
+                mean_sims[k] = sum(vals) / len(vals)
+        assoc.append({
+            "identity_id": iid,
+            "attribute": attr,
+            "is_target_attr": rs[0].get("is_target_attr", False),
+            "num_probes": len(rs),
+            "sims": mean_sims,
+        })
+    return assoc
+
+
 def aggregate_scores(
     probe_results: list[dict[str, Any]],
     bootstrap_ci: bool = False,
     n_bootstrap: int = 1000,
     ci_level: float = 0.95,
 ) -> dict[str, Any]:
-    """Preference rates + mean similarities over target probes.
+    """Association-weighted preference rates + mean similarities.
 
-    Preference rates are computed over probes that HAVE a sibling
-    caption (branch-specificity requires one); mean similarities over
-    all probes per kind.
+    10R4: variants within an association are macro-averaged FIRST, so
+    each (identity_id, attribute) association counts exactly once —
+    attributes with more images/captions get no extra weight.
 
-    With ``bootstrap_ci=True``, adds bootstrap confidence intervals
-    for preference rates and mean similarities.
+    Preference rates are computed over associations that HAVE a
+    sibling caption (branch-specificity requires one); mean
+    similarities over all associations per kind.
+
+    With ``bootstrap_ci=True``, adds confidence intervals from a
+    bootstrap that resamples ASSOCIATIONS (the unit of analysis),
+    which is exact under the macro-average.
     """
     n = len(probe_results)
     if n == 0:
-        return {"num_probes": 0}
-    flag_probes = [r for r in probe_results
-                   if all(k in r["sims"] for k in
-                          ("fine", "target", "sibling"))]
-    flags = [preference_flags(r["sims"]) for r in flag_probes]
+        return {"num_probes": 0, "num_associations": 0}
+    assoc = association_level_results(probe_results)
+    n_assoc = len(assoc)
+    flag_assoc = [a for a in assoc
+                  if all(k in a["sims"] for k in
+                         ("fine", "target", "sibling"))]
+    flags = [preference_flags(a["sims"]) for a in flag_assoc]
     m = len(flags)
 
     def rate(key: str) -> float | None:
@@ -269,98 +315,63 @@ def aggregate_scores(
 
     mean_sims = {}
     for kind in PROBE_KINDS:
-        vals = [r["sims"][kind] for r in probe_results
-                if kind in r["sims"]]
+        vals = [a["sims"][kind] for a in assoc
+                if kind in a["sims"]]
         if vals:
             mean_sims[kind] = round(sum(vals) / len(vals), 4)
-    
+
     result = {
         "num_probes": n,
-        "num_preference_probes": m,
+        "num_associations": n_assoc,
+        "num_preference_associations": m,
+        "weighting": "association_macro_average",
         "prefers_fine_rate": rate("prefers_fine"),
         "prefers_target_rate": rate("prefers_target"),
         "prefers_target_not_fine_rate": rate("prefers_target_not_fine"),
         "mean_similarities": mean_sims,
     }
-    
-    # Association-clustered bootstrap confidence intervals.
-    # Resample (identity_id, attribute) clusters rather than
-    # individual probes, because multiple image-caption combinations
-    # from the same association are NOT independent.
+
+    # Association bootstrap confidence intervals: resample the
+    # associations (unit of analysis) with replacement.
     if bootstrap_ci and m > 0:
         import numpy as np
         rng = np.random.default_rng(42)
-        n_boot = n_bootstrap
 
-        # Build cluster index: (identity_id, attribute) -> probe indices
-        clusters: dict[tuple[str, str], list[int]] = {}
-        for i, r in enumerate(probe_results):
-            key = (r.get("identity_id", ""), r.get("attribute", ""))
-            clusters.setdefault(key, []).append(i)
-        cluster_keys = sorted(clusters.keys())
-        n_clusters = len(cluster_keys)
-
-        # Similarly for flag_probes (those with sibling captions)
-        flag_clusters: dict[tuple[str, str], list[int]] = {}
-        for i, r in enumerate(flag_probes):
-            key = (r.get("identity_id", ""), r.get("attribute", ""))
-            flag_clusters.setdefault(key, []).append(i)
-        flag_cluster_keys = sorted(flag_clusters.keys())
-        n_flag_clusters = len(flag_cluster_keys)
-
+        flag_assoc_arr = flag_assoc
         boot_rates = {"prefers_fine": [], "prefers_target": [],
                       "prefers_target_not_fine": []}
         boot_sims = {kind: [] for kind in PROBE_KINDS}
 
-        for _ in range(n_boot):
-            # Resample flag clusters for preference rates
-            if n_flag_clusters > 0:
-                boot_fc_keys = [
-                    flag_cluster_keys[j] for j in
-                    rng.integers(0, n_flag_clusters, size=n_flag_clusters)]
-                boot_flag_indices = []
-                for k in boot_fc_keys:
-                    boot_flag_indices.extend(flag_clusters[k])
-                boot_flags = [preference_flags(
-                    probe_results[i]["sims"])
-                    for i in boot_flag_indices
-                    if all(sk in probe_results[i]["sims"] for sk in
-                           ("fine", "target", "sibling"))]
-                bm = len(boot_flags)
-                for key in boot_rates:
-                    boot_rates[key].append(
-                        sum(1 for f in boot_flags if f[key]) / bm
-                        if bm else 0.0)
-
-            # Resample all clusters for mean similarities
-            boot_c_keys = [
-                cluster_keys[j] for j in
-                rng.integers(0, n_clusters, size=n_clusters)]
-            boot_indices = []
-            for k in boot_c_keys:
-                boot_indices.extend(clusters[k])
+        for _ in range(n_bootstrap):
+            # Preference rates over resampled flag associations
+            idx = rng.integers(0, m, size=m)
+            bflags = [flags[j] for j in idx]
+            for key in boot_rates:
+                boot_rates[key].append(
+                    sum(1 for f in bflags if f[key]) / m)
+            # Mean similarities over resampled associations
+            idx_all = rng.integers(0, n_assoc, size=n_assoc)
             for kind in PROBE_KINDS:
-                vals = [probe_results[i]["sims"][kind]
-                        for i in boot_indices
-                        if kind in probe_results[i]["sims"]]
+                vals = [assoc[j]["sims"][kind] for j in idx_all
+                        if kind in assoc[j]["sims"]]
                 if vals:
                     boot_sims[kind].append(sum(vals) / len(vals))
 
         alpha = (1 - ci_level) / 2
         for key in boot_rates:
             vals = sorted(boot_rates[key])
-            lo = vals[int(alpha * n_boot)]
-            hi = vals[int((1 - alpha) * n_boot)]
+            lo = vals[int(alpha * n_bootstrap)]
+            hi = vals[int((1 - alpha) * n_bootstrap)]
             result[f"{key}_rate_ci"] = (round(lo, 4), round(hi, 4))
 
         for kind in PROBE_KINDS:
             if boot_sims[kind]:
                 vals = sorted(boot_sims[kind])
-                lo = vals[int(alpha * n_boot)]
-                hi = vals[int((1 - alpha) * n_boot)]
+                lo = vals[int(alpha * n_bootstrap)]
+                hi = vals[int((1 - alpha) * n_bootstrap)]
                 result["mean_similarities"][f"{kind}_ci"] = (
                     round(lo, 4), round(hi, 4))
-    
+
     return result
 
 

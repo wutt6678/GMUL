@@ -34,6 +34,10 @@ def compute_gmul_proxy_metrics(
     All metric names carry the ``gmul_proxy_`` prefix to distinguish
     them from the official SALMUBench protocol.
 
+    10R4: every statistic is association-weighted — variants within a
+    (identity_id, attribute) association are macro-averaged first, so
+    associations with more images/captions get no extra weight.
+
     Parameters
     ----------
     target_results : list[dict]
@@ -47,12 +51,20 @@ def compute_gmul_proxy_metrics(
     -------
     dict mapping ``gmul_proxy_*`` metric names to float (or None).
     """
-    from granunlearn.salmu.embedding_metrics import preference_flags
+    from granunlearn.salmu.embedding_metrics import (
+        association_level_results,
+        preference_flags,
+    )
+
+    # --- Macro-average each role to the association level ---
+    target_assoc = association_level_results(target_results)
+    same_entity_assoc = association_level_results(same_entity_results)
+    other_entity_assoc = association_level_results(other_entity_results)
 
     # --- Target-attribute metrics ---
     n_target = len(target_results)
-    target_flags = [preference_flags(r["sims"]) for r in target_results
-                    if all(k in r["sims"] for k in
+    target_flags = [preference_flags(a["sims"]) for a in target_assoc
+                    if all(k in a["sims"] for k in
                            ("fine", "target", "sibling"))]
     n_flags = len(target_flags)
 
@@ -61,47 +73,47 @@ def compute_gmul_proxy_metrics(
     gmul_proxy_forget = (1 - prefers_fine_rate) \
         if prefers_fine_rate is not None else None
 
-    target_target_sims = [r["sims"]["target"] for r in target_results
-                          if "target" in r["sims"]]
+    target_target_sims = [a["sims"]["target"] for a in target_assoc
+                          if "target" in a["sims"]]
     gmul_proxy_core_assoc = (
         sum(target_target_sims) / len(target_target_sims)
         if target_target_sims else None)
 
-    # Preference margin: mean(fine - target)
+    # Preference margin: mean(fine - target) per association
     margins = []
-    for r in target_results:
-        if "fine" in r["sims"] and "target" in r["sims"]:
-            margins.append(r["sims"]["fine"] - r["sims"]["target"])
+    for a in target_assoc:
+        if "fine" in a["sims"] and "target" in a["sims"]:
+            margins.append(a["sims"]["fine"] - a["sims"]["target"])
     gmul_proxy_preference_margin = (
         sum(margins) / len(margins) if margins else None)
 
     # --- Same-entity retain metrics ---
-    se_flags = [preference_flags(r["sims"]) for r in same_entity_results
-                if all(k in r["sims"] for k in
+    se_flags = [preference_flags(a["sims"]) for a in same_entity_assoc
+                if all(k in a["sims"] for k in
                        ("fine", "target", "sibling"))]
     n_se = len(se_flags)
     se_fine_rate = (sum(1 for f in se_flags if f["prefers_fine"]) / n_se
                     if n_se else None)
     gmul_proxy_holdout_association = se_fine_rate
 
-    se_fine_sims = [r["sims"]["fine"] for r in same_entity_results
-                    if "fine" in r["sims"]]
+    se_fine_sims = [a["sims"]["fine"] for a in same_entity_assoc
+                    if "fine" in a["sims"]]
     gmul_proxy_intra_identity = (
         sum(se_fine_sims) / len(se_fine_sims) if se_fine_sims else None)
 
     # --- Other-entity retain metrics ---
-    oe_fine_sims = [r["sims"]["fine"] for r in other_entity_results
-                    if "fine" in r["sims"]]
+    oe_fine_sims = [a["sims"]["fine"] for a in other_entity_assoc
+                    if "fine" in a["sims"]]
     gmul_proxy_retain_synth = (
         sum(oe_fine_sims) / len(oe_fine_sims) if oe_fine_sims else None)
     gmul_proxy_inter_identity = gmul_proxy_retain_synth
 
     # --- Identity retention ---
-    target_generic_sims = [r["sims"]["generic"] for r in target_results
-                           if "generic" in r["sims"]]
+    target_generic_sims = [a["sims"]["generic"] for a in target_assoc
+                           if "generic" in a["sims"]]
     all_generic = (target_generic_sims +
-                   [r["sims"].get("generic") for r in same_entity_results
-                    if "generic" in r["sims"]])
+                   [a["sims"]["generic"] for a in same_entity_assoc
+                    if "generic" in a["sims"]])
     gmul_proxy_holdout_identity = (
         1 - sum(all_generic) / len(all_generic)
         if all_generic else None)
@@ -121,9 +133,13 @@ def compute_gmul_proxy_metrics(
         "gmul_proxy_inter_identity": _r(gmul_proxy_inter_identity),
         "gmul_proxy_preference_margin": _r(
             gmul_proxy_preference_margin, 6),
+        "weighting": "association_macro_average",
         "n_target_probes": n_target,
+        "n_target_associations": len(target_assoc),
         "n_same_entity_retain": len(same_entity_results),
+        "n_same_entity_associations": len(same_entity_assoc),
         "n_other_entity_retain": len(other_entity_results),
+        "n_other_entity_associations": len(other_entity_assoc),
     }
 
 
@@ -136,36 +152,21 @@ compute_salmubench_metrics = compute_gmul_proxy_metrics
 def compute_official_salmubench(
     benchmark_dir: str | Any,
 ) -> dict[str, Any]:
-    """Official SALMUBench evaluation from released data.
+    """Official SALMUBench evaluation status from released data.
 
-    Loads the released evaluation splits from the SALMUBench
-    benchmark dataset and computes the canonical metrics.
+    10R4: the released-split CLIP similarity evaluation IS implemented
+    — see ``scripts/evaluate_salmu_official_splits.py``, which scores
+    the released ``forget`` / ``holdout_association`` /
+    ``holdout_identity`` / ``retain_synth`` parquet splits for every
+    state and writes ``data/reports/salmu_official_splits.json``
+    (identity-clustered bootstrap CIs).  This function only reports
+    which released splits are present and links that report.
 
-    **Official protocol** (not implemented here — requires released
-    data files):
-
-    * **RetFail**: MRR over a 2,001-caption gallery where the target
-      caption is ranked among 2,000 negatives.  Measures how well
-      the model forgets the target association.
-    * **CoreAssoc**: Core association accuracy using BOTH
-      name→value AND value→name token orders.
-    * **ACS**: Association coherence score from a coherence
-      classifier over generated captions.
-    * **IntraIdSim / InterIdSim**: Intra- and inter-identity
-      similarity on the released holdout splits.
-    * **General utility**: ImageNet zero-shot classification
-      accuracy and DataComp retrieval metrics.
-
-    Parameters
-    ----------
-    benchmark_dir : str or Path
-        Path to the released SALMUBench benchmark dataset
-        (``cvc-mmu/salmubench-512-redistributed``).
-
-    Returns
-    -------
-    dict with official metric names and values, plus a
-    ``protocol_note`` describing what each metric measures.
+    Out of scope (require the official SALMUBench codebase,
+    github.com/cvc-mmu/salmubench): RetFail (MRR over a 2,001-caption
+    gallery), ACS (coherence classifier), IntraIdSim / InterIdSim on
+    the released holdout embeddings, and ImageNet / DataComp general
+    utility.
     """
     from pathlib import Path
     bench = Path(benchmark_dir) if not isinstance(benchmark_dir, Path) \
@@ -173,13 +174,13 @@ def compute_official_salmubench(
 
     result: dict[str, Any] = {
         "protocol_note": (
-            "Official SALMUBench metrics require the released "
-            "evaluation splits.  RetFail = MRR over 2,001-caption "
-            "gallery; CoreAssoc = both name-value token orders; "
-            "ACS = coherence classifier; IntraIdSim/InterIdSim = "
-            "released holdout splits; general utility = ImageNet + "
-            "DataComp."),
-        "status": "not_yet_computed",
+            "Released-split CLIP similarity evaluation is implemented "
+            "in scripts/evaluate_salmu_official_splits.py (see "
+            "data/reports/salmu_official_splits.json). Paper-protocol "
+            "RetFail / ACS / IntraIdSim / InterIdSim / general utility "
+            "require the official SALMUBench codebase and are not "
+            "reimplemented here."),
+        "status": "released_splits_present",
         "metrics": {
             "RetFail": None,
             "CoreAssoc": None,
@@ -192,18 +193,12 @@ def compute_official_salmubench(
         "benchmark_dir": str(bench),
     }
 
-    # Check for released evaluation files
-    forget_file = bench / "forget.jsonl"
-    retain_file = bench / "retain_synth.jsonl"
-    holdout_file = bench / "holdout_association.jsonl"
-
+    # Check for released evaluation splits (parquet shards)
     available = []
-    if forget_file.exists():
-        available.append("forget")
-    if retain_file.exists():
-        available.append("retain_synth")
-    if holdout_file.exists():
-        available.append("holdout_association")
+    for split in ("forget", "forget_target", "holdout_association",
+                  "holdout_identity", "retain_synth"):
+        if list((bench / "data").glob(f"{split}-*.parquet")):
+            available.append(split)
 
     result["available_splits"] = available
     if not available:

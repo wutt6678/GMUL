@@ -186,14 +186,19 @@ class TestGate:
 
 class TestAggregate:
     def test_rates(self):
+        # Distinct (identity, attribute) pairs: 10R4 aggregation is
+        # association-weighted, so each association counts once.
         results = [
-            {"sims": {"fine": 0.4, "target": 0.1, "sibling": 0.05,
+            {"identity_id": "p1", "attribute": "city",
+             "sims": {"fine": 0.4, "target": 0.1, "sibling": 0.05,
                       "ancestor": 0.1, "generic": 0.05}},
-            {"sims": {"fine": 0.1, "target": 0.4, "sibling": 0.05,
+            {"identity_id": "p2", "attribute": "job",
+             "sims": {"fine": 0.1, "target": 0.4, "sibling": 0.05,
                       "ancestor": 0.1, "generic": 0.05}},
         ]
         agg = aggregate_scores(results)
         assert agg["num_probes"] == 2
+        assert agg["num_associations"] == 2
         assert agg["prefers_fine_rate"] == 0.5
         assert agg["prefers_target_not_fine_rate"] == 0.5
 

@@ -222,12 +222,16 @@ def main() -> None:
     save_probe_cache(cache_path, cache)
     save_probe_cache(retain_cache_path, retain_cache)
 
-    def same_entity_retain_sim(state: str) -> float | None:
+    def same_entity_retain_sim(state: str,
+                               personas: set[str]) -> float | None:
         """Mean fine sim on same-entity retain probes (target personas,
-        non-target attributes)."""
+        non-target attributes) restricted to ``personas`` — the
+        summary vector must use the SAME identities as the component
+        it accompanies (trainval for selection, test for the final
+        verdict; 10R4)."""
         results = cache[state]
         se = [r for r in results if not r.get("is_target_attr", False)]
-        agg = aggregate_probe_results(se, trainval)
+        agg = aggregate_probe_results(se, personas)
         return (agg.get("mean_similarities") or {}).get("fine")
 
     def other_entity_retain_sim(state: str) -> float | None:
@@ -237,16 +241,20 @@ def main() -> None:
 
     # Selection on TARGET-ONLY train+val probes so that same-entity
     # retain probes do not dilute the MG-distance signal.
+    # 10R4: all aggregates are association-weighted (macro-average of
+    # image-caption variants) and carry association bootstrap CIs.
     mg_vec = summary_vector(
         aggregate_probe_results(cache["MG"], trainval,
-                                target_attr_only=True),
-        same_entity_retain_sim("MG"),
+                                target_attr_only=True,
+                                bootstrap_ci=True),
+        same_entity_retain_sim("MG", trainval),
         other_entity_retain_sim("MG"))
     report_rows = []
     for state in states:
         agg_tv = aggregate_probe_results(
-            cache[state], trainval, target_attr_only=True)
-        se_sim = same_entity_retain_sim(state)
+            cache[state], trainval, target_attr_only=True,
+            bootstrap_ci=True)
+        se_sim = same_entity_retain_sim(state, trainval)
         oe_sim = other_entity_retain_sim(state)
         vec = summary_vector(agg_tv, se_sim, oe_sim)
         dist, used = distance_to_mg(vec, mg_vec)
@@ -291,11 +299,19 @@ def main() -> None:
             if s.exists() and s.resolve() != d.resolve():
                 shutil.copy2(s, d)
 
-    # Frozen held-out test verdict (computed once, never used to choose)
+    # Frozen held-out test verdict: computed ONCE, for the SELECTED
+    # checkpoints ONLY (10R4).  Evaluating every candidate on the
+    # test split would turn it into a second selection set; the
+    # untouched-test protocol requires selected-checkpoint-only
+    # reporting.  Same-entity retention here uses the TEST
+    # identities, matching the target-component identities.
     for row in report_rows:
         cid = row["candidate_id"]
+        if cid not in selected.values():
+            continue
         agg_test = aggregate_probe_results(
-            cache[cid], test, target_attr_only=True)
+            cache[cid], test, target_attr_only=True,
+            bootstrap_ci=True)
         row["test_metrics"] = agg_test
         # Target-only per-attribute breakdown on the frozen test split
         test_results = [r for r in cache[cid]
@@ -308,7 +324,7 @@ def main() -> None:
         }
         row["test_summary_vector"] = summary_vector(
             agg_test,
-            same_entity_retain_sim(cid),
+            same_entity_retain_sim(cid, test),
             other_entity_retain_sim(cid))
 
     # Document the B3 near-tie transparently (computed, not hardcoded)
@@ -317,35 +333,60 @@ def main() -> None:
          if r["candidate_id"].startswith("B3_")
          and r["distance_to_MG_trainval"] is not None),
         key=lambda r: r["distance_to_MG_trainval"])
-    b3_note = ("10R3 B3 train+val ranking (target-only): "
+    b3_note = ("10R4 B3 train+val ranking (target-only, "
+               "association-weighted): "
                + "; ".join(f"{r['candidate_id']} "
                            f"dist={r['distance_to_MG_trainval']}"
                            for r in b3_constrained))
+    # Association / variant counts for honest metadata
+    tv_target_assoc = len({(r["identity_id"], r["attribute"])
+                           for r in cache["MG"]
+                           if r["identity_id"] in trainval
+                           and r.get("is_target_attr", False)})
+    tv_target_probes = sum(1 for r in cache["MG"]
+                           if r["identity_id"] in trainval
+                           and r.get("is_target_attr", False))
     report = {
-        "experiment_id": "salmu_iter10r3_unlearning_selection",
+        "experiment_id": "salmu_iter10r4_unlearning_selection",
         "persona_split": {"train": split["train"], "val": split["val"],
                           "test": split["test"]},
-        "multi_image": args.max_images is not None or
-                       args.max_captions is not None,
+        "multi_image": True,
+        "multi_image_note": "ALL released image/caption variants per "
+                            "association are used (no cap); "
+                            "max_images/max_captions null = uncapped.",
         "max_images": args.max_images,
         "max_captions": args.max_captions,
+        "weighting": "association_macro_average",
+        "trainval_target_associations": tv_target_assoc,
+        "trainval_target_probe_combinations": tv_target_probes,
+        "bootstrap_ci": True,
         "summary_components": list(SUMMARY_COMPONENTS),
         "target_only_selection": True,
         "b2_retain_excluded": True,
+        "test_protocol": "held-out test identities evaluated for the "
+                         "SELECTED checkpoints only (untouched test); "
+                         "non-selected candidates have NO test metrics.",
         "mg_trainval_vector": mg_vec,
         "selected": selected,
         "candidates": report_rows,
         "selection_rule": "min distance_to_MG over TARGET-ONLY "
-                          "TRAIN+VAL probes (is_target_attr=True); "
+                          "TRAIN+VAL probes (is_target_attr=True), "
+                          "association-weighted (each (identity, "
+                          "attribute) counted once); "
                           "same_entity_retain_sim and "
                           "other_entity_retain_sim are separate "
                           "components; B2_retain_* excluded from B2 "
                           "family; test personas frozen.",
         "notes": [
-            "10R3 corrected selection: aggregates target-persona "
-            "probes with is_target_attr=True ONLY (200 target vs "
-            "400 same-entity-retain probes); retain similarities are "
-            "separate summary components.",
+            "10R4 corrected selection: association-weighted — "
+            f"{tv_target_assoc} train+val target associations "
+            f"({tv_target_probes} image-caption combinations "
+            "macro-averaged); retain similarities are separate "
+            "summary components; association-bootstrap 95% CIs on "
+            "every aggregate.",
+            "same_entity_retain_sim uses the same identities as the "
+            "target component it accompanies (train+val for "
+            "selection, test for the final verdict).",
             b3_note,
         ],
     }

@@ -131,6 +131,8 @@ def score_probes(state: str, probes: list[dict[str, Any]],
 def aggregate_probe_results(results: list[dict[str, Any]],
                             personas: set[str] | None = None,
                             target_attr_only: bool = False,
+                            bootstrap_ci: bool = False,
+                            n_bootstrap: int = 1000,
                             ) -> dict:
     """Aggregate per-probe results, optionally restricted to a set of
     persona ids (used for train/val/test persona splits).
@@ -139,6 +141,10 @@ def aggregate_probe_results(results: list[dict[str, Any]],
     ``is_target_attr=True`` are included (used for the selection
     summary vector so that same-entity retain probes do not dilute
     the MG-distance signal).
+
+    Aggregation is association-weighted: image-caption variants of the
+    same (identity_id, attribute) are macro-averaged first (10R4).
+    With ``bootstrap_ci=True`` adds association-bootstrap CIs.
     """
     from granunlearn.salmu.embedding_metrics import aggregate_scores
     if personas is not None:
@@ -146,7 +152,8 @@ def aggregate_probe_results(results: list[dict[str, Any]],
     if target_attr_only:
         results = [r for r in results
                    if r.get("is_target_attr", False)]
-    return aggregate_scores(results)
+    return aggregate_scores(results, bootstrap_ci=bootstrap_ci,
+                            n_bootstrap=n_bootstrap)
 
 
 def save_probe_cache(path: str | Path, per_state: dict[str, list]) -> None:

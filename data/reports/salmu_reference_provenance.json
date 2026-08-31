@@ -1,5 +1,5 @@
 {
-  "experiment_id": "salmu_iter10r3",
+  "experiment_id": "salmu_iter10r4",
   "dataset": "salmu-512-redistributed (sensitive split, core attrs city/job/blood_type)",
   "dataset_partition": {
     "seed": 42,
@@ -101,26 +101,38 @@
     "benchmark_dataset": {
       "repo_id": "cvc-mmu/salmubench-512-redistributed",
       "repo_type": "dataset",
-      "local_path": "<external> /scratch/wutiantong/.cache/huggingface/hub/datasets--cvc-mmu--salmubench-512-redistributed/snapshots/b76aa3885a696969e51de4786c9f92e8064b4679",
-      "role": "official evaluation splits: forget / forget_target / retain_synth / holdout_identity / holdout_association"
+      "role": "official evaluation splits: forget / forget_target / retain_synth / holdout_identity / holdout_association",
+      "revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
+      "revision_verified": true,
+      "local_cache_path": "/scratch/wutiantong/.cache/huggingface/hub/datasets--cvc-mmu--salmubench-512-redistributed/snapshots/b76aa3885a696969e51de4786c9f92e8064b4679",
+      "local_cache_path_note": "diagnostic only (machine-specific HF cache location); the reproducibility contract is repo_id + revision"
     },
     "training_dataset": {
       "repo_id": "cvc-mmu/salmu-512-redistributed",
       "repo_type": "dataset",
-      "local_path": "<external> /scratch/wutiantong/.cache/huggingface/hub/datasets--cvc-mmu--salmu-512-redistributed/snapshots/11bc6fec2530a70ba222bf86a70fe4d7681f86dd",
-      "role": "knowledge-injection dataset used to train the Compromised model"
+      "role": "knowledge-injection dataset used to train the Compromised model",
+      "revision": "11bc6fec2530a70ba222bf86a70fe4d7681f86dd",
+      "revision_verified": true,
+      "local_cache_path": "/scratch/wutiantong/.cache/huggingface/hub/datasets--cvc-mmu--salmu-512-redistributed/snapshots/11bc6fec2530a70ba222bf86a70fe4d7681f86dd",
+      "local_cache_path_note": "diagnostic only (machine-specific HF cache location); the reproducibility contract is repo_id + revision"
     },
     "clean_model": {
       "repo_id": "cvc-mmu/clip-vit-b-16-salmu-clean",
       "repo_type": "model",
-      "local_path": "<external> /scratch/wutiantong/.cache/huggingface/hub/models--cvc-mmu--clip-vit-b-16-salmu-clean/snapshots/1d3c0b01dceaf0e66b4d0abeefa3bc8a616f73f8",
-      "role": "CLIP ViT-B/16 trained WITHOUT the sensitive associations — the shared starting checkpoint for MF/MG/MN reference states"
+      "role": "CLIP ViT-B/16 trained WITHOUT the sensitive associations — the shared starting checkpoint for MF/MG/MN reference states",
+      "revision": "1d3c0b01dceaf0e66b4d0abeefa3bc8a616f73f8",
+      "revision_verified": true,
+      "local_cache_path": "/scratch/wutiantong/.cache/huggingface/hub/models--cvc-mmu--clip-vit-b-16-salmu-clean/snapshots/1d3c0b01dceaf0e66b4d0abeefa3bc8a616f73f8",
+      "local_cache_path_note": "diagnostic only (machine-specific HF cache location); the reproducibility contract is repo_id + revision"
     },
     "compromised_model": {
       "repo_id": "cvc-mmu/clip-vit-b-16-salmu-compromised",
       "repo_type": "model",
-      "local_path": "<external> /scratch/wutiantong/.cache/huggingface/hub/models--cvc-mmu--clip-vit-b-16-salmu-compromised/snapshots/230b1b4f7b84d1bb96927a0a47ac7a007ceba528",
-      "role": "CLIP ViT-B/16 trained WITH the sensitive associations (SALMUBench's unlearning start point; reference only for our counterfactual design)"
+      "role": "CLIP ViT-B/16 trained WITH the sensitive associations (SALMUBench's unlearning start point; reference only for our counterfactual design)",
+      "revision": "230b1b4f7b84d1bb96927a0a47ac7a007ceba528",
+      "revision_verified": true,
+      "local_cache_path": "/scratch/wutiantong/.cache/huggingface/hub/models--cvc-mmu--clip-vit-b-16-salmu-compromised/snapshots/230b1b4f7b84d1bb96927a0a47ac7a007ceba528",
+      "local_cache_path_note": "diagnostic only (machine-specific HF cache location); the reproducibility contract is repo_id + revision"
     }
   },
   "base_model": {
@@ -128,6 +140,8 @@
     "checkpoint": "open_clip_model.safetensors",
     "sha256": "ff944079f8f5043bf5d90c8e2490fa248d4693c33cdbd80f91c6ceb798f66dfe",
     "params_M": 149.6,
+    "repo": "cvc-mmu/clip-vit-b-16-salmu-clean",
+    "revision": "1d3c0b01dceaf0e66b4d0abeefa3bc8a616f73f8",
     "note": "Clean CLIP — the shared starting checkpoint for MF/MG/MN (NOT the MF fine-tuned checkpoint)."
   },
   "recipe": {
@@ -147,7 +161,7 @@
     "selected_B0": "d2e07bfd58306c1798e68f3072e37d4353cc173dd5f90efe35356c1dd613d7c1",
     "selected_B1": "7d38bf540471e75c15a92713af84a90cabc90510a4a6dee8cee56b6a5b368f5b",
     "selected_B2": "104d1e77630c366cbd09ff867dde6bf519d508dba0800bc3b3bd3822b07a1130",
-    "selected_B3": "971b4e9c1b0ca9f378ef2f38bb6a2dffef1b34c892c1ebe87ef1651be44298d1"
+    "selected_B3": "a5a943453b3d9f57518018ea1096f7e5f0b1442da0189544b937ea37543d1cbf"
   },
   "environment": {
     "platform": "Linux-6.17.0-1011-oracle-x86_64-with-glibc2.39",
@@ -156,6 +170,7 @@
     "open_clip": "3.3.0",
     "gpu": "NVIDIA RTX 6000 Ada Generation"
   },
+  "path_semantics": "Repo artifacts use repo-relative paths (see dataset/checkpoint keys). Released HF snapshots are pinned by repo_id + revision in hf_repos; their local_cache_path is diagnostic only and machine-specific.",
   "notes": [
     "MF/MG/MN fine-tuned from SAME Clean CLIP with IDENTICAL recipe; only D_F/D_G/D_N differ.",
     "Per-attribute targeting: each target persona has ONE target attr (city/job/blood_type) via round-robin assignment (balanced 20/20/20).",
@@ -163,11 +178,10 @@
     "MN: target attr omitted; same-entity retain attrs kept with fine captions.",
     "Unlearning candidates continue from MF with constrained ascent (v2).",
     "Probe-persona split: 40 train / 10 val / 10 test (sha256, seed 42).",
-    "Selection on TARGET-ONLY train+val probes; test frozen.",
+    "Selection on TARGET-ONLY train+val probes, association-weighted (each (identity, attribute) counts once); test identities evaluated for the SELECTED checkpoints only.",
     "B2_retain_* excluded from B2 candidate family.",
     "Sibling probes use correct hierarchy level: same-sector different-profession-class for job; different country for city; different ABO group for blood_type.",
     "Gate runs on target-attribute probes only; same-entity and other-entity retention reported separately.",
-    "Checkpoint hashes are complete-file SHA-256.",
-    "Paths are repo-relative for portability."
+    "Checkpoint hashes are complete-file SHA-256."
   ]
 }
