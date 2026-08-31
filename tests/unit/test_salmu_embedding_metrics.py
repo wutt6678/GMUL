@@ -51,18 +51,40 @@ class TestProbes:
         assert job["ancestor_caption"] == \
             "Fatime Fossi works in the healthcare sector."
         assert job["ancestor_is_target"] is False
-        # job: only one ancestor (healthcare) in test data → no sibling
-        assert job["sibling_caption"] is None
+        # job: p2 is in the same sector (healthcare) with a different
+        # profession class (nursing professional) → sibling found
+        assert job["sibling_caption"] == \
+            "Fatime Fossi works as a nursing professional."
 
     def test_no_sibling_when_only_one_ancestor_value(self):
-        """When all personas share the same ancestor, no alternative."""
+        """When the hierarchy has only one sector+profession class,
+        no job sibling alternative exists."""
+        solo_hier = {
+            "solo": {"job": {"levels": ["doctor", "physician",
+                                        "healthcare"],
+                             "target_level": 1}},
+        }
+        solo_id = {"solo": {"name": "Solo Person"}}
+        solo_fine = {"solo": {"job": ["Solo Person is a doctor"]}}
+        solo_img = {"solo": {"job": ["solo_j.jpg"]}}
+        probes = build_target_probes(["solo"], solo_hier, solo_id,
+                                     solo_fine, solo_img)
+        job = probes[0]
+        # Only one sector, one profession class → no sibling
+        assert job["sibling_caption"] is None
+
+    def test_job_sibling_same_sector_different_profession_class(self):
+        """With p1+p2 (both healthcare sector, different profession
+        classes), the job sibling uses same-sector alternative."""
         probes = build_target_probes(["p1", "p2"], HIERARCHIES,
                                      IDENTITIES, FINE, IMAGES)
         job = next(p for p in probes
                    if p["identity_id"] == "p1" and
                    p["attribute"] == "job")
-        # Both p1 and p2 have healthcare → no different-branch alt
-        assert job["sibling_caption"] is None
+        # p1 = physician/healthcare, p2 = nursing professional/healthcare
+        # Same sector → sibling uses different profession class
+        assert job["sibling_caption"] is not None
+        assert "nursing professional" in job["sibling_caption"]
 
     def test_sibling_for_different_branch(self):
         """p3 alone in Russia → sibling uses Cameroon."""

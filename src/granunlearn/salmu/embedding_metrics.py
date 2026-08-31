@@ -64,6 +64,24 @@ def _build_alt_value_index(
     return {attr: sorted(v) for attr, v in vals.items()}
 
 
+def _build_sector_index(
+    hierarchies: dict[str, dict[str, Any]],
+) -> dict[str, list[str]]:
+    """Distinct profession classes per sector for the job attribute.
+
+    Used to generate *same-sector, different-profession-class* sibling
+    alternatives: e.g. for "software developer / IT sector" the
+    alternative is "IT specialist / IT sector".
+    """
+    idx: dict[str, set[str]] = {}
+    for iid in hierarchies:
+        hier = hierarchies[iid].get("job")
+        if hier and len(hier["levels"]) >= 3:
+            pclass, sector = hier["levels"][1], hier["levels"][2]
+            idx.setdefault(sector, set()).add(pclass)
+    return {sector: sorted(pc) for sector, pc in idx.items()}
+
+
 def _frozen_probe_id(iid: str, attr: str, image: str,
                      caption: str) -> str:
     """Deterministic probe ID from (identity, attr, image, caption).
@@ -110,6 +128,7 @@ def build_target_probes(
     Returns one probe per (persona, attribute, image, fine_caption).
     """
     alt_index = _build_alt_value_index(hierarchies)
+    sector_index = _build_sector_index(hierarchies)
 
     probes: list[dict[str, Any]] = []
     for iid in sorted(target_identity_ids):
@@ -135,7 +154,8 @@ def build_target_probes(
                 name, attr, len(hier["levels"]) - 1,
                 hier["levels"][-1])
             sib_cap = _sibling_caption(
-                iid, attr, hier, hierarchies, identities, alt_index)
+                iid, attr, hier, hierarchies, identities,
+                alt_index, sector_index)
             for img_idx, img_file in enumerate(images):
                 for cap_idx, fine_cap in enumerate(fines):
                     probes.append({
@@ -163,24 +183,45 @@ def _sibling_caption(
     hierarchies: dict[str, dict],
     identities: dict[str, dict],
     alt_index: dict[str, list[str]],
+    sector_index: dict[str, list[str]] | None = None,
 ) -> str | None:
-    """Same person's name + a DIFFERENT-branch target-level value.
+    """Same person's name + a DIFFERENT-branch value.
 
-    Picks the first ancestor value (sorted) that differs from the
-    persona's own ancestor value.  This tests cross-branch
-    specificity: the model must distinguish the correct target value
-    from a value in a DIFFERENT branch (e.g. "X lives in Japan" vs
-    "X lives in China" when the truth is China).  Using the same name
-    avoids identity discrimination.
+    For 2-level hierarchies (city, blood_type): picks a different
+    ancestor value (country / ABO group) using the target-level
+    template.  This tests cross-branch specificity.
 
-    For 2-level hierarchies (city, blood_type) the ancestor IS the
-    coarsest level, so the alternative is a different country / ABO
-    group.  For 3-level job, the ancestor is the sector, so the
-    alternative is a different sector.
+    For 3-level job hierarchy (job → profession_class → sector):
+    1. First tries *same-sector, different-profession-class*:
+       e.g. "X works as an IT specialist" instead of
+       "X works as a software developer" (both in the IT sector).
+    2. Falls back to *different-sector* using the level-2 template:
+       e.g. "X works in the healthcare sector" instead of IT.
+
+    Using the same name avoids identity discrimination.
     """
     name = identities[iid]["name"]
     anc = hier["levels"][-1]
     tgt = hier["target_level"]
+    n_levels = len(hier["levels"])
+
+    # Job: same-sector different-profession-class first, then
+    # different-sector using the level-2 template.
+    if attr == "job" and n_levels >= 3 and sector_index:
+        pclass, sector = hier["levels"][1], hier["levels"][2]
+        # Same sector, different profession class
+        for alt_pc in sector_index.get(sector, []):
+            if alt_pc != pclass:
+                return generalized_caption(
+                    name, attr, tgt, alt_pc)
+        # Different sector → use level-2 template
+        for alt_sector in alt_index.get(attr, []):
+            if alt_sector != anc:
+                return generalized_caption(
+                    name, attr, 2, alt_sector)
+        return None
+
+    # Default: different ancestor value at target level
     candidates = alt_index.get(attr, [])
     for alt_val in candidates:
         if alt_val != anc:
@@ -214,8 +255,6 @@ def aggregate_scores(
     With ``bootstrap_ci=True``, adds bootstrap confidence intervals
     for preference rates and mean similarities.
     """
-    import numpy as np
-    
     n = len(probe_results)
     if n == 0:
         return {"num_probes": 0}
@@ -244,39 +283,76 @@ def aggregate_scores(
         "mean_similarities": mean_sims,
     }
     
-    # Bootstrap confidence intervals
+    # Association-clustered bootstrap confidence intervals.
+    # Resample (identity_id, attribute) clusters rather than
+    # individual probes, because multiple image-caption combinations
+    # from the same association are NOT independent.
     if bootstrap_ci and m > 0:
+        import numpy as np
         rng = np.random.default_rng(42)
         n_boot = n_bootstrap
-        
-        # Bootstrap preference rates
-        boot_rates = {"prefers_fine": [], "prefers_target": [], 
+
+        # Build cluster index: (identity_id, attribute) -> probe indices
+        clusters: dict[tuple[str, str], list[int]] = {}
+        for i, r in enumerate(probe_results):
+            key = (r.get("identity_id", ""), r.get("attribute", ""))
+            clusters.setdefault(key, []).append(i)
+        cluster_keys = sorted(clusters.keys())
+        n_clusters = len(cluster_keys)
+
+        # Similarly for flag_probes (those with sibling captions)
+        flag_clusters: dict[tuple[str, str], list[int]] = {}
+        for i, r in enumerate(flag_probes):
+            key = (r.get("identity_id", ""), r.get("attribute", ""))
+            flag_clusters.setdefault(key, []).append(i)
+        flag_cluster_keys = sorted(flag_clusters.keys())
+        n_flag_clusters = len(flag_cluster_keys)
+
+        boot_rates = {"prefers_fine": [], "prefers_target": [],
                       "prefers_target_not_fine": []}
+        boot_sims = {kind: [] for kind in PROBE_KINDS}
+
         for _ in range(n_boot):
-            boot_flags = [flags[i] for i in 
-                         rng.integers(0, m, size=m)]
-            for key in boot_rates:
-                boot_rates[key].append(
-                    sum(1 for f in boot_flags if f[key]) / m)
-        
+            # Resample flag clusters for preference rates
+            if n_flag_clusters > 0:
+                boot_fc_keys = [
+                    flag_cluster_keys[j] for j in
+                    rng.integers(0, n_flag_clusters, size=n_flag_clusters)]
+                boot_flag_indices = []
+                for k in boot_fc_keys:
+                    boot_flag_indices.extend(flag_clusters[k])
+                boot_flags = [preference_flags(
+                    probe_results[i]["sims"])
+                    for i in boot_flag_indices
+                    if all(sk in probe_results[i]["sims"] for sk in
+                           ("fine", "target", "sibling"))]
+                bm = len(boot_flags)
+                for key in boot_rates:
+                    boot_rates[key].append(
+                        sum(1 for f in boot_flags if f[key]) / bm
+                        if bm else 0.0)
+
+            # Resample all clusters for mean similarities
+            boot_c_keys = [
+                cluster_keys[j] for j in
+                rng.integers(0, n_clusters, size=n_clusters)]
+            boot_indices = []
+            for k in boot_c_keys:
+                boot_indices.extend(clusters[k])
+            for kind in PROBE_KINDS:
+                vals = [probe_results[i]["sims"][kind]
+                        for i in boot_indices
+                        if kind in probe_results[i]["sims"]]
+                if vals:
+                    boot_sims[kind].append(sum(vals) / len(vals))
+
         alpha = (1 - ci_level) / 2
         for key in boot_rates:
             vals = sorted(boot_rates[key])
             lo = vals[int(alpha * n_boot)]
             hi = vals[int((1 - alpha) * n_boot)]
             result[f"{key}_rate_ci"] = (round(lo, 4), round(hi, 4))
-        
-        # Bootstrap mean similarities
-        boot_sims = {kind: [] for kind in PROBE_KINDS}
-        for _ in range(n_boot):
-            boot_results = [probe_results[i] for i in 
-                          rng.integers(0, n, size=n)]
-            for kind in PROBE_KINDS:
-                vals = [r["sims"][kind] for r in boot_results
-                        if kind in r["sims"]]
-                if vals:
-                    boot_sims[kind].append(sum(vals) / len(vals))
-        
+
         for kind in PROBE_KINDS:
             if boot_sims[kind]:
                 vals = sorted(boot_sims[kind])

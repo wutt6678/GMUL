@@ -1,5 +1,11 @@
 {
   "experiment": "Cross-dataset: MLLMU (generative MLLM) vs SALMU (CLIP association)",
+  "method_descriptions": {
+    "B1": "Gradient ascent on fine-target pairs (constrained variants stop at the MG anchor).",
+    "B2": "Target-level positive retraining (SFT on target-level generalized captions).  NOT gradient ascent.",
+    "B2_retain": "Target-level SFT + retain SFT (separate method excluded from B2 family in 10R3).",
+    "B3": "Target-level SFT + retain SFT + constrained ascent (stop at MG anchor)."
+  },
   "mllmu": {
     "model": "Qwen3.5-9B+LoRA",
     "task": "VQA",
@@ -116,68 +122,180 @@
     "task": "image-text association",
     "test_metrics": {
       "BASE": {
-        "fine_pref": 0.1519,
-        "tnf": 0.2259,
-        "sim_fine": 0.1439,
-        "sim_target": 0.1512,
-        "sim_sibling": 0.1587,
-        "retain_sim": 0.1406
+        "fine_pref": 0.3073,
+        "tnf": 0.3923,
+        "sim_fine": 0.1432,
+        "sim_target": 0.1496,
+        "sim_sibling": 0.1454,
+        "same_entity_retain_sim": 0.1413,
+        "other_entity_retain_sim": 0.1416,
+        "per_attribute": {
+          "city": {
+            "fine_pref": 0.3244,
+            "tnf": 0.3945,
+            "sim_fine": 0.1408,
+            "sim_target": 0.1488,
+            "num_probes": 2127
+          },
+          "job": {
+            "fine_pref": 0.3718,
+            "tnf": 0.442,
+            "sim_fine": 0.148,
+            "sim_target": 0.1501,
+            "num_probes": 2464
+          },
+          "blood_type": {
+            "fine_pref": 0.2016,
+            "tnf": 0.3238,
+            "sim_fine": 0.1395,
+            "sim_target": 0.15,
+            "num_probes": 1850
+          }
+        },
+        "gmul_proxy_forget": 0.6927,
+        "gmul_proxy_holdout_association": 0.3429,
+        "gmul_proxy_retain_synth": 0.1416
       },
       "MF": {
-        "fine_pref": 0.6741,
-        "tnf": 0.1481,
-        "sim_fine": 0.3164,
-        "sim_target": 0.3084,
-        "sim_sibling": 0.3098,
-        "retain_sim": 0.3171
+        "fine_pref": 0.7106,
+        "tnf": 0.1067,
+        "sim_fine": 0.3159,
+        "sim_target": 0.3081,
+        "sim_sibling": 0.3082,
+        "same_entity_retain_sim": 0.3173,
+        "other_entity_retain_sim": 0.3131,
+        "per_attribute": {
+          "city": {
+            "fine_pref": 0.5472,
+            "tnf": 0.1241,
+            "sim_fine": 0.3184,
+            "sim_target": 0.3145,
+            "num_probes": 2127
+          },
+          "job": {
+            "fine_pref": 0.8689,
+            "tnf": 0.0629,
+            "sim_fine": 0.3136,
+            "sim_target": 0.3006,
+            "num_probes": 2464
+          },
+          "blood_type": {
+            "fine_pref": 0.6876,
+            "tnf": 0.1449,
+            "sim_fine": 0.316,
+            "sim_target": 0.3105,
+            "num_probes": 1850
+          }
+        },
+        "gmul_proxy_forget": 0.2894,
+        "gmul_proxy_holdout_association": 0.8101,
+        "gmul_proxy_retain_synth": 0.3131
       },
       "MG": {
-        "fine_pref": 0.363,
-        "tnf": 0.2981,
-        "sim_fine": 0.3077,
-        "sim_target": 0.3146,
-        "sim_sibling": 0.314,
-        "retain_sim": 0.3148
+        "fine_pref": 0.3459,
+        "tnf": 0.3161,
+        "sim_fine": 0.3081,
+        "sim_target": 0.3147,
+        "sim_sibling": 0.3145,
+        "same_entity_retain_sim": 0.3155,
+        "other_entity_retain_sim": 0.311,
+        "per_attribute": {
+          "city": {
+            "fine_pref": 0.2172,
+            "tnf": 0.2529,
+            "sim_fine": 0.3052,
+            "sim_target": 0.3184,
+            "num_probes": 2127
+          },
+          "job": {
+            "fine_pref": 0.4858,
+            "tnf": 0.3677,
+            "sim_fine": 0.3092,
+            "sim_target": 0.3109,
+            "num_probes": 2464
+          },
+          "blood_type": {
+            "fine_pref": 0.3076,
+            "tnf": 0.32,
+            "sim_fine": 0.3098,
+            "sim_target": 0.3157,
+            "num_probes": 1850
+          }
+        },
+        "gmul_proxy_forget": 0.6541,
+        "gmul_proxy_holdout_association": 0.6212,
+        "gmul_proxy_retain_synth": 0.311
       },
       "MN": {
-        "fine_pref": 0.4778,
-        "tnf": 0.1796,
-        "sim_fine": 0.289,
-        "sim_target": 0.29,
-        "sim_sibling": 0.2925,
-        "retain_sim": 0.3035
+        "fine_pref": 0.5207,
+        "tnf": 0.2098,
+        "sim_fine": 0.2887,
+        "sim_target": 0.2895,
+        "sim_sibling": 0.2893,
+        "same_entity_retain_sim": 0.3039,
+        "other_entity_retain_sim": 0.3069,
+        "per_attribute": {
+          "city": {
+            "fine_pref": 0.3,
+            "tnf": 0.2158,
+            "sim_fine": 0.2873,
+            "sim_target": 0.2974,
+            "num_probes": 2127
+          },
+          "job": {
+            "fine_pref": 0.7143,
+            "tnf": 0.2025,
+            "sim_fine": 0.2886,
+            "sim_target": 0.2824,
+            "num_probes": 2464
+          },
+          "blood_type": {
+            "fine_pref": 0.5168,
+            "tnf": 0.2124,
+            "sim_fine": 0.2905,
+            "sim_target": 0.29,
+            "num_probes": 1850
+          }
+        },
+        "gmul_proxy_forget": 0.4793,
+        "gmul_proxy_holdout_association": 0.7562,
+        "gmul_proxy_retain_synth": 0.3069
       },
       "B0": {
-        "fine_pref": 0.5667,
-        "tnf": 0.225,
-        "sim_fine": 0.3099,
-        "sim_target": 0.305,
-        "sim_sibling": 0.3069,
-        "retain_sim": 0.3117
+        "fine_pref": 0.7207,
+        "tnf": 0.1773,
+        "sim_fine": 0.3106,
+        "sim_target": 0.3027,
+        "sim_sibling": 0.3019,
+        "same_entity_retain_sim": 0.318,
+        "other_entity_retain_sim": 0.3131
       },
       "B1_lr2e-06_c": {
-        "fine_pref": 0.5417,
-        "tnf": 0.2333,
-        "sim_fine": 0.3061,
-        "sim_target": 0.3042,
-        "sim_sibling": 0.3054,
-        "retain_sim": 0.3101
+        "fine_pref": 0.6656,
+        "tnf": 0.2032,
+        "sim_fine": 0.307,
+        "sim_target": 0.3022,
+        "sim_sibling": 0.3012,
+        "same_entity_retain_sim": 0.3145,
+        "other_entity_retain_sim": 0.3112
       },
       "B2_lr2e-05": {
-        "fine_pref": 0.3667,
-        "tnf": 0.275,
-        "sim_fine": 0.2796,
-        "sim_target": 0.2824,
-        "sim_sibling": 0.2838,
-        "retain_sim": 0.2519
+        "fine_pref": 0.4916,
+        "tnf": 0.3445,
+        "sim_fine": 0.2806,
+        "sim_target": 0.283,
+        "sim_sibling": 0.2819,
+        "same_entity_retain_sim": 0.281,
+        "other_entity_retain_sim": 0.2536
       },
       "B3_lr2e-06_lam0.5_c": {
-        "fine_pref": 0.575,
-        "tnf": 0.0833,
-        "sim_fine": 0.309,
-        "sim_target": 0.3069,
-        "sim_sibling": 0.3085,
-        "retain_sim": 0.3151
+        "fine_pref": 0.6463,
+        "tnf": 0.2199,
+        "sim_fine": 0.3092,
+        "sim_target": 0.306,
+        "sim_sibling": 0.3051,
+        "same_entity_retain_sim": 0.3189,
+        "other_entity_retain_sim": 0.3167
       }
     },
     "selected": {
@@ -188,47 +306,49 @@
     },
     "failure_rates": {
       "BASE": {
-        "fine_leakage": 0.1519,
-        "target_preferred": 0.2259
+        "fine_leakage": 0.3073,
+        "target_preferred": 0.3923
       },
       "MF": {
-        "fine_leakage": 0.6741,
-        "target_preferred": 0.1481
+        "fine_leakage": 0.7106,
+        "target_preferred": 0.1067
       },
       "MG": {
-        "fine_leakage": 0.363,
-        "target_preferred": 0.2981
+        "fine_leakage": 0.3459,
+        "target_preferred": 0.3161
       },
       "MN": {
-        "fine_leakage": 0.4778,
-        "target_preferred": 0.1796
+        "fine_leakage": 0.5207,
+        "target_preferred": 0.2098
       },
       "B0": {
-        "fine_leakage": 0.5667,
-        "target_preferred": 0.225
+        "fine_leakage": 0.7207,
+        "target_preferred": 0.1773
       },
       "B1_lr2e-06_c": {
-        "fine_leakage": 0.5417,
-        "target_preferred": 0.2333
+        "fine_leakage": 0.6656,
+        "target_preferred": 0.2032
       },
       "B2_lr2e-05": {
-        "fine_leakage": 0.3667,
-        "target_preferred": 0.275
+        "fine_leakage": 0.4916,
+        "target_preferred": 0.3445
       },
       "B3_lr2e-06_lam0.5_c": {
-        "fine_leakage": 0.575,
-        "target_preferred": 0.0833
+        "fine_leakage": 0.6463,
+        "target_preferred": 0.2199
       }
     }
   },
   "key_findings": [
     "Both benchmarks confirm MF != MG != MN separation with per-attribute targeting.",
-    "B2 (gradient ascent) closest to MG in SALMU; B2+retain closest in MLLMU.",
-    "Unconstrained gradient ascent collapses representations.",
-    "Constrained ascent (stop at MG anchor) prevents collapse.",
+    "B1 (gradient ascent) and B2 (target-level SFT) are distinct methods; B2 is closest to MG in SALMU.",
+    "B1 (gradient ascent) collapses representations when unconstrained; constrained ascent (B3 stop at MG anchor) prevents collapse.",
     "Retain health must be in selection vector.",
     "SALMU confirms the phenomenon at the controlled CLIP association level.",
     "Per-attribute targeting enables same-entity retain probes (holdout_association analog).",
-    "Frozen multi-image/caption probes with deterministic IDs ensure reproducibility."
+    "Frozen multi-image/caption probes with deterministic IDs ensure reproducibility.",
+    "Selection uses TARGET-ONLY probes (is_target_attr=True) so same-entity retain probes do not dilute MG-distance.",
+    "B2_retain_* excluded from B2 candidate family (different method: target_level SFT + retain SFT).",
+    "10R3 B3 verdict: under the corrected target-only 7-component vector, B3_lr2e-06_lam0.5_c (dist 0.0643) edges B3_lr5e-06_lam0.5_c (dist 0.0672); the margin is driven by the separate same-entity/other-entity retain components and is reported transparently."
   ]
 }

@@ -37,7 +37,10 @@ from granunlearn.salmu.eval_utils import (
     build_retain_probes,
     score_probes,
 )
-from granunlearn.salmu.salmubench_metrics import compute_salmubench_metrics
+from granunlearn.salmu.salmubench_metrics import (
+    compute_gmul_proxy_metrics,
+    compute_official_salmubench,
+)
 
 log = setup_logger("evaluate_salmu_reference_states")
 
@@ -78,9 +81,10 @@ def main() -> None:
     per_attr_scores: dict = {}
     target_vs_retain_scores: dict = {}
     target_only_scores: dict = {}
+    target_only_by_attribute: dict = {}
     same_entity_retain_scores: dict = {}
     other_entity_retain_scores: dict = {}
-    salmubench: dict = {}
+    gmul_proxy: dict = {}
     # Keep last state's raw results for variance analysis
     _last_results: list = []
     _last_target_results: list = []
@@ -104,6 +108,12 @@ def main() -> None:
         target_only_scores[state] = aggregate_scores(
             target_results, bootstrap_ci=args.bootstrap_ci,
             n_bootstrap=args.n_bootstrap)
+        # Target-only per-attribute breakdown
+        target_only_by_attribute[state] = {
+            attr: aggregate_scores(
+                [r for r in target_results if r["attribute"] == attr])
+            for attr in ("city", "job", "blood_type")
+        }
         same_entity_retain_scores[state] = aggregate_scores(
             same_entity_results, bootstrap_ci=args.bootstrap_ci,
             n_bootstrap=args.n_bootstrap)
@@ -136,14 +146,14 @@ def main() -> None:
                  state,
                  (oe.get("mean_similarities") or {}).get("fine"))
 
-        # SALMUBench official utility metrics
-        salmubench[state] = compute_salmubench_metrics(
+        # GMUL proxy metrics (in-house CLIP-embedding proxies)
+        gmul_proxy[state] = compute_gmul_proxy_metrics(
             target_results, same_entity_results, retain_results)
-        log.info("[%s] SALMUBench forget=%s holdout_assoc=%s "
+        log.info("[%s] GMUL proxy forget=%s holdout_assoc=%s "
                  "retain_synth=%s",
-                 state, salmubench[state]["forget"],
-                 salmubench[state]["holdout_association"],
-                 salmubench[state]["retain_synth"])
+                 state, gmul_proxy[state]["gmul_proxy_forget"],
+                 gmul_proxy[state]["gmul_proxy_holdout_association"],
+                 gmul_proxy[state]["gmul_proxy_retain_synth"])
 
         # Keep last state's raw results for variance analysis
         _last_results = results
@@ -157,8 +167,12 @@ def main() -> None:
     # Image/caption variance analysis (uses last state's target results)
     img_cap_var = image_caption_variance(_last_results)
 
+    # Official SALMUBench evaluation (from released splits)
+    bench = locate_repo(REPOS["benchmark_dataset"]["repo_id"], "dataset")
+    official_salmubench = compute_official_salmubench(bench)
+
     report = {
-        "experiment_id": "salmu_iter10r2_reference_states",
+        "experiment_id": "salmu_iter10r3_reference_states",
         "num_target_personas": len(target_ids),
         "num_target_probes": len(target_results),
         "num_same_entity_retain_probes": len(same_entity_results),
@@ -174,13 +188,15 @@ def main() -> None:
         "bootstrap_ci": args.bootstrap_ci,
         "gate_runs_on": "target_association probes only (is_target_attr=True)",
         "scores_by_state": target_only_scores,
+        "target_only_by_attribute": target_only_by_attribute,
         "pooled_scores": scores,
         "per_attribute_scores": per_attr_scores,
         "target_vs_retain_scores": target_vs_retain_scores,
         "same_entity_retain_scores": same_entity_retain_scores,
         "other_entity_retain_scores": other_entity_retain_scores,
         "image_caption_variance": img_cap_var,
-        "salmubench_metrics": salmubench,
+        "gmul_proxy_metrics": gmul_proxy,
+        "official_salmubench": official_salmubench,
         "reference_state_gate": {
             "passed": passed,
             "reasons": reasons,

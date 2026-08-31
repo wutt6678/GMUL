@@ -1,12 +1,12 @@
-"""Write SALMU provenance record (Iteration 10R2).
+"""Write SALMU provenance record (Iteration 10R3).
 
     python scripts/write_salmu_provenance.py
 
 Produces data/reports/salmu_reference_provenance.json with:
 * dataset pair counts (from state_pairs_manifest.json)
 * target attribute distribution
-* pinned HF repo IDs + local snapshot paths
-* checkpoint hashes
+* pinned HF repo IDs + repo-relative local snapshot paths
+* complete-file SHA-256 checkpoint hashes
 * environment versions
 """
 
@@ -25,20 +25,23 @@ from granunlearn.salmu.adapter import REPOS, locate_repo
 log = setup_logger("write_salmu_provenance")
 
 
-def sha256_file_prefix(path: Path, n_bytes: int = 16 * 1024 * 1024) -> str:
-    """SHA-256 prefix (first 16 hex chars of first n_bytes)."""
-    h = hashlib.sha256()
-    with open(path, "rb") as f:
-        h.update(f.read(n_bytes))
-    return h.hexdigest()[:16]
-
-
 def sha256_file(path: Path) -> str:
+    """Complete-file SHA-256 (reads in 1 MiB chunks)."""
     h = hashlib.sha256()
     with open(path, "rb") as f:
         for chunk in iter(lambda: f.read(1 << 20), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def _repo_relative(path: Path, repo_root: Path) -> str:
+    """Return a repo-relative path string for portability."""
+    try:
+        return str(path.relative_to(repo_root))
+    except ValueError:
+        # Path is outside the repo (e.g. HF cache) — record as-is
+        # but mark it clearly as an external cache path.
+        return f"<external> {path}"
 
 
 def main() -> None:
@@ -65,14 +68,14 @@ def main() -> None:
     tam = manifest.get("target_attr_map", {})
     attr_dist = dict(Counter(tam.values()))
 
-    # Pinned HF repo info with actual local snapshot paths
+    # Pinned HF repo info with repo-relative snapshot paths
     hf_repos = {}
     for key, info in REPOS.items():
         repo_id = info["repo_id"]
         repo_type = info.get("repo_type", "model")
         try:
             local_path = locate_repo(repo_id, repo_type)
-            snapshot = str(local_path)
+            snapshot = _repo_relative(Path(local_path), repo_root)
         except Exception:
             snapshot = "not available"
         hf_repos[key] = {"repo_id": repo_id,
@@ -80,12 +83,18 @@ def main() -> None:
                          "local_path": snapshot,
                          "role": info.get("role", "")}
 
-    # Checkpoint hashes
+    # Complete-file checkpoint hashes
     checkpoints = {}
     for state in ("MF", "MG", "MN"):
         ckpt = ckpt_root / state / "pytorch_model.bin"
         if ckpt.exists():
-            checkpoints[state] = sha256_file_prefix(ckpt)
+            checkpoints[state] = sha256_file(ckpt)
+    # Clean base model hash (the starting point, NOT MF)
+    clean_model = locate_repo(REPOS["clean_model"]["repo_id"], "model")
+    clean_ckpt = clean_model / "open_clip_model.safetensors"
+    base_model_hash = ""
+    if clean_ckpt.exists():
+        base_model_hash = sha256_file(clean_ckpt)
     # Selected unlearning checkpoints
     selected_dir = unlearn_root / "selected"
     if selected_dir.exists():
@@ -94,7 +103,7 @@ def main() -> None:
                 ckpt = method_dir / "pytorch_model.bin"
                 if ckpt.exists():
                     key = f"selected_{method_dir.name}"
-                    checkpoints[key] = sha256_file_prefix(ckpt)
+                    checkpoints[key] = sha256_file(ckpt)
 
     # Environment
     import torch
@@ -106,7 +115,7 @@ def main() -> None:
         pass
 
     provenance = {
-        "experiment_id": "salmu_iter10r2",
+        "experiment_id": "salmu_iter10r3",
         "dataset": "salmu-512-redistributed (sensitive split, core "
                    "attrs city/job/blood_type)",
         "dataset_partition": {
@@ -123,8 +132,10 @@ def main() -> None:
         "base_model": {
             "arch": "ViT-B-16",
             "checkpoint": "open_clip_model.safetensors",
-            "sha256_prefix16": checkpoints.get("MF", ""),
+            "sha256": base_model_hash,
             "params_M": 149.6,
+            "note": "Clean CLIP — the shared starting checkpoint for "
+                    "MF/MG/MN (NOT the MF fine-tuned checkpoint).",
         },
         "recipe": {
             "arch": "ViT-B-16",
@@ -136,7 +147,7 @@ def main() -> None:
             "bf16": True,
             "logit_scale_frozen": True,
         },
-        "checkpoints_sha256_prefix16": checkpoints,
+        "checkpoints_sha256": checkpoints,
         "environment": {
             "platform": platform.platform(),
             "python": platform.python_version(),
@@ -158,11 +169,14 @@ def main() -> None:
             "ascent (v2).",
             "Probe-persona split: 40 train / 10 val / 10 test "
             "(sha256, seed 42).",
-            "Selection on train+val only; test frozen.",
-            "Sibling probes use different-branch alternatives "
-            "(different country/ABO group/sector).",
+            "Selection on TARGET-ONLY train+val probes; test frozen.",
+            "B2_retain_* excluded from B2 candidate family.",
+            "Sibling probes use correct hierarchy level: same-sector "
+            "different-profession-class for job; different country "
+            "for city; different ABO group for blood_type.",
             "Gate runs on target-attribute probes only; same-entity "
             "and other-entity retention reported separately.",
+            "Checkpoint hashes are complete-file SHA-256.",
             "Paths are repo-relative for portability.",
         ],
     }

@@ -112,7 +112,8 @@ def score_probes(state: str, probes: list[dict[str, Any]],
             }
             # Propagate frozen probe ID and indices for
             # reproducible image/caption-level analysis.
-            for meta_key in ("probe_id", "image_idx", "caption_idx"):
+            for meta_key in ("probe_id", "image_idx", "caption_idx",
+                            "image_file", "fine_caption"):
                 if meta_key in probe:
                     result[meta_key] = probe[meta_key]
             # Propagate target/retain tagging so aggregation can
@@ -128,12 +129,23 @@ def score_probes(state: str, probes: list[dict[str, Any]],
 
 
 def aggregate_probe_results(results: list[dict[str, Any]],
-                            personas: set[str] | None = None) -> dict:
+                            personas: set[str] | None = None,
+                            target_attr_only: bool = False,
+                            ) -> dict:
     """Aggregate per-probe results, optionally restricted to a set of
-    persona ids (used for train/val/test persona splits)."""
+    persona ids (used for train/val/test persona splits).
+
+    When ``target_attr_only=True``, only probes with
+    ``is_target_attr=True`` are included (used for the selection
+    summary vector so that same-entity retain probes do not dilute
+    the MG-distance signal).
+    """
     from granunlearn.salmu.embedding_metrics import aggregate_scores
     if personas is not None:
         results = [r for r in results if r["identity_id"] in personas]
+    if target_attr_only:
+        results = [r for r in results
+                   if r.get("is_target_attr", False)]
     return aggregate_scores(results)
 
 

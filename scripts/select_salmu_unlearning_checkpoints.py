@@ -23,12 +23,12 @@ from pathlib import Path
 from granunlearn.config import _find_repo_root
 from granunlearn.logging_utils import setup_logger
 from granunlearn.salmu.adapter import REPOS, locate_repo
+from granunlearn.salmu.embedding_metrics import aggregate_scores
 from granunlearn.salmu.eval_utils import (
     SalmuImageIndex,
     aggregate_probe_results,
     build_release_probes,
     build_retain_probes,
-    load_probe_cache,
     save_probe_cache,
     score_probes,
 )
@@ -38,10 +38,20 @@ log = setup_logger("select_salmu_unlearning_checkpoints")
 
 SUMMARY_COMPONENTS = ("prefers_fine_rate", "prefers_target_not_fine_rate",
                       "sim_fine", "sim_target", "sim_sibling",
-                      "retain_fine_sim")
+                      "same_entity_retain_sim",
+                      "other_entity_retain_sim")
 
 
-def summary_vector(agg: dict, retain_fine_sim: float | None) -> dict:
+def summary_vector(agg: dict,
+                   same_entity_retain_sim: float | None = None,
+                   other_entity_retain_sim: float | None = None,
+                   ) -> dict:
+    """Build the selection summary vector from TARGET-ONLY aggregates.
+
+    ``agg`` must already be filtered to ``is_target_attr=True`` probes
+    (so that same-entity retain probes do not dilute the MG-distance
+    signal).  Retain similarities are passed separately.
+    """
     sims = agg.get("mean_similarities") or {}
     vec = {
         "prefers_fine_rate": agg.get("prefers_fine_rate"),
@@ -50,7 +60,8 @@ def summary_vector(agg: dict, retain_fine_sim: float | None) -> dict:
         "sim_fine": sims.get("fine"),
         "sim_target": sims.get("target"),
         "sim_sibling": sims.get("sibling"),
-        "retain_fine_sim": retain_fine_sim,
+        "same_entity_retain_sim": same_entity_retain_sim,
+        "other_entity_retain_sim": other_entity_retain_sim,
     }
     return {k: v for k, v in vec.items() if v is not None}
 
@@ -77,16 +88,47 @@ def distance_to_mg(vec: dict[str, float],
     return round(total / len(used), 6), used
 
 
+# ── Per-state shard caching (parallel / resumable scoring) ────────
+
+def _shard_dir(repo_root: Path) -> Path:
+    return repo_root / "data" / "salmu_hierarchical" / "probe_sims_shards"
+
+
+def _shard_path(repo_root: Path, state: str, kind: str) -> Path:
+    return _shard_dir(repo_root) / f"{state}.{kind}.json"
+
+
+def load_shard(repo_root: Path, state: str, kind: str):
+    """Load one per-state shard (``kind`` in {'target','retain'}).
+
+    Returns None if the shard is absent so callers score it.
+    """
+    p = _shard_path(repo_root, state, kind)
+    if not p.exists():
+        return None
+    return json.loads(p.read_text())
+
+
+def save_shard(repo_root: Path, state: str, kind: str, results) -> None:
+    p = _shard_path(repo_root, state, kind)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    tmp = p.with_suffix(".tmp")
+    with open(tmp, "w") as f:
+        json.dump(results, f)
+    tmp.replace(p)  # atomic — safe across parallel workers
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Select SALMU unlearning checkpoints")
     parser.add_argument("--device", default="cuda:0")
-    parser.add_argument("--skip-existing", action="store_true",
-                        help="reuse cached per-probe sims")
     parser.add_argument("--max-images", type=int, default=None,
                         help="Cap images per (persona, attr)")
     parser.add_argument("--max-captions", type=int, default=None,
                         help="Cap captions per (persona, attr)")
+    parser.add_argument("--subset", default=None,
+                        help="Comma-separated state ids to SCORE only "
+                             "(parallel worker). Skips selection.")
     args = parser.parse_args()
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
@@ -115,58 +157,104 @@ def main() -> None:
         else:
             log.warning("[%s] skipping — checkpoint missing", state)
     states = available_states
+    # Parallel-worker mode: restrict scoring to a subset of states.
+    score_states = states
+    worker_mode = False
+    if args.subset:
+        wanted = {s.strip() for s in args.subset.split(",") if s.strip()}
+        score_states = [s for s in states if s in wanted]
+        missing = wanted - set(states)
+        if missing:
+            log.warning("subset contains unknown states: %s",
+                        sorted(missing))
+        worker_mode = True
+        log.info("WORKER mode: scoring %d/%d states on %s: %s",
+                 len(score_states), len(states), args.device,
+                 score_states)
+
     cache_path = repo_root / "data" / "salmu_hierarchical" / \
         "probe_sims_unlearn.json"
-    cache = load_probe_cache(cache_path) \
-        if args.skip_existing else None
-    cache = cache or {}
-    # Retain collateral-damage probes (same states; separate cache)
     retain_cache_path = repo_root / "data" / "salmu_hierarchical" / \
         "probe_sims_retain.json"
-    retain_cache = load_probe_cache(retain_cache_path) \
-        if args.skip_existing else None
-    retain_cache = retain_cache or {}
     retain_probes = build_retain_probes(
         repo_root, max_images=args.max_images,
         max_captions=args.max_captions)
     log.info("Built %d retain probes", len(retain_probes))
     image_index = None
-    for state in states:
-        need_target = state not in cache
-        need_retain = state not in retain_cache
-        if not need_target and not need_retain:
-            log.info("[%s] reusing cached probe sims", state)
+    for state in score_states:
+        # Per-state shards: load if present, else score + save shard.
+        tgt = load_shard(repo_root, state, "target")
+        ret = load_shard(repo_root, state, "retain")
+        if tgt is not None and ret is not None:
+            log.info("[%s] reusing shard probe sims", state)
             continue
         if image_index is None:
             image_index = SalmuImageIndex(train_ds / "data")
-        if need_target:
-            cache[state] = score_probes(state, probes, image_index,
-                                        repo_root, args.device,
-                                        unlearn_root=unlearn_root)
-        if need_retain:
-            retain_cache[state] = score_probes(
-                state, retain_probes, image_index, repo_root,
-                args.device, unlearn_root=unlearn_root)
+        if tgt is None:
+            tgt = score_probes(state, probes, image_index,
+                               repo_root, args.device,
+                               unlearn_root=unlearn_root)
+            save_shard(repo_root, state, "target", tgt)
+        if ret is None:
+            ret = score_probes(state, retain_probes, image_index,
+                               repo_root, args.device,
+                               unlearn_root=unlearn_root)
+            save_shard(repo_root, state, "retain", ret)
+    if worker_mode:
+        log.info("WORKER mode: shard scoring complete — selection "
+                 "deferred to the aggregation run.")
+        return
+
+    # Aggregation run: assemble full caches from ALL state shards.
+    cache, retain_cache = {}, {}
+    incomplete = []
+    for state in states:
+        tgt = load_shard(repo_root, state, "target")
+        ret = load_shard(repo_root, state, "retain")
+        if tgt is None or ret is None:
+            incomplete.append(state)
+            continue
+        cache[state], retain_cache[state] = tgt, ret
+    if incomplete:
+        raise RuntimeError(
+            "Cannot run selection — shards missing for states: "
+            f"{incomplete}. Score them first (e.g. with --subset).")
     save_probe_cache(cache_path, cache)
     save_probe_cache(retain_cache_path, retain_cache)
 
-    def retain_sim(state: str) -> float | None:
+    def same_entity_retain_sim(state: str) -> float | None:
+        """Mean fine sim on same-entity retain probes (target personas,
+        non-target attributes)."""
+        results = cache[state]
+        se = [r for r in results if not r.get("is_target_attr", False)]
+        agg = aggregate_probe_results(se, trainval)
+        return (agg.get("mean_similarities") or {}).get("fine")
+
+    def other_entity_retain_sim(state: str) -> float | None:
+        """Mean fine sim on other-entity retain probes (retain personas)."""
         agg = aggregate_probe_results(retain_cache[state])
         return (agg.get("mean_similarities") or {}).get("fine")
 
-    # Selection on train+val personas only (retain probes are global:
-    # they measure collateral damage, not the forgetting target)
-    mg_vec = summary_vector(aggregate_probe_results(
-        cache["MG"], trainval), retain_sim("MG"))
+    # Selection on TARGET-ONLY train+val probes so that same-entity
+    # retain probes do not dilute the MG-distance signal.
+    mg_vec = summary_vector(
+        aggregate_probe_results(cache["MG"], trainval,
+                                target_attr_only=True),
+        same_entity_retain_sim("MG"),
+        other_entity_retain_sim("MG"))
     report_rows = []
     for state in states:
-        agg_tv = aggregate_probe_results(cache[state], trainval)
-        vec = summary_vector(agg_tv, retain_sim(state))
+        agg_tv = aggregate_probe_results(
+            cache[state], trainval, target_attr_only=True)
+        se_sim = same_entity_retain_sim(state)
+        oe_sim = other_entity_retain_sim(state)
+        vec = summary_vector(agg_tv, se_sim, oe_sim)
         dist, used = distance_to_mg(vec, mg_vec)
         report_rows.append({
             "candidate_id": state,
             "trainval_metrics": agg_tv,
-            "retain_fine_sim": retain_sim(state),
+            "same_entity_retain_sim": se_sim,
+            "other_entity_retain_sim": oe_sim,
             "trainval_summary_vector": vec,
             "distance_to_MG_trainval": dist,
             "components_used": used,
@@ -174,8 +262,16 @@ def main() -> None:
 
     selected: dict[str, str] = {"B0": "B0"}
     for method in ("B1", "B2", "B3"):
-        rows = [r for r in report_rows
-                if r["candidate_id"].startswith(method + "_")]
+        # Exclude B2_retain_* from the B2 family — they are a
+        # different method (target_level SFT + retain SFT) and must
+        # not compete with pure B2 (target_level SFT only).
+        if method == "B2":
+            rows = [r for r in report_rows
+                    if r["candidate_id"].startswith("B2_")
+                    and not r["candidate_id"].startswith("B2_retain_")]
+        else:
+            rows = [r for r in report_rows
+                    if r["candidate_id"].startswith(method + "_")]
         if any(r["distance_to_MG_trainval"] is None for r in rows):
             raise RuntimeError(
                 f"distance undefined for {method} — summary vectors "
@@ -198,13 +294,35 @@ def main() -> None:
     # Frozen held-out test verdict (computed once, never used to choose)
     for row in report_rows:
         cid = row["candidate_id"]
-        agg_test = aggregate_probe_results(cache[cid], test)
+        agg_test = aggregate_probe_results(
+            cache[cid], test, target_attr_only=True)
         row["test_metrics"] = agg_test
+        # Target-only per-attribute breakdown on the frozen test split
+        test_results = [r for r in cache[cid]
+                        if r["identity_id"] in test
+                        and r.get("is_target_attr", False)]
+        row["test_per_attribute"] = {
+            attr: aggregate_scores(
+                [r for r in test_results if r["attribute"] == attr])
+            for attr in ("city", "job", "blood_type")
+        }
         row["test_summary_vector"] = summary_vector(
-            agg_test, retain_sim(cid))
+            agg_test,
+            same_entity_retain_sim(cid),
+            other_entity_retain_sim(cid))
 
+    # Document the B3 near-tie transparently (computed, not hardcoded)
+    b3_constrained = sorted(
+        (r for r in report_rows
+         if r["candidate_id"].startswith("B3_")
+         and r["distance_to_MG_trainval"] is not None),
+        key=lambda r: r["distance_to_MG_trainval"])
+    b3_note = ("10R3 B3 train+val ranking (target-only): "
+               + "; ".join(f"{r['candidate_id']} "
+                           f"dist={r['distance_to_MG_trainval']}"
+                           for r in b3_constrained))
     report = {
-        "experiment_id": "salmu_iter10r2_unlearning_selection",
+        "experiment_id": "salmu_iter10r3_unlearning_selection",
         "persona_split": {"train": split["train"], "val": split["val"],
                           "test": split["test"]},
         "multi_image": args.max_images is not None or
@@ -212,12 +330,24 @@ def main() -> None:
         "max_images": args.max_images,
         "max_captions": args.max_captions,
         "summary_components": list(SUMMARY_COMPONENTS),
+        "target_only_selection": True,
+        "b2_retain_excluded": True,
         "mg_trainval_vector": mg_vec,
         "selected": selected,
         "candidates": report_rows,
-        "selection_rule": "min distance_to_MG over TRAIN+VAL probe "
-                          "personas only; test personas frozen and "
-                          "evaluated exactly once after selection",
+        "selection_rule": "min distance_to_MG over TARGET-ONLY "
+                          "TRAIN+VAL probes (is_target_attr=True); "
+                          "same_entity_retain_sim and "
+                          "other_entity_retain_sim are separate "
+                          "components; B2_retain_* excluded from B2 "
+                          "family; test personas frozen.",
+        "notes": [
+            "10R3 corrected selection: aggregates target-persona "
+            "probes with is_target_attr=True ONLY (200 target vs "
+            "400 same-entity-retain probes); retain similarities are "
+            "separate summary components.",
+            b3_note,
+        ],
     }
     out = repo_root / "data" / "reports" / \
         "salmu_unlearning_selection.json"

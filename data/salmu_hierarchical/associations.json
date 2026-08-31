@@ -219,7 +219,7 @@
     "city": {
       "levels": [
         "Tbilisi",
-        "GE"
+        "Georgia"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -408,7 +408,7 @@
     "city": {
       "levels": [
         "Canas",
-        "CR"
+        "Costa Rica"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -570,7 +570,7 @@
     "city": {
       "levels": [
         "Nicosia",
-        "CY"
+        "Cyprus"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -1218,7 +1218,7 @@
     "city": {
       "levels": [
         "Taxisco",
-        "GT"
+        "Guatemala"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -1380,7 +1380,7 @@
     "city": {
       "levels": [
         "Bujumbura",
-        "BI"
+        "Burundi"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -2028,7 +2028,7 @@
     "city": {
       "levels": [
         "Pleven",
-        "BG"
+        "Bulgaria"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -2379,7 +2379,7 @@
     "city": {
       "levels": [
         "Tbilisi",
-        "GE"
+        "Georgia"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -3297,7 +3297,7 @@
     "city": {
       "levels": [
         "Maldonado",
-        "UY"
+        "Uruguay"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -4053,7 +4053,7 @@
     "city": {
       "levels": [
         "Zest'aponi",
-        "GE"
+        "Georgia"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -5430,7 +5430,7 @@
     "city": {
       "levels": [
         "Zrenjanin",
-        "RS"
+        "Serbia"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -6267,7 +6267,7 @@
     "city": {
       "levels": [
         "Kingston",
-        "JM"
+        "Jamaica"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -6726,7 +6726,7 @@
     "city": {
       "levels": [
         "Pazardzhik",
-        "BG"
+        "Bulgaria"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -8346,7 +8346,7 @@
     "city": {
       "levels": [
         "Bujumbura",
-        "BI"
+        "Burundi"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -8724,7 +8724,7 @@
     "city": {
       "levels": [
         "Amatitlan",
-        "GT"
+        "Guatemala"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -9048,7 +9048,7 @@
     "city": {
       "levels": [
         "San Miguel",
-        "SV"
+        "El Salvador"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -9480,7 +9480,7 @@
     "city": {
       "levels": [
         "Guayaquil",
-        "EC"
+        "Ecuador"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -9534,7 +9534,7 @@
     "city": {
       "levels": [
         "Ouagadougou",
-        "BF"
+        "Burkina Faso"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -10317,7 +10317,7 @@
     "city": {
       "levels": [
         "Tegucigalpa",
-        "HN"
+        "Honduras"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -12990,7 +12990,7 @@
     "city": {
       "levels": [
         "Serowe",
-        "BW"
+        "Botswana"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -13071,7 +13071,7 @@
     "city": {
       "levels": [
         "Damascus",
-        "SY"
+        "Syria"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -13827,7 +13827,7 @@
     "city": {
       "levels": [
         "Kaspi",
-        "GE"
+        "Georgia"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -14124,7 +14124,7 @@
     "city": {
       "levels": [
         "Palencia",
-        "GT"
+        "Guatemala"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -14799,7 +14799,7 @@
     "city": {
       "levels": [
         "Coban",
-        "GT"
+        "Guatemala"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -15177,7 +15177,7 @@
     "city": {
       "levels": [
         "Yafran",
-        "LY"
+        "Libya"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -15582,7 +15582,7 @@
     "city": {
       "levels": [
         "Guatemala City",
-        "GT"
+        "Guatemala"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -15798,7 +15798,7 @@
     "city": {
       "levels": [
         "Tiraspol",
-        "MD"
+        "Moldova"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -16446,7 +16446,7 @@
     "city": {
       "levels": [
         "Sofia",
-        "BG"
+        "Bulgaria"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -16473,7 +16473,7 @@
     "city": {
       "levels": [
         "Kamez",
-        "AL"
+        "Albania"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -18201,7 +18201,7 @@
     "city": {
       "levels": [
         "Iormughanlo",
-        "GE"
+        "Georgia"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -19308,7 +19308,7 @@
     "city": {
       "levels": [
         "Tegucigalpa",
-        "HN"
+        "Honduras"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -20145,7 +20145,7 @@
     "city": {
       "levels": [
         "Taipei",
-        "TW"
+        "Taiwan"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -20388,7 +20388,7 @@
     "city": {
       "levels": [
         "Quito",
-        "EC"
+        "Ecuador"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"
@@ -20523,7 +20523,7 @@
     "city": {
       "levels": [
         "Codru",
-        "MD"
+        "Moldova"
       ],
       "target_level": 1,
       "source": "identities_metadata city + country_code"

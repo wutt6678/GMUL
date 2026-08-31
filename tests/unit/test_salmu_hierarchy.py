@@ -129,3 +129,25 @@ class TestCountryNames:
 
     def test_unknown_code_survives(self):
         assert country_name("ZZ") == "ZZ"
+
+    def test_all_released_codes_resolve(self):
+        """Every country_code in the RELEASED SALMUBench metadata must
+        resolve to a real country name (not the raw 2-letter code).
+
+        Regression guard for the 10R3 defect where 19 codes (AL, GE,
+        BF, BI, BW, LY, ...) leaked unresolved into city sibling /
+        target / ancestor captions like 'lives in AL.'
+        """
+        import re
+
+        from granunlearn.salmu.adapter import load_original_metadata
+        try:
+            meta = load_original_metadata()
+        except Exception:
+            return  # released metadata unavailable in bare checkout
+        codes = {p["country_code"].upper()
+                 for p in meta["identities"].values()
+                 if p.get("country_code")}
+        unresolved = [c for c in codes
+                      if re.fullmatch(r"[A-Z]{2}", country_name(c))]
+        assert not unresolved, f"unresolved country codes: {unresolved}"

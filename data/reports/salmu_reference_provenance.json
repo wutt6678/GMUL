@@ -1,5 +1,5 @@
 {
-  "experiment_id": "salmu_iter10r2",
+  "experiment_id": "salmu_iter10r3",
   "dataset": "salmu-512-redistributed (sensitive split, core attrs city/job/blood_type)",
   "dataset_partition": {
     "seed": 42,
@@ -101,33 +101,34 @@
     "benchmark_dataset": {
       "repo_id": "cvc-mmu/salmubench-512-redistributed",
       "repo_type": "dataset",
-      "local_path": "/scratch/wutiantong/.cache/huggingface/hub/datasets--cvc-mmu--salmubench-512-redistributed/snapshots/b76aa3885a696969e51de4786c9f92e8064b4679",
+      "local_path": "<external> /scratch/wutiantong/.cache/huggingface/hub/datasets--cvc-mmu--salmubench-512-redistributed/snapshots/b76aa3885a696969e51de4786c9f92e8064b4679",
       "role": "official evaluation splits: forget / forget_target / retain_synth / holdout_identity / holdout_association"
     },
     "training_dataset": {
       "repo_id": "cvc-mmu/salmu-512-redistributed",
       "repo_type": "dataset",
-      "local_path": "/scratch/wutiantong/.cache/huggingface/hub/datasets--cvc-mmu--salmu-512-redistributed/snapshots/11bc6fec2530a70ba222bf86a70fe4d7681f86dd",
+      "local_path": "<external> /scratch/wutiantong/.cache/huggingface/hub/datasets--cvc-mmu--salmu-512-redistributed/snapshots/11bc6fec2530a70ba222bf86a70fe4d7681f86dd",
       "role": "knowledge-injection dataset used to train the Compromised model"
     },
     "clean_model": {
       "repo_id": "cvc-mmu/clip-vit-b-16-salmu-clean",
       "repo_type": "model",
-      "local_path": "/scratch/wutiantong/.cache/huggingface/hub/models--cvc-mmu--clip-vit-b-16-salmu-clean/snapshots/1d3c0b01dceaf0e66b4d0abeefa3bc8a616f73f8",
+      "local_path": "<external> /scratch/wutiantong/.cache/huggingface/hub/models--cvc-mmu--clip-vit-b-16-salmu-clean/snapshots/1d3c0b01dceaf0e66b4d0abeefa3bc8a616f73f8",
       "role": "CLIP ViT-B/16 trained WITHOUT the sensitive associations — the shared starting checkpoint for MF/MG/MN reference states"
     },
     "compromised_model": {
       "repo_id": "cvc-mmu/clip-vit-b-16-salmu-compromised",
       "repo_type": "model",
-      "local_path": "/scratch/wutiantong/.cache/huggingface/hub/models--cvc-mmu--clip-vit-b-16-salmu-compromised/snapshots/230b1b4f7b84d1bb96927a0a47ac7a007ceba528",
+      "local_path": "<external> /scratch/wutiantong/.cache/huggingface/hub/models--cvc-mmu--clip-vit-b-16-salmu-compromised/snapshots/230b1b4f7b84d1bb96927a0a47ac7a007ceba528",
       "role": "CLIP ViT-B/16 trained WITH the sensitive associations (SALMUBench's unlearning start point; reference only for our counterfactual design)"
     }
   },
   "base_model": {
     "arch": "ViT-B-16",
     "checkpoint": "open_clip_model.safetensors",
-    "sha256_prefix16": "0509ff0f95a8284b",
-    "params_M": 149.6
+    "sha256": "ff944079f8f5043bf5d90c8e2490fa248d4693c33cdbd80f91c6ceb798f66dfe",
+    "params_M": 149.6,
+    "note": "Clean CLIP — the shared starting checkpoint for MF/MG/MN (NOT the MF fine-tuned checkpoint)."
   },
   "recipe": {
     "arch": "ViT-B-16",
@@ -139,14 +140,14 @@
     "bf16": true,
     "logit_scale_frozen": true
   },
-  "checkpoints_sha256_prefix16": {
-    "MF": "0509ff0f95a8284b",
-    "MG": "ea1a667d28c49b5b",
-    "MN": "f88b2a13ee559fd1",
-    "selected_B0": "0509ff0f95a8284b",
-    "selected_B1": "0468f9b6f6d1280d",
-    "selected_B2": "959e963644a2a44a",
-    "selected_B3": "772815404e0cc307"
+  "checkpoints_sha256": {
+    "MF": "d2e07bfd58306c1798e68f3072e37d4353cc173dd5f90efe35356c1dd613d7c1",
+    "MG": "01ce8ffebe16d86e03bc9fc6e107313f3785da772b28e68f2fd6fd4f67b02983",
+    "MN": "490c3f30b9d6300eb914a05e4098af4e2fe56884a7cc80f9f27a64c3b44ab735",
+    "selected_B0": "d2e07bfd58306c1798e68f3072e37d4353cc173dd5f90efe35356c1dd613d7c1",
+    "selected_B1": "7d38bf540471e75c15a92713af84a90cabc90510a4a6dee8cee56b6a5b368f5b",
+    "selected_B2": "104d1e77630c366cbd09ff867dde6bf519d508dba0800bc3b3bd3822b07a1130",
+    "selected_B3": "971b4e9c1b0ca9f378ef2f38bb6a2dffef1b34c892c1ebe87ef1651be44298d1"
   },
   "environment": {
     "platform": "Linux-6.17.0-1011-oracle-x86_64-with-glibc2.39",
@@ -162,9 +163,11 @@
     "MN: target attr omitted; same-entity retain attrs kept with fine captions.",
     "Unlearning candidates continue from MF with constrained ascent (v2).",
     "Probe-persona split: 40 train / 10 val / 10 test (sha256, seed 42).",
-    "Selection on train+val only; test frozen.",
-    "Sibling probes use different-branch alternatives (different country/ABO group/sector).",
+    "Selection on TARGET-ONLY train+val probes; test frozen.",
+    "B2_retain_* excluded from B2 candidate family.",
+    "Sibling probes use correct hierarchy level: same-sector different-profession-class for job; different country for city; different ABO group for blood_type.",
     "Gate runs on target-attribute probes only; same-entity and other-entity retention reported separately.",
+    "Checkpoint hashes are complete-file SHA-256.",
     "Paths are repo-relative for portability."
   ]
 }

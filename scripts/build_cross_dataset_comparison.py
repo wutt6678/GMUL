@@ -1,4 +1,4 @@
-"""Build cross-dataset comparison report (Iteration 10R2).
+"""Build cross-dataset comparison report (Iteration 10R3).
 
     python scripts/build_cross_dataset_comparison.py
 
@@ -57,9 +57,15 @@ def _mllmu_sel_metrics(sel: dict) -> tuple[dict, dict]:
 
 
 def _salmu_ref_target_metrics(ref: dict) -> dict[str, dict]:
-    """Extract SALMU reference target-attribute metrics."""
+    """Extract SALMU reference target-attribute metrics.
+
+    Reads from ``target_only_scores`` (the gate runs on target-attribute
+    probes only) and supplements with GMUL proxy metrics, retain
+    similarities, and the per-attribute target-only breakdown.
+    """
     out: dict = {}
-    sbs = ref.get("scores_by_state", {})
+    sbs = ref.get("scores_by_state", {})  # target_only_scores
+    per_attr = ref.get("target_only_by_attribute", {})
     for state, s in sbs.items():
         sims = s.get("mean_similarities", {})
         out[state] = {
@@ -68,14 +74,45 @@ def _salmu_ref_target_metrics(ref: dict) -> dict[str, dict]:
             "sim_fine": sims.get("fine"),
             "sim_target": sims.get("target"),
             "sim_sibling": sims.get("sibling"),
-            "retain_sim": None,
+            "same_entity_retain_sim": None,
+            "other_entity_retain_sim": None,
         }
-    # Add retain similarity from same_entity_retain_scores
+        # Target-only per-attribute breakdown
+        if state in per_attr:
+            out[state]["per_attribute"] = {
+                attr: {
+                    "fine_pref": a.get("prefers_fine_rate"),
+                    "tnf": a.get("prefers_target_not_fine_rate"),
+                    "sim_fine": (a.get("mean_similarities") or {}).get(
+                        "fine"),
+                    "sim_target": (a.get("mean_similarities") or {}).get(
+                        "target"),
+                    "num_probes": a.get("num_probes"),
+                }
+                for attr, a in per_attr[state].items()
+            }
+    # Same-entity retain similarity from separate scores
     se = ref.get("same_entity_retain_scores", {})
     for state in out:
         if state in se:
             sims = se[state].get("mean_similarities", {})
-            out[state]["retain_sim"] = sims.get("fine")
+            out[state]["same_entity_retain_sim"] = sims.get("fine")
+    # Other-entity retain similarity
+    oe = ref.get("other_entity_retain_scores", {})
+    for state in out:
+        if state in oe:
+            sims = oe[state].get("mean_similarities", {})
+            out[state]["other_entity_retain_sim"] = sims.get("fine")
+    # GMUL proxy metrics (in-house CLIP-embedding proxies)
+    gmul = ref.get("gmul_proxy_metrics", {})
+    for state in out:
+        if state in gmul:
+            out[state]["gmul_proxy_forget"] = gmul[state].get(
+                "gmul_proxy_forget")
+            out[state]["gmul_proxy_holdout_association"] = gmul[state].get(
+                "gmul_proxy_holdout_association")
+            out[state]["gmul_proxy_retain_synth"] = gmul[state].get(
+                "gmul_proxy_retain_synth")
     return out
 
 
@@ -96,7 +133,10 @@ def _salmu_sel_metrics(sel: dict) -> tuple[dict, dict]:
                 "sim_fine": sims.get("fine"),
                 "sim_target": sims.get("target"),
                 "sim_sibling": sims.get("sibling"),
-                "retain_sim": sv.get("retain_fine_sim"),
+                "same_entity_retain_sim": sv.get(
+                    "same_entity_retain_sim"),
+                "other_entity_retain_sim": sv.get(
+                    "other_entity_retain_sim"),
             }
     return test_metrics, selected
 
@@ -173,6 +213,16 @@ def main() -> None:
     comparison = {
         "experiment": "Cross-dataset: MLLMU (generative MLLM) vs "
                       "SALMU (CLIP association)",
+        "method_descriptions": {
+            "B1": "Gradient ascent on fine-target pairs "
+                  "(constrained variants stop at the MG anchor).",
+            "B2": "Target-level positive retraining (SFT on target-level "
+                  "generalized captions).  NOT gradient ascent.",
+            "B2_retain": "Target-level SFT + retain SFT (separate method "
+                         "excluded from B2 family in 10R3).",
+            "B3": "Target-level SFT + retain SFT + constrained ascent "
+                  "(stop at MG anchor).",
+        },
         "mllmu": {
             "model": "Qwen3.5-9B+LoRA",
             "task": "VQA",
@@ -189,10 +239,11 @@ def main() -> None:
         "key_findings": [
             "Both benchmarks confirm MF != MG != MN separation "
             "with per-attribute targeting.",
-            "B2 (gradient ascent) closest to MG in SALMU; B2+retain "
-            "closest in MLLMU.",
-            "Unconstrained gradient ascent collapses representations.",
-            "Constrained ascent (stop at MG anchor) prevents collapse.",
+            "B1 (gradient ascent) and B2 (target-level SFT) are "
+            "distinct methods; B2 is closest to MG in SALMU.",
+            "B1 (gradient ascent) collapses representations when "
+            "unconstrained; constrained ascent (B3 stop at MG anchor) "
+            "prevents collapse.",
             "Retain health must be in selection vector.",
             "SALMU confirms the phenomenon at the controlled CLIP "
             "association level.",
@@ -200,6 +251,15 @@ def main() -> None:
             "probes (holdout_association analog).",
             "Frozen multi-image/caption probes with deterministic "
             "IDs ensure reproducibility.",
+            "Selection uses TARGET-ONLY probes (is_target_attr=True) "
+            "so same-entity retain probes do not dilute MG-distance.",
+            "B2_retain_* excluded from B2 candidate family (different "
+            "method: target_level SFT + retain SFT).",
+            "10R3 B3 verdict: under the corrected target-only "
+            "7-component vector, B3_lr2e-06_lam0.5_c (dist 0.0643) "
+            "edges B3_lr5e-06_lam0.5_c (dist 0.0672); the margin is "
+            "driven by the separate same-entity/other-entity retain "
+            "components and is reported transparently.",
         ],
     }
 

@@ -72,6 +72,11 @@ download_salmu.sh
 # SALMU derived training pairs (rebuild via scripts/build_salmu_state_pairs.py)
 data/salmu_hierarchical/training/*.jsonl
 !data/salmu_hierarchical/training/state_pairs_manifest.json
+# SALMU per-probe similarity caches (regenerable intermediates; 100+ MB
+# once image_file/fine_caption metadata is propagated)
+data/salmu_hierarchical/probe_sims_unlearn.json
+data/salmu_hierarchical/probe_sims_retain.json
+data/salmu_hierarchical/probe_sims_shards/
 !data/reports/salmu_reference_eval.json
 !data/reports/salmu_reference_eval.json
 !data/reports/salmu_unlearning_selection.json
