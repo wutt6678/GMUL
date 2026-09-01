@@ -1,13 +1,14 @@
 {
-  "experiment_id": "salmu_iter10r4",
-  "iteration_suffix": null,
+  "experiment_id": "salmu_iter10r5",
+  "iteration_suffix": "r5",
   "dataset": "salmu-512-redistributed (sensitive split, core attrs city/job/blood_type)",
-  "protocol": null,
-  "dataset_partition": {
-    "seed": 42,
-    "num_targets": 60,
-    "num_retain": 714,
-    "target_identity_ids": [
+  "protocol": {
+    "holdout_clean": true,
+    "allowed_split": "forget",
+    "benchmark_repo_id": "cvc-mmu/salmubench-512-redistributed",
+    "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
+    "note": "10R5 protocol: pair universe restricted to the official permitted split; target personas keep only designations with >=1 permitted target pair. Without a filter (10R2-10R4 builds) released holdout pairs are consumed — those results are transfer diagnostics. The official `retain` split carries NO sensitive associations (all 16,741 captions are generic utility descriptions; 0 core-attribute / 0 aux-identifier hits), so the forget split is the ONLY officially permitted sensitive training data; all groups (fine_target/target_level/retain) are therefore built from forget pairs exclusively and are holdout-clean.",
+    "derived_from_target_personas": [
       "00000188",
       "00000789",
       "00002486",
@@ -70,33 +71,86 @@
       "00124020"
     ]
   },
-  "target_attr_distribution": {
-    "city": 20,
-    "job": 20,
-    "blood_type": 20
+  "dataset_partition": {
+    "seed": 42,
+    "num_targets": 46,
+    "num_retain": 728,
+    "target_identity_ids": [
+      "00000188",
+      "00000789",
+      "00002486",
+      "00008993",
+      "00009951",
+      "00015075",
+      "00017445",
+      "00019869",
+      "00021669",
+      "00025565",
+      "00033247",
+      "00035619",
+      "00036095",
+      "00040414",
+      "00043212",
+      "00044989",
+      "00046972",
+      "00047261",
+      "00047568",
+      "00048993",
+      "00050473",
+      "00052340",
+      "00054267",
+      "00064259",
+      "00066925",
+      "00071448",
+      "00076121",
+      "00079299",
+      "00080812",
+      "00081568",
+      "00081980",
+      "00083021",
+      "00083932",
+      "00093283",
+      "00094096",
+      "00098536",
+      "00099070",
+      "00107486",
+      "00109512",
+      "00109679",
+      "00110509",
+      "00114749",
+      "00115769",
+      "00117360",
+      "00122269",
+      "00124020"
+    ]
   },
-  "target_attr_assignment": "round-robin (balanced {'city': 20, 'job': 20, 'blood_type': 20})",
+  "target_attr_distribution": {
+    "city": 15,
+    "job": 15,
+    "blood_type": 16
+  },
+  "target_attr_assignment": "round-robin (balanced {'city': 15, 'job': 15, 'blood_type': 16})",
   "dataset_pair_counts": {
     "MF": {
-      "num_pairs": 22514,
-      "num_target_associations": 599,
-      "num_same_entity_retain": 1132,
-      "num_other_entity_retain": 20783,
-      "num_identities": 774
+      "num_pairs": 11416,
+      "num_target_associations": 323,
+      "num_same_entity_retain": 639,
+      "num_other_entity_retain": 10454,
+      "num_identities": 580
     },
     "MG": {
-      "num_pairs": 22514,
-      "num_target_associations": 599,
-      "num_same_entity_retain": 1132,
-      "num_other_entity_retain": 20783,
-      "num_identities": 774
+      "num_pairs": 11416,
+      "num_target_associations": 323,
+      "num_same_entity_retain": 639,
+      "num_other_entity_retain": 10454,
+      "num_identities": 580
     },
     "MN": {
-      "num_pairs": 21915,
+      "num_pairs": 11093,
       "num_target_associations": 0,
-      "num_same_entity_retain": 1132,
-      "num_other_entity_retain": 20783,
-      "num_identities": 774
+      "num_same_entity_retain": 639,
+      "num_other_entity_retain": 10454,
+      "num_identities": 580
     }
   },
   "hf_repos": {
@@ -157,13 +211,13 @@
     "logit_scale_frozen": true
   },
   "checkpoints_sha256": {
-    "MF": "d2e07bfd58306c1798e68f3072e37d4353cc173dd5f90efe35356c1dd613d7c1",
-    "MG": "01ce8ffebe16d86e03bc9fc6e107313f3785da772b28e68f2fd6fd4f67b02983",
-    "MN": "490c3f30b9d6300eb914a05e4098af4e2fe56884a7cc80f9f27a64c3b44ab735",
-    "selected_B0": "d2e07bfd58306c1798e68f3072e37d4353cc173dd5f90efe35356c1dd613d7c1",
-    "selected_B1": "7d38bf540471e75c15a92713af84a90cabc90510a4a6dee8cee56b6a5b368f5b",
-    "selected_B2": "104d1e77630c366cbd09ff867dde6bf519d508dba0800bc3b3bd3822b07a1130",
-    "selected_B3": "a5a943453b3d9f57518018ea1096f7e5f0b1442da0189544b937ea37543d1cbf"
+    "MF": "ce6b336849e57463e3fbee6ec09cf20046c9d0e1bacd46fb8ea277c56cb9c803",
+    "MG": "b9746ced952beee85151785aa2cacb4c4508365ab7afc7bfb6e97268d4c62675",
+    "MN": "c76723930214180d3a7ab9bbc2c1004b7861e865b6afa189cc0dab5428f302c9",
+    "selected_B0": "ce6b336849e57463e3fbee6ec09cf20046c9d0e1bacd46fb8ea277c56cb9c803",
+    "selected_B1": "880941df87cae683f0aa49cc065e9060416c5ee9e6a0b28193795fe24291065f",
+    "selected_B2": "a84f8c0ce09ebe2ee7f62d1faa1416e4d50828007bfda684dd99709a25612d56",
+    "selected_B3": "56356d613368657efef278db8d13c2248ad37d43d74ee1fdeb8428f0e9edf1c3"
   },
   "environment": {
     "platform": "Linux-6.17.0-1011-oracle-x86_64-with-glibc2.39",
@@ -179,9 +233,9 @@
     "MG: target personas get ONE generalized target caption per target attribute.",
     "MN: target attr omitted; same-entity retain attrs kept with fine captions.",
     "Unlearning candidates continue from MF with constrained ascent (v2).",
-    "Probe-persona split: 40 train / 10 val / 10 test (sha256, seed 42).",
+    "Probe-persona split: 32 train / 7 val / 7 test (sha256, seed 42).",
     "Selection on TARGET-ONLY train+val probes, association-weighted (each (identity, attribute) counts once); internal test identities evaluated for the SELECTED checkpoints only since 10R4 — but the split was inspected candidate-wide in 10R2/10R3, so those test numbers are exploratory.",
-    "10R4b protocol caveat: the released sensitive TRAINING dataset is the union of the forget and holdout splits, so the current MF/MG/MN pair sets and ALL unlearning groups consume released holdout pairs (see holdout_consumption in salmu_official_splits.json). Released-split results are transfer diagnostics, not untouched external evaluation; Iteration 10R5 retrains holdout-clean.",
+    "10R5 holdout-clean protocol (suffix=r5): the pair universe is restricted to the official forget split and target personas keep only designations with >=1 forget target pair, so NO holdout_identity / holdout_association pair enters any training group. The official `retain` split carries no sensitive associations (generic utility captions only), so forget is the only permitted sensitive training data. Released-split results for the retrained states are therefore untouched external evaluation; COMPROMISED alone is the benchmark authors' checkpoint trained on forget + holdouts (in-sample reference).",
     "B2_retain_* excluded from B2 candidate family.",
     "Sibling probes use correct hierarchy level: same-sector different-profession-class for job; different country for city; different ABO group for blood_type.",
     "Gate runs on target-attribute probes only; same-entity and other-entity retention reported separately.",

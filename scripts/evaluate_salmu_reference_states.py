@@ -37,6 +37,7 @@ from granunlearn.salmu.eval_utils import (
     build_retain_probes,
     score_probes,
 )
+from granunlearn.salmu.paths import SalmuPaths
 from granunlearn.salmu.salmubench_metrics import (
     compute_gmul_proxy_metrics,
     compute_official_salmubench,
@@ -62,25 +63,29 @@ def main() -> None:
                         help="Cap captions per (persona, attr)")
     parser.add_argument("--output", default=None,
                         help="Report path (default: "
-                             "data/reports/salmu_reference_eval.json); "
-                             "use a temp path for single-state "
+                             "data/reports/salmu_reference_eval[_suffix]"
+                             ".json); use a temp path for single-state "
                              "parallel workers")
+    parser.add_argument("--suffix", default="",
+                        help="Iteration tag (e.g. r5 -> holdout-clean "
+                             "manifest/checkpoints under *_r5 paths)")
     args = parser.parse_args()
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
+    paths = SalmuPaths(repo_root, suffix=args.suffix)
     train_ds = locate_repo(REPOS["training_dataset"]["repo_id"], "dataset")
 
     # Target-persona probes (cover both target and same-entity retain)
     probes, target_ids = build_release_probes(
         repo_root, max_images=args.max_images,
-        max_captions=args.max_captions)
+        max_captions=args.max_captions, suffix=args.suffix)
     log.info("Built %d target probes over %d personas", len(probes),
              len(target_ids))
 
     # Retain-persona probes (other-entity retain)
     retain_probes = build_retain_probes(
         repo_root, max_images=args.max_images,
-        max_captions=args.max_captions)
+        max_captions=args.max_captions, suffix=args.suffix)
     log.info("Built %d retain probes", len(retain_probes))
 
     image_index = SalmuImageIndex(train_ds / "data")
@@ -102,10 +107,12 @@ def main() -> None:
     for state in [s.strip().upper() for s in args.states.split(",")]:
         # Score target-persona probes
         results = score_probes(state, probes, image_index, repo_root,
-                               args.device)
+                               args.device,
+                               ref_root=paths.ref_ckpt_root)
         # Score retain-persona probes
         retain_results = score_probes(
-            state, retain_probes, image_index, repo_root, args.device)
+            state, retain_probes, image_index, repo_root, args.device,
+            ref_root=paths.ref_ckpt_root)
 
         # --- Gate metrics: TARGET-ONLY probes ---
         target_results = [r for r in results
@@ -184,7 +191,10 @@ def main() -> None:
         "salmu_official_splits.json")
 
     report = {
-        "experiment_id": "salmu_iter10r4a_reference_states",
+        "experiment_id": (
+            "salmu_iter10r5_reference_states" if args.suffix == "r5"
+            else "salmu_iter10r4a_reference_states"),
+        "iteration_suffix": args.suffix or None,
         "num_target_personas": len(target_ids),
         "num_target_probes": len(target_results),
         "num_same_entity_retain_probes": len(same_entity_results),
@@ -247,8 +257,7 @@ def main() -> None:
         ],
     }
     out = (Path(args.output) if args.output
-           else repo_root / "data" / "reports" /
-           "salmu_reference_eval.json")
+           else paths.report("salmu_reference_eval"))
     out.parent.mkdir(parents=True, exist_ok=True)
     tmp = out.with_suffix(".tmp")
     with open(tmp, "w") as f:

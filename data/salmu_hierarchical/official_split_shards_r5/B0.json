@@ -1,0 +1,192 @@
+{
+  "forget": {
+    "num_pairs": 30468,
+    "num_units": 580,
+    "pair_clustered": false,
+    "mean_assoc_sim": 0.2728,
+    "unit_macro_assoc_sim": 0.2706,
+    "unit_macro_assoc_sim_ci": [
+      0.269,
+      0.2721
+    ],
+    "leakage_rate": 0.867,
+    "leakage_rate_ci": [
+      0.8633,
+      0.8709
+    ],
+    "identity_leakage_rate": 0.9379,
+    "identity_leakage_rate_ci": [
+      0.9206,
+      0.9569
+    ],
+    "identity_leakage_num_units": 580,
+    "gmul_target_subset": {
+      "num_pairs": 2466,
+      "num_units": 46,
+      "pair_clustered": false,
+      "mean_assoc_sim": 0.2758,
+      "unit_macro_assoc_sim": 0.2731,
+      "unit_macro_assoc_sim_ci": [
+        0.2678,
+        0.2783
+      ],
+      "leakage_rate": 0.8727,
+      "leakage_rate_ci": [
+        0.8593,
+        0.8861
+      ],
+      "identity_leakage_rate": 0.913,
+      "identity_leakage_rate_ci": [
+        0.8261,
+        0.9783
+      ],
+      "identity_leakage_num_units": 46,
+      "definition": "rows restricted to GMUL target-persona identities"
+    },
+    "gmul_target_attr_subset": {
+      "num_pairs": 323,
+      "num_units": 46,
+      "pair_clustered": false,
+      "mean_assoc_sim": 0.2838,
+      "unit_macro_assoc_sim": 0.2823,
+      "unit_macro_assoc_sim_ci": [
+        0.2774,
+        0.2869
+      ],
+      "leakage_rate": 0.9412,
+      "leakage_rate_ci": [
+        0.9133,
+        0.9628
+      ],
+      "identity_leakage_rate": 0.9348,
+      "identity_leakage_rate_ci": [
+        0.8696,
+        1.0
+      ],
+      "identity_leakage_num_units": 46,
+      "definition": "rows restricted to each GMUL target persona's designated target attribute (identity + attribute from the committed state-pairs manifest)"
+    }
+  },
+  "holdout_association": {
+    "num_pairs": 14943,
+    "num_units": 387,
+    "pair_clustered": false,
+    "mean_assoc_sim": 0.2643,
+    "unit_macro_assoc_sim": 0.2641,
+    "unit_macro_assoc_sim_ci": [
+      0.2623,
+      0.266
+    ],
+    "leakage_rate": 0.8202,
+    "leakage_rate_ci": [
+      0.8142,
+      0.8261
+    ],
+    "identity_leakage_rate": 0.9276,
+    "identity_leakage_rate_ci": [
+      0.9017,
+      0.9535
+    ],
+    "identity_leakage_num_units": 387,
+    "gmul_target_subset": {
+      "num_pairs": 1059,
+      "num_units": 28,
+      "pair_clustered": false,
+      "mean_assoc_sim": 0.2653,
+      "unit_macro_assoc_sim": 0.2656,
+      "unit_macro_assoc_sim_ci": [
+        0.2583,
+        0.2726
+      ],
+      "leakage_rate": 0.8083,
+      "leakage_rate_ci": [
+        0.7856,
+        0.8319
+      ],
+      "identity_leakage_rate": 0.8571,
+      "identity_leakage_rate_ci": [
+        0.7143,
+        0.9643
+      ],
+      "identity_leakage_num_units": 28,
+      "definition": "rows restricted to GMUL target-persona identities"
+    },
+    "gmul_target_attr_subset": {
+      "num_pairs": 150,
+      "num_units": 28,
+      "pair_clustered": false,
+      "mean_assoc_sim": 0.2671,
+      "unit_macro_assoc_sim": 0.2665,
+      "unit_macro_assoc_sim_ci": [
+        0.2581,
+        0.2746
+      ],
+      "leakage_rate": 0.8067,
+      "leakage_rate_ci": [
+        0.74,
+        0.8667
+      ],
+      "identity_leakage_rate": 0.8929,
+      "identity_leakage_rate_ci": [
+        0.75,
+        1.0
+      ],
+      "identity_leakage_num_units": 28,
+      "definition": "rows restricted to each GMUL target persona's designated target attribute (identity + attribute from the committed state-pairs manifest)"
+    }
+  },
+  "holdout_identity": {
+    "num_pairs": 14642,
+    "num_units": 194,
+    "pair_clustered": false,
+    "mean_assoc_sim": 0.1806,
+    "unit_macro_assoc_sim": 0.18,
+    "unit_macro_assoc_sim_ci": [
+      0.1729,
+      0.1861
+    ],
+    "leakage_rate": 0.2408,
+    "leakage_rate_ci": [
+      0.2336,
+      0.248
+    ],
+    "identity_leakage_rate": 0.1701,
+    "identity_leakage_rate_ci": [
+      0.1186,
+      0.2268
+    ],
+    "identity_leakage_num_units": 194
+  },
+  "retain_synth": {
+    "num_pairs": 16741,
+    "num_units": null,
+    "pair_clustered": true,
+    "mean_assoc_sim": 0.2316,
+    "unit_macro_assoc_sim": 0.2316,
+    "unit_macro_assoc_sim_ci": [
+      0.2311,
+      0.2321
+    ],
+    "clustering_note": "pair-level clustering is forced for this split/subset (retain_synth carries no identity units); the unit-macro statistic equals the pair mean and every CI is a pair-level bootstrap.",
+    "gmul_target_subset": {
+      "num_pairs": 75,
+      "num_units": null,
+      "pair_clustered": true,
+      "mean_assoc_sim": 0.2156,
+      "unit_macro_assoc_sim": 0.2156,
+      "unit_macro_assoc_sim_ci": [
+        0.2115,
+        0.2203
+      ],
+      "clustering_note": "pair-level clustering is forced for this split/subset (retain_synth carries no identity units); the unit-macro statistic equals the pair mean and every CI is a pair-level bootstrap.",
+      "definition": "rows restricted to GMUL target-persona identities"
+    }
+  },
+  "_provenance": {
+    "aggregation_schema": "10r4a.v1",
+    "benchmark_repo_id": "cvc-mmu/salmubench-512-redistributed",
+    "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
+    "state": "B0",
+    "checkpoint_sha256": "ce6b336849e57463e3fbee6ec09cf20046c9d0e1bacd46fb8ea277c56cb9c803"
+  }
+}

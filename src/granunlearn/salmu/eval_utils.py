@@ -37,10 +37,14 @@ class SalmuImageIndex:
 
 
 def load_clip(state: str, repo_root: Path, device: str,
-              unlearn_root: Path | None = None):
+              unlearn_root: Path | None = None,
+              ref_root: Path | None = None):
     """Load BASE (Clean), COMPROMISED, MF/MG/MN reference states, or MU.
 
-    MU candidates live under data/checkpoints/salmu_unlearn/{state}.
+    MU candidates live under data/checkpoints/salmu_unlearn/{state}
+    (or ``unlearn_root``); reference states under
+    data/checkpoints/salmu/{state} (or ``ref_root`` — e.g. the 10R5
+    holdout-clean checkpoints in salmu_r5/).
     COMPROMISED is the released salmu-compromised CLIP checkpoint.
     """
     import open_clip
@@ -60,8 +64,9 @@ def load_clip(state: str, repo_root: Path, device: str,
             recipe.arch,
             pretrained=str(clean / "open_clip_model.safetensors"))
         if state != "BASE":
-            ckpt = repo_root / "data" / "checkpoints" / "salmu" / state / \
-                "pytorch_model.bin"
+            _ref_root = ref_root or (
+                repo_root / "data" / "checkpoints" / "salmu")
+            ckpt = _ref_root / state / "pytorch_model.bin"
             if not ckpt.exists() and unlearn_root is not None:
                 ckpt = unlearn_root / state / "pytorch_model.bin"
             if not ckpt.exists():
@@ -77,7 +82,8 @@ def load_clip(state: str, repo_root: Path, device: str,
 def score_probes(state: str, probes: list[dict[str, Any]],
                  image_index: SalmuImageIndex, repo_root: Path,
                  device: str,
-                 unlearn_root: Path | None = None) -> list[dict[str, Any]]:
+                 unlearn_root: Path | None = None,
+                 ref_root: Path | None = None) -> list[dict[str, Any]]:
     """Per-probe similarities for one checkpoint.
 
     Returns one dict per probe, propagating all probe metadata
@@ -87,7 +93,7 @@ def score_probes(state: str, probes: list[dict[str, Any]],
     """
     import torch
     model, preprocess, tokenizer = load_clip(
-        state, repo_root, device, unlearn_root)
+        state, repo_root, device, unlearn_root, ref_root)
     results: list[dict[str, Any]] = []
     with torch.no_grad():
         for probe in probes:
@@ -175,6 +181,7 @@ def build_release_probes(repo_root: Path,
                          core_attrs: tuple = ("city", "job", "blood_type"),
                          max_images: int | None = None,
                          max_captions: int | None = None,
+                         suffix: str = "",
                          ) -> tuple[list[dict[str, Any]], list[str]]:
     """Build target-persona probes from the released artifacts.
 
@@ -197,16 +204,18 @@ def build_release_probes(repo_root: Path,
     from collections import defaultdict
 
     from granunlearn.salmu.embedding_metrics import build_target_probes
+    from granunlearn.salmu.paths import SalmuPaths
 
+    paths = SalmuPaths(repo_root, suffix=suffix)
     bench = locate_repo(REPOS["benchmark_dataset"]["repo_id"], "dataset")
     train_ds = locate_repo(REPOS["training_dataset"]["repo_id"], "dataset")
-    hier_dir = repo_root / "data" / "salmu_hierarchical"
+    hier_dir = paths.hier_dir
 
     identities = json.loads(
         (bench / "identities_metadata.json").read_text())
-    hierarchies = json.loads((hier_dir / "associations.json").read_text())
-    manifest = json.loads(
-        (hier_dir / "training" / "state_pairs_manifest.json").read_text())
+    hierarchies = json.loads((repo_root / "data" / "salmu_hierarchical" /
+                              "associations.json").read_text())
+    manifest = json.loads(paths.manifest_path.read_text())
     target_ids = manifest["partition"]["target_identity_ids"]
     target_attr_map = manifest.get("target_attr_map")
 
@@ -233,6 +242,7 @@ def build_retain_probes(repo_root: Path, max_personas: int = 100,
                         core_attrs: tuple = ("city", "job", "blood_type"),
                         max_images: int | None = None,
                         max_captions: int | None = None,
+                        suffix: str = "",
                         ) -> list[dict[str, Any]]:
     """Collateral-damage probes over RETAIN personas.
 
@@ -250,17 +260,17 @@ def build_retain_probes(repo_root: Path, max_personas: int = 100,
     from collections import defaultdict
 
     from granunlearn.salmu.embedding_metrics import GENERIC_CAPTION
+    from granunlearn.salmu.paths import SalmuPaths
 
+    paths = SalmuPaths(repo_root, suffix=suffix)
     train_ds = locate_repo(REPOS["training_dataset"]["repo_id"], "dataset")
-    hier_dir = repo_root / "data" / "salmu_hierarchical"
-    manifest = json.loads(
-        (hier_dir / "training" / "state_pairs_manifest.json").read_text())
+    manifest = json.loads(paths.manifest_path.read_text())
     target_ids = set(manifest["partition"]["target_identity_ids"])
 
     # Retain personas = all personas NOT in the target partition.
     # Use the MF pairs to discover all identity ids.
     all_ids = sorted(set(
-        p["identity_id"] for p in load_mf_pairs(hier_dir)))
+        p["identity_id"] for p in load_mf_pairs(paths.training_dir)))
     retain_ids = sorted(iid for iid in all_ids if iid not in target_ids)
     retain_ids = retain_ids[:max_personas]
 
@@ -322,10 +332,11 @@ def build_retain_probes(repo_root: Path, max_personas: int = 100,
     return probes
 
 
-def load_mf_pairs(hier_dir: Path) -> list[dict]:
-    """MF released pairs as plain dicts (role/identity/attr fields)."""
+def load_mf_pairs(training_dir: Path) -> list[dict]:
+    """MF released pairs as plain dicts (role/identity/attr fields),
+    from the given (possibly suffixed) training directory."""
     pairs = []
-    with open(hier_dir / "training" / "MF.jsonl") as f:
+    with open(training_dir / "MF.jsonl") as f:
         for line in f:
             pairs.append(json.loads(line))
     return pairs

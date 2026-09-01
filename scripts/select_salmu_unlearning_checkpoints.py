@@ -24,6 +24,7 @@ from granunlearn.config import _find_repo_root
 from granunlearn.logging_utils import setup_logger
 from granunlearn.salmu.adapter import REPOS, locate_repo
 from granunlearn.salmu.embedding_metrics import aggregate_scores
+from granunlearn.salmu.paths import SalmuPaths
 from granunlearn.salmu.eval_utils import (
     SalmuImageIndex,
     aggregate_probe_results,
@@ -90,27 +91,30 @@ def distance_to_mg(vec: dict[str, float],
 
 # ── Per-state shard caching (parallel / resumable scoring) ────────
 
-def _shard_dir(repo_root: Path) -> Path:
-    return repo_root / "data" / "salmu_hierarchical" / "probe_sims_shards"
+def _shard_dir(repo_root: Path, suffix: str = "") -> Path:
+    return SalmuPaths(repo_root, suffix=suffix).shard_dir
 
 
-def _shard_path(repo_root: Path, state: str, kind: str) -> Path:
-    return _shard_dir(repo_root) / f"{state}.{kind}.json"
+def _shard_path(repo_root: Path, state: str, kind: str,
+                suffix: str = "") -> Path:
+    return _shard_dir(repo_root, suffix) / f"{state}.{kind}.json"
 
 
-def load_shard(repo_root: Path, state: str, kind: str):
+def load_shard(repo_root: Path, state: str, kind: str,
+               suffix: str = ""):
     """Load one per-state shard (``kind`` in {'target','retain'}).
 
     Returns None if the shard is absent so callers score it.
     """
-    p = _shard_path(repo_root, state, kind)
+    p = _shard_path(repo_root, state, kind, suffix)
     if not p.exists():
         return None
     return json.loads(p.read_text())
 
 
-def save_shard(repo_root: Path, state: str, kind: str, results) -> None:
-    p = _shard_path(repo_root, state, kind)
+def save_shard(repo_root: Path, state: str, kind: str, results,
+               suffix: str = "") -> None:
+    p = _shard_path(repo_root, state, kind, suffix)
     p.parent.mkdir(parents=True, exist_ok=True)
     tmp = p.with_suffix(".tmp")
     with open(tmp, "w") as f:
@@ -129,17 +133,21 @@ def main() -> None:
     parser.add_argument("--subset", default=None,
                         help="Comma-separated state ids to SCORE only "
                              "(parallel worker). Skips selection.")
+    parser.add_argument("--suffix", default="",
+                        help="Iteration tag (e.g. r5 -> holdout-clean "
+                             "artifacts under *_r5 paths)")
     args = parser.parse_args()
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
-    unlearn_root = repo_root / "data" / "checkpoints" / "salmu_unlearn"
+    paths = SalmuPaths(repo_root, suffix=args.suffix)
+    unlearn_root = paths.unlearn_root
     train_ds = locate_repo(REPOS["training_dataset"]["repo_id"], "dataset")
     sys.path.insert(0, str(repo_root / "scripts"))
     import train_salmu_unlearning_baselines as tmod  # registry source
 
     probes, target_ids = build_release_probes(
         repo_root, max_images=args.max_images,
-        max_captions=args.max_captions)
+        max_captions=args.max_captions, suffix=args.suffix)
     split = split_target_personas(target_ids)
     trainval = set(split["train"]) | set(split["val"])
     test = set(split["test"])
@@ -172,19 +180,17 @@ def main() -> None:
                  len(score_states), len(states), args.device,
                  score_states)
 
-    cache_path = repo_root / "data" / "salmu_hierarchical" / \
-        "probe_sims_unlearn.json"
-    retain_cache_path = repo_root / "data" / "salmu_hierarchical" / \
-        "probe_sims_retain.json"
+    cache_path = paths.target_cache_path
+    retain_cache_path = paths.retain_cache_path
     retain_probes = build_retain_probes(
         repo_root, max_images=args.max_images,
-        max_captions=args.max_captions)
+        max_captions=args.max_captions, suffix=args.suffix)
     log.info("Built %d retain probes", len(retain_probes))
     image_index = None
     for state in score_states:
         # Per-state shards: load if present, else score + save shard.
-        tgt = load_shard(repo_root, state, "target")
-        ret = load_shard(repo_root, state, "retain")
+        tgt = load_shard(repo_root, state, "target", args.suffix)
+        ret = load_shard(repo_root, state, "retain", args.suffix)
         if tgt is not None and ret is not None:
             log.info("[%s] reusing shard probe sims", state)
             continue
@@ -193,13 +199,15 @@ def main() -> None:
         if tgt is None:
             tgt = score_probes(state, probes, image_index,
                                repo_root, args.device,
-                               unlearn_root=unlearn_root)
-            save_shard(repo_root, state, "target", tgt)
+                               unlearn_root=unlearn_root,
+                               ref_root=paths.ref_ckpt_root)
+            save_shard(repo_root, state, "target", tgt, args.suffix)
         if ret is None:
             ret = score_probes(state, retain_probes, image_index,
                                repo_root, args.device,
-                               unlearn_root=unlearn_root)
-            save_shard(repo_root, state, "retain", ret)
+                               unlearn_root=unlearn_root,
+                               ref_root=paths.ref_ckpt_root)
+            save_shard(repo_root, state, "retain", ret, args.suffix)
     if worker_mode:
         log.info("WORKER mode: shard scoring complete — selection "
                  "deferred to the aggregation run.")
@@ -209,8 +217,8 @@ def main() -> None:
     cache, retain_cache = {}, {}
     incomplete = []
     for state in states:
-        tgt = load_shard(repo_root, state, "target")
-        ret = load_shard(repo_root, state, "retain")
+        tgt = load_shard(repo_root, state, "target", args.suffix)
+        ret = load_shard(repo_root, state, "retain", args.suffix)
         if tgt is None or ret is None:
             incomplete.append(state)
             continue
@@ -348,7 +356,11 @@ def main() -> None:
                            if r["identity_id"] in trainval
                            and r.get("is_target_attr", False))
     report = {
-        "experiment_id": "salmu_iter10r4_unlearning_selection",
+        "experiment_id": (
+            "salmu_iter10r5_unlearning_selection"
+            if args.suffix == "r5"
+            else "salmu_iter10r4_unlearning_selection"),
+        "iteration_suffix": args.suffix or None,
         "persona_split": {"train": split["train"], "val": split["val"],
                           "test": split["test"]},
         "multi_image": True,
@@ -388,7 +400,15 @@ def main() -> None:
                           "other_entity_retain_sim are separate "
                           "components; B2_retain_* excluded from B2 "
                           "family; test personas frozen.",
-        "notes": [
+        "notes": ([
+            "10R5 holdout-clean protocol: the pair universe is the "
+            "official forget split ONLY; no released "
+            "holdout_association/holdout_identity pair enters ANY "
+            "training group; target associations are selected "
+            "exclusively from forget. Released-split evaluation on "
+            "this chain is therefore an untouched external "
+            "evaluation.",
+        ] if args.suffix == "r5" else []) + [
             "10R4 corrected selection: association-weighted — "
             f"{tv_target_assoc} train+val target associations "
             f"({tv_target_probes} image-caption combinations "
@@ -404,8 +424,7 @@ def main() -> None:
             b3_note,
         ],
     }
-    out = repo_root / "data" / "reports" / \
-        "salmu_unlearning_selection.json"
+    out = paths.report("salmu_unlearning_selection")
     with open(out, "w") as f:
         json.dump(report, f, indent=2, ensure_ascii=False)
     log.info("Wrote selection report -> %s", out)

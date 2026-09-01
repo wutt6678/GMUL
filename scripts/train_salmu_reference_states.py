@@ -14,6 +14,7 @@ from granunlearn.config import _find_repo_root
 from granunlearn.logging_utils import setup_logger
 from granunlearn.salmu.adapter import REPOS, locate_repo
 from granunlearn.salmu.clip_trainer import ClipRecipe, train_salmu_state
+from granunlearn.salmu.paths import SalmuPaths
 
 log = setup_logger("train_salmu_reference_states")
 
@@ -24,11 +25,15 @@ def main() -> None:
     parser.add_argument("--states", default="MF,MG,MN")
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--epochs", type=int, default=None)
+    parser.add_argument("--suffix", default="",
+                        help="Iteration tag (e.g. r5 -> training_r5/ "
+                             "+ checkpoints/salmu_r5/)")
     args = parser.parse_args()
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
-    train_dir = repo_root / "data" / "salmu_hierarchical" / "training"
-    out_root = repo_root / "data" / "checkpoints" / "salmu"
+    paths = SalmuPaths(repo_root, suffix=args.suffix)
+    train_dir = paths.training_dir
+    out_root = paths.ref_ckpt_root
     train_ds = locate_repo(REPOS["training_dataset"]["repo_id"], "dataset")
     clean = locate_repo(REPOS["clean_model"]["repo_id"], "model")
     init_ckpt = clean / "open_clip_model.safetensors"

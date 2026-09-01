@@ -1,0 +1,2370 @@
+{
+  "experiment_id": "salmu_iter10r5_reference_states",
+  "iteration_suffix": "r5",
+  "num_target_personas": 46,
+  "num_target_probes": 276,
+  "num_same_entity_retain_probes": 552,
+  "num_other_entity_retain_probes": 1795,
+  "probes_per_kind_note": "one probe per (persona, core attribute, image, fine_caption) with frozen probe IDs",
+  "multi_image": true,
+  "multi_image_note": "ALL released image/caption variants per association are used (no cap); max_images/max_captions null = uncapped.",
+  "max_images": 3,
+  "max_captions": 2,
+  "per_attribute_targeting": true,
+  "weighting": "association_macro_average",
+  "weighting_note": "image-caption variants within each (identity, attribute) association are macro-averaged before rates/similarities, so every association counts once.",
+  "bootstrap_ci": true,
+  "bootstrap_note": "association bootstrap: resamples (identity, attribute) units, exact under the macro-average.",
+  "gate_runs_on": "target_association probes only (is_target_attr=True)",
+  "scores_by_state": {
+    "BASE": {
+      "num_probes": 276,
+      "num_associations": 46,
+      "num_preference_associations": 46,
+      "weighting": "association_macro_average",
+      "prefers_fine_rate": 0.2609,
+      "prefers_target_rate": 0.413,
+      "prefers_target_not_fine_rate": 0.413,
+      "mean_similarities": {
+        "fine": 0.1408,
+        "target": 0.1494,
+        "ancestor": 0.146,
+        "sibling": 0.1452,
+        "generic": 0.2308,
+        "fine_ci": [
+          0.1349,
+          0.1463
+        ],
+        "target_ci": [
+          0.1422,
+          0.1566
+        ],
+        "ancestor_ci": [
+          0.1395,
+          0.1527
+        ],
+        "sibling_ci": [
+          0.1384,
+          0.1521
+        ],
+        "generic_ci": [
+          0.2273,
+          0.2342
+        ]
+      },
+      "prefers_fine_rate_ci": [
+        0.1304,
+        0.3913
+      ],
+      "prefers_target_rate_ci": [
+        0.2609,
+        0.5652
+      ],
+      "prefers_target_not_fine_rate_ci": [
+        0.2609,
+        0.5652
+      ]
+    },
+    "MF": {
+      "num_probes": 276,
+      "num_associations": 46,
+      "num_preference_associations": 46,
+      "weighting": "association_macro_average",
+      "prefers_fine_rate": 0.5217,
+      "prefers_target_rate": 0.2609,
+      "prefers_target_not_fine_rate": 0.2609,
+      "mean_similarities": {
+        "fine": 0.2785,
+        "target": 0.2783,
+        "ancestor": 0.2784,
+        "sibling": 0.2769,
+        "generic": 0.2289,
+        "fine_ci": [
+          0.2727,
+          0.2841
+        ],
+        "target_ci": [
+          0.2722,
+          0.2834
+        ],
+        "ancestor_ci": [
+          0.2725,
+          0.2836
+        ],
+        "sibling_ci": [
+          0.2707,
+          0.2823
+        ],
+        "generic_ci": [
+          0.2245,
+          0.2333
+        ]
+      },
+      "prefers_fine_rate_ci": [
+        0.3696,
+        0.6739
+      ],
+      "prefers_target_rate_ci": [
+        0.1304,
+        0.3913
+      ],
+      "prefers_target_not_fine_rate_ci": [
+        0.1304,
+        0.3913
+      ]
+    },
+    "MG": {
+      "num_probes": 276,
+      "num_associations": 46,
+      "num_preference_associations": 46,
+      "weighting": "association_macro_average",
+      "prefers_fine_rate": 0.2609,
+      "prefers_target_rate": 0.4348,
+      "prefers_target_not_fine_rate": 0.4348,
+      "mean_similarities": {
+        "fine": 0.2718,
+        "target": 0.279,
+        "ancestor": 0.2786,
+        "sibling": 0.2772,
+        "generic": 0.2286,
+        "fine_ci": [
+          0.2654,
+          0.2786
+        ],
+        "target_ci": [
+          0.2734,
+          0.2838
+        ],
+        "ancestor_ci": [
+          0.2731,
+          0.2834
+        ],
+        "sibling_ci": [
+          0.2713,
+          0.2821
+        ],
+        "generic_ci": [
+          0.224,
+          0.233
+        ]
+      },
+      "prefers_fine_rate_ci": [
+        0.1522,
+        0.3913
+      ],
+      "prefers_target_rate_ci": [
+        0.3043,
+        0.587
+      ],
+      "prefers_target_not_fine_rate_ci": [
+        0.3043,
+        0.587
+      ]
+    },
+    "MN": {
+      "num_probes": 276,
+      "num_associations": 46,
+      "num_preference_associations": 46,
+      "weighting": "association_macro_average",
+      "prefers_fine_rate": 0.3913,
+      "prefers_target_rate": 0.3261,
+      "prefers_target_not_fine_rate": 0.3261,
+      "mean_similarities": {
+        "fine": 0.2612,
+        "target": 0.2658,
+        "ancestor": 0.2655,
+        "sibling": 0.2647,
+        "generic": 0.2292,
+        "fine_ci": [
+          0.2528,
+          0.2693
+        ],
+        "target_ci": [
+          0.2575,
+          0.2734
+        ],
+        "ancestor_ci": [
+          0.2571,
+          0.2731
+        ],
+        "sibling_ci": [
+          0.2567,
+          0.2725
+        ],
+        "generic_ci": [
+          0.2248,
+          0.2335
+        ]
+      },
+      "prefers_fine_rate_ci": [
+        0.2609,
+        0.5217
+      ],
+      "prefers_target_rate_ci": [
+        0.1957,
+        0.4565
+      ],
+      "prefers_target_not_fine_rate_ci": [
+        0.1957,
+        0.4565
+      ]
+    }
+  },
+  "target_only_by_attribute": {
+    "BASE": {
+      "city": {
+        "num_probes": 90,
+        "num_associations": 15,
+        "num_preference_associations": 15,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.4,
+        "prefers_target_rate": 0.2667,
+        "prefers_target_not_fine_rate": 0.2667,
+        "mean_similarities": {
+          "fine": 0.1432,
+          "target": 0.1489,
+          "ancestor": 0.1489,
+          "sibling": 0.1399,
+          "generic": 0.2289,
+          "fine_ci": [
+            0.132,
+            0.1542
+          ],
+          "target_ci": [
+            0.1385,
+            0.1587
+          ],
+          "ancestor_ci": [
+            0.1385,
+            0.1587
+          ],
+          "sibling_ci": [
+            0.1278,
+            0.1508
+          ],
+          "generic_ci": [
+            0.2239,
+            0.2341
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.2,
+          0.6667
+        ],
+        "prefers_target_rate_ci": [
+          0.0667,
+          0.4667
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.0667,
+          0.4667
+        ]
+      },
+      "job": {
+        "num_probes": 90,
+        "num_associations": 15,
+        "num_preference_associations": 15,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.2,
+        "prefers_target_rate": 0.6,
+        "prefers_target_not_fine_rate": 0.6,
+        "mean_similarities": {
+          "fine": 0.1409,
+          "target": 0.1495,
+          "ancestor": 0.1389,
+          "sibling": 0.1459,
+          "generic": 0.2288,
+          "fine_ci": [
+            0.1342,
+            0.1479
+          ],
+          "target_ci": [
+            0.1365,
+            0.1616
+          ],
+          "ancestor_ci": [
+            0.1295,
+            0.1475
+          ],
+          "sibling_ci": [
+            0.134,
+            0.1582
+          ],
+          "generic_ci": [
+            0.2222,
+            0.2346
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.0,
+          0.4
+        ],
+        "prefers_target_rate_ci": [
+          0.3333,
+          0.8667
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.3333,
+          0.8667
+        ]
+      },
+      "blood_type": {
+        "num_probes": 96,
+        "num_associations": 16,
+        "num_preference_associations": 16,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.1875,
+        "prefers_target_rate": 0.375,
+        "prefers_target_not_fine_rate": 0.375,
+        "mean_similarities": {
+          "fine": 0.1385,
+          "target": 0.1498,
+          "ancestor": 0.1498,
+          "sibling": 0.1496,
+          "generic": 0.2343,
+          "fine_ci": [
+            0.1293,
+            0.1488
+          ],
+          "target_ci": [
+            0.1366,
+            0.1638
+          ],
+          "ancestor_ci": [
+            0.1366,
+            0.1638
+          ],
+          "sibling_ci": [
+            0.1383,
+            0.1615
+          ],
+          "generic_ci": [
+            0.2284,
+            0.2412
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.0,
+          0.375
+        ],
+        "prefers_target_rate_ci": [
+          0.125,
+          0.625
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.125,
+          0.625
+        ]
+      }
+    },
+    "MF": {
+      "city": {
+        "num_probes": 90,
+        "num_associations": 15,
+        "num_preference_associations": 15,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.3333,
+        "prefers_target_rate": 0.3333,
+        "prefers_target_not_fine_rate": 0.3333,
+        "mean_similarities": {
+          "fine": 0.2793,
+          "target": 0.2808,
+          "ancestor": 0.2808,
+          "sibling": 0.2786,
+          "generic": 0.2256,
+          "fine_ci": [
+            0.2691,
+            0.2889
+          ],
+          "target_ci": [
+            0.2726,
+            0.2887
+          ],
+          "ancestor_ci": [
+            0.2726,
+            0.2887
+          ],
+          "sibling_ci": [
+            0.2698,
+            0.2879
+          ],
+          "generic_ci": [
+            0.2175,
+            0.2327
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.1333,
+          0.6
+        ],
+        "prefers_target_rate_ci": [
+          0.1333,
+          0.6
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.1333,
+          0.6
+        ]
+      },
+      "job": {
+        "num_probes": 90,
+        "num_associations": 15,
+        "num_preference_associations": 15,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.6667,
+        "prefers_target_rate": 0.2667,
+        "prefers_target_not_fine_rate": 0.2667,
+        "mean_similarities": {
+          "fine": 0.2771,
+          "target": 0.2726,
+          "ancestor": 0.2728,
+          "sibling": 0.272,
+          "generic": 0.2284,
+          "fine_ci": [
+            0.2683,
+            0.2861
+          ],
+          "target_ci": [
+            0.265,
+            0.2803
+          ],
+          "ancestor_ci": [
+            0.2653,
+            0.28
+          ],
+          "sibling_ci": [
+            0.2649,
+            0.279
+          ],
+          "generic_ci": [
+            0.2214,
+            0.2353
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.4,
+          0.8667
+        ],
+        "prefers_target_rate_ci": [
+          0.0667,
+          0.5333
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.0667,
+          0.5333
+        ]
+      },
+      "blood_type": {
+        "num_probes": 96,
+        "num_associations": 16,
+        "num_preference_associations": 16,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.5625,
+        "prefers_target_rate": 0.1875,
+        "prefers_target_not_fine_rate": 0.1875,
+        "mean_similarities": {
+          "fine": 0.279,
+          "target": 0.2814,
+          "ancestor": 0.2814,
+          "sibling": 0.2799,
+          "generic": 0.2323,
+          "fine_ci": [
+            0.2688,
+            0.2873
+          ],
+          "target_ci": [
+            0.2694,
+            0.292
+          ],
+          "ancestor_ci": [
+            0.2694,
+            0.292
+          ],
+          "sibling_ci": [
+            0.2671,
+            0.2904
+          ],
+          "generic_ci": [
+            0.2245,
+            0.2393
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.3125,
+          0.8125
+        ],
+        "prefers_target_rate_ci": [
+          0.0,
+          0.375
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.0,
+          0.375
+        ]
+      }
+    },
+    "MG": {
+      "city": {
+        "num_probes": 90,
+        "num_associations": 15,
+        "num_preference_associations": 15,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.0667,
+        "prefers_target_rate": 0.5333,
+        "prefers_target_not_fine_rate": 0.5333,
+        "mean_similarities": {
+          "fine": 0.2675,
+          "target": 0.2806,
+          "ancestor": 0.2806,
+          "sibling": 0.2783,
+          "generic": 0.2255,
+          "fine_ci": [
+            0.2527,
+            0.2818
+          ],
+          "target_ci": [
+            0.2718,
+            0.2895
+          ],
+          "ancestor_ci": [
+            0.2718,
+            0.2895
+          ],
+          "sibling_ci": [
+            0.2692,
+            0.2879
+          ],
+          "generic_ci": [
+            0.2174,
+            0.2327
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.0,
+          0.2
+        ],
+        "prefers_target_rate_ci": [
+          0.2667,
+          0.7333
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.2667,
+          0.7333
+        ]
+      },
+      "job": {
+        "num_probes": 90,
+        "num_associations": 15,
+        "num_preference_associations": 15,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.4667,
+        "prefers_target_rate": 0.4,
+        "prefers_target_not_fine_rate": 0.4,
+        "mean_similarities": {
+          "fine": 0.2729,
+          "target": 0.2762,
+          "ancestor": 0.2748,
+          "sibling": 0.2745,
+          "generic": 0.2279,
+          "fine_ci": [
+            0.2625,
+            0.2836
+          ],
+          "target_ci": [
+            0.2686,
+            0.2842
+          ],
+          "ancestor_ci": [
+            0.2672,
+            0.2823
+          ],
+          "sibling_ci": [
+            0.267,
+            0.2815
+          ],
+          "generic_ci": [
+            0.2207,
+            0.2353
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.2,
+          0.7333
+        ],
+        "prefers_target_rate_ci": [
+          0.1333,
+          0.6667
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.1333,
+          0.6667
+        ]
+      },
+      "blood_type": {
+        "num_probes": 96,
+        "num_associations": 16,
+        "num_preference_associations": 16,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.25,
+        "prefers_target_rate": 0.375,
+        "prefers_target_not_fine_rate": 0.375,
+        "mean_similarities": {
+          "fine": 0.2749,
+          "target": 0.2802,
+          "ancestor": 0.2802,
+          "sibling": 0.2785,
+          "generic": 0.232,
+          "fine_ci": [
+            0.2653,
+            0.2831
+          ],
+          "target_ci": [
+            0.2696,
+            0.2893
+          ],
+          "ancestor_ci": [
+            0.2696,
+            0.2893
+          ],
+          "sibling_ci": [
+            0.2674,
+            0.288
+          ],
+          "generic_ci": [
+            0.2244,
+            0.239
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.0625,
+          0.4375
+        ],
+        "prefers_target_rate_ci": [
+          0.125,
+          0.625
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.125,
+          0.625
+        ]
+      }
+    },
+    "MN": {
+      "city": {
+        "num_probes": 90,
+        "num_associations": 15,
+        "num_preference_associations": 15,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.1333,
+        "prefers_target_rate": 0.3333,
+        "prefers_target_not_fine_rate": 0.3333,
+        "mean_similarities": {
+          "fine": 0.2639,
+          "target": 0.2754,
+          "ancestor": 0.2754,
+          "sibling": 0.2748,
+          "generic": 0.2266,
+          "fine_ci": [
+            0.2508,
+            0.2769
+          ],
+          "target_ci": [
+            0.2658,
+            0.2845
+          ],
+          "ancestor_ci": [
+            0.2658,
+            0.2845
+          ],
+          "sibling_ci": [
+            0.2656,
+            0.284
+          ],
+          "generic_ci": [
+            0.2184,
+            0.2341
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.0,
+          0.3333
+        ],
+        "prefers_target_rate_ci": [
+          0.1333,
+          0.6
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.1333,
+          0.6
+        ]
+      },
+      "job": {
+        "num_probes": 90,
+        "num_associations": 15,
+        "num_preference_associations": 15,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.4667,
+        "prefers_target_rate": 0.4,
+        "prefers_target_not_fine_rate": 0.4,
+        "mean_similarities": {
+          "fine": 0.2562,
+          "target": 0.2573,
+          "ancestor": 0.2562,
+          "sibling": 0.2551,
+          "generic": 0.228,
+          "fine_ci": [
+            0.2425,
+            0.2709
+          ],
+          "target_ci": [
+            0.2441,
+            0.2694
+          ],
+          "ancestor_ci": [
+            0.2437,
+            0.2684
+          ],
+          "sibling_ci": [
+            0.2431,
+            0.2669
+          ],
+          "generic_ci": [
+            0.2209,
+            0.2349
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.2,
+          0.7333
+        ],
+        "prefers_target_rate_ci": [
+          0.2,
+          0.6667
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.2,
+          0.6667
+        ]
+      },
+      "blood_type": {
+        "num_probes": 96,
+        "num_associations": 16,
+        "num_preference_associations": 16,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.5625,
+        "prefers_target_rate": 0.25,
+        "prefers_target_not_fine_rate": 0.25,
+        "mean_similarities": {
+          "fine": 0.2633,
+          "target": 0.2649,
+          "ancestor": 0.2649,
+          "sibling": 0.2643,
+          "generic": 0.2327,
+          "fine_ci": [
+            0.2495,
+            0.2747
+          ],
+          "target_ci": [
+            0.2486,
+            0.2794
+          ],
+          "ancestor_ci": [
+            0.2486,
+            0.2794
+          ],
+          "sibling_ci": [
+            0.248,
+            0.2791
+          ],
+          "generic_ci": [
+            0.2248,
+            0.2399
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.3125,
+          0.8125
+        ],
+        "prefers_target_rate_ci": [
+          0.0625,
+          0.5
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.0625,
+          0.5
+        ]
+      }
+    }
+  },
+  "pooled_scores": {
+    "BASE": {
+      "num_probes": 828,
+      "num_associations": 138,
+      "num_preference_associations": 138,
+      "weighting": "association_macro_average",
+      "prefers_fine_rate": 0.2391,
+      "prefers_target_rate": 0.4275,
+      "prefers_target_not_fine_rate": 0.4275,
+      "mean_similarities": {
+        "fine": 0.1373,
+        "target": 0.146,
+        "ancestor": 0.1431,
+        "sibling": 0.1422,
+        "generic": 0.2304,
+        "fine_ci": [
+          0.1339,
+          0.1406
+        ],
+        "target_ci": [
+          0.1417,
+          0.15
+        ],
+        "ancestor_ci": [
+          0.1391,
+          0.1472
+        ],
+        "sibling_ci": [
+          0.1382,
+          0.1463
+        ],
+        "generic_ci": [
+          0.2285,
+          0.2325
+        ]
+      },
+      "prefers_fine_rate_ci": [
+        0.1739,
+        0.3188
+      ],
+      "prefers_target_rate_ci": [
+        0.3406,
+        0.5072
+      ],
+      "prefers_target_not_fine_rate_ci": [
+        0.3406,
+        0.5072
+      ]
+    },
+    "MF": {
+      "num_probes": 828,
+      "num_associations": 138,
+      "num_preference_associations": 138,
+      "weighting": "association_macro_average",
+      "prefers_fine_rate": 0.4565,
+      "prefers_target_rate": 0.2826,
+      "prefers_target_not_fine_rate": 0.2826,
+      "mean_similarities": {
+        "fine": 0.2791,
+        "target": 0.279,
+        "ancestor": 0.2792,
+        "sibling": 0.2774,
+        "generic": 0.2294,
+        "fine_ci": [
+          0.2758,
+          0.2822
+        ],
+        "target_ci": [
+          0.2756,
+          0.2823
+        ],
+        "ancestor_ci": [
+          0.2759,
+          0.2825
+        ],
+        "sibling_ci": [
+          0.2739,
+          0.2808
+        ],
+        "generic_ci": [
+          0.2269,
+          0.2319
+        ]
+      },
+      "prefers_fine_rate_ci": [
+        0.3768,
+        0.5362
+      ],
+      "prefers_target_rate_ci": [
+        0.2029,
+        0.3623
+      ],
+      "prefers_target_not_fine_rate_ci": [
+        0.2029,
+        0.3623
+      ]
+    },
+    "MG": {
+      "num_probes": 828,
+      "num_associations": 138,
+      "num_preference_associations": 138,
+      "weighting": "association_macro_average",
+      "prefers_fine_rate": 0.3478,
+      "prefers_target_rate": 0.3696,
+      "prefers_target_not_fine_rate": 0.3696,
+      "mean_similarities": {
+        "fine": 0.2751,
+        "target": 0.2786,
+        "ancestor": 0.2786,
+        "sibling": 0.2769,
+        "generic": 0.2291,
+        "fine_ci": [
+          0.2716,
+          0.2785
+        ],
+        "target_ci": [
+          0.2753,
+          0.2818
+        ],
+        "ancestor_ci": [
+          0.2754,
+          0.2817
+        ],
+        "sibling_ci": [
+          0.2736,
+          0.2802
+        ],
+        "generic_ci": [
+          0.2266,
+          0.2316
+        ]
+      },
+      "prefers_fine_rate_ci": [
+        0.2681,
+        0.4275
+      ],
+      "prefers_target_rate_ci": [
+        0.2826,
+        0.4493
+      ],
+      "prefers_target_not_fine_rate_ci": [
+        0.2826,
+        0.4493
+      ]
+    },
+    "MN": {
+      "num_probes": 828,
+      "num_associations": 138,
+      "num_preference_associations": 138,
+      "weighting": "association_macro_average",
+      "prefers_fine_rate": 0.4203,
+      "prefers_target_rate": 0.2681,
+      "prefers_target_not_fine_rate": 0.2681,
+      "mean_similarities": {
+        "fine": 0.2673,
+        "target": 0.2682,
+        "ancestor": 0.2685,
+        "sibling": 0.2669,
+        "generic": 0.2292,
+        "fine_ci": [
+          0.2623,
+          0.2722
+        ],
+        "target_ci": [
+          0.2629,
+          0.2731
+        ],
+        "ancestor_ci": [
+          0.2634,
+          0.2734
+        ],
+        "sibling_ci": [
+          0.2616,
+          0.272
+        ],
+        "generic_ci": [
+          0.2268,
+          0.2317
+        ]
+      },
+      "prefers_fine_rate_ci": [
+        0.3406,
+        0.5072
+      ],
+      "prefers_target_rate_ci": [
+        0.1957,
+        0.3478
+      ],
+      "prefers_target_not_fine_rate_ci": [
+        0.1957,
+        0.3478
+      ]
+    }
+  },
+  "per_attribute_scores": {
+    "BASE": {
+      "blood_type": {
+        "num_probes": 276,
+        "num_associations": 46,
+        "num_preference_associations": 46,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.1087,
+        "prefers_target_rate": 0.3913,
+        "prefers_target_not_fine_rate": 0.3913,
+        "mean_similarities": {
+          "fine": 0.1357,
+          "target": 0.1486,
+          "ancestor": 0.1486,
+          "sibling": 0.1473,
+          "generic": 0.2311,
+          "fine_ci": [
+            0.1301,
+            0.1419
+          ],
+          "target_ci": [
+            0.1414,
+            0.1562
+          ],
+          "ancestor_ci": [
+            0.1414,
+            0.1562
+          ],
+          "sibling_ci": [
+            0.1403,
+            0.1541
+          ],
+          "generic_ci": [
+            0.2274,
+            0.235
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.0217,
+          0.1957
+        ],
+        "prefers_target_rate_ci": [
+          0.2609,
+          0.5217
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.2609,
+          0.5217
+        ]
+      },
+      "city": {
+        "num_probes": 276,
+        "num_associations": 46,
+        "num_preference_associations": 46,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.3478,
+        "prefers_target_rate": 0.3913,
+        "prefers_target_not_fine_rate": 0.3913,
+        "mean_similarities": {
+          "fine": 0.1357,
+          "target": 0.1421,
+          "ancestor": 0.1421,
+          "sibling": 0.1338,
+          "generic": 0.23,
+          "fine_ci": [
+            0.1296,
+            0.142
+          ],
+          "target_ci": [
+            0.1353,
+            0.1489
+          ],
+          "ancestor_ci": [
+            0.1353,
+            0.1489
+          ],
+          "sibling_ci": [
+            0.1263,
+            0.1409
+          ],
+          "generic_ci": [
+            0.227,
+            0.2333
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.1957,
+          0.5
+        ],
+        "prefers_target_rate_ci": [
+          0.2391,
+          0.5435
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.2391,
+          0.5435
+        ]
+      },
+      "job": {
+        "num_probes": 276,
+        "num_associations": 46,
+        "num_preference_associations": 46,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.2609,
+        "prefers_target_rate": 0.5,
+        "prefers_target_not_fine_rate": 0.5,
+        "mean_similarities": {
+          "fine": 0.1406,
+          "target": 0.1473,
+          "ancestor": 0.1388,
+          "sibling": 0.1457,
+          "generic": 0.2302,
+          "fine_ci": [
+            0.135,
+            0.1462
+          ],
+          "target_ci": [
+            0.1391,
+            0.1555
+          ],
+          "ancestor_ci": [
+            0.1321,
+            0.1456
+          ],
+          "sibling_ci": [
+            0.1387,
+            0.1528
+          ],
+          "generic_ci": [
+            0.2268,
+            0.2335
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.1304,
+          0.3913
+        ],
+        "prefers_target_rate_ci": [
+          0.3478,
+          0.6522
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.3478,
+          0.6522
+        ]
+      }
+    },
+    "MF": {
+      "blood_type": {
+        "num_probes": 276,
+        "num_associations": 46,
+        "num_preference_associations": 46,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.3696,
+        "prefers_target_rate": 0.2826,
+        "prefers_target_not_fine_rate": 0.2826,
+        "mean_similarities": {
+          "fine": 0.2795,
+          "target": 0.2836,
+          "ancestor": 0.2836,
+          "sibling": 0.2822,
+          "generic": 0.2293,
+          "fine_ci": [
+            0.273,
+            0.2855
+          ],
+          "target_ci": [
+            0.2775,
+            0.2895
+          ],
+          "ancestor_ci": [
+            0.2775,
+            0.2895
+          ],
+          "sibling_ci": [
+            0.2754,
+            0.2885
+          ],
+          "generic_ci": [
+            0.2254,
+            0.2334
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.2391,
+          0.5
+        ],
+        "prefers_target_rate_ci": [
+          0.1522,
+          0.413
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.1522,
+          0.413
+        ]
+      },
+      "city": {
+        "num_probes": 276,
+        "num_associations": 46,
+        "num_preference_associations": 46,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.3478,
+        "prefers_target_rate": 0.3696,
+        "prefers_target_not_fine_rate": 0.3696,
+        "mean_similarities": {
+          "fine": 0.278,
+          "target": 0.2793,
+          "ancestor": 0.2793,
+          "sibling": 0.2759,
+          "generic": 0.2299,
+          "fine_ci": [
+            0.2728,
+            0.2831
+          ],
+          "target_ci": [
+            0.2741,
+            0.2839
+          ],
+          "ancestor_ci": [
+            0.2741,
+            0.2839
+          ],
+          "sibling_ci": [
+            0.2704,
+            0.2812
+          ],
+          "generic_ci": [
+            0.2256,
+            0.2346
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.2174,
+          0.4783
+        ],
+        "prefers_target_rate_ci": [
+          0.2174,
+          0.5
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.2174,
+          0.5
+        ]
+      },
+      "job": {
+        "num_probes": 276,
+        "num_associations": 46,
+        "num_preference_associations": 46,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.6522,
+        "prefers_target_rate": 0.1957,
+        "prefers_target_not_fine_rate": 0.1957,
+        "mean_similarities": {
+          "fine": 0.2797,
+          "target": 0.2742,
+          "ancestor": 0.2748,
+          "sibling": 0.274,
+          "generic": 0.2288,
+          "fine_ci": [
+            0.2734,
+            0.2859
+          ],
+          "target_ci": [
+            0.2683,
+            0.2798
+          ],
+          "ancestor_ci": [
+            0.2692,
+            0.2801
+          ],
+          "sibling_ci": [
+            0.2681,
+            0.2794
+          ],
+          "generic_ci": [
+            0.2244,
+            0.2336
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.5,
+          0.7826
+        ],
+        "prefers_target_rate_ci": [
+          0.087,
+          0.3261
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.087,
+          0.3261
+        ]
+      }
+    },
+    "MG": {
+      "blood_type": {
+        "num_probes": 276,
+        "num_associations": 46,
+        "num_preference_associations": 46,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.2174,
+        "prefers_target_rate": 0.413,
+        "prefers_target_not_fine_rate": 0.413,
+        "mean_similarities": {
+          "fine": 0.2762,
+          "target": 0.282,
+          "ancestor": 0.282,
+          "sibling": 0.2806,
+          "generic": 0.2289,
+          "fine_ci": [
+            0.2694,
+            0.2826
+          ],
+          "target_ci": [
+            0.2759,
+            0.2878
+          ],
+          "ancestor_ci": [
+            0.2759,
+            0.2878
+          ],
+          "sibling_ci": [
+            0.274,
+            0.2869
+          ],
+          "generic_ci": [
+            0.225,
+            0.2331
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.1087,
+          0.3478
+        ],
+        "prefers_target_rate_ci": [
+          0.2826,
+          0.5652
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.2826,
+          0.5652
+        ]
+      },
+      "city": {
+        "num_probes": 276,
+        "num_associations": 46,
+        "num_preference_associations": 46,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.2609,
+        "prefers_target_rate": 0.4348,
+        "prefers_target_not_fine_rate": 0.4348,
+        "mean_similarities": {
+          "fine": 0.2728,
+          "target": 0.2788,
+          "ancestor": 0.2788,
+          "sibling": 0.2755,
+          "generic": 0.2297,
+          "fine_ci": [
+            0.2672,
+            0.2788
+          ],
+          "target_ci": [
+            0.2739,
+            0.2835
+          ],
+          "ancestor_ci": [
+            0.2739,
+            0.2835
+          ],
+          "sibling_ci": [
+            0.2698,
+            0.2808
+          ],
+          "generic_ci": [
+            0.2254,
+            0.2343
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.1522,
+          0.3913
+        ],
+        "prefers_target_rate_ci": [
+          0.2826,
+          0.5652
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.2826,
+          0.5652
+        ]
+      },
+      "job": {
+        "num_probes": 276,
+        "num_associations": 46,
+        "num_preference_associations": 46,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.5652,
+        "prefers_target_rate": 0.2609,
+        "prefers_target_not_fine_rate": 0.2609,
+        "mean_similarities": {
+          "fine": 0.2762,
+          "target": 0.2751,
+          "ancestor": 0.275,
+          "sibling": 0.2745,
+          "generic": 0.2285,
+          "fine_ci": [
+            0.2693,
+            0.2828
+          ],
+          "target_ci": [
+            0.2696,
+            0.2806
+          ],
+          "ancestor_ci": [
+            0.2695,
+            0.2801
+          ],
+          "sibling_ci": [
+            0.2688,
+            0.2798
+          ],
+          "generic_ci": [
+            0.224,
+            0.2332
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.413,
+          0.7174
+        ],
+        "prefers_target_rate_ci": [
+          0.1304,
+          0.3913
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.1304,
+          0.3913
+        ]
+      }
+    },
+    "MN": {
+      "blood_type": {
+        "num_probes": 276,
+        "num_associations": 46,
+        "num_preference_associations": 46,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.3913,
+        "prefers_target_rate": 0.2391,
+        "prefers_target_not_fine_rate": 0.2391,
+        "mean_similarities": {
+          "fine": 0.2681,
+          "target": 0.271,
+          "ancestor": 0.271,
+          "sibling": 0.2707,
+          "generic": 0.2294,
+          "fine_ci": [
+            0.2595,
+            0.2769
+          ],
+          "target_ci": [
+            0.2617,
+            0.2795
+          ],
+          "ancestor_ci": [
+            0.2617,
+            0.2795
+          ],
+          "sibling_ci": [
+            0.2613,
+            0.2793
+          ],
+          "generic_ci": [
+            0.2254,
+            0.2336
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.2609,
+          0.5217
+        ],
+        "prefers_target_rate_ci": [
+          0.1087,
+          0.3478
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.1087,
+          0.3478
+        ]
+      },
+      "city": {
+        "num_probes": 276,
+        "num_associations": 46,
+        "num_preference_associations": 46,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.2826,
+        "prefers_target_rate": 0.3261,
+        "prefers_target_not_fine_rate": 0.3261,
+        "mean_similarities": {
+          "fine": 0.2646,
+          "target": 0.2686,
+          "ancestor": 0.2686,
+          "sibling": 0.266,
+          "generic": 0.2291,
+          "fine_ci": [
+            0.2581,
+            0.2712
+          ],
+          "target_ci": [
+            0.2606,
+            0.276
+          ],
+          "ancestor_ci": [
+            0.2606,
+            0.276
+          ],
+          "sibling_ci": [
+            0.2577,
+            0.2738
+          ],
+          "generic_ci": [
+            0.2247,
+            0.2337
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.1522,
+          0.413
+        ],
+        "prefers_target_rate_ci": [
+          0.1957,
+          0.4783
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.1957,
+          0.4783
+        ]
+      },
+      "job": {
+        "num_probes": 276,
+        "num_associations": 46,
+        "num_preference_associations": 46,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.587,
+        "prefers_target_rate": 0.2391,
+        "prefers_target_not_fine_rate": 0.2391,
+        "mean_similarities": {
+          "fine": 0.2692,
+          "target": 0.2648,
+          "ancestor": 0.2659,
+          "sibling": 0.264,
+          "generic": 0.2289,
+          "fine_ci": [
+            0.2597,
+            0.2779
+          ],
+          "target_ci": [
+            0.2556,
+            0.2731
+          ],
+          "ancestor_ci": [
+            0.2567,
+            0.274
+          ],
+          "sibling_ci": [
+            0.2549,
+            0.2725
+          ],
+          "generic_ci": [
+            0.2246,
+            0.2336
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.4348,
+          0.7391
+        ],
+        "prefers_target_rate_ci": [
+          0.1304,
+          0.3696
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.1304,
+          0.3696
+        ]
+      }
+    }
+  },
+  "target_vs_retain_scores": {
+    "BASE": {
+      "target": {
+        "num_probes": 276,
+        "num_associations": 46,
+        "num_preference_associations": 46,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.2609,
+        "prefers_target_rate": 0.413,
+        "prefers_target_not_fine_rate": 0.413,
+        "mean_similarities": {
+          "fine": 0.1408,
+          "target": 0.1494,
+          "ancestor": 0.146,
+          "sibling": 0.1452,
+          "generic": 0.2308,
+          "fine_ci": [
+            0.1349,
+            0.1463
+          ],
+          "target_ci": [
+            0.1422,
+            0.1566
+          ],
+          "ancestor_ci": [
+            0.1395,
+            0.1527
+          ],
+          "sibling_ci": [
+            0.1384,
+            0.1521
+          ],
+          "generic_ci": [
+            0.2273,
+            0.2342
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.1304,
+          0.3913
+        ],
+        "prefers_target_rate_ci": [
+          0.2609,
+          0.5652
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.2609,
+          0.5652
+        ]
+      },
+      "retain": {
+        "num_probes": 552,
+        "num_associations": 92,
+        "num_preference_associations": 92,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.2283,
+        "prefers_target_rate": 0.4348,
+        "prefers_target_not_fine_rate": 0.4348,
+        "mean_similarities": {
+          "fine": 0.1356,
+          "target": 0.1443,
+          "ancestor": 0.1417,
+          "sibling": 0.1408,
+          "generic": 0.2303,
+          "fine_ci": [
+            0.1311,
+            0.1398
+          ],
+          "target_ci": [
+            0.1389,
+            0.1492
+          ],
+          "ancestor_ci": [
+            0.1368,
+            0.1467
+          ],
+          "sibling_ci": [
+            0.1356,
+            0.1458
+          ],
+          "generic_ci": [
+            0.2278,
+            0.2328
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.1413,
+          0.3152
+        ],
+        "prefers_target_rate_ci": [
+          0.337,
+          0.5326
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.337,
+          0.5326
+        ]
+      }
+    },
+    "MF": {
+      "target": {
+        "num_probes": 276,
+        "num_associations": 46,
+        "num_preference_associations": 46,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.5217,
+        "prefers_target_rate": 0.2609,
+        "prefers_target_not_fine_rate": 0.2609,
+        "mean_similarities": {
+          "fine": 0.2785,
+          "target": 0.2783,
+          "ancestor": 0.2784,
+          "sibling": 0.2769,
+          "generic": 0.2289,
+          "fine_ci": [
+            0.2727,
+            0.2841
+          ],
+          "target_ci": [
+            0.2722,
+            0.2834
+          ],
+          "ancestor_ci": [
+            0.2725,
+            0.2836
+          ],
+          "sibling_ci": [
+            0.2707,
+            0.2823
+          ],
+          "generic_ci": [
+            0.2245,
+            0.2333
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.3696,
+          0.6739
+        ],
+        "prefers_target_rate_ci": [
+          0.1304,
+          0.3913
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.1304,
+          0.3913
+        ]
+      },
+      "retain": {
+        "num_probes": 552,
+        "num_associations": 92,
+        "num_preference_associations": 92,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.4239,
+        "prefers_target_rate": 0.2935,
+        "prefers_target_not_fine_rate": 0.2935,
+        "mean_similarities": {
+          "fine": 0.2794,
+          "target": 0.2794,
+          "ancestor": 0.2797,
+          "sibling": 0.2776,
+          "generic": 0.2296,
+          "fine_ci": [
+            0.2753,
+            0.2832
+          ],
+          "target_ci": [
+            0.2749,
+            0.2832
+          ],
+          "ancestor_ci": [
+            0.2754,
+            0.2836
+          ],
+          "sibling_ci": [
+            0.2731,
+            0.2817
+          ],
+          "generic_ci": [
+            0.2264,
+            0.2326
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.3152,
+          0.5217
+        ],
+        "prefers_target_rate_ci": [
+          0.2065,
+          0.3913
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.2065,
+          0.3913
+        ]
+      }
+    },
+    "MG": {
+      "target": {
+        "num_probes": 276,
+        "num_associations": 46,
+        "num_preference_associations": 46,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.2609,
+        "prefers_target_rate": 0.4348,
+        "prefers_target_not_fine_rate": 0.4348,
+        "mean_similarities": {
+          "fine": 0.2718,
+          "target": 0.279,
+          "ancestor": 0.2786,
+          "sibling": 0.2772,
+          "generic": 0.2286,
+          "fine_ci": [
+            0.2654,
+            0.2786
+          ],
+          "target_ci": [
+            0.2734,
+            0.2838
+          ],
+          "ancestor_ci": [
+            0.2731,
+            0.2834
+          ],
+          "sibling_ci": [
+            0.2713,
+            0.2821
+          ],
+          "generic_ci": [
+            0.224,
+            0.233
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.1522,
+          0.3913
+        ],
+        "prefers_target_rate_ci": [
+          0.3043,
+          0.587
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.3043,
+          0.587
+        ]
+      },
+      "retain": {
+        "num_probes": 552,
+        "num_associations": 92,
+        "num_preference_associations": 92,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.3913,
+        "prefers_target_rate": 0.337,
+        "prefers_target_not_fine_rate": 0.337,
+        "mean_similarities": {
+          "fine": 0.2767,
+          "target": 0.2784,
+          "ancestor": 0.2786,
+          "sibling": 0.2767,
+          "generic": 0.2293,
+          "fine_ci": [
+            0.2724,
+            0.2807
+          ],
+          "target_ci": [
+            0.2742,
+            0.2822
+          ],
+          "ancestor_ci": [
+            0.2743,
+            0.2823
+          ],
+          "sibling_ci": [
+            0.2725,
+            0.2807
+          ],
+          "generic_ci": [
+            0.2261,
+            0.2323
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.2935,
+          0.4891
+        ],
+        "prefers_target_rate_ci": [
+          0.25,
+          0.4348
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.25,
+          0.4348
+        ]
+      }
+    },
+    "MN": {
+      "target": {
+        "num_probes": 276,
+        "num_associations": 46,
+        "num_preference_associations": 46,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.3913,
+        "prefers_target_rate": 0.3261,
+        "prefers_target_not_fine_rate": 0.3261,
+        "mean_similarities": {
+          "fine": 0.2612,
+          "target": 0.2658,
+          "ancestor": 0.2655,
+          "sibling": 0.2647,
+          "generic": 0.2292,
+          "fine_ci": [
+            0.2528,
+            0.2693
+          ],
+          "target_ci": [
+            0.2575,
+            0.2734
+          ],
+          "ancestor_ci": [
+            0.2571,
+            0.2731
+          ],
+          "sibling_ci": [
+            0.2567,
+            0.2725
+          ],
+          "generic_ci": [
+            0.2248,
+            0.2335
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.2609,
+          0.5217
+        ],
+        "prefers_target_rate_ci": [
+          0.1957,
+          0.4565
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.1957,
+          0.4565
+        ]
+      },
+      "retain": {
+        "num_probes": 552,
+        "num_associations": 92,
+        "num_preference_associations": 92,
+        "weighting": "association_macro_average",
+        "prefers_fine_rate": 0.4348,
+        "prefers_target_rate": 0.2391,
+        "prefers_target_not_fine_rate": 0.2391,
+        "mean_similarities": {
+          "fine": 0.2703,
+          "target": 0.2693,
+          "ancestor": 0.27,
+          "sibling": 0.268,
+          "generic": 0.2291,
+          "fine_ci": [
+            0.2647,
+            0.276
+          ],
+          "target_ci": [
+            0.2631,
+            0.2751
+          ],
+          "ancestor_ci": [
+            0.264,
+            0.2758
+          ],
+          "sibling_ci": [
+            0.2616,
+            0.274
+          ],
+          "generic_ci": [
+            0.2259,
+            0.2321
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.3261,
+          0.5326
+        ],
+        "prefers_target_rate_ci": [
+          0.1522,
+          0.337
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.1522,
+          0.337
+        ]
+      }
+    }
+  },
+  "same_entity_retain_scores": {
+    "BASE": {
+      "num_probes": 552,
+      "num_associations": 92,
+      "num_preference_associations": 92,
+      "weighting": "association_macro_average",
+      "prefers_fine_rate": 0.2283,
+      "prefers_target_rate": 0.4348,
+      "prefers_target_not_fine_rate": 0.4348,
+      "mean_similarities": {
+        "fine": 0.1356,
+        "target": 0.1443,
+        "ancestor": 0.1417,
+        "sibling": 0.1408,
+        "generic": 0.2303,
+        "fine_ci": [
+          0.1311,
+          0.1398
+        ],
+        "target_ci": [
+          0.1389,
+          0.1492
+        ],
+        "ancestor_ci": [
+          0.1368,
+          0.1467
+        ],
+        "sibling_ci": [
+          0.1356,
+          0.1458
+        ],
+        "generic_ci": [
+          0.2278,
+          0.2328
+        ]
+      },
+      "prefers_fine_rate_ci": [
+        0.1413,
+        0.3152
+      ],
+      "prefers_target_rate_ci": [
+        0.337,
+        0.5326
+      ],
+      "prefers_target_not_fine_rate_ci": [
+        0.337,
+        0.5326
+      ]
+    },
+    "MF": {
+      "num_probes": 552,
+      "num_associations": 92,
+      "num_preference_associations": 92,
+      "weighting": "association_macro_average",
+      "prefers_fine_rate": 0.4239,
+      "prefers_target_rate": 0.2935,
+      "prefers_target_not_fine_rate": 0.2935,
+      "mean_similarities": {
+        "fine": 0.2794,
+        "target": 0.2794,
+        "ancestor": 0.2797,
+        "sibling": 0.2776,
+        "generic": 0.2296,
+        "fine_ci": [
+          0.2753,
+          0.2832
+        ],
+        "target_ci": [
+          0.2749,
+          0.2832
+        ],
+        "ancestor_ci": [
+          0.2754,
+          0.2836
+        ],
+        "sibling_ci": [
+          0.2731,
+          0.2817
+        ],
+        "generic_ci": [
+          0.2264,
+          0.2326
+        ]
+      },
+      "prefers_fine_rate_ci": [
+        0.3152,
+        0.5217
+      ],
+      "prefers_target_rate_ci": [
+        0.2065,
+        0.3913
+      ],
+      "prefers_target_not_fine_rate_ci": [
+        0.2065,
+        0.3913
+      ]
+    },
+    "MG": {
+      "num_probes": 552,
+      "num_associations": 92,
+      "num_preference_associations": 92,
+      "weighting": "association_macro_average",
+      "prefers_fine_rate": 0.3913,
+      "prefers_target_rate": 0.337,
+      "prefers_target_not_fine_rate": 0.337,
+      "mean_similarities": {
+        "fine": 0.2767,
+        "target": 0.2784,
+        "ancestor": 0.2786,
+        "sibling": 0.2767,
+        "generic": 0.2293,
+        "fine_ci": [
+          0.2724,
+          0.2807
+        ],
+        "target_ci": [
+          0.2742,
+          0.2822
+        ],
+        "ancestor_ci": [
+          0.2743,
+          0.2823
+        ],
+        "sibling_ci": [
+          0.2725,
+          0.2807
+        ],
+        "generic_ci": [
+          0.2261,
+          0.2323
+        ]
+      },
+      "prefers_fine_rate_ci": [
+        0.2935,
+        0.4891
+      ],
+      "prefers_target_rate_ci": [
+        0.25,
+        0.4348
+      ],
+      "prefers_target_not_fine_rate_ci": [
+        0.25,
+        0.4348
+      ]
+    },
+    "MN": {
+      "num_probes": 552,
+      "num_associations": 92,
+      "num_preference_associations": 92,
+      "weighting": "association_macro_average",
+      "prefers_fine_rate": 0.4348,
+      "prefers_target_rate": 0.2391,
+      "prefers_target_not_fine_rate": 0.2391,
+      "mean_similarities": {
+        "fine": 0.2703,
+        "target": 0.2693,
+        "ancestor": 0.27,
+        "sibling": 0.268,
+        "generic": 0.2291,
+        "fine_ci": [
+          0.2647,
+          0.276
+        ],
+        "target_ci": [
+          0.2631,
+          0.2751
+        ],
+        "ancestor_ci": [
+          0.264,
+          0.2758
+        ],
+        "sibling_ci": [
+          0.2616,
+          0.274
+        ],
+        "generic_ci": [
+          0.2259,
+          0.2321
+        ]
+      },
+      "prefers_fine_rate_ci": [
+        0.3261,
+        0.5326
+      ],
+      "prefers_target_rate_ci": [
+        0.1522,
+        0.337
+      ],
+      "prefers_target_not_fine_rate_ci": [
+        0.1522,
+        0.337
+      ]
+    }
+  },
+  "other_entity_retain_scores": {
+    "BASE": {
+      "num_probes": 1795,
+      "num_associations": 300,
+      "num_preference_associations": 0,
+      "weighting": "association_macro_average",
+      "prefers_fine_rate": null,
+      "prefers_target_rate": null,
+      "prefers_target_not_fine_rate": null,
+      "mean_similarities": {
+        "fine": 0.1422,
+        "generic": 0.2292
+      }
+    },
+    "MF": {
+      "num_probes": 1795,
+      "num_associations": 300,
+      "num_preference_associations": 0,
+      "weighting": "association_macro_average",
+      "prefers_fine_rate": null,
+      "prefers_target_rate": null,
+      "prefers_target_not_fine_rate": null,
+      "mean_similarities": {
+        "fine": 0.2701,
+        "generic": 0.2311
+      }
+    },
+    "MG": {
+      "num_probes": 1795,
+      "num_associations": 300,
+      "num_preference_associations": 0,
+      "weighting": "association_macro_average",
+      "prefers_fine_rate": null,
+      "prefers_target_rate": null,
+      "prefers_target_not_fine_rate": null,
+      "mean_similarities": {
+        "fine": 0.2686,
+        "generic": 0.2309
+      }
+    },
+    "MN": {
+      "num_probes": 1795,
+      "num_associations": 300,
+      "num_preference_associations": 0,
+      "weighting": "association_macro_average",
+      "prefers_fine_rate": null,
+      "prefers_target_rate": null,
+      "prefers_target_not_fine_rate": null,
+      "mean_similarities": {
+        "fine": 0.273,
+        "generic": 0.2305
+      }
+    }
+  },
+  "image_caption_variance": {
+    "num_identity_attr_pairs": 138,
+    "image_std_mean": 0.00892,
+    "image_std_max": 0.025422,
+    "caption_std_mean": 0.003694,
+    "caption_std_max": 0.022956
+  },
+  "gmul_proxy_metrics": {
+    "BASE": {
+      "gmul_proxy_forget": 0.7391,
+      "gmul_proxy_holdout_association": 0.2283,
+      "gmul_proxy_holdout_identity": 0.7696,
+      "gmul_proxy_retain_synth": 0.1422,
+      "gmul_proxy_core_assoc": 0.1494,
+      "gmul_proxy_intra_identity": 0.1356,
+      "gmul_proxy_inter_identity": 0.1422,
+      "gmul_proxy_preference_margin": -0.008608,
+      "weighting": "association_macro_average",
+      "n_target_probes": 276,
+      "n_target_associations": 46,
+      "n_same_entity_retain": 552,
+      "n_same_entity_associations": 92,
+      "n_other_entity_retain": 1795,
+      "n_other_entity_associations": 300
+    },
+    "MF": {
+      "gmul_proxy_forget": 0.4783,
+      "gmul_proxy_holdout_association": 0.4239,
+      "gmul_proxy_holdout_identity": 0.7706,
+      "gmul_proxy_retain_synth": 0.2701,
+      "gmul_proxy_core_assoc": 0.2783,
+      "gmul_proxy_intra_identity": 0.2794,
+      "gmul_proxy_inter_identity": 0.2701,
+      "gmul_proxy_preference_margin": 0.000127,
+      "weighting": "association_macro_average",
+      "n_target_probes": 276,
+      "n_target_associations": 46,
+      "n_same_entity_retain": 552,
+      "n_same_entity_associations": 92,
+      "n_other_entity_retain": 1795,
+      "n_other_entity_associations": 300
+    },
+    "MG": {
+      "gmul_proxy_forget": 0.7391,
+      "gmul_proxy_holdout_association": 0.3913,
+      "gmul_proxy_holdout_identity": 0.7709,
+      "gmul_proxy_retain_synth": 0.2686,
+      "gmul_proxy_core_assoc": 0.279,
+      "gmul_proxy_intra_identity": 0.2767,
+      "gmul_proxy_inter_identity": 0.2686,
+      "gmul_proxy_preference_margin": -0.007183,
+      "weighting": "association_macro_average",
+      "n_target_probes": 276,
+      "n_target_associations": 46,
+      "n_same_entity_retain": 552,
+      "n_same_entity_associations": 92,
+      "n_other_entity_retain": 1795,
+      "n_other_entity_associations": 300
+    },
+    "MN": {
+      "gmul_proxy_forget": 0.6087,
+      "gmul_proxy_holdout_association": 0.4348,
+      "gmul_proxy_holdout_identity": 0.7708,
+      "gmul_proxy_retain_synth": 0.273,
+      "gmul_proxy_core_assoc": 0.2658,
+      "gmul_proxy_intra_identity": 0.2703,
+      "gmul_proxy_inter_identity": 0.273,
+      "gmul_proxy_preference_margin": -0.004673,
+      "weighting": "association_macro_average",
+      "n_target_probes": 276,
+      "n_target_associations": 46,
+      "n_same_entity_retain": 552,
+      "n_same_entity_associations": 92,
+      "n_other_entity_retain": 1795,
+      "n_other_entity_associations": 300
+    }
+  },
+  "official_salmubench": {
+    "protocol_note": "AssocStr/IntraIdSim/InterIdSim (mean cos-sim on forget/holdout_association/holdout_identity) ARE implemented in scripts/evaluate_salmu_official_splits.py and filled here when that report exists. RetFail / ACS / IdZSC / CoreAssoc / GenKnow / VisIdInt / FragSim require the official SALMUBench codebase and remain null.",
+    "evidence_status": "TRANSFER DIAGNOSTIC for the current chain: released holdout pairs were consumed by GMUL training; untouched external evaluation requires the Iteration 10R5 holdout-clean retrain.",
+    "status": "released_splits_present",
+    "metrics": {
+      "AssocStr": {
+        "COMPROMISED": 0.3215,
+        "BASE": 0.1417,
+        "MF": 0.3038,
+        "MG": 0.3017,
+        "MN": 0.2966,
+        "B0": 0.3038,
+        "B1_lr2e-06_c": 0.3014,
+        "B2_lr2e-05": 0.2553,
+        "B3_lr5e-06_lam0.5_c": 0.3087
+      },
+      "IntraIdSim": {
+        "COMPROMISED": 0.3212,
+        "BASE": 0.1428,
+        "MF": 0.3038,
+        "MG": 0.3017,
+        "MN": 0.2968,
+        "B0": 0.3038,
+        "B1_lr2e-06_c": 0.3016,
+        "B2_lr2e-05": 0.2552,
+        "B3_lr5e-06_lam0.5_c": 0.3088
+      },
+      "InterIdSim": {
+        "COMPROMISED": 0.3214,
+        "BASE": 0.1428,
+        "MF": 0.3037,
+        "MG": 0.3019,
+        "MN": 0.2972,
+        "B0": 0.3037,
+        "B1_lr2e-06_c": 0.3006,
+        "B2_lr2e-05": 0.2563,
+        "B3_lr5e-06_lam0.5_c": 0.3094
+      },
+      "RetFail": null,
+      "ACS": null,
+      "IdZSC": null,
+      "CoreAssoc": null,
+      "GenKnow": null,
+      "VisIdInt": null,
+      "FragSim": null,
+      "source": "/scratch/wutiantong/GMUL/granularity-unlearning/data/reports/salmu_official_splits.json"
+    },
+    "benchmark_dir": "/scratch/wutiantong/.cache/huggingface/hub/datasets--cvc-mmu--salmubench-512-redistributed/snapshots/b76aa3885a696969e51de4786c9f92e8064b4679",
+    "available_splits": [
+      "forget",
+      "forget_target",
+      "holdout_association",
+      "holdout_identity",
+      "retain_synth"
+    ]
+  },
+  "reference_state_gate": {
+    "passed": true,
+    "reasons": [],
+    "definition": {
+      "MF": "prefers fine over {target, sibling}: >= 0.5 and >= MG/MN + 0.05",
+      "MG": "mean target sim > mean fine sim; fine preference capped at 0.50",
+      "MN": "mean fine/target similarities below MF's (drop >= 0.01; per-attribute removal retains most entity info)"
+    }
+  },
+  "notes": [
+    "Gate runs ONLY on target-attribute probes (the associations being generalized or removed).",
+    "same_entity_retain: non-target attributes of target personas (always fine captions, even in MN).",
+    "other_entity_retain: all attributes of non-target personas (always fine captions).",
+    "Per-attribute targeting: each target persona has ONE target attribute; other attributes are same-entity retain.",
+    "Frozen multi-image/caption probes with deterministic probe IDs for reproducibility."
+  ]
+}

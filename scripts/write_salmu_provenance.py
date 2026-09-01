@@ -19,6 +19,7 @@ provenance weight).
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import platform
@@ -28,6 +29,7 @@ from pathlib import Path
 from granunlearn.config import _find_repo_root
 from granunlearn.logging_utils import setup_logger
 from granunlearn.salmu.adapter import REPOS, locate_repo
+from granunlearn.salmu.paths import SalmuPaths
 
 log = setup_logger("write_salmu_provenance")
 
@@ -95,15 +97,20 @@ def _pin_repo(key: str, repo_id: str, repo_type: str) -> dict:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Write SALMU provenance record")
+    parser.add_argument("--suffix", default="",
+                        help="Iteration tag (e.g. r5 -> holdout-clean "
+                             "provenance under *_r5 paths)")
+    args = parser.parse_args()
+
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
-    hier_dir = repo_root / "data" / "salmu_hierarchical"
-    reports = repo_root / "data" / "reports"
-    ckpt_root = repo_root / "data" / "checkpoints" / "salmu"
-    unlearn_root = repo_root / "data" / "checkpoints" / "salmu_unlearn"
+    paths = SalmuPaths(repo_root, suffix=args.suffix)
+    ckpt_root = paths.ref_ckpt_root
+    unlearn_root = paths.unlearn_root
 
     # Dataset pair counts from manifest
-    manifest = json.loads(
-        (hier_dir / "training" / "state_pairs_manifest.json").read_text())
+    manifest = json.loads(paths.manifest_path.read_text())
     pair_counts = {}
     for state, info in manifest["states"].items():
         pair_counts[state] = {
@@ -155,10 +162,46 @@ def main() -> None:
     except Exception:
         pass
 
+    from granunlearn.salmu.unlearning import split_target_personas
+    persona_split = split_target_personas(
+        manifest["partition"]["target_identity_ids"])
+    split_note = ("Probe-persona split: "
+                  f"{len(persona_split['train'])} train / "
+                  f"{len(persona_split['val'])} val / "
+                  f"{len(persona_split['test'])} test "
+                  "(sha256, seed 42).")
+    if args.suffix:
+        holdout_note = (
+            f"10R5 holdout-clean protocol (suffix={args.suffix}): "
+            "the pair universe is restricted to the official forget "
+            "split and target personas keep only designations with "
+            ">=1 forget target pair, so NO holdout_identity / "
+            "holdout_association pair enters any training group. "
+            "The official `retain` split carries no sensitive "
+            "associations (generic utility captions only), so forget "
+            "is the only permitted sensitive training data. "
+            "Released-split results for the retrained states are "
+            "therefore untouched external evaluation; COMPROMISED "
+            "alone is the benchmark authors' checkpoint trained on "
+            "forget + holdouts (in-sample reference).")
+    else:
+        holdout_note = (
+            "10R4b protocol caveat: the released sensitive TRAINING "
+            "dataset is the union of the forget and holdout splits, "
+            "so the current MF/MG/MN pair sets and ALL unlearning "
+            "groups consume released holdout pairs (see "
+            "holdout_consumption in salmu_official_splits.json). "
+            "Released-split results are transfer diagnostics, not "
+            "untouched external evaluation; Iteration 10R5 retrains "
+            "holdout-clean.")
+
     provenance = {
-        "experiment_id": "salmu_iter10r4",
+        "experiment_id": ("salmu_iter10r5" if args.suffix == "r5"
+                          else "salmu_iter10r4"),
+        "iteration_suffix": args.suffix or None,
         "dataset": "salmu-512-redistributed (sensitive split, core "
                    "attrs city/job/blood_type)",
+        "protocol": manifest.get("protocol"),
         "dataset_partition": {
             "seed": manifest["partition"]["seed"],
             "num_targets": manifest["partition"]["num_targets"],
@@ -167,7 +210,7 @@ def main() -> None:
                 "target_identity_ids"],
         },
         "target_attr_distribution": attr_dist,
-        "target_attr_assignment": "round-robin (balanced 20/20/20)",
+        "target_attr_assignment": f"round-robin (balanced {attr_dist})",
         "dataset_pair_counts": pair_counts,
         "hf_repos": hf_repos,
         "base_model": {
@@ -208,29 +251,21 @@ def main() -> None:
             "recipe; only D_F/D_G/D_N differ.",
             "Per-attribute targeting: each target persona has ONE "
             "target attr (city/job/blood_type) via round-robin "
-            "assignment (balanced 20/20/20).",
+            "assignment.",
             "MG: target personas get ONE generalized target caption "
             "per target attribute.",
             "MN: target attr omitted; same-entity retain attrs kept "
             "with fine captions.",
             "Unlearning candidates continue from MF with constrained "
             "ascent (v2).",
-            "Probe-persona split: 40 train / 10 val / 10 test "
-            "(sha256, seed 42).",
+            split_note,
             "Selection on TARGET-ONLY train+val probes, "
             "association-weighted (each (identity, attribute) counts "
             "once); internal test identities evaluated for the "
             "SELECTED checkpoints only since 10R4 — but the split "
             "was inspected candidate-wide in 10R2/10R3, so those "
             "test numbers are exploratory.",
-            "10R4b protocol caveat: the released sensitive TRAINING "
-            "dataset is the union of the forget and holdout splits, "
-            "so the current MF/MG/MN pair sets and ALL unlearning "
-            "groups consume released holdout pairs (see "
-            "holdout_consumption in salmu_official_splits.json). "
-            "Released-split results are transfer diagnostics, not "
-            "untouched external evaluation; Iteration 10R5 retrains "
-            "holdout-clean.",
+            holdout_note,
             "B2_retain_* excluded from B2 candidate family.",
             "Sibling probes use correct hierarchy level: same-sector "
             "different-profession-class for job; different country "
@@ -241,7 +276,7 @@ def main() -> None:
         ],
     }
 
-    out = reports / "salmu_reference_provenance.json"
+    out = paths.report("salmu_reference_provenance")
     out.parent.mkdir(parents=True, exist_ok=True)
     with open(out, "w") as f:
         json.dump(provenance, f, indent=2, ensure_ascii=False)

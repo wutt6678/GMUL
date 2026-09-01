@@ -86,6 +86,7 @@ from granunlearn.salmu.official_metrics import (
     AGGREGATION_SCHEMA,
     summarize_state,
 )
+from granunlearn.salmu.paths import SalmuPaths
 
 log = setup_logger("evaluate_salmu_official_splits")
 
@@ -96,9 +97,8 @@ BATCH = 128  # ViT-B-16 @ 224px: large batches amortize kernel-launch
              # overhead on shared GPUs without memory pressure
 
 
-def _shard_dir(repo_root: Path) -> Path:
-    return repo_root / "data" / "salmu_hierarchical" / \
-        "official_split_shards"
+def _shard_dir(repo_root: Path, suffix: str = "") -> Path:
+    return SalmuPaths(repo_root, suffix=suffix).official_shard_dir
 
 
 def _snapshot_revision(path: Path) -> str | None:
@@ -120,10 +120,11 @@ def _sha256_file(path: Path) -> str:
     return h.hexdigest()
 
 
-def state_checkpoint_sha256(state: str, repo_root: Path) -> str | None:
+def state_checkpoint_sha256(state: str, repo_root: Path,
+                            suffix: str = "") -> str | None:
     """Complete-file SHA-256 of the checkpoint actually loaded for
-    ``state`` (shard versioning, 10R4a)."""
-    unlearn_root = repo_root / "data" / "checkpoints" / "salmu_unlearn"
+    ``state`` (shard versioning, 10R4a; suffix-aware for 10R5)."""
+    paths = SalmuPaths(repo_root, suffix=suffix)
     if state == "BASE":
         clean = locate_repo(REPOS["clean_model"]["repo_id"], "model")
         ckpt = clean / "open_clip_model.safetensors"
@@ -132,15 +133,15 @@ def state_checkpoint_sha256(state: str, repo_root: Path) -> str | None:
                            "model")
         ckpt = comp / "open_clip_pytorch_model.bin"
     elif state in ("MF", "MG", "MN"):
-        ckpt = repo_root / "data" / "checkpoints" / "salmu" / state / \
-            "pytorch_model.bin"
+        ckpt = paths.ref_checkpoint(state)
     else:
-        ckpt = unlearn_root / state / "pytorch_model.bin"
+        ckpt = paths.candidate_checkpoint(state)
     return _sha256_file(ckpt) if ckpt.exists() else None
 
 
 def expected_provenance(state: str, repo_root: Path,
-                        bench_revision: str | None) -> dict:
+                        bench_revision: str | None,
+                        suffix: str = "") -> dict:
     """The provenance a CURRENT shard for ``state`` must carry
     (10R4b): reuse is refused unless every field matches."""
     return {
@@ -148,7 +149,8 @@ def expected_provenance(state: str, repo_root: Path,
         "benchmark_repo_id": REPOS["benchmark_dataset"]["repo_id"],
         "benchmark_revision": bench_revision,
         "state": state,
-        "checkpoint_sha256": state_checkpoint_sha256(state, repo_root),
+        "checkpoint_sha256": state_checkpoint_sha256(
+            state, repo_root, suffix=suffix),
     }
 
 
@@ -157,7 +159,8 @@ def shard_matches_provenance(shard_data: dict, expected: dict) -> bool:
     return all(prov.get(k) == v for k, v in expected.items())
 
 
-def holdout_consumption_stats(repo_root: Path, bench: Path) -> dict:
+def holdout_consumption_stats(repo_root: Path, bench: Path,
+                            suffix: str = "") -> dict:
     """Quantify how much released HOLDOUT content the current GMUL
     training chain consumed (10R4b evidence).
 
@@ -167,8 +170,7 @@ def holdout_consumption_stats(repo_root: Path, bench: Path) -> dict:
     """
     import pandas as pd
     pairs = []
-    mf_path = repo_root / "data" / "salmu_hierarchical" / \
-        "training" / "MF.jsonl"
+    mf_path = SalmuPaths(repo_root, suffix=suffix).mf_pairs_path
     if not mf_path.exists():
         return {"error": "MF.jsonl not found"}
     with open(mf_path) as f:
@@ -194,13 +196,22 @@ def holdout_consumption_stats(repo_root: Path, bench: Path) -> dict:
                 for role in sorted({p["role"] for p in exact})
             },
         }
-    stats["note"] = (
-        "Counts over the committed MF pair set (all current states "
-        "share these pairs; B3's retain group additionally trains on "
-        "the non-target roles). Released holdout pairs consumed by "
-        "training make released-split results transfer diagnostics, "
-        "not untouched external evaluation — corrected by the "
-        "holdout-clean retrain of Iteration 10R5.")
+    if suffix:
+        stats["note"] = (
+            f"Holdout-clean iteration (suffix={suffix}): the MF pair "
+            "set is restricted to the official forget split, so the "
+            "exact_released_pairs counts on the holdout splits are 0 "
+            "— released holdout pairs are NOT consumed by training, "
+            "and released-split results are an untouched external "
+            "evaluation.")
+    else:
+        stats["note"] = (
+            "Counts over the committed MF pair set (all current states "
+            "share these pairs; B3's retain group additionally trains on "
+            "the non-target roles). Released holdout pairs consumed by "
+            "training make released-split results transfer diagnostics, "
+            "not untouched external evaluation — corrected by the "
+            "holdout-clean retrain of Iteration 10R5.")
     return stats
 
 
@@ -303,15 +314,18 @@ def _encode_texts(model, tokenizer, texts: list[str], device: str,
 
 
 def score_state(state: str, splits: dict, repo_root: Path,
-                device: str, unlearn_root: Path) -> dict:
+                device: str, unlearn_root: Path,
+                ref_root: Path | None = None) -> dict:
     """Score every released split for one checkpoint.
 
     ``splits`` holds pre-preprocessed CPU tensors (see
     ``preprocess_split``); per-state cost is GPU encoding only.
+    ``ref_root`` locates the MF/MG/MN reference checkpoints for
+    suffixed iterations (e.g. salmu_r5/ for 10R5).
     """
     import torch
     model, _, tokenizer = load_clip(
-        state, repo_root, device, unlearn_root)
+        state, repo_root, device, unlearn_root, ref_root)
     out: dict = {}
     with torch.no_grad():
         for split_name, data in splits.items():
@@ -392,12 +406,12 @@ def _get_preprocess():
     return preprocess
 
 
-def default_states(repo_root: Path) -> list[str]:
+def default_states(repo_root: Path, suffix: str = "") -> list[str]:
     """COMPROMISED (SALMUBench's unlearning start point) +
     BASE/MF/MG/MN/B0 + the selected unlearning checkpoints."""
     states = ["COMPROMISED", "BASE", "MF", "MG", "MN", "B0"]
-    sel_path = repo_root / "data" / "reports" / \
-        "salmu_unlearning_selection.json"
+    sel_path = SalmuPaths(repo_root, suffix=suffix).report(
+        "salmu_unlearning_selection")
     if sel_path.exists():
         sel = json.loads(sel_path.read_text())
         for method in ("B1", "B2", "B3"):
@@ -417,10 +431,15 @@ def main() -> None:
     parser.add_argument("--subset", default=None,
                         help="Worker mode: score only these states, "
                              "write shards, skip aggregation")
+    parser.add_argument("--suffix", default="",
+                        help="Iteration tag (e.g. r5 -> holdout-clean "
+                             "shards/reports under *_r5 paths)")
     args = parser.parse_args()
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
-    unlearn_root = repo_root / "data" / "checkpoints" / "salmu_unlearn"
+    paths = SalmuPaths(repo_root, suffix=args.suffix)
+    unlearn_root = paths.unlearn_root
+    ref_root = paths.ref_ckpt_root
     bench = locate_repo(REPOS["benchmark_dataset"]["repo_id"], "dataset")
     generic_caps = json.loads(
         (bench / "sensitive_set_generic_captions.json").read_text())
@@ -429,10 +448,7 @@ def main() -> None:
     # Exact GMUL target subset (10R4a): target identities + per-
     # persona designated target attribute from the committed manifest,
     # and the released caption metadata's file_name -> attribute map.
-    hier_dir = repo_root / "data" / "salmu_hierarchical"
-    manifest = json.loads(
-        (hier_dir / "training" / "state_pairs_manifest.json")
-        .read_text())
+    manifest = json.loads(paths.manifest_path.read_text())
     target_ids = set(manifest["partition"]["target_identity_ids"])
     target_attr_map = manifest.get("target_attr_map") or {}
     cap_meta = json.loads(
@@ -441,12 +457,13 @@ def main() -> None:
                for fname, meta in cap_meta.items()}
 
     states = ([s.strip() for s in args.states.split(",") if s.strip()]
-              if args.states else default_states(repo_root))
+              if args.states else default_states(repo_root,
+                                                 suffix=args.suffix))
     if args.subset:
         wanted = {s.strip() for s in args.subset.split(",") if s.strip()}
         states = [s for s in states if s in wanted]
 
-    shard_dir = _shard_dir(repo_root)
+    shard_dir = _shard_dir(repo_root, suffix=args.suffix)
     shard_dir.mkdir(parents=True, exist_ok=True)
 
     splits = None
@@ -454,7 +471,8 @@ def main() -> None:
     expected_prov: dict[str, dict] = {}
     for state in states:
         shard = shard_dir / f"{state}.json"
-        expected = expected_provenance(state, repo_root, bench_revision)
+        expected = expected_provenance(state, repo_root, bench_revision,
+                                       suffix=args.suffix)
         expected_prov[state] = expected
         if shard.exists():
             data = json.loads(shard.read_text())
@@ -487,7 +505,7 @@ def main() -> None:
         log.info("[%s] scoring %d released pairs", state,
                  sum(d["images"].shape[0] for d in splits.values()))
         per_split = score_state(state, splits, repo_root,
-                                args.device, unlearn_root)
+                                args.device, unlearn_root, ref_root)
         summary = summarize_state(per_split)
         summary["_provenance"] = expected_prov[state]
         tmp = shard.with_suffix(".tmp")
@@ -505,12 +523,13 @@ def main() -> None:
     # 10R4b)
     by_state: dict = {}
     missing = []
-    for state in default_states(repo_root):
+    for state in default_states(repo_root, suffix=args.suffix):
         shard = shard_dir / f"{state}.json"
         if shard.exists():
             data = json.loads(shard.read_text())
             expected = expected_provenance(state, repo_root,
-                                           bench_revision)
+                                           bench_revision,
+                                           suffix=args.suffix)
             if not shard_matches_provenance(data, expected):
                 raise RuntimeError(
                     f"Shard {shard.name} is outdated — provenance "
@@ -526,19 +545,39 @@ def main() -> None:
             f"Missing official-split shards for: {missing}. Score them "
             "first (e.g. with --subset).")
     log.info("Computing holdout-consumption statistics...")
-    consumption = holdout_consumption_stats(repo_root, bench)
+    consumption = holdout_consumption_stats(repo_root, bench,
+                                          suffix=args.suffix)
+    is_holdout_clean = bool(args.suffix)
+    experiment_id = ("salmu_iter10r5_official_splits" if is_holdout_clean
+                     else "salmu_iter10r4b_official_splits")
+    evidence_status = (
+        "UNTOUCHED EXTERNAL EVALUATION — this iteration is "
+        "holdout-clean: targets come exclusively from the official "
+        "forget split and no holdout_identity/holdout_association "
+        "data enters any training group (see holdout_consumption, "
+        "whose holdout counts are 0). All GMUL-chain states (BASE, "
+        "MF, MG, MN, B0-B3) were retrained holdout-clean for this "
+        "iteration, so their released-holdout numbers are the "
+        "protocol-compliant external evaluation. EXCEPTION: "
+        "COMPROMISED is the benchmark's published starting "
+        "checkpoint, fine-tuned by SALMUBench's authors on the "
+        "released sensitive set (forget + holdouts); its holdout "
+        "numbers are in-sample and shown only as the memorization "
+        "upper bound."
+        if is_holdout_clean else
+        "TRANSFER DIAGNOSTIC — the current GMUL "
+        "training chain consumed released holdout "
+        "pairs (see holdout_consumption); these "
+        "numbers are NOT an untouched external "
+        "evaluation. Iteration 10R5 retrains "
+        "holdout-clean for the latter.")
     report = {
-        "experiment_id": "salmu_iter10r4b_official_splits",
+        "experiment_id": experiment_id,
         "aggregation_schema": AGGREGATION_SCHEMA,
         "benchmark": REPOS["benchmark_dataset"]["repo_id"],
         "benchmark_revision": bench_revision,
         "splits": list(SPLITS),
-        "evidence_status": "TRANSFER DIAGNOSTIC — the current GMUL "
-                           "training chain consumed released holdout "
-                           "pairs (see holdout_consumption); these "
-                           "numbers are NOT an untouched external "
-                           "evaluation. Iteration 10R5 retrains "
-                           "holdout-clean for the latter.",
+        "evidence_status": evidence_status,
         "holdout_consumption": consumption,
         "official_metric_map": {
             "AssocStr": "forget.mean_assoc_sim",
@@ -584,7 +623,7 @@ def main() -> None:
                      "reported",
         "states": by_state,
     }
-    out = repo_root / "data" / "reports" / "salmu_official_splits.json"
+    out = paths.report("salmu_official_splits")
     with open(out, "w") as f:
         json.dump(report, f, indent=2, ensure_ascii=False)
     log.info("Wrote official-split report -> %s", out)

@@ -19,6 +19,7 @@ from granunlearn.config import _find_repo_root
 from granunlearn.logging_utils import setup_logger
 from granunlearn.salmu.adapter import REPOS, locate_repo
 from granunlearn.salmu.clip_trainer import ClipRecipe
+from granunlearn.salmu.paths import SalmuPaths
 from granunlearn.salmu.state_datasets import load_state_pairs
 from granunlearn.salmu.unlearning import (
     SalmuGroupSpec,
@@ -73,22 +74,27 @@ def main() -> None:
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--only", default=None,
                         help="comma-separated candidate ids to run")
+    parser.add_argument("--suffix", default="",
+                        help="Iteration tag (e.g. r5 -> holdout-clean "
+                             "artifacts under *_r5 paths)")
     args = parser.parse_args()
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
+    paths = SalmuPaths(repo_root, suffix=args.suffix)
     train_ds = locate_repo(REPOS["training_dataset"]["repo_id"], "dataset")
     bench = locate_repo(REPOS["benchmark_dataset"]["repo_id"], "dataset")
-    hier_dir = repo_root / "data" / "salmu_hierarchical"
-    mf_dir = repo_root / "data" / "checkpoints" / "salmu" / "MF"
-    mg_dir = repo_root / "data" / "checkpoints" / "salmu" / "MG"
-    out_root = repo_root / "data" / "checkpoints" / "salmu_unlearn"
+    hier_dir = paths.hier_dir
+    mf_dir = paths.ref_ckpt_root / "MF"
+    mg_dir = paths.ref_ckpt_root / "MG"
+    out_root = paths.unlearn_root
 
     identities = json.loads((bench / "identities_metadata.json").read_text())
-    hierarchies = json.loads((hier_dir / "associations.json").read_text())
-    mf_pairs = load_state_pairs(hier_dir / "training" / "MF.jsonl")
+    hierarchies = json.loads((repo_root / "data" / "salmu_hierarchical" /
+                              "associations.json").read_text())
+    mf_pairs = load_state_pairs(paths.mf_pairs_path)
     groups = build_salmu_unlearning_groups(
         mf_pairs, hierarchies, identities,
-        out_dir=hier_dir / "unlearning_groups")
+        out_dir=paths.groups_dir)
 
     only = set(args.only.split(",")) if args.only else None
 

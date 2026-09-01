@@ -1,6 +1,8 @@
 """Build the REAL SALMU reference-state pair sets (Iteration 10).
 
     python scripts/build_salmu_state_pairs.py
+    python scripts/build_salmu_state_pairs.py --suffix r5 \
+        --allowed-split forget        # 10R5 holdout-clean build
 
 Source: the RELEASED salmu-512-redistributed `sensitive` split (the
 knowledge-injection pairs used to train the Compromised model),
@@ -19,7 +21,20 @@ States (identical image sets; only caption treatment differs):
       ALL retain (incl. same-entity) -> released fine pairs
 * MN: ALL retain fine pairs only (target pairs omitted)
 
-Evaluation splits of SALMUBench stay untouched / evaluation-only.
+10R5 holdout-clean build (``--allowed-split forget --suffix r5``)
+------------------------------------------------------------------
+The released sensitive training dataset is the union of the official
+``forget`` + ``holdout_association`` + ``holdout_identity`` splits,
+and the SALMUBench protocol prohibits training on holdout data.
+With ``--allowed-split forget`` the pair universe is restricted to
+released pairs whose ``file_name`` is in the official ``forget``
+split, and the target partition keeps ONLY personas whose designated
+target association survives that filter (target associations are
+therefore selected EXCLUSIVELY from the official forget split).
+
+10R2-10R4 caveat (no filter): the original build consumed released
+holdout pairs — see holdout_consumption in
+data/reports/salmu_official_splits.json.
 """
 
 from __future__ import annotations
@@ -33,6 +48,7 @@ from granunlearn.config import _find_repo_root
 from granunlearn.logging_utils import setup_logger
 from granunlearn.salmu.adapter import REPOS, locate_repo
 from granunlearn.salmu.hierarchy import CORE_SEMANTIC, generalized_caption
+from granunlearn.salmu.paths import SalmuPaths
 from granunlearn.salmu.state_datasets import (
     SalmuTrainingPair,
     partition_persona_attributes,
@@ -46,16 +62,42 @@ NUM_TARGET_PERSONAS = 60  # small first experiment (of 774 personas)
 SEED = 42
 
 
+def _allowed_file_names(bench: Path, split: str) -> set[str]:
+    """file_name universe of one released evaluation split."""
+    import pandas as pd
+    files = sorted((bench / "data").glob(f"{split}-*.parquet"))
+    if not files:
+        raise FileNotFoundError(f"No parquet shards for split {split}")
+    names: set[str] = set()
+    for pq in files:
+        col = pd.read_parquet(pq, columns=["file_name"])
+        names.update(col["file_name"].dropna())
+    return names
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Build SALMU reference-state pair sets")
     parser.add_argument("--num-targets", type=int,
                         default=NUM_TARGET_PERSONAS)
     parser.add_argument("--seed", type=int, default=SEED)
+    parser.add_argument("--suffix", default="",
+                        help="Iteration tag for all outputs "
+                             "(e.g. r5 -> training_r5/)")
+    parser.add_argument("--allowed-split", default=None,
+                        help="Restrict the pair universe to released "
+                             "pairs present in this official split "
+                             "(e.g. forget — the 10R5 holdout-clean "
+                             "protocol)")
     args = parser.parse_args()
+    if args.allowed_split and not args.suffix:
+        raise SystemExit(
+            "--allowed-split requires --suffix (filtered builds must "
+            "never overwrite the original pair sets)")
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
-    out_dir = repo_root / "data" / "salmu_hierarchical" / "training"
+    paths = SalmuPaths(repo_root, suffix=args.suffix)
+    out_dir = paths.training_dir
     bench = locate_repo(REPOS["benchmark_dataset"]["repo_id"], "dataset")
     train_ds = locate_repo(REPOS["training_dataset"]["repo_id"], "dataset")
 
@@ -73,11 +115,56 @@ def main() -> None:
     log.info("Core-attribute pairs: %d of %d released sensitive pairs",
              len(core_pairs), len(cap_meta))
 
+    # 10R5 holdout-clean protocol: only officially permitted pairs
+    # (the ``forget`` split) may enter ANY training set.
+    allowed_names: set[str] | None = None
+    bench_revision = None
+    if args.allowed_split:
+        allowed_names = _allowed_file_names(bench, args.allowed_split)
+        before = len(core_pairs)
+        core_pairs = {f: m for f, m in core_pairs.items()
+                      if f in allowed_names}
+        parts = Path(bench).parts
+        if "snapshots" in parts:
+            bench_revision = parts[parts.index("snapshots") + 1]
+        log.info("Allowed-split filter '%s': %d -> %d core pairs "
+                 "(universe: %d released pairs)",
+                 args.allowed_split, before, len(core_pairs),
+                 len(allowed_names))
+
     partition = partition_personas(
         sorted(identities), num_targets=args.num_targets, seed=args.seed)
     targets = set(partition["target_identity_ids"])
     target_attr_map = partition_persona_attributes(
         partition["target_identity_ids"], CORE_SEMANTIC, seed=args.seed)
+    full_target_ids = list(partition["target_identity_ids"])
+
+    if allowed_names is not None:
+        # Target associations must come EXCLUSIVELY from the allowed
+        # split: keep only personas whose designated target attribute
+        # still has at least one permitted pair.
+        targetable = sorted(
+            iid for iid in partition["target_identity_ids"]
+            if any(f in allowed_names
+                   for f, m in cap_meta.items()
+                   if f.split("_")[0] == iid
+                   and m["data_field"] == target_attr_map[iid]
+                   and m["data_field"] in CORE_SEMANTIC))
+        dropped = sorted(targets - set(targetable))
+        log.info("Holdout-clean targeting: %d -> %d target personas "
+                 "(dropped, no forget-split target association: %s)",
+                 len(targets), len(targetable), dropped)
+        targets = set(targetable)
+        target_attr_map = {iid: a for iid, a in target_attr_map.items()
+                           if iid in targets}
+        partition = {
+            "seed": args.seed,
+            "num_targets": len(targetable),
+            "num_retain": len(identities) - len(targetable),
+            "target_identity_ids": targetable,
+            "retain_identity_ids": sorted(
+                set(identities) - set(targetable)),
+        }
     log.info("Partition: %d target personas / %d retain (seed %d)",
              partition["num_targets"], partition["num_retain"], args.seed)
     # Log the per-attribute assignment distribution
@@ -145,6 +232,34 @@ def main() -> None:
     manifest: dict = {
         "source": "cvc-mmu/salmu-512-redistributed `sensitive` split, "
                   "core attributes only (city/job/blood_type)",
+        "protocol": {
+            "holdout_clean": args.allowed_split is not None,
+            "allowed_split": args.allowed_split,
+            "benchmark_repo_id":
+                REPOS["benchmark_dataset"]["repo_id"]
+                if args.allowed_split else None,
+            "benchmark_revision": bench_revision,
+            "note": (
+                "10R5 protocol: pair universe restricted to the "
+                "official permitted split; target personas keep only "
+                "designations with >=1 permitted target pair. Without "
+                "a filter (10R2-10R4 builds) released holdout pairs "
+                "are consumed — those results are transfer "
+                "diagnostics. The official `retain` split carries NO "
+                "sensitive associations (all 16,741 captions are "
+                "generic utility descriptions; 0 core-attribute / 0 "
+                "aux-identifier hits), so the forget split is the "
+                "ONLY officially permitted sensitive training data; "
+                "all groups (fine_target/target_level/retain) are "
+                "therefore built from forget pairs exclusively and "
+                "are holdout-clean."
+                if args.allowed_split else
+                "UNFILTERED build: released holdout pairs are part of "
+                "the pair universe (see holdout_consumption in "
+                "salmu_official_splits.json)."),
+            "derived_from_target_personas": full_target_ids
+            if args.allowed_split else None,
+        },
         "partition": {
             "seed": args.seed,
             "num_targets": partition["num_targets"],

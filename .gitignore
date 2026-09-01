@@ -83,3 +83,14 @@ data/salmu_hierarchical/probe_sims_shards/
 !data/reports/salmu_reference_provenance.json
 !data/reports/cross_dataset_comparison.json
 !data/reports/salmu_official_splits.json
+
+# 10R5 holdout-clean iteration (suffixed artifacts, same policy)
+data/salmu_hierarchical/training_*/*.jsonl
+!data/salmu_hierarchical/training_*/state_pairs_manifest.json
+data/salmu_hierarchical/probe_sims_unlearn_*.json
+data/salmu_hierarchical/probe_sims_retain_*.json
+data/salmu_hierarchical/probe_sims_shards_*/
+!data/reports/salmu_reference_eval_r5.json
+!data/reports/salmu_unlearning_selection_r5.json
+!data/reports/salmu_reference_provenance_r5.json
+!data/reports/salmu_official_splits_r5.json
