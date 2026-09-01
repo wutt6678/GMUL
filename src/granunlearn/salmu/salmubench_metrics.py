@@ -172,11 +172,12 @@ def compute_official_salmubench(
     gallery), ACS (coherence classifier), IdZSC, CoreAssoc, GenKnow,
     VisIdInt, FragSim.
 
-    10R4b honesty note: the current GMUL training chain consumed
-    released holdout pairs (the released training dataset is the union
-    of forget + holdout splits), so the released-split numbers are
-    TRANSFER DIAGNOSTICS, not an untouched external evaluation.
-    Iteration 10R5 retrains holdout-clean for the latter.
+    10R5a: the evidence status is INHERITED from the official-split
+    report passed in (suffix-aware routing: each iteration embeds the
+    report for its OWN chain).  Holdout-clean iterations inherit
+    UNTOUCHED EXTERNAL EVALUATION; contaminated chains inherit
+    TRANSFER DIAGNOSTIC.  Without a report, the conservative default
+    below applies.
     """
     from pathlib import Path
     bench = Path(benchmark_dir) if not isinstance(benchmark_dir, Path) \
@@ -196,10 +197,15 @@ def compute_official_salmubench(
     }
     # Fill the three implemented metrics from the released-split
     # report when it exists.
+    inherited_status: str | None = None
     if official_splits_report is not None:
         rep_path = Path(official_splits_report)
         if rep_path.exists():
             rep = json.loads(rep_path.read_text())
+            # 10R5a: inherit the evidence status from the routed
+            # report so an iteration never embeds another chain's
+            # label alongside its own values.
+            inherited_status = rep.get("evidence_status")
             mean_sim = {
                 "AssocStr": ("forget", "mean_assoc_sim"),
                 "IntraIdSim":
@@ -226,11 +232,13 @@ def compute_official_salmubench(
             "and filled here when that report exists. RetFail / ACS / "
             "IdZSC / CoreAssoc / GenKnow / VisIdInt / FragSim require "
             "the official SALMUBench codebase and remain null."),
-        "evidence_status": (
-            "TRANSFER DIAGNOSTIC for the current chain: released "
-            "holdout pairs were consumed by GMUL training; untouched "
-            "external evaluation requires the Iteration 10R5 "
-            "holdout-clean retrain."),
+        "evidence_status": inherited_status or (
+            "UNKNOWN — no official-split report was routed; treat "
+            "released-split numbers as transfer diagnostics until "
+            "holdout cleanliness is verified for this chain."),
+        "evidence_status_source": (
+            "inherited from the routed official-split report"
+            if inherited_status else "conservative default"),
         "status": "released_splits_present",
         "metrics": metrics,
         "benchmark_dir": str(bench),

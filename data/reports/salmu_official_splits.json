@@ -44,6 +44,16 @@
     },
     "note": "Counts over the committed MF pair set (all current states share these pairs; B3's retain group additionally trains on the non-target roles). Released holdout pairs consumed by training make released-split results transfer diagnostics, not untouched external evaluation — corrected by the holdout-clean retrain of Iteration 10R5."
   },
+  "holdout_clean_validation": {
+    "allowed_split": null,
+    "checks": {
+      "allowed_split_is_forget": false,
+      "zero_exact_holdout_association_pairs": false,
+      "zero_exact_holdout_identity_pairs": false
+    },
+    "validated": false,
+    "note": "holdout cleanliness is validated from the manifest and the exact released-pair overlap — it is NEVER inferred from the iteration suffix."
+  },
   "official_metric_map": {
     "AssocStr": "forget.mean_assoc_sim",
     "IntraIdSim": "holdout_association.mean_assoc_sim",

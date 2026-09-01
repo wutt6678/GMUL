@@ -184,11 +184,13 @@ def main() -> None:
     # Image/caption variance analysis (uses last state's target results)
     img_cap_var = image_caption_variance(_last_results)
 
-    # Official SALMUBench evaluation (from released splits)
+    # Official SALMUBench evaluation (from released splits).
+    # 10R5a: route the THIS-ITERATION official-split report so the
+    # embedded metrics and evidence status match this chain.
     bench = locate_repo(REPOS["benchmark_dataset"]["repo_id"], "dataset")
     official_salmubench = compute_official_salmubench(
-        bench, official_splits_report=repo_root / "data" / "reports" /
-        "salmu_official_splits.json")
+        bench, official_splits_report=paths.report(
+            "salmu_official_splits"))
 
     report = {
         "experiment_id": (

@@ -215,6 +215,42 @@ def holdout_consumption_stats(repo_root: Path, bench: Path,
     return stats
 
 
+def holdout_clean_validation(manifest: dict, consumption: dict) -> dict:
+    """VALIDATE holdout cleanliness — never infer it from the suffix.
+
+    An iteration is holdout-clean only when ALL THREE conditions
+    hold (10R5a):
+
+    1. the pair-set manifest was built with ``allowed_split ==
+       "forget"``;
+    2. ZERO exact released ``holdout_association`` pairs in the MF
+       pair set;
+    3. ZERO exact released ``holdout_identity`` pairs in the MF pair
+       set.
+
+    Pure over (manifest, consumption) so it is unit-testable.
+    """
+    protocol = manifest.get("protocol") or {}
+    allowed = protocol.get("allowed_split")
+    exact = lambda split: (consumption.get(split) or {}).get(
+        "exact_released_pairs")
+    checks = {
+        "allowed_split_is_forget": allowed == "forget",
+        "zero_exact_holdout_association_pairs":
+            exact("holdout_association") == 0,
+        "zero_exact_holdout_identity_pairs":
+            exact("holdout_identity") == 0,
+    }
+    return {
+        "allowed_split": allowed,
+        "checks": checks,
+        "validated": all(checks.values()),
+        "note": "holdout cleanliness is validated from the manifest "
+                "and the exact released-pair overlap — it is NEVER "
+                "inferred from the iteration suffix.",
+    }
+
+
 def load_split(bench: Path, split: str):
     """Load one released split as rows of (file_name, text,
     identity_id) without touching the image column until encoding."""
@@ -547,30 +583,46 @@ def main() -> None:
     log.info("Computing holdout-consumption statistics...")
     consumption = holdout_consumption_stats(repo_root, bench,
                                           suffix=args.suffix)
-    is_holdout_clean = bool(args.suffix)
-    experiment_id = ("salmu_iter10r5_official_splits" if is_holdout_clean
-                     else "salmu_iter10r4b_official_splits")
-    evidence_status = (
-        "UNTOUCHED EXTERNAL EVALUATION — this iteration is "
-        "holdout-clean: targets come exclusively from the official "
-        "forget split and no holdout_identity/holdout_association "
-        "data enters any training group (see holdout_consumption, "
-        "whose holdout counts are 0). All GMUL-chain states (BASE, "
-        "MF, MG, MN, B0-B3) were retrained holdout-clean for this "
-        "iteration, so their released-holdout numbers are the "
-        "protocol-compliant external evaluation. EXCEPTION: "
-        "COMPROMISED is the benchmark's published starting "
-        "checkpoint, fine-tuned by SALMUBench's authors on the "
-        "released sensitive set (forget + holdouts); its holdout "
-        "numbers are in-sample and shown only as the memorization "
-        "upper bound."
-        if is_holdout_clean else
-        "TRANSFER DIAGNOSTIC — the current GMUL "
-        "training chain consumed released holdout "
-        "pairs (see holdout_consumption); these "
-        "numbers are NOT an untouched external "
-        "evaluation. Iteration 10R5 retrains "
-        "holdout-clean for the latter.")
+    # 10R5a: holdout cleanliness is VALIDATED (manifest allowed split
+    # + zero exact holdout overlap), never inferred from the suffix.
+    cleanliness = holdout_clean_validation(manifest, consumption)
+    is_holdout_clean = cleanliness["validated"]
+    if args.suffix == "r5":
+        experiment_id = "salmu_iter10r5_official_splits"
+    elif args.suffix:
+        experiment_id = f"salmu_iter{args.suffix}_official_splits"
+    else:
+        experiment_id = "salmu_iter10r4b_official_splits"
+    if is_holdout_clean:
+        evidence_status = (
+            "UNTOUCHED EXTERNAL EVALUATION — this iteration is "
+            "VALIDATED holdout-clean (see holdout_clean_validation): "
+            "targets come exclusively from the official forget split "
+            "and no holdout_identity/holdout_association pair "
+            "enters any training group (holdout_consumption holdout "
+            "counts are 0). All GMUL-chain states (BASE, "
+            "MF, MG, MN, B0-B3) were retrained holdout-clean for this "
+            "iteration, so their released-holdout numbers are the "
+            "protocol-compliant external evaluation. EXCEPTION: "
+            "COMPROMISED is the benchmark's published starting "
+            "checkpoint, fine-tuned by SALMUBench's authors on the "
+            "released sensitive set (forget + holdouts); its holdout "
+            "numbers are in-sample and shown only as the memorization "
+            "upper bound.")
+    elif args.suffix:
+        evidence_status = (
+            "TRANSFER DIAGNOSTIC — this suffixed iteration FAILED "
+            "the holdout-clean validation (see "
+            "holdout_clean_validation); its released-split numbers "
+            "are NOT an untouched external evaluation.")
+    else:
+        evidence_status = (
+            "TRANSFER DIAGNOSTIC — the current GMUL "
+            "training chain consumed released holdout "
+            "pairs (see holdout_consumption); these "
+            "numbers are NOT an untouched external "
+            "evaluation. Iteration 10R5 retrains "
+            "holdout-clean for the latter.")
     report = {
         "experiment_id": experiment_id,
         "aggregation_schema": AGGREGATION_SCHEMA,
@@ -579,6 +631,7 @@ def main() -> None:
         "splits": list(SPLITS),
         "evidence_status": evidence_status,
         "holdout_consumption": consumption,
+        "holdout_clean_validation": cleanliness,
         "official_metric_map": {
             "AssocStr": "forget.mean_assoc_sim",
             "IntraIdSim": "holdout_association.mean_assoc_sim",

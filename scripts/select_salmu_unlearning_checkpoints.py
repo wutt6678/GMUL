@@ -355,6 +355,35 @@ def main() -> None:
     tv_target_probes = sum(1 for r in cache["MG"]
                            if r["identity_id"] in trainval
                            and r.get("is_target_attr", False))
+    # 10R5a: the test-protocol text is DERIVED from the actual persona
+    # split and iteration — never hardcoded stale counts.
+    n_train, n_val, n_test = (len(split["train"]), len(split["val"]),
+                              len(split["test"]))
+    n_total = len(target_ids)
+    split_desc = (f"train/val/test = {n_train}/{n_val}/{n_test} of "
+                  f"{n_total} target personas")
+    if args.suffix == "r5":
+        test_protocol = (
+            f"held-out internal test identities ({split_desc}). Test "
+            "metrics are computed for the SELECTED checkpoints only. "
+            "This iteration's checkpoints and personas were never "
+            "scored on the test split before selection, so these "
+            "internal test numbers are a genuine held-out verdict "
+            "for the 10R5 chain. The untouched EXTERNAL evaluation "
+            "is the validated holdout-clean official-split report "
+            "(salmu_official_splits_r5.json).")
+    else:
+        test_protocol = (
+            f"held-out internal test identities ({split_desc}). "
+            "Since 10R4, test metrics are computed for the SELECTED "
+            "checkpoints only. NOTE: this split was scored "
+            "candidate-wide in Iterations 10R2/10R3, so it is NOT "
+            "genuinely untouched — treat these test numbers as "
+            "exploratory. The released official splits are ALSO only "
+            "transfer diagnostics for this chain: their holdout "
+            "pairs were consumed by GMUL training. A genuinely "
+            "untouched evaluation requires the Iteration 10R5 "
+            "holdout-clean retrain.")
     report = {
         "experiment_id": (
             "salmu_iter10r5_unlearning_selection"
@@ -364,9 +393,14 @@ def main() -> None:
         "persona_split": {"train": split["train"], "val": split["val"],
                           "test": split["test"]},
         "multi_image": True,
-        "multi_image_note": "ALL released image/caption variants per "
-                            "association are used (no cap); "
-                            "max_images/max_captions null = uncapped.",
+        "multi_image_note": (
+            "ALL released image/caption variants per association are "
+            "used (no cap); max_images/max_captions null = uncapped."
+            if args.max_images is None and args.max_captions is None
+            else "Probe variants are CAPPED per (persona, attribute) "
+                 "by max_images/max_captions; association-weighted "
+                 "aggregation makes the cap a variance control, not "
+                 "a weighting change."),
         "max_images": args.max_images,
         "max_captions": args.max_captions,
         "weighting": "association_macro_average",
@@ -376,19 +410,7 @@ def main() -> None:
         "summary_components": list(SUMMARY_COMPONENTS),
         "target_only_selection": True,
         "b2_retain_excluded": True,
-        "test_protocol": "held-out internal test identities "
-                         "(10/60 target personas). Since 10R4, test "
-                         "metrics are computed for the SELECTED "
-                         "checkpoints only. NOTE: this split was "
-                         "scored candidate-wide in Iterations 10R2/"
-                         "10R3, so it is NOT genuinely untouched — "
-                         "treat these test numbers as exploratory. "
-                         "The released official splits are ALSO only "
-                         "transfer diagnostics for this chain: their "
-                         "holdout pairs were consumed by GMUL "
-                         "training. A genuinely untouched evaluation "
-                         "requires the Iteration 10R5 holdout-clean "
-                         "retrain.",
+        "test_protocol": test_protocol,
         "mg_trainval_vector": mg_vec,
         "selected": selected,
         "candidates": report_rows,
@@ -405,9 +427,17 @@ def main() -> None:
             "official forget split ONLY; no released "
             "holdout_association/holdout_identity pair enters ANY "
             "training group; target associations are selected "
-            "exclusively from forget. Released-split evaluation on "
-            "this chain is therefore an untouched external "
-            "evaluation.",
+            "exclusively from forget. Holdout cleanliness is "
+            "VALIDATED (manifest allowed_split == forget and zero "
+            "exact holdout overlap) in "
+            "salmu_official_splits_r5.json:holdout_clean_validation; "
+            "released-split evaluation on this chain is therefore an "
+            "untouched external evaluation.",
+            "10R5a test-protocol honesty: this iteration's "
+            f"personas/split ({split_desc}) were built fresh from "
+            "the holdout-clean pair set and never scored before "
+            "selection, so the internal test verdict is genuine for "
+            "these checkpoints.",
         ] if args.suffix == "r5" else []) + [
             "10R4 corrected selection: association-weighted — "
             f"{tv_target_assoc} train+val target associations "
@@ -418,9 +448,11 @@ def main() -> None:
             "same_entity_retain_sim uses the same identities as the "
             "target component it accompanies (train+val for "
             "selection, test for the final verdict).",
+        ] + ([] if args.suffix == "r5" else [
             "10R4a test-protocol honesty: the internal test split "
             "was inspected candidate-wide in 10R2/10R3; results on "
             "it are exploratory, not an untouched final verdict.",
+        ]) + [
             b3_note,
         ],
     }

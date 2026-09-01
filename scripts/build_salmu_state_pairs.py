@@ -75,6 +75,14 @@ def _allowed_file_names(bench: Path, split: str) -> set[str]:
     return names
 
 
+def is_holdout_clean_build(allowed_split: str | None) -> bool:
+    """A build is holdout-clean ONLY when restricted to the official
+    ``forget`` split — not for ANY allowed split (10R5a): forget is
+    the only sensitive split the protocol permits for training, and
+    it is pair-disjoint from both holdout splits."""
+    return allowed_split == "forget"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Build SALMU reference-state pair sets")
@@ -233,7 +241,7 @@ def main() -> None:
         "source": "cvc-mmu/salmu-512-redistributed `sensitive` split, "
                   "core attributes only (city/job/blood_type)",
         "protocol": {
-            "holdout_clean": args.allowed_split is not None,
+            "holdout_clean": is_holdout_clean_build(args.allowed_split),
             "allowed_split": args.allowed_split,
             "benchmark_repo_id":
                 REPOS["benchmark_dataset"]["repo_id"]

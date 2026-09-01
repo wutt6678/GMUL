@@ -9,7 +9,7 @@
     "holdout_identity",
     "retain_synth"
   ],
-  "evidence_status": "UNTOUCHED EXTERNAL EVALUATION — this iteration is holdout-clean: targets come exclusively from the official forget split and no holdout_identity/holdout_association data enters any training group (see holdout_consumption, whose holdout counts are 0). All GMUL-chain states (BASE, MF, MG, MN, B0-B3) were retrained holdout-clean for this iteration, so their released-holdout numbers are the protocol-compliant external evaluation. EXCEPTION: COMPROMISED is the benchmark's published starting checkpoint, fine-tuned by SALMUBench's authors on the released sensitive set (forget + holdouts); its holdout numbers are in-sample and shown only as the memorization upper bound.",
+  "evidence_status": "UNTOUCHED EXTERNAL EVALUATION — this iteration is VALIDATED holdout-clean (see holdout_clean_validation): targets come exclusively from the official forget split and no holdout_identity/holdout_association pair enters any training group (holdout_consumption holdout counts are 0). All GMUL-chain states (BASE, MF, MG, MN, B0-B3) were retrained holdout-clean for this iteration, so their released-holdout numbers are the protocol-compliant external evaluation. EXCEPTION: COMPROMISED is the benchmark's published starting checkpoint, fine-tuned by SALMUBench's authors on the released sensitive set (forget + holdouts); its holdout numbers are in-sample and shown only as the memorization upper bound.",
   "holdout_consumption": {
     "num_mf_pairs": 11416,
     "forget": {
@@ -35,6 +35,16 @@
       "exact_released_pairs_by_role": {}
     },
     "note": "Holdout-clean iteration (suffix=r5): the MF pair set is restricted to the official forget split, so the exact_released_pairs counts on the holdout splits are 0 — released holdout pairs are NOT consumed by training, and released-split results are an untouched external evaluation."
+  },
+  "holdout_clean_validation": {
+    "allowed_split": "forget",
+    "checks": {
+      "allowed_split_is_forget": true,
+      "zero_exact_holdout_association_pairs": true,
+      "zero_exact_holdout_identity_pairs": true
+    },
+    "validated": true,
+    "note": "holdout cleanliness is validated from the manifest and the exact released-pair overlap — it is NEVER inferred from the iteration suffix."
   },
   "official_metric_map": {
     "AssocStr": "forget.mean_assoc_sim",

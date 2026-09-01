@@ -2297,41 +2297,42 @@
   },
   "official_salmubench": {
     "protocol_note": "AssocStr/IntraIdSim/InterIdSim (mean cos-sim on forget/holdout_association/holdout_identity) ARE implemented in scripts/evaluate_salmu_official_splits.py and filled here when that report exists. RetFail / ACS / IdZSC / CoreAssoc / GenKnow / VisIdInt / FragSim require the official SALMUBench codebase and remain null.",
-    "evidence_status": "TRANSFER DIAGNOSTIC for the current chain: released holdout pairs were consumed by GMUL training; untouched external evaluation requires the Iteration 10R5 holdout-clean retrain.",
+    "evidence_status": "UNTOUCHED EXTERNAL EVALUATION — this iteration is VALIDATED holdout-clean (see holdout_clean_validation): targets come exclusively from the official forget split and no holdout_identity/holdout_association pair enters any training group (holdout_consumption holdout counts are 0). All GMUL-chain states (BASE, MF, MG, MN, B0-B3) were retrained holdout-clean for this iteration, so their released-holdout numbers are the protocol-compliant external evaluation. EXCEPTION: COMPROMISED is the benchmark's published starting checkpoint, fine-tuned by SALMUBench's authors on the released sensitive set (forget + holdouts); its holdout numbers are in-sample and shown only as the memorization upper bound.",
+    "evidence_status_source": "inherited from the routed official-split report",
     "status": "released_splits_present",
     "metrics": {
       "AssocStr": {
         "COMPROMISED": 0.3215,
         "BASE": 0.1417,
-        "MF": 0.3038,
-        "MG": 0.3017,
-        "MN": 0.2966,
-        "B0": 0.3038,
-        "B1_lr2e-06_c": 0.3014,
-        "B2_lr2e-05": 0.2553,
-        "B3_lr5e-06_lam0.5_c": 0.3087
+        "MF": 0.2728,
+        "MG": 0.2712,
+        "MN": 0.2745,
+        "B0": 0.2728,
+        "B1_lr2e-06_c": 0.2664,
+        "B2_lr2e-05": 0.2493,
+        "B3_lr2e-06_lam1_c": 0.2769
       },
       "IntraIdSim": {
         "COMPROMISED": 0.3212,
         "BASE": 0.1428,
-        "MF": 0.3038,
-        "MG": 0.3017,
-        "MN": 0.2968,
-        "B0": 0.3038,
-        "B1_lr2e-06_c": 0.3016,
-        "B2_lr2e-05": 0.2552,
-        "B3_lr5e-06_lam0.5_c": 0.3088
+        "MF": 0.2643,
+        "MG": 0.2627,
+        "MN": 0.2658,
+        "B0": 0.2643,
+        "B1_lr2e-06_c": 0.2574,
+        "B2_lr2e-05": 0.2437,
+        "B3_lr2e-06_lam1_c": 0.268
       },
       "InterIdSim": {
         "COMPROMISED": 0.3214,
         "BASE": 0.1428,
-        "MF": 0.3037,
-        "MG": 0.3019,
-        "MN": 0.2972,
-        "B0": 0.3037,
-        "B1_lr2e-06_c": 0.3006,
-        "B2_lr2e-05": 0.2563,
-        "B3_lr5e-06_lam0.5_c": 0.3094
+        "MF": 0.1806,
+        "MG": 0.1788,
+        "MN": 0.182,
+        "B0": 0.1806,
+        "B1_lr2e-06_c": 0.1669,
+        "B2_lr2e-05": 0.1971,
+        "B3_lr2e-06_lam1_c": 0.1719
       },
       "RetFail": null,
       "ACS": null,
@@ -2340,7 +2341,7 @@
       "GenKnow": null,
       "VisIdInt": null,
       "FragSim": null,
-      "source": "/scratch/wutiantong/GMUL/granularity-unlearning/data/reports/salmu_official_splits.json"
+      "source": "/scratch/wutiantong/GMUL/granularity-unlearning/data/reports/salmu_official_splits_r5.json"
     },
     "benchmark_dir": "/scratch/wutiantong/.cache/huggingface/hub/datasets--cvc-mmu--salmubench-512-redistributed/snapshots/b76aa3885a696969e51de4786c9f92e8064b4679",
     "available_splits": [
