@@ -219,3 +219,81 @@ class TestSelectionProtocolText:
         text = rep["test_protocol"]
         assert "40/10/10 of 60" in text
         assert "exploratory" in text
+
+
+class TestOfficialEvaluatorIntegration:
+    """The remaining official metrics (RetFail/ACS/IdZSC/CoreAssoc/
+    VisIdInt/FragSim) come from the official SALMUBench evaluator via
+    scripts/run_official_salmubench_eval.py."""
+
+    def test_official_eval_report_fills_remaining_metrics(
+            self, tmp_path):
+        splits = tmp_path / "splits.json"
+        splits.write_text(json.dumps({
+            "evidence_status": "UNTOUCHED X",
+            "states": {"MF": {
+                "forget": {"mean_assoc_sim": 0.27},
+                "holdout_association": {"mean_assoc_sim": 0.26},
+                "holdout_identity": {"mean_assoc_sim": 0.18}}},
+        }))
+        ev = tmp_path / "salmubench_official_eval.json"
+        ev.write_text(json.dumps({"states": {"MF": {
+            "RetFail_MRR": 0.3, "RetFail_R@1": 0.1, "ACS": 0.8,
+            "IdZSC": 0.2, "CoreAssoc": 0.35, "GenKnow": None,
+            "VisIdInt": 0.33, "FragSim": 0.31}}}))
+        out = compute_official_salmubench(
+            tmp_path, official_splits_report=splits,
+            official_eval_report=ev)
+        m = out["metrics"]
+        assert m["RetFail"]["MF"] == 0.3
+        assert m["RetFail_R@1"]["MF"] == 0.1
+        assert m["ACS"]["MF"] == 0.8
+        assert m["IdZSC"]["MF"] == 0.2
+        assert m["CoreAssoc"]["MF"] == 0.35
+        assert m["VisIdInt"]["MF"] == 0.33
+        assert m["FragSim"]["MF"] == 0.31
+        # all-null metric stays unfilled
+        assert m["GenKnow"] is None
+        assert m["official_evaluator_source"].endswith(
+            "salmubench_official_eval.json")
+        # splits-report metrics untouched by the official fill
+        assert m["AssocStr"]["MF"] == 0.27
+
+    def test_committed_report_covers_all_r5_states(self):
+        rep = _report("salmubench_official_eval", "r5")
+        expected = {"COMPROMISED", "BASE", "MF", "MG", "MN", "B0",
+                    "B1_lr2e-06_c", "B2_lr2e-05",
+                    "B3_lr2e-06_lam1_c"}
+        assert set(rep["states"]) == expected
+        for state, m in rep["states"].items():
+            for key in ("RetFail_MRR", "RetFail_R@1", "AssocStr",
+                        "ACS", "IdZSC", "CoreAssoc", "InterIdSim",
+                        "IntraIdSim", "VisIdInt", "FragSim"):
+                assert m.get(key) is not None, (state, key)
+
+    def test_base_reproduces_authors_clean_reference(self):
+        """BASE = released Clean CLIP: its official metrics must
+        reproduce the authors' committed reference values
+        (evaluation_results/reference_model_clip-vit-b-16-salmu-
+        clean.json in the official repo)."""
+        rep = _report("salmubench_official_eval", "r5")
+        base = rep["states"]["BASE"]
+        ref = {"AssocStr": 0.14169, "ACS": 0.60181, "IdZSC": 0.01082,
+               "CoreAssoc": 0.15142, "InterIdSim": 0.14279,
+               "IntraIdSim": 0.14280, "VisIdInt": 0.33083,
+               "FragSim": 0.30908, "RetFail_MRR": 0.000815}
+        for key, val in ref.items():
+            assert abs(base[key] - val) <= 0.002, (key, base[key])
+        assert base["RetFail_R@1"] == 0.0
+        assert base["GenKnow"] is None  # no local ImageNet
+
+    def test_crosscheck_against_our_evaluator(self):
+        """The official evaluator's AssocStr/IntraIdSim/InterIdSim
+        must agree with our released-split evaluator up to encoding
+        numerics (autocast/batching differences)."""
+        rep = _report("salmubench_official_eval", "r5")
+        cc = rep["crosscheck_vs_our_evaluator"]
+        assert cc, "cross-check block missing"
+        for state, diffs in cc.items():
+            for metric, d in diffs.items():
+                assert d["abs_diff"] <= 0.005, (state, metric, d)

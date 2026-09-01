@@ -56,10 +56,12 @@ the latter.
 Scope note: this implements the released-split CLIP similarity
 evaluation.  The paper's full protocol additionally defines RetFail
 (MRR over a 2,001-caption gallery), ACS (coherence classifier),
-IdZSC, CoreAssoc, GenKnow, VisIdInt and FragSim, which require the
-official SALMUBench codebase (github.com/cvc-mmu/salmubench) and are
-out of scope here.  AssocStr / IntraIdSim / InterIdSim ARE the
-mean-cosine statistics this script computes (see
+IdZSC, CoreAssoc, GenKnow, VisIdInt and FragSim, which are computed
+by the OFFICIAL SALMUBench evaluator
+(github.com/cvc-mmu/salmubench) via
+``scripts/run_official_salmubench_eval.py`` (aggregated report:
+``salmubench_official_eval[_suffix].json``).  AssocStr / IntraIdSim /
+InterIdSim ARE the mean-cosine statistics this script computes (see
 ``official_metric_map``).
 """
 
@@ -667,11 +669,13 @@ def main() -> None:
                               "exact match on all fields.",
         "scope_note": "Implemented here: AssocStr, IntraIdSim, "
                       "InterIdSim (mean cos-sim on the released "
-                      "splits). NOT reimplemented (require the "
-                      "official SALMUBench codebase): RetFail "
-                      "(2,001-caption gallery MRR), ACS (coherence "
-                      "classifier), IdZSC, CoreAssoc, GenKnow, "
-                      "VisIdInt, FragSim.",
+                      "splits). The remaining official metrics "
+                      "(RetFail, ACS, IdZSC, CoreAssoc, GenKnow, "
+                      "VisIdInt, FragSim) are produced by the "
+                      "official SALMUBench evaluator via "
+                      "scripts/run_official_salmubench_eval.py "
+                      "(report: salmubench_official_eval[_suffix]"
+                      ".json).",
         "weighting": "unit-macro for CIs; pair-level means also "
                      "reported",
         "states": by_state,

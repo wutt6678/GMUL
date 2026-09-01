@@ -190,7 +190,9 @@ def main() -> None:
     bench = locate_repo(REPOS["benchmark_dataset"]["repo_id"], "dataset")
     official_salmubench = compute_official_salmubench(
         bench, official_splits_report=paths.report(
-            "salmu_official_splits"))
+            "salmu_official_splits"),
+        official_eval_report=paths.report(
+            "salmubench_official_eval"))
 
     report = {
         "experiment_id": (

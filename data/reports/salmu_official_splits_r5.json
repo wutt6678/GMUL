@@ -56,7 +56,7 @@
   "clustering": "identity-clustered on released splits with identity units; retain_synth is FORCED pair-level for all rows.",
   "gmul_target_subsets": "Per split, gmul_target_subset restricts to GMUL target-persona identities and gmul_target_attr_subset further to each persona's designated target attribute (committed manifest + released caption metadata).",
   "shard_provenance": "Each state entry carries _provenance: benchmark revision + complete-file checkpoint SHA-256 + aggregation schema; reuse requires an exact match on all fields.",
-  "scope_note": "Implemented here: AssocStr, IntraIdSim, InterIdSim (mean cos-sim on the released splits). NOT reimplemented (require the official SALMUBench codebase): RetFail (2,001-caption gallery MRR), ACS (coherence classifier), IdZSC, CoreAssoc, GenKnow, VisIdInt, FragSim.",
+  "scope_note": "Implemented here: AssocStr, IntraIdSim, InterIdSim (mean cos-sim on the released splits). The remaining official metrics (RetFail, ACS, IdZSC, CoreAssoc, GenKnow, VisIdInt, FragSim) are produced by the official SALMUBench evaluator via scripts/run_official_salmubench_eval.py (report: salmubench_official_eval[_suffix].json).",
   "weighting": "unit-macro for CIs; pair-level means also reported",
   "states": {
     "COMPROMISED": {

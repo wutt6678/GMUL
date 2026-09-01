@@ -153,6 +153,7 @@ compute_salmubench_metrics = compute_gmul_proxy_metrics
 def compute_official_salmubench(
     benchmark_dir: str | Any,
     official_splits_report: str | Any | None = None,
+    official_eval_report: str | Any | None = None,
 ) -> dict[str, Any]:
     """Official SALMUBench evaluation status from released data.
 
@@ -167,10 +168,12 @@ def compute_official_salmubench(
 
     (unit-macro variants + clustering-correspondent CIs included).
 
-    NOT reimplemented (require the official SALMUBench codebase,
-    github.com/cvc-mmu/salmubench): RetFail (MRR over a 2,001-caption
-    gallery), ACS (coherence classifier), IdZSC, CoreAssoc, GenKnow,
-    VisIdInt, FragSim.
+    The REMAINING official metrics (RetFail, ACS, IdZSC, CoreAssoc,
+    GenKnow, VisIdInt, FragSim) are computed by the OFFICIAL
+    SALMUBench evaluator (github.com/cvc-mmu/salmubench,
+    ``evaluation/evaluation.py``) via
+    ``scripts/run_official_salmubench_eval.py`` and filled per state
+    from its aggregated report (``official_eval_report``).
 
     10R5a: the evidence status is INHERITED from the official-split
     report passed in (suffix-aware routing: each iteration embeds the
@@ -224,14 +227,51 @@ def compute_official_salmubench(
             if filled:
                 metrics["source"] = str(rep_path)
 
+    # Fill the remaining official metrics from the official
+    # SALMUBench-evaluator report when it exists (10R5 completion).
+    official_eval_source = None
+    if official_eval_report is not None:
+        eval_path = Path(official_eval_report)
+        if eval_path.exists():
+            ev = json.loads(eval_path.read_text())
+            ev_states = ev.get("states", {})
+            # official metric key -> aggregated report key
+            fill_map = {
+                "RetFail": "RetFail_MRR",
+                "ACS": "ACS",
+                "IdZSC": "IdZSC",
+                "CoreAssoc": "CoreAssoc",
+                "GenKnow": "GenKnow",
+                "VisIdInt": "VisIdInt",
+                "FragSim": "FragSim",
+            }
+            ev_filled: dict[str, Any] = {}
+            for name, src_key in fill_map.items():
+                vals = {state: d.get(src_key)
+                        for state, d in ev_states.items()}
+                if any(v is not None for v in vals.values()):
+                    metrics[name] = vals
+                    ev_filled[name] = True
+            r1 = {state: d.get("RetFail_R@1")
+                  for state, d in ev_states.items()}
+            if any(v is not None for v in r1.values()):
+                metrics["RetFail_R@1"] = r1
+            if ev_filled:
+                official_eval_source = str(eval_path)
+                metrics["official_evaluator_source"] = \
+                    official_eval_source
+
     result: dict[str, Any] = {
         "protocol_note": (
             "AssocStr/IntraIdSim/InterIdSim (mean cos-sim on "
             "forget/holdout_association/holdout_identity) ARE "
             "implemented in scripts/evaluate_salmu_official_splits.py "
             "and filled here when that report exists. RetFail / ACS / "
-            "IdZSC / CoreAssoc / GenKnow / VisIdInt / FragSim require "
-            "the official SALMUBench codebase and remain null."),
+            "IdZSC / CoreAssoc / GenKnow / VisIdInt / FragSim come "
+            "from the OFFICIAL SALMUBench evaluator run via "
+            "scripts/run_official_salmubench_eval.py and are filled "
+            "per state when that report exists (GenKnow requires a "
+            "local ImageNet webdataset and stays null without one)."),
         "evidence_status": inherited_status or (
             "UNKNOWN — no official-split report was routed; treat "
             "released-split numbers as transfer diagnostics until "

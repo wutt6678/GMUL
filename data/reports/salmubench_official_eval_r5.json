@@ -1,0 +1,320 @@
+{
+  "experiment_id": "salmu_iterr5_official_salmubench_evaluator",
+  "official_evaluator": {
+    "repo": "https://github.com/cvc-mmu/salmubench",
+    "commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
+    "entry_point": "evaluation/evaluation.py",
+    "invocation": "SALMUBenchEvaluation verbatim; ONLY the data source is redirected to the pinned local snapshot (same benchmark revision); derived splits replicated verbatim.",
+    "seed": 42
+  },
+  "benchmark": "cvc-mmu/salmubench-512-redistributed",
+  "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
+  "evidence_status": "UNTOUCHED EXTERNAL EVALUATION — this iteration is VALIDATED holdout-clean (see holdout_clean_validation): targets come exclusively from the official forget split and no holdout_identity/holdout_association pair enters any training group (holdout_consumption holdout counts are 0). All GMUL-chain states (BASE, MF, MG, MN, B0-B3) were retrained holdout-clean for this iteration, so their released-holdout numbers are the protocol-compliant external evaluation. EXCEPTION: COMPROMISED is the benchmark's published starting checkpoint, fine-tuned by SALMUBench's authors on the released sensitive set (forget + holdouts); its holdout numbers are in-sample and shown only as the memorization upper bound.",
+  "skipped": {
+    "GenKnow": "requires datacomp + a local ImageNet-1k webdataset; not available on this machine (official code returns -1 -> null)."
+  },
+  "checkpoint_sha256": {
+    "BASE": "cdbe7be083079f265d8422dced9e45056cafd49cada14448f141c6d00c1b8ab5",
+    "COMPROMISED": "c48f390a39450196f0ddd958b250017e0716f7818d03d0ce6f69042204565466",
+    "MF": "ce6b336849e57463e3fbee6ec09cf20046c9d0e1bacd46fb8ea277c56cb9c803",
+    "MG": "b9746ced952beee85151785aa2cacb4c4508365ab7afc7bfb6e97268d4c62675",
+    "MN": "c76723930214180d3a7ab9bbc2c1004b7861e865b6afa189cc0dab5428f302c9",
+    "B0": "ce6b336849e57463e3fbee6ec09cf20046c9d0e1bacd46fb8ea277c56cb9c803",
+    "B1_lr2e-06_c": "880941df87cae683f0aa49cc065e9060416c5ee9e6a0b28193795fe24291065f",
+    "B2_lr2e-05": "a84f8c0ce09ebe2ee7f62d1faa1416e4d50828007bfda684dd99709a25612d56",
+    "B3_lr2e-06_lam1_c": "56356d613368657efef278db8d13c2248ad37d43d74ee1fdeb8428f0e9edf1c3"
+  },
+  "metric_definitions": {
+    "RetFail_R@1/RetFail_MRR": "rank of the true association caption in a 2,001-caption gallery over forget",
+    "AssocStr": "mean cos-sim on forget",
+    "ACS": "logistic-probe accuracy separating member vs shuffled non-member captions",
+    "IdZSC": "zero-shot identity-name classification on forget_identity",
+    "CoreAssoc": "mean max-sim of '{name} {value}' / '{value} {name}' captions on forget",
+    "VisIdInt": "mean cos-sim on retain_joint (retain utility, identities also in forget)",
+    "FragSim": "mean cos-sim on the fragile subset of retain_disjoint (retain utility)"
+  },
+  "states": {
+    "BASE": {
+      "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_BASE_r5.json",
+      "RetFail_R@1": 0.0,
+      "RetFail_MRR": 0.0008147291914218488,
+      "AssocStr": 0.14170072885327753,
+      "ACS": 0.6019430221872129,
+      "IdZSC": 0.01068961022031026,
+      "CoreAssoc": 0.15142476303583371,
+      "GenKnow": null,
+      "InterIdSim": 0.14279569952300036,
+      "IntraIdSim": 0.142809760065544,
+      "VisIdInt": 0.33084542410714285,
+      "FragSim": 0.30910250555908514
+    },
+    "COMPROMISED": {
+      "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_COMPROMISED_r5.json",
+      "RetFail_R@1": 0.1015819876591834,
+      "RetFail_MRR": 0.23610213521746887,
+      "AssocStr": 0.3215424541539997,
+      "ACS": 0.9509649468294604,
+      "IdZSC": 0.08356146525876679,
+      "CoreAssoc": 0.18270579945685841,
+      "GenKnow": null,
+      "InterIdSim": 0.3214880499483506,
+      "IntraIdSim": 0.3212805993504484,
+      "VisIdInt": 0.3051500307701936,
+      "FragSim": 0.28008668698379924
+    },
+    "MF": {
+      "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_MF_r5.json",
+      "RetFail_R@1": 0.2632269922541683,
+      "RetFail_MRR": 0.4270412694605364,
+      "AssocStr": 0.2727952566268298,
+      "ACS": 0.9545424707890245,
+      "IdZSC": 0.7681527832094903,
+      "CoreAssoc": 0.2738897947872563,
+      "GenKnow": null,
+      "InterIdSim": 0.18057893348707396,
+      "IntraIdSim": 0.26428047429842777,
+      "VisIdInt": 0.2222044757593458,
+      "FragSim": 0.21136303990132624
+    },
+    "MG": {
+      "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_MG_r5.json",
+      "RetFail_R@1": 0.2570565839569384,
+      "RetFail_MRR": 0.41821641261249454,
+      "AssocStr": 0.2711961547643224,
+      "ACS": 0.9534265458842064,
+      "IdZSC": 0.7713466301655586,
+      "CoreAssoc": 0.27300772980565674,
+      "GenKnow": null,
+      "InterIdSim": 0.1788056127247695,
+      "IntraIdSim": 0.2627170585464348,
+      "VisIdInt": 0.22285891279518524,
+      "FragSim": 0.21223102651981418
+    },
+    "MN": {
+      "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_MN_r5.json",
+      "RetFail_R@1": 0.2596166469738742,
+      "RetFail_MRR": 0.42414635868119993,
+      "AssocStr": 0.27447507361719675,
+      "ACS": 0.9533609032427465,
+      "IdZSC": 0.7551818537348455,
+      "CoreAssoc": 0.27607434976284034,
+      "GenKnow": null,
+      "InterIdSim": 0.1820358141672577,
+      "IntraIdSim": 0.26577949332463363,
+      "VisIdInt": 0.2219589498237233,
+      "FragSim": 0.21091477661908353
+    },
+    "B0": {
+      "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_B0_r5.json",
+      "RetFail_R@1": 0.2632269922541683,
+      "RetFail_MRR": 0.4270412694605364,
+      "AssocStr": 0.2727952566268298,
+      "ACS": 0.955527110410923,
+      "IdZSC": 0.7681527832094903,
+      "CoreAssoc": 0.2738897947872563,
+      "GenKnow": null,
+      "InterIdSim": 0.18057893348707396,
+      "IntraIdSim": 0.26428047429842777,
+      "VisIdInt": 0.2222044757593458,
+      "FragSim": 0.21136303990132624
+    },
+    "B1_lr2e-06_c": {
+      "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_B1_lr2e-06_c_r5.json",
+      "RetFail_R@1": 0.2406131022712354,
+      "RetFail_MRR": 0.4065443467933205,
+      "AssocStr": 0.2664391606658779,
+      "ACS": 0.9497505579624524,
+      "IdZSC": 0.7281971059835745,
+      "CoreAssoc": 0.26849294719818745,
+      "GenKnow": null,
+      "InterIdSim": 0.16694470826043342,
+      "IntraIdSim": 0.25738392030667057,
+      "VisIdInt": 0.21470929338075767,
+      "FragSim": 0.20025413736151923
+    },
+    "B2_lr2e-05": {
+      "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_B2_lr2e-05_r5.json",
+      "RetFail_R@1": 0.09708546671918078,
+      "RetFail_MRR": 0.19665548274380712,
+      "AssocStr": 0.2493525802173592,
+      "ACS": 0.9176513062885651,
+      "IdZSC": 0.4164385347412332,
+      "CoreAssoc": 0.25267109539747645,
+      "GenKnow": null,
+      "InterIdSim": 0.197133491931921,
+      "IntraIdSim": 0.24367988983135916,
+      "VisIdInt": 0.23303353038426236,
+      "FragSim": 0.2273260211096331
+    },
+    "B3_lr2e-06_lam1_c": {
+      "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_B3_lr2e-06_lam1_c_r5.json",
+      "RetFail_R@1": 0.27868583431797295,
+      "RetFail_MRR": 0.44707521078092166,
+      "AssocStr": 0.27689504684449745,
+      "ACS": 0.9584482079558881,
+      "IdZSC": 0.7976795724155912,
+      "CoreAssoc": 0.27824371769091144,
+      "GenKnow": null,
+      "InterIdSim": 0.1718798523521736,
+      "IntraIdSim": 0.2680200100551366,
+      "VisIdInt": 0.21892552700475634,
+      "FragSim": 0.2069598613579058
+    }
+  },
+  "crosscheck_vs_our_evaluator": {
+    "BASE": {
+      "AssocStr": {
+        "official": 0.14170072885327753,
+        "ours": 0.1417,
+        "abs_diff": 0.0
+      },
+      "IntraIdSim": {
+        "official": 0.142809760065544,
+        "ours": 0.1428,
+        "abs_diff": 0.0
+      },
+      "InterIdSim": {
+        "official": 0.14279569952300036,
+        "ours": 0.1428,
+        "abs_diff": 0.0
+      }
+    },
+    "COMPROMISED": {
+      "AssocStr": {
+        "official": 0.3215424541539997,
+        "ours": 0.3215,
+        "abs_diff": 0.0
+      },
+      "IntraIdSim": {
+        "official": 0.3212805993504484,
+        "ours": 0.3212,
+        "abs_diff": 0.0001
+      },
+      "InterIdSim": {
+        "official": 0.3214880499483506,
+        "ours": 0.3214,
+        "abs_diff": 0.0001
+      }
+    },
+    "MF": {
+      "AssocStr": {
+        "official": 0.2727952566268298,
+        "ours": 0.2728,
+        "abs_diff": 0.0
+      },
+      "IntraIdSim": {
+        "official": 0.26428047429842777,
+        "ours": 0.2643,
+        "abs_diff": 0.0
+      },
+      "InterIdSim": {
+        "official": 0.18057893348707396,
+        "ours": 0.1806,
+        "abs_diff": 0.0
+      }
+    },
+    "MG": {
+      "AssocStr": {
+        "official": 0.2711961547643224,
+        "ours": 0.2712,
+        "abs_diff": 0.0
+      },
+      "IntraIdSim": {
+        "official": 0.2627170585464348,
+        "ours": 0.2627,
+        "abs_diff": 0.0
+      },
+      "InterIdSim": {
+        "official": 0.1788056127247695,
+        "ours": 0.1788,
+        "abs_diff": 0.0
+      }
+    },
+    "MN": {
+      "AssocStr": {
+        "official": 0.27447507361719675,
+        "ours": 0.2745,
+        "abs_diff": 0.0
+      },
+      "IntraIdSim": {
+        "official": 0.26577949332463363,
+        "ours": 0.2658,
+        "abs_diff": 0.0
+      },
+      "InterIdSim": {
+        "official": 0.1820358141672577,
+        "ours": 0.182,
+        "abs_diff": 0.0
+      }
+    },
+    "B0": {
+      "AssocStr": {
+        "official": 0.2727952566268298,
+        "ours": 0.2728,
+        "abs_diff": 0.0
+      },
+      "IntraIdSim": {
+        "official": 0.26428047429842777,
+        "ours": 0.2643,
+        "abs_diff": 0.0
+      },
+      "InterIdSim": {
+        "official": 0.18057893348707396,
+        "ours": 0.1806,
+        "abs_diff": 0.0
+      }
+    },
+    "B1_lr2e-06_c": {
+      "AssocStr": {
+        "official": 0.2664391606658779,
+        "ours": 0.2664,
+        "abs_diff": 0.0
+      },
+      "IntraIdSim": {
+        "official": 0.25738392030667057,
+        "ours": 0.2574,
+        "abs_diff": 0.0
+      },
+      "InterIdSim": {
+        "official": 0.16694470826043342,
+        "ours": 0.1669,
+        "abs_diff": 0.0
+      }
+    },
+    "B2_lr2e-05": {
+      "AssocStr": {
+        "official": 0.2493525802173592,
+        "ours": 0.2493,
+        "abs_diff": 0.0001
+      },
+      "IntraIdSim": {
+        "official": 0.24367988983135916,
+        "ours": 0.2437,
+        "abs_diff": 0.0
+      },
+      "InterIdSim": {
+        "official": 0.197133491931921,
+        "ours": 0.1971,
+        "abs_diff": 0.0
+      }
+    },
+    "B3_lr2e-06_lam1_c": {
+      "AssocStr": {
+        "official": 0.27689504684449745,
+        "ours": 0.2769,
+        "abs_diff": 0.0
+      },
+      "IntraIdSim": {
+        "official": 0.2680200100551366,
+        "ours": 0.268,
+        "abs_diff": 0.0
+      },
+      "InterIdSim": {
+        "official": 0.1718798523521736,
+        "ours": 0.1719,
+        "abs_diff": 0.0
+      }
+    }
+  },
+  "crosscheck_note": "official pipeline uses torch.amp autocast + DataLoader batching; ours uses fp32 single-pass encoding — small numerical differences are expected and reported as abs_diff."
+}
