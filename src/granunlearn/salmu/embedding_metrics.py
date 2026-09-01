@@ -279,6 +279,30 @@ def association_level_results(
     return assoc
 
 
+def validate_ci_params(n_bootstrap: int, ci_level: float) -> None:
+    """Reject invalid bootstrap-CI parameters (10R5 hardening).
+
+    ``n_bootstrap`` must be a positive integer and ``ci_level`` must
+    lie in the OPEN interval (0, 1): degenerate levels would make the
+    percentile quantiles undefined as confidence intervals.
+    """
+    import numbers
+    if not isinstance(n_bootstrap, numbers.Integral) or \
+            n_bootstrap <= 0:
+        raise ValueError(
+            f"n_bootstrap must be a positive integer, "
+            f"got {n_bootstrap!r}")
+    if int(n_bootstrap) < 2:
+        raise ValueError(
+            "n_bootstrap must be >= 2 (the percentile CI needs both "
+            f"a lower and an upper quantile index), got {n_bootstrap!r}")
+    if not isinstance(ci_level, numbers.Real) or \
+            not (0.0 < float(ci_level) < 1.0):
+        raise ValueError(
+            f"ci_level must be in the open interval (0, 1), "
+            f"got {ci_level!r}")
+
+
 def aggregate_scores(
     probe_results: list[dict[str, Any]],
     bootstrap_ci: bool = False,
@@ -299,6 +323,8 @@ def aggregate_scores(
     bootstrap that resamples ASSOCIATIONS (the unit of analysis),
     which is exact under the macro-average.
     """
+    if bootstrap_ci:
+        validate_ci_params(n_bootstrap, ci_level)
     n = len(probe_results)
     if n == 0:
         return {"num_probes": 0, "num_associations": 0}

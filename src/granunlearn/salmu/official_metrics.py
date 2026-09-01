@@ -108,6 +108,11 @@ def summarize_rows(ids: list[str | None],
     its point estimate.
     """
     import numpy as np
+
+    from granunlearn.salmu.embedding_metrics import validate_ci_params
+    # CIs are ALWAYS computed here: reject invalid parameters before
+    # any estimation (10R5 hardening).
+    validate_ci_params(n_bootstrap, ci_level)
     rng = np.random.default_rng(seed)
 
     clustered, pair_clustered = cluster_ids(split_name, ids)
