@@ -222,8 +222,15 @@ def main() -> None:
             "once); internal test identities evaluated for the "
             "SELECTED checkpoints only since 10R4 — but the split "
             "was inspected candidate-wide in 10R2/10R3, so those "
-            "test numbers are exploratory (the released official "
-            "splits carry the external evaluation).",
+            "test numbers are exploratory.",
+            "10R4b protocol caveat: the released sensitive TRAINING "
+            "dataset is the union of the forget and holdout splits, "
+            "so the current MF/MG/MN pair sets and ALL unlearning "
+            "groups consume released holdout pairs (see "
+            "holdout_consumption in salmu_official_splits.json). "
+            "Released-split results are transfer diagnostics, not "
+            "untouched external evaluation; Iteration 10R5 retrains "
+            "holdout-clean.",
             "B2_retain_* excluded from B2 candidate family.",
             "Sibling probes use correct hierarchy level: same-sector "
             "different-profession-class for job; different country "

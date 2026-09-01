@@ -1,5 +1,5 @@
 {
-  "experiment_id": "salmu_iter10r4a_official_splits",
+  "experiment_id": "salmu_iter10r4b_official_splits",
   "aggregation_schema": "10r4a.v1",
   "benchmark": "cvc-mmu/salmubench-512-redistributed",
   "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
@@ -9,11 +9,52 @@
     "holdout_identity",
     "retain_synth"
   ],
+  "evidence_status": "TRANSFER DIAGNOSTIC — the current GMUL training chain consumed released holdout pairs (see holdout_consumption); these numbers are NOT an untouched external evaluation. Iteration 10R5 retrains holdout-clean for the latter.",
+  "holdout_consumption": {
+    "num_mf_pairs": 22514,
+    "forget": {
+      "pairs_on_split_identities": 17020,
+      "identities": 580,
+      "exact_released_pairs": 11416,
+      "exact_released_pairs_by_role": {
+        "other_entity_retain": 10454,
+        "same_entity_retain": 639,
+        "target_association": 323
+      }
+    },
+    "holdout_association": {
+      "pairs_on_split_identities": 11362,
+      "identities": 387,
+      "exact_released_pairs": 5604,
+      "exact_released_pairs_by_role": {
+        "other_entity_retain": 5200,
+        "same_entity_retain": 254,
+        "target_association": 150
+      }
+    },
+    "holdout_identity": {
+      "pairs_on_split_identities": 5494,
+      "identities": 194,
+      "exact_released_pairs": 5494,
+      "exact_released_pairs_by_role": {
+        "other_entity_retain": 5129,
+        "same_entity_retain": 239,
+        "target_association": 126
+      }
+    },
+    "note": "Counts over the committed MF pair set (all current states share these pairs; B3's retain group additionally trains on the non-target roles). Released holdout pairs consumed by training make released-split results transfer diagnostics, not untouched external evaluation — corrected by the holdout-clean retrain of Iteration 10R5."
+  },
+  "official_metric_map": {
+    "AssocStr": "forget.mean_assoc_sim",
+    "IntraIdSim": "holdout_association.mean_assoc_sim",
+    "InterIdSim": "holdout_identity.mean_assoc_sim",
+    "note": "AssocStr/IntraIdSim/InterIdSim are defined by the paper as mean cosine similarity on these splits — exactly what this report computes (unit-macro variants and CIs also provided)."
+  },
   "protocol": "Released (image, association-caption) pairs encoded per checkpoint; cos-similarity point estimates with clustering-correspondent bootstrap CIs: every CI resamples the same unit its point estimate averages over. Leakage = association caption outscores the released per-image generic caption (pair-level rate with pair-level CI; unit-level rate with unit-level CI).",
   "clustering": "identity-clustered on released splits with identity units; retain_synth is FORCED pair-level for all rows.",
   "gmul_target_subsets": "Per split, gmul_target_subset restricts to GMUL target-persona identities and gmul_target_attr_subset further to each persona's designated target attribute (committed manifest + released caption metadata).",
-  "shard_provenance": "Each state entry carries _provenance: benchmark revision + complete-file checkpoint SHA-256 + aggregation schema.",
-  "scope_note": "Paper-protocol RetFail (2,001-caption gallery MRR), ACS (coherence classifier) and IntraIdSim/InterIdSim require the official SALMUBench codebase and are NOT reimplemented here.",
+  "shard_provenance": "Each state entry carries _provenance: benchmark revision + complete-file checkpoint SHA-256 + aggregation schema; reuse requires an exact match on all fields.",
+  "scope_note": "Implemented here: AssocStr, IntraIdSim, InterIdSim (mean cos-sim on the released splits). NOT reimplemented (require the official SALMUBench codebase): RetFail (2,001-caption gallery MRR), ACS (coherence classifier), IdZSC, CoreAssoc, GenKnow, VisIdInt, FragSim.",
   "weighting": "unit-macro for CIs; pair-level means also reported",
   "states": {
     "COMPROMISED": {

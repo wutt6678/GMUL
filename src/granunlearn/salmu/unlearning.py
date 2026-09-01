@@ -77,7 +77,12 @@ def build_salmu_unlearning_groups(
                       paired with the SAME images (sft)
     * retain        — ALL retain pairs' released fine captions (sft),
                       including same-entity retain of target personas
-    None of these touch SALMUBench evaluation splits.
+
+    10R4b caveat: the released sensitive training dataset is the
+    union of the forget + holdout splits, so these groups DO contain
+    released holdout pairs (quantified in
+    salmu_official_splits.json: holdout_consumption).  Iteration
+    10R5 rebuilds every group from the official forget split only.
     """
     groups: dict[str, list[SalmuTrainingPair]] = {
         "fine_target": [], "target_level": [], "retain": []}

@@ -40,14 +40,27 @@ metadata), so the official splits can be read on exactly the
 associations GMUL unlearns.
 
 Every shard carries provenance (benchmark revision, complete-file
-checkpoint SHA-256, aggregation schema; 10R4a) and the aggregation
-run refuses shards from a different schema version.
+checkpoint SHA-256, aggregation schema; 10R4a) and is REUSED only if
+ALL of schema + benchmark repo + revision + state + current checkpoint
+SHA-256 still match (10R4b); aggregation applies the same check.
+
+IMPORTANT — holdout contamination of the current chain (10R4b):
+the released sensitive TRAINING dataset is the union of the forget
+and holdout splits, so the current MF/MG/MN pair sets and every
+unlearning group consume released holdout pairs (see
+``holdout_consumption`` in the report).  The released-split results
+are therefore TRANSFER DIAGNOSTICS, NOT untouched external
+evaluation; a holdout-clean retrain (Iteration 10R5) is required for
+the latter.
 
 Scope note: this implements the released-split CLIP similarity
 evaluation.  The paper's full protocol additionally defines RetFail
-(MRR over a 2,001-caption gallery), ACS (coherence classifier) and
-IntraIdSim/InterIdSim, which require the official SALMUBench codebase
-(github.com/cvc-mmu/salmubench) and are out of scope here.
+(MRR over a 2,001-caption gallery), ACS (coherence classifier),
+IdZSC, CoreAssoc, GenKnow, VisIdInt and FragSim, which require the
+official SALMUBench codebase (github.com/cvc-mmu/salmubench) and are
+out of scope here.  AssocStr / IntraIdSim / InterIdSim ARE the
+mean-cosine statistics this script computes (see
+``official_metric_map``).
 """
 
 from __future__ import annotations
@@ -124,6 +137,71 @@ def state_checkpoint_sha256(state: str, repo_root: Path) -> str | None:
     else:
         ckpt = unlearn_root / state / "pytorch_model.bin"
     return _sha256_file(ckpt) if ckpt.exists() else None
+
+
+def expected_provenance(state: str, repo_root: Path,
+                        bench_revision: str | None) -> dict:
+    """The provenance a CURRENT shard for ``state`` must carry
+    (10R4b): reuse is refused unless every field matches."""
+    return {
+        "aggregation_schema": AGGREGATION_SCHEMA,
+        "benchmark_repo_id": REPOS["benchmark_dataset"]["repo_id"],
+        "benchmark_revision": bench_revision,
+        "state": state,
+        "checkpoint_sha256": state_checkpoint_sha256(state, repo_root),
+    }
+
+
+def shard_matches_provenance(shard_data: dict, expected: dict) -> bool:
+    prov = shard_data.get("_provenance", {})
+    return all(prov.get(k) == v for k, v in expected.items())
+
+
+def holdout_consumption_stats(repo_root: Path, bench: Path) -> dict:
+    """Quantify how much released HOLDOUT content the current GMUL
+    training chain consumed (10R4b evidence).
+
+    The released sensitive training dataset is the union of the
+    forget + holdout splits; this counts, over the committed MF pair
+    set, exact released pairs (by file_name) and role breakdowns.
+    """
+    import pandas as pd
+    pairs = []
+    mf_path = repo_root / "data" / "salmu_hierarchical" / \
+        "training" / "MF.jsonl"
+    if not mf_path.exists():
+        return {"error": "MF.jsonl not found"}
+    with open(mf_path) as f:
+        for line in f:
+            pairs.append(json.loads(line))
+    stats: dict = {"num_mf_pairs": len(pairs)}
+    for split in ("forget", "holdout_association", "holdout_identity"):
+        ids: set[str] = set()
+        files: set[str] = set()
+        for pq in sorted((bench / "data").glob(f"{split}-*.parquet")):
+            col = pd.read_parquet(pq,
+                                  columns=["identity_id", "file_name"])
+            ids.update(col["identity_id"].dropna())
+            files.update(col["file_name"].dropna())
+        on_ids = [p for p in pairs if p["identity_id"] in ids]
+        exact = [p for p in pairs if p["image_file"] in files]
+        stats[split] = {
+            "pairs_on_split_identities": len(on_ids),
+            "identities": len({p["identity_id"] for p in on_ids}),
+            "exact_released_pairs": len(exact),
+            "exact_released_pairs_by_role": {
+                role: sum(1 for p in exact if p["role"] == role)
+                for role in sorted({p["role"] for p in exact})
+            },
+        }
+    stats["note"] = (
+        "Counts over the committed MF pair set (all current states "
+        "share these pairs; B3's retain group additionally trains on "
+        "the non-target roles). Released holdout pairs consumed by "
+        "training make released-split results transfer diagnostics, "
+        "not untouched external evaluation — corrected by the "
+        "holdout-clean retrain of Iteration 10R5.")
+    return stats
 
 
 def load_split(bench: Path, split: str):
@@ -373,10 +451,21 @@ def main() -> None:
 
     splits = None
     todo = []
+    expected_prov: dict[str, dict] = {}
     for state in states:
         shard = shard_dir / f"{state}.json"
+        expected = expected_provenance(state, repo_root, bench_revision)
+        expected_prov[state] = expected
         if shard.exists():
-            log.info("[%s] reusing official-split shard", state)
+            data = json.loads(shard.read_text())
+            if shard_matches_provenance(data, expected):
+                log.info("[%s] reusing official-split shard "
+                         "(provenance matched)", state)
+            else:
+                log.warning("[%s] shard provenance OUTDATED "
+                            "(schema/revision/state/checkpoint "
+                            "mismatch) — re-scoring", state)
+                todo.append(state)
         else:
             todo.append(state)
     if todo:
@@ -400,17 +489,7 @@ def main() -> None:
         per_split = score_state(state, splits, repo_root,
                                 args.device, unlearn_root)
         summary = summarize_state(per_split)
-        log.info("[%s] hashing checkpoint for shard provenance...",
-                 state)
-        summary["_provenance"] = {
-            "aggregation_schema": AGGREGATION_SCHEMA,
-            "benchmark_repo_id":
-                REPOS["benchmark_dataset"]["repo_id"],
-            "benchmark_revision": bench_revision,
-            "state": state,
-            "checkpoint_sha256": state_checkpoint_sha256(
-                state, repo_root),
-        }
+        summary["_provenance"] = expected_prov[state]
         tmp = shard.with_suffix(".tmp")
         with open(tmp, "w") as f:
             json.dump(summary, f, indent=2)
@@ -421,20 +500,22 @@ def main() -> None:
         log.info("Worker mode done — aggregation deferred.")
         return
 
-    # Aggregation: merge all available shards (schema-checked)
+    # Aggregation: merge all available shards (full provenance check:
+    # schema + benchmark repo + revision + state + checkpoint SHA-256;
+    # 10R4b)
     by_state: dict = {}
     missing = []
     for state in default_states(repo_root):
         shard = shard_dir / f"{state}.json"
         if shard.exists():
             data = json.loads(shard.read_text())
-            schema = data.get("_provenance", {}).get(
-                "aggregation_schema")
-            if schema != AGGREGATION_SCHEMA:
+            expected = expected_provenance(state, repo_root,
+                                           bench_revision)
+            if not shard_matches_provenance(data, expected):
                 raise RuntimeError(
-                    f"Shard {shard.name} has aggregation schema "
-                    f"{schema!r} != current {AGGREGATION_SCHEMA!r}; "
-                    "delete it and re-score.")
+                    f"Shard {shard.name} is outdated — provenance "
+                    "mismatch (schema/revision/state/checkpoint). "
+                    "Delete it and re-score.")
             prov = data.pop("_provenance")
             prov.pop("aggregation_schema", None)
             by_state[state] = {"_provenance": prov, **data}
@@ -444,12 +525,30 @@ def main() -> None:
         raise RuntimeError(
             f"Missing official-split shards for: {missing}. Score them "
             "first (e.g. with --subset).")
+    log.info("Computing holdout-consumption statistics...")
+    consumption = holdout_consumption_stats(repo_root, bench)
     report = {
-        "experiment_id": "salmu_iter10r4a_official_splits",
+        "experiment_id": "salmu_iter10r4b_official_splits",
         "aggregation_schema": AGGREGATION_SCHEMA,
         "benchmark": REPOS["benchmark_dataset"]["repo_id"],
         "benchmark_revision": bench_revision,
         "splits": list(SPLITS),
+        "evidence_status": "TRANSFER DIAGNOSTIC — the current GMUL "
+                           "training chain consumed released holdout "
+                           "pairs (see holdout_consumption); these "
+                           "numbers are NOT an untouched external "
+                           "evaluation. Iteration 10R5 retrains "
+                           "holdout-clean for the latter.",
+        "holdout_consumption": consumption,
+        "official_metric_map": {
+            "AssocStr": "forget.mean_assoc_sim",
+            "IntraIdSim": "holdout_association.mean_assoc_sim",
+            "InterIdSim": "holdout_identity.mean_assoc_sim",
+            "note": "AssocStr/IntraIdSim/InterIdSim are defined by "
+                    "the paper as mean cosine similarity on these "
+                    "splits — exactly what this report computes "
+                    "(unit-macro variants and CIs also provided).",
+        },
         "protocol": "Released (image, association-caption) pairs "
                     "encoded per checkpoint; cos-similarity point "
                     "estimates with clustering-correspondent "
@@ -472,12 +571,15 @@ def main() -> None:
         "shard_provenance": "Each state entry carries "
                               "_provenance: benchmark revision + "
                               "complete-file checkpoint SHA-256 + "
-                              "aggregation schema.",
-        "scope_note": "Paper-protocol RetFail (2,001-caption gallery "
-                      "MRR), ACS (coherence classifier) and "
-                      "IntraIdSim/InterIdSim require the official "
-                      "SALMUBench codebase and are NOT reimplemented "
-                      "here.",
+                              "aggregation schema; reuse requires an "
+                              "exact match on all fields.",
+        "scope_note": "Implemented here: AssocStr, IntraIdSim, "
+                      "InterIdSim (mean cos-sim on the released "
+                      "splits). NOT reimplemented (require the "
+                      "official SALMUBench codebase): RetFail "
+                      "(2,001-caption gallery MRR), ACS (coherence "
+                      "classifier), IdZSC, CoreAssoc, GenKnow, "
+                      "VisIdInt, FragSim.",
         "weighting": "unit-macro for CIs; pair-level means also "
                      "reported",
         "states": by_state,

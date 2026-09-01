@@ -19,6 +19,7 @@ Two separate metric families:
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 
@@ -151,45 +152,87 @@ compute_salmubench_metrics = compute_gmul_proxy_metrics
 
 def compute_official_salmubench(
     benchmark_dir: str | Any,
+    official_splits_report: str | Any | None = None,
 ) -> dict[str, Any]:
     """Official SALMUBench evaluation status from released data.
 
-    10R4: the released-split CLIP similarity evaluation IS implemented
-    — see ``scripts/evaluate_salmu_official_splits.py``, which scores
-    the released ``forget`` / ``holdout_association`` /
-    ``holdout_identity`` / ``retain_synth`` parquet splits for every
-    state and writes ``data/reports/salmu_official_splits.json``
-    (identity-clustered bootstrap CIs).  This function only reports
-    which released splits are present and links that report.
+    Implemented (see ``scripts/evaluate_salmu_official_splits.py``,
+    report ``data/reports/salmu_official_splits.json``): the
+    released-split mean cosine similarities, which the paper DEFINES
+    as
 
-    Out of scope (require the official SALMUBench codebase,
+    * ``AssocStr``   = mean cos-sim on ``forget``
+    * ``IntraIdSim`` = mean cos-sim on ``holdout_association``
+    * ``InterIdSim`` = mean cos-sim on ``holdout_identity``
+
+    (unit-macro variants + clustering-correspondent CIs included).
+
+    NOT reimplemented (require the official SALMUBench codebase,
     github.com/cvc-mmu/salmubench): RetFail (MRR over a 2,001-caption
-    gallery), ACS (coherence classifier), IntraIdSim / InterIdSim on
-    the released holdout embeddings, and ImageNet / DataComp general
-    utility.
+    gallery), ACS (coherence classifier), IdZSC, CoreAssoc, GenKnow,
+    VisIdInt, FragSim.
+
+    10R4b honesty note: the current GMUL training chain consumed
+    released holdout pairs (the released training dataset is the union
+    of forget + holdout splits), so the released-split numbers are
+    TRANSFER DIAGNOSTICS, not an untouched external evaluation.
+    Iteration 10R5 retrains holdout-clean for the latter.
     """
     from pathlib import Path
     bench = Path(benchmark_dir) if not isinstance(benchmark_dir, Path) \
         else benchmark_dir
 
+    metrics: dict[str, Any] = {
+        "AssocStr": None,
+        "IntraIdSim": None,
+        "InterIdSim": None,
+        "RetFail": None,
+        "ACS": None,
+        "IdZSC": None,
+        "CoreAssoc": None,
+        "GenKnow": None,
+        "VisIdInt": None,
+        "FragSim": None,
+    }
+    # Fill the three implemented metrics from the released-split
+    # report when it exists.
+    if official_splits_report is not None:
+        rep_path = Path(official_splits_report)
+        if rep_path.exists():
+            rep = json.loads(rep_path.read_text())
+            mean_sim = {
+                "AssocStr": ("forget", "mean_assoc_sim"),
+                "IntraIdSim":
+                    ("holdout_association", "mean_assoc_sim"),
+                "InterIdSim": ("holdout_identity", "mean_assoc_sim"),
+            }
+            filled: dict[str, Any] = {}
+            for name, (split, key) in mean_sim.items():
+                vals = {
+                    state: d.get(split, {}).get(key)
+                    for state, d in rep.get("states", {}).items()
+                }
+                if any(v is not None for v in vals.values()):
+                    metrics[name] = vals
+                    filled[name] = True
+            if filled:
+                metrics["source"] = str(rep_path)
+
     result: dict[str, Any] = {
         "protocol_note": (
-            "Released-split CLIP similarity evaluation is implemented "
-            "in scripts/evaluate_salmu_official_splits.py (see "
-            "data/reports/salmu_official_splits.json). Paper-protocol "
-            "RetFail / ACS / IntraIdSim / InterIdSim / general utility "
-            "require the official SALMUBench codebase and are not "
-            "reimplemented here."),
+            "AssocStr/IntraIdSim/InterIdSim (mean cos-sim on "
+            "forget/holdout_association/holdout_identity) ARE "
+            "implemented in scripts/evaluate_salmu_official_splits.py "
+            "and filled here when that report exists. RetFail / ACS / "
+            "IdZSC / CoreAssoc / GenKnow / VisIdInt / FragSim require "
+            "the official SALMUBench codebase and remain null."),
+        "evidence_status": (
+            "TRANSFER DIAGNOSTIC for the current chain: released "
+            "holdout pairs were consumed by GMUL training; untouched "
+            "external evaluation requires the Iteration 10R5 "
+            "holdout-clean retrain."),
         "status": "released_splits_present",
-        "metrics": {
-            "RetFail": None,
-            "CoreAssoc": None,
-            "ACS": None,
-            "IntraIdSim": None,
-            "InterIdSim": None,
-            "ImageNet_accuracy": None,
-            "DataComp_retrieval": None,
-        },
+        "metrics": metrics,
         "benchmark_dir": str(bench),
     }
 

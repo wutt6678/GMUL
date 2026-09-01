@@ -10,6 +10,9 @@ Regression tests for the two 10R4a failures:
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
 import numpy as np
 
 from granunlearn.salmu.official_metrics import (
@@ -19,6 +22,9 @@ from granunlearn.salmu.official_metrics import (
     summarize_rows,
     summarize_state,
 )
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+import evaluate_salmu_official_splits as official_splits  # noqa: E402
 
 
 class TestClusterIds:
@@ -151,3 +157,35 @@ class TestSummarizeState:
         summary = summarize_state(per_split, n_bootstrap=100)
         assert "gmul_target_subset" not in summary["retain_synth"]
         assert summary["retain_synth"]["pair_clustered"] is True
+
+
+class TestShardProvenanceValidation:
+    """10R4b: shard reuse requires an exact match on ALL provenance
+    fields — not just file existence."""
+
+    EXPECTED = {
+        "aggregation_schema": "test.v1",
+        "benchmark_repo_id": "org/bench",
+        "benchmark_revision": "abc123",
+        "state": "MF",
+        "checkpoint_sha256": "deadbeef",
+    }
+
+    def _shard(self, **overrides):
+        prov = dict(self.EXPECTED)
+        prov.update(overrides)
+        return {"_provenance": prov}
+
+    def test_exact_match_reused(self):
+        assert official_splits.shard_matches_provenance(
+            self._shard(), self.EXPECTED)
+
+    def test_every_field_invalidates(self):
+        for field in self.EXPECTED:
+            shard = self._shard(**{field: "OTHER"})
+            assert not official_splits.shard_matches_provenance(
+                shard, self.EXPECTED), field
+
+    def test_missing_provenance_invalidates(self):
+        assert not official_splits.shard_matches_provenance(
+            {}, self.EXPECTED)

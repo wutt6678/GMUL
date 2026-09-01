@@ -179,7 +179,9 @@ def main() -> None:
 
     # Official SALMUBench evaluation (from released splits)
     bench = locate_repo(REPOS["benchmark_dataset"]["repo_id"], "dataset")
-    official_salmubench = compute_official_salmubench(bench)
+    official_salmubench = compute_official_salmubench(
+        bench, official_splits_report=repo_root / "data" / "reports" /
+        "salmu_official_splits.json")
 
     report = {
         "experiment_id": "salmu_iter10r4a_reference_states",

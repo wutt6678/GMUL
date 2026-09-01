@@ -371,10 +371,12 @@ def main() -> None:
                          "scored candidate-wide in Iterations 10R2/"
                          "10R3, so it is NOT genuinely untouched — "
                          "treat these test numbers as exploratory. "
-                         "A paper-grade final verdict requires a "
-                         "genuinely unseen internal split or the "
-                         "released official evaluation splits (see "
-                         "salmu_official_splits.json).",
+                         "The released official splits are ALSO only "
+                         "transfer diagnostics for this chain: their "
+                         "holdout pairs were consumed by GMUL "
+                         "training. A genuinely untouched evaluation "
+                         "requires the Iteration 10R5 holdout-clean "
+                         "retrain.",
         "mg_trainval_vector": mg_vec,
         "selected": selected,
         "candidates": report_rows,
