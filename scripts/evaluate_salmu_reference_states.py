@@ -60,6 +60,11 @@ def main() -> None:
                         help="Cap images per (persona, attr)")
     parser.add_argument("--max-captions", type=int, default=None,
                         help="Cap captions per (persona, attr)")
+    parser.add_argument("--output", default=None,
+                        help="Report path (default: "
+                             "data/reports/salmu_reference_eval.json); "
+                             "use a temp path for single-state "
+                             "parallel workers")
     args = parser.parse_args()
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
@@ -111,10 +116,12 @@ def main() -> None:
         target_only_scores[state] = aggregate_scores(
             target_results, bootstrap_ci=args.bootstrap_ci,
             n_bootstrap=args.n_bootstrap)
-        # Target-only per-attribute breakdown
+        # Target-only per-attribute breakdown (with CIs, 10R4a)
         target_only_by_attribute[state] = {
             attr: aggregate_scores(
-                [r for r in target_results if r["attribute"] == attr])
+                [r for r in target_results if r["attribute"] == attr],
+                bootstrap_ci=args.bootstrap_ci,
+                n_bootstrap=args.n_bootstrap)
             for attr in ("city", "job", "blood_type")
         }
         same_entity_retain_scores[state] = aggregate_scores(
@@ -175,7 +182,7 @@ def main() -> None:
     official_salmubench = compute_official_salmubench(bench)
 
     report = {
-        "experiment_id": "salmu_iter10r4_reference_states",
+        "experiment_id": "salmu_iter10r4a_reference_states",
         "num_target_personas": len(target_ids),
         "num_target_probes": len(target_results),
         "num_same_entity_retain_probes": len(same_entity_results),
@@ -237,9 +244,14 @@ def main() -> None:
             "probe IDs for reproducibility.",
         ],
     }
-    out = repo_root / "data" / "reports" / "salmu_reference_eval.json"
-    with open(out, "w") as f:
+    out = (Path(args.output) if args.output
+           else repo_root / "data" / "reports" /
+           "salmu_reference_eval.json")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    tmp = out.with_suffix(".tmp")
+    with open(tmp, "w") as f:
         json.dump(report, f, indent=2, ensure_ascii=False)
+    tmp.replace(out)
     log.info("SALMU reference-state gate: %s%s",
              "PASSED" if passed else "FAILED",
              f" ({'; '.join(reasons)})" if reasons else "")

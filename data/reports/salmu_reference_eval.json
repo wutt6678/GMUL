@@ -1,5 +1,5 @@
 {
-  "experiment_id": "salmu_iter10r4_reference_states",
+  "experiment_id": "salmu_iter10r4a_reference_states",
   "num_target_personas": 60,
   "num_target_probes": 6441,
   "num_same_entity_retain_probes": 12246,
@@ -224,8 +224,40 @@
           "target": 0.149,
           "ancestor": 0.149,
           "sibling": 0.1392,
-          "generic": 0.2309
-        }
+          "generic": 0.2309,
+          "fine_ci": [
+            0.1319,
+            0.1499
+          ],
+          "target_ci": [
+            0.1405,
+            0.1566
+          ],
+          "ancestor_ci": [
+            0.1405,
+            0.1566
+          ],
+          "sibling_ci": [
+            0.1303,
+            0.1472
+          ],
+          "generic_ci": [
+            0.2275,
+            0.2346
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.1,
+          0.5
+        ],
+        "prefers_target_rate_ci": [
+          0.35,
+          0.75
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.35,
+          0.75
+        ]
       },
       "job": {
         "num_probes": 2464,
@@ -240,8 +272,40 @@
           "target": 0.1498,
           "ancestor": 0.1416,
           "sibling": 0.1458,
-          "generic": 0.2279
-        }
+          "generic": 0.2279,
+          "fine_ci": [
+            0.1411,
+            0.1553
+          ],
+          "target_ci": [
+            0.1406,
+            0.1576
+          ],
+          "ancestor_ci": [
+            0.1337,
+            0.1488
+          ],
+          "sibling_ci": [
+            0.1363,
+            0.1544
+          ],
+          "generic_ci": [
+            0.2245,
+            0.2313
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.1,
+          0.5
+        ],
+        "prefers_target_rate_ci": [
+          0.3,
+          0.7
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.3,
+          0.7
+        ]
       },
       "blood_type": {
         "num_probes": 1850,
@@ -256,8 +320,40 @@
           "target": 0.1499,
           "ancestor": 0.1499,
           "sibling": 0.1503,
-          "generic": 0.2319
-        }
+          "generic": 0.2319,
+          "fine_ci": [
+            0.1313,
+            0.1456
+          ],
+          "target_ci": [
+            0.1386,
+            0.1607
+          ],
+          "ancestor_ci": [
+            0.1386,
+            0.1607
+          ],
+          "sibling_ci": [
+            0.1408,
+            0.1601
+          ],
+          "generic_ci": [
+            0.2278,
+            0.236
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.0,
+          0.3
+        ],
+        "prefers_target_rate_ci": [
+          0.15,
+          0.55
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.15,
+          0.55
+        ]
       }
     },
     "MF": {
@@ -274,8 +370,40 @@
           "target": 0.3125,
           "ancestor": 0.3125,
           "sibling": 0.3134,
-          "generic": 0.2106
-        }
+          "generic": 0.2106,
+          "fine_ci": [
+            0.3109,
+            0.3233
+          ],
+          "target_ci": [
+            0.3069,
+            0.3183
+          ],
+          "ancestor_ci": [
+            0.3069,
+            0.3183
+          ],
+          "sibling_ci": [
+            0.3075,
+            0.32
+          ],
+          "generic_ci": [
+            0.2033,
+            0.2176
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.35,
+          0.8
+        ],
+        "prefers_target_rate_ci": [
+          0.0,
+          0.25
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.0,
+          0.25
+        ]
       },
       "job": {
         "num_probes": 2464,
@@ -290,8 +418,40 @@
           "target": 0.3004,
           "ancestor": 0.3017,
           "sibling": 0.3016,
-          "generic": 0.2078
-        }
+          "generic": 0.2078,
+          "fine_ci": [
+            0.3098,
+            0.3202
+          ],
+          "target_ci": [
+            0.2951,
+            0.306
+          ],
+          "ancestor_ci": [
+            0.2963,
+            0.3074
+          ],
+          "sibling_ci": [
+            0.2958,
+            0.3072
+          ],
+          "generic_ci": [
+            0.2018,
+            0.2138
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.85,
+          1.0
+        ],
+        "prefers_target_rate_ci": [
+          0.0,
+          0.0
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.0,
+          0.0
+        ]
       },
       "blood_type": {
         "num_probes": 1850,
@@ -306,8 +466,40 @@
           "target": 0.3105,
           "ancestor": 0.3105,
           "sibling": 0.309,
-          "generic": 0.2144
-        }
+          "generic": 0.2144,
+          "fine_ci": [
+            0.3118,
+            0.3189
+          ],
+          "target_ci": [
+            0.3067,
+            0.314
+          ],
+          "ancestor_ci": [
+            0.3067,
+            0.314
+          ],
+          "sibling_ci": [
+            0.3042,
+            0.3132
+          ],
+          "generic_ci": [
+            0.2076,
+            0.2207
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.55,
+          0.9
+        ],
+        "prefers_target_rate_ci": [
+          0.05,
+          0.3
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.05,
+          0.3
+        ]
       }
     },
     "MG": {
@@ -324,8 +516,40 @@
           "target": 0.3165,
           "ancestor": 0.3165,
           "sibling": 0.3171,
-          "generic": 0.2113
-        }
+          "generic": 0.2113,
+          "fine_ci": [
+            0.2892,
+            0.3131
+          ],
+          "target_ci": [
+            0.3111,
+            0.3219
+          ],
+          "ancestor_ci": [
+            0.3111,
+            0.3219
+          ],
+          "sibling_ci": [
+            0.3113,
+            0.3233
+          ],
+          "generic_ci": [
+            0.2043,
+            0.2181
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.0,
+          0.3
+        ],
+        "prefers_target_rate_ci": [
+          0.1,
+          0.45
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.1,
+          0.45
+        ]
       },
       "job": {
         "num_probes": 2464,
@@ -340,8 +564,40 @@
           "target": 0.3113,
           "ancestor": 0.3103,
           "sibling": 0.3113,
-          "generic": 0.2085
-        }
+          "generic": 0.2085,
+          "fine_ci": [
+            0.3052,
+            0.3178
+          ],
+          "target_ci": [
+            0.3068,
+            0.3159
+          ],
+          "ancestor_ci": [
+            0.3054,
+            0.3154
+          ],
+          "sibling_ci": [
+            0.3068,
+            0.3162
+          ],
+          "generic_ci": [
+            0.2022,
+            0.2147
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.25,
+          0.65
+        ],
+        "prefers_target_rate_ci": [
+          0.1,
+          0.5
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.1,
+          0.5
+        ]
       },
       "blood_type": {
         "num_probes": 1850,
@@ -356,8 +612,40 @@
           "target": 0.3145,
           "ancestor": 0.3145,
           "sibling": 0.3132,
-          "generic": 0.2154
-        }
+          "generic": 0.2154,
+          "fine_ci": [
+            0.3064,
+            0.3135
+          ],
+          "target_ci": [
+            0.311,
+            0.3176
+          ],
+          "ancestor_ci": [
+            0.311,
+            0.3176
+          ],
+          "sibling_ci": [
+            0.3089,
+            0.3173
+          ],
+          "generic_ci": [
+            0.2086,
+            0.2215
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.05,
+          0.4
+        ],
+        "prefers_target_rate_ci": [
+          0.2,
+          0.6
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.2,
+          0.6
+        ]
       }
     },
     "MN": {
@@ -374,8 +662,40 @@
           "target": 0.2959,
           "ancestor": 0.2959,
           "sibling": 0.2965,
-          "generic": 0.2094
-        }
+          "generic": 0.2094,
+          "fine_ci": [
+            0.2727,
+            0.2957
+          ],
+          "target_ci": [
+            0.2907,
+            0.3012
+          ],
+          "ancestor_ci": [
+            0.2907,
+            0.3012
+          ],
+          "sibling_ci": [
+            0.2908,
+            0.3023
+          ],
+          "generic_ci": [
+            0.2019,
+            0.2168
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.05,
+          0.4
+        ],
+        "prefers_target_rate_ci": [
+          0.05,
+          0.4
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.05,
+          0.4
+        ]
       },
       "job": {
         "num_probes": 2464,
@@ -390,8 +710,40 @@
           "target": 0.2824,
           "ancestor": 0.284,
           "sibling": 0.2827,
-          "generic": 0.2046
-        }
+          "generic": 0.2046,
+          "fine_ci": [
+            0.2816,
+            0.2982
+          ],
+          "target_ci": [
+            0.2754,
+            0.2895
+          ],
+          "ancestor_ci": [
+            0.2769,
+            0.2914
+          ],
+          "sibling_ci": [
+            0.2758,
+            0.2896
+          ],
+          "generic_ci": [
+            0.1978,
+            0.211
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.6,
+          0.95
+        ],
+        "prefers_target_rate_ci": [
+          0.0,
+          0.25
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.0,
+          0.25
+        ]
       },
       "blood_type": {
         "num_probes": 1850,
@@ -406,8 +758,40 @@
           "target": 0.292,
           "ancestor": 0.292,
           "sibling": 0.2909,
-          "generic": 0.2134
-        }
+          "generic": 0.2134,
+          "fine_ci": [
+            0.2864,
+            0.2977
+          ],
+          "target_ci": [
+            0.2864,
+            0.2973
+          ],
+          "ancestor_ci": [
+            0.2864,
+            0.2973
+          ],
+          "sibling_ci": [
+            0.2863,
+            0.2951
+          ],
+          "generic_ci": [
+            0.206,
+            0.2202
+          ]
+        },
+        "prefers_fine_rate_ci": [
+          0.15,
+          0.55
+        ],
+        "prefers_target_rate_ci": [
+          0.1,
+          0.45
+        ],
+        "prefers_target_not_fine_rate_ci": [
+          0.1,
+          0.45
+        ]
       }
     }
   },
@@ -1929,8 +2313,7 @@
       "holdout_association",
       "holdout_identity",
       "retain_synth"
-    ],
-    "released_split_report": "data/reports/salmu_official_splits.json"
+    ]
   },
   "reference_state_gate": {
     "passed": true,

@@ -219,8 +219,11 @@ def main() -> None:
             "(sha256, seed 42).",
             "Selection on TARGET-ONLY train+val probes, "
             "association-weighted (each (identity, attribute) counts "
-            "once); test identities evaluated for the SELECTED "
-            "checkpoints only.",
+            "once); internal test identities evaluated for the "
+            "SELECTED checkpoints only since 10R4 — but the split "
+            "was inspected candidate-wide in 10R2/10R3, so those "
+            "test numbers are exploratory (the released official "
+            "splits carry the external evaluation).",
             "B2_retain_* excluded from B2 candidate family.",
             "Sibling probes use correct hierarchy level: same-sector "
             "different-profession-class for job; different country "

@@ -319,7 +319,8 @@ def main() -> None:
                         and r.get("is_target_attr", False)]
         row["test_per_attribute"] = {
             attr: aggregate_scores(
-                [r for r in test_results if r["attribute"] == attr])
+                [r for r in test_results if r["attribute"] == attr],
+                bootstrap_ci=True)
             for attr in ("city", "job", "blood_type")
         }
         row["test_summary_vector"] = summary_vector(
@@ -363,9 +364,17 @@ def main() -> None:
         "summary_components": list(SUMMARY_COMPONENTS),
         "target_only_selection": True,
         "b2_retain_excluded": True,
-        "test_protocol": "held-out test identities evaluated for the "
-                         "SELECTED checkpoints only (untouched test); "
-                         "non-selected candidates have NO test metrics.",
+        "test_protocol": "held-out internal test identities "
+                         "(10/60 target personas). Since 10R4, test "
+                         "metrics are computed for the SELECTED "
+                         "checkpoints only. NOTE: this split was "
+                         "scored candidate-wide in Iterations 10R2/"
+                         "10R3, so it is NOT genuinely untouched — "
+                         "treat these test numbers as exploratory. "
+                         "A paper-grade final verdict requires a "
+                         "genuinely unseen internal split or the "
+                         "released official evaluation splits (see "
+                         "salmu_official_splits.json).",
         "mg_trainval_vector": mg_vec,
         "selected": selected,
         "candidates": report_rows,
@@ -387,6 +396,9 @@ def main() -> None:
             "same_entity_retain_sim uses the same identities as the "
             "target component it accompanies (train+val for "
             "selection, test for the final verdict).",
+            "10R4a test-protocol honesty: the internal test split "
+            "was inspected candidate-wide in 10R2/10R3; results on "
+            "it are exploratory, not an untouched final verdict.",
             b3_note,
         ],
     }

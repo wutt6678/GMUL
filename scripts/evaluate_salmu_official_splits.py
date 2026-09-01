@@ -1,4 +1,4 @@
-"""Evaluate released SALMUBench evaluation splits (Iteration 10R4).
+"""Evaluate released SALMUBench evaluation splits (Iteration 10R4a).
 
     python scripts/evaluate_salmu_official_splits.py --device cuda:0
     python scripts/evaluate_salmu_official_splits.py --device cuda:1 \
@@ -12,23 +12,36 @@ Scores the RELEASED official evaluation splits
 * ``holdout_identity``     — unseen identities (collateral damage)
 * ``retain_synth``         — synthetic non-sensitive utility pairs
 
-Per split and state we report, with identity-clustered bootstrap CIs:
+Per split and state we report (summarization lives in
+``granunlearn.salmu.official_metrics`` and is unit-tested):
 
-* ``mean_assoc_sim``     — mean cos-sim between the released image and
-                           its released association caption (lower =
-                           more forgotten on forget; higher = better
-                           retention on holdout/retain splits)
-* ``leakage_rate``       — fraction of pairs where the association
-                           caption outscores the released per-image
-                           GENERIC caption (forget splits only;
-                           generic captions come from
-                           ``sensitive_set_generic_captions.json``)
-* identity-macro variants — each identity counts once
+* ``mean_assoc_sim``              — mean cos-sim between the released
+                                    image and its association caption
+* ``unit_macro_assoc_sim`` (+CI)  — each clustering unit counts once
+                                    (identity, or pair where forced)
+* ``leakage_rate`` (+CI)          — PAIR-level fraction of rows where
+                                    the association caption outscores
+                                    the released per-image generic
+                                    caption; pair-level bootstrap CI
+* ``identity_leakage_rate`` (+CI) — fraction of UNITS whose MACRO
+                                    assoc sim exceeds their MACRO
+                                    generic sim; the CI resamples
+                                    exactly those unit flags (10R4a
+                                    estimand/bootstrap correspondence)
 
-The released ``retain_synth`` pairs carry NO ``identity_id`` (synthetic
-non-sensitive utility data): for that split the clustering unit falls
-back to the pair, CIs come from a pair-level bootstrap, and the
-identity-macro statistics are omitted.
+``retain_synth`` clustering is FORCED pair-level for every row (the
+released synthetic split defines no identity units; 10R4a).
+
+GMUL target subsets (10R4a): every split additionally reports
+``gmul_target_subset`` (rows on GMUL target-persona identities) and
+``gmul_target_attr_subset`` (rows on each target persona's designated
+target attribute, via the committed manifest + released caption
+metadata), so the official splits can be read on exactly the
+associations GMUL unlearns.
+
+Every shard carries provenance (benchmark revision, complete-file
+checkpoint SHA-256, aggregation schema; 10R4a) and the aggregation
+run refuses shards from a different schema version.
 
 Scope note: this implements the released-split CLIP similarity
 evaluation.  The paper's full protocol additionally defines RetFail
@@ -40,6 +53,7 @@ IntraIdSim/InterIdSim, which require the official SALMUBench codebase
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -55,19 +69,61 @@ from granunlearn.config import _find_repo_root
 from granunlearn.logging_utils import setup_logger
 from granunlearn.salmu.adapter import REPOS, locate_repo
 from granunlearn.salmu.eval_utils import load_clip
+from granunlearn.salmu.official_metrics import (
+    AGGREGATION_SCHEMA,
+    summarize_state,
+)
 
 log = setup_logger("evaluate_salmu_official_splits")
 
 SPLITS = ("forget", "holdout_association", "holdout_identity",
           "retain_synth")
 GENERIC_SPLITS = ("forget", "holdout_association", "holdout_identity")
-BATCH = 128  # ViT-B/16 @ 224px: large batches amortize kernel-launch
+BATCH = 128  # ViT-B-16 @ 224px: large batches amortize kernel-launch
              # overhead on shared GPUs without memory pressure
 
 
 def _shard_dir(repo_root: Path) -> Path:
     return repo_root / "data" / "salmu_hierarchical" / \
         "official_split_shards"
+
+
+def _snapshot_revision(path: Path) -> str | None:
+    """HF snapshot revision from a cache path
+    (``.../snapshots/<revision>``)."""
+    parts = Path(path).parts
+    if "snapshots" in parts:
+        idx = parts.index("snapshots")
+        if idx + 1 < len(parts):
+            return parts[idx + 1]
+    return None
+
+
+def _sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def state_checkpoint_sha256(state: str, repo_root: Path) -> str | None:
+    """Complete-file SHA-256 of the checkpoint actually loaded for
+    ``state`` (shard versioning, 10R4a)."""
+    unlearn_root = repo_root / "data" / "checkpoints" / "salmu_unlearn"
+    if state == "BASE":
+        clean = locate_repo(REPOS["clean_model"]["repo_id"], "model")
+        ckpt = clean / "open_clip_model.safetensors"
+    elif state == "COMPROMISED":
+        comp = locate_repo(REPOS["compromised_model"]["repo_id"],
+                           "model")
+        ckpt = comp / "open_clip_pytorch_model.bin"
+    elif state in ("MF", "MG", "MN"):
+        ckpt = repo_root / "data" / "checkpoints" / "salmu" / state / \
+            "pytorch_model.bin"
+    else:
+        ckpt = unlearn_root / state / "pytorch_model.bin"
+    return _sha256_file(ckpt) if ckpt.exists() else None
 
 
 def load_split(bench: Path, split: str):
@@ -89,7 +145,10 @@ def load_split(bench: Path, split: str):
 
 
 def preprocess_split(ds, preprocess, generic_caps: dict,
-                     split_name: str) -> dict:
+                     split_name: str,
+                     target_ids: set[str] | None = None,
+                     target_attr_map: dict[str, str] | None = None,
+                     attr_of: dict[str, str] | None = None) -> dict:
     """Decode + preprocess a released split ONCE into a CPU tensor.
 
     The box is shared (load >> nproc) and parquet image decode +
@@ -98,14 +157,25 @@ def preprocess_split(ds, preprocess, generic_caps: dict,
     GPU encoding the only per-state cost.  All states share the SAME
     deterministic CLIP preprocessing, so similarities stay exactly
     comparable across states.
+
+    Also attaches the exact GMUL target-subset membership masks
+    (10R4a): ``gmul_target_mask`` (row's identity is a GMUL target
+    persona) and ``gmul_target_attr_mask`` (row is additionally on
+    that persona's DESIGNATED target attribute, resolved through the
+    released caption metadata's file_name -> data_field map).
     """
     import torch
+    target_ids = target_ids or set()
+    target_attr_map = target_attr_map or {}
+    attr_of = attr_of or {}
     n = len(ds)
     tensors = []
     ids: list = []
     texts: list[str] = []
     file_names: list = []
     generic_texts: list[str | None] = []
+    gmul_target_mask: list[bool] = []
+    gmul_target_attr_mask: list[bool] = []
     for start in range(0, n, BATCH):
         rows = ds[start:start + BATCH]
         tensors.append(torch.stack([preprocess(
@@ -118,6 +188,14 @@ def preprocess_split(ds, preprocess, generic_caps: dict,
                 [generic_caps.get(f) for f in rows["file_name"]])
         else:
             generic_texts.extend([None] * len(rows["text"]))
+        for iid, fname in zip(rows["identity_id"],
+                              rows["file_name"]):
+            is_target = iid in target_ids
+            gmul_target_mask.append(is_target)
+            gmul_target_attr_mask.append(
+                bool(is_target
+                     and attr_of.get(fname)
+                     == target_attr_map.get(iid)))
         if start % (BATCH * 10) == 0:
             log.info("[preprocess/%s] %d/%d pairs", split_name,
                      start, n)
@@ -126,6 +204,8 @@ def preprocess_split(ds, preprocess, generic_caps: dict,
         "identity_id": ids,
         "text": texts,
         "generic_text": generic_texts,
+        "gmul_target_mask": gmul_target_mask,
+        "gmul_target_attr_mask": gmul_target_attr_mask,
     }
 
 
@@ -212,100 +292,15 @@ def score_state(state: str, splits: dict, repo_root: Path,
                 "identity_id": data["identity_id"],
                 "assoc_sim": assoc_sims,
                 "generic_sim": generic_sims,
+                "gmul_target_mask": data["gmul_target_mask"],
+                "gmul_target_attr_mask":
+                    data["gmul_target_attr_mask"],
             }
     del model
     import gc
     gc.collect()
     torch.cuda.empty_cache()
     return out
-
-
-def summarize_state(per_split: dict, n_bootstrap: int = 1000,
-                    ci_level: float = 0.95) -> dict:
-    """Identity-clustered point estimates + bootstrap CIs."""
-    import numpy as np
-    rng = np.random.default_rng(42)
-    summary: dict = {}
-    for split_name, data in per_split.items():
-        ids = data["identity_id"]
-        # retain_synth pairs carry NO identity_id: each synthetic pair
-        # is its own cluster (identity-macro == pair mean; bootstrap
-        # unit = pair).
-        synthetic = any(iid is None for iid in ids)
-        ids = [iid if iid is not None else f"__pair_{i}"
-               for i, iid in enumerate(ids)]
-        assoc = np.asarray(data["assoc_sim"], dtype=np.float64)
-        generic = np.asarray(
-            [g if g is not None else np.nan
-             for g in data["generic_sim"]], dtype=np.float64)
-        uniq = sorted(set(ids))
-        id_idx = {iid: i for i, iid in enumerate(uniq)}
-        by_id: dict[str, list[int]] = {}
-        for i, iid in enumerate(ids):
-            by_id.setdefault(iid, []).append(i)
-
-        # Identity-macro association similarity
-        id_means = np.array([assoc[by_id[iid]].mean()
-                             for iid in uniq])
-        # Leakage: assoc beats generic
-        has_generic = ~np.isnan(generic)
-        leak_pair = None
-        leak_id = None
-        if has_generic.any():
-            leak_flags = assoc > generic
-            leak_pair = float(leak_flags[has_generic].mean())
-            # identity-level: macro assoc > macro generic
-            id_leak = []
-            for iid in uniq:
-                rows = [i for i in by_id[iid] if has_generic[i]]
-                if rows:
-                    id_leak.append(
-                        float(assoc[rows].mean() > generic[rows].mean()))
-            leak_id = float(np.mean(id_leak)) if id_leak else None
-
-        # Bootstrap over identities
-        n_id = len(uniq)
-        boot_sim, boot_leak = [], []
-        for _ in range(n_bootstrap):
-            pick = rng.integers(0, n_id, size=n_id)
-            boot_sim.append(float(id_means[pick].mean()))
-            if leak_id is not None:
-                per_id_leak = np.array([
-                    float(np.mean(
-                        leak_flags[[i for i in by_id[uniq[j]]
-                                    if has_generic[i]]]))
-                    for j in pick
-                ])
-                boot_leak.append(float(per_id_leak.mean()))
-        alpha = (1 - ci_level) / 2
-        sim_ci = (round(float(np.quantile(boot_sim, alpha)), 4),
-                  round(float(np.quantile(boot_sim, 1 - alpha)), 4))
-        leak_ci = ((round(float(np.quantile(boot_leak, alpha)), 4),
-                    round(float(np.quantile(boot_leak, 1 - alpha)), 4))
-                   if boot_leak else None)
-
-        entry = {
-            "num_pairs": len(ids),
-            "num_identities": None if synthetic else n_id,
-            "mean_assoc_sim": round(float(assoc.mean()), 4),
-            "identity_macro_assoc_sim": round(float(id_means.mean()),
-                                              4),
-            "identity_macro_assoc_sim_ci": sim_ci,
-        }
-        if synthetic:
-            entry["clustering_note"] = (
-                "released split carries no identity_id; each pair is "
-                "its own cluster, so the 'identity-macro' statistic "
-                "equals the pair mean and the bootstrap unit is the "
-                "pair.")
-        if leak_pair is not None:
-            entry["leakage_rate"] = round(leak_pair, 4)
-            entry["identity_leakage_rate"] = (round(leak_id, 4)
-                                              if leak_id is not None
-                                              else None)
-            entry["leakage_rate_ci"] = leak_ci
-        summary[split_name] = entry
-    return summary
 
 
 def _get_preprocess():
@@ -351,6 +346,21 @@ def main() -> None:
     bench = locate_repo(REPOS["benchmark_dataset"]["repo_id"], "dataset")
     generic_caps = json.loads(
         (bench / "sensitive_set_generic_captions.json").read_text())
+    bench_revision = _snapshot_revision(bench)
+
+    # Exact GMUL target subset (10R4a): target identities + per-
+    # persona designated target attribute from the committed manifest,
+    # and the released caption metadata's file_name -> attribute map.
+    hier_dir = repo_root / "data" / "salmu_hierarchical"
+    manifest = json.loads(
+        (hier_dir / "training" / "state_pairs_manifest.json")
+        .read_text())
+    target_ids = set(manifest["partition"]["target_identity_ids"])
+    target_attr_map = manifest.get("target_attr_map") or {}
+    cap_meta = json.loads(
+        (bench / "sensitive_set_captions_metadata.json").read_text())
+    attr_of = {fname: meta.get("data_field")
+               for fname, meta in cap_meta.items()}
 
     states = ([s.strip() for s in args.states.split(",") if s.strip()]
               if args.states else default_states(repo_root))
@@ -377,7 +387,10 @@ def main() -> None:
         log.info("Preprocessing released splits (shared across all "
                  "states)...")
         splits = {s: preprocess_split(raw[s], _get_preprocess(),
-                                      generic_caps, s)
+                                      generic_caps, s,
+                                      target_ids=target_ids,
+                                      target_attr_map=target_attr_map,
+                                      attr_of=attr_of)
                   for s in SPLITS}
         del raw
     for state in todo:
@@ -387,6 +400,17 @@ def main() -> None:
         per_split = score_state(state, splits, repo_root,
                                 args.device, unlearn_root)
         summary = summarize_state(per_split)
+        log.info("[%s] hashing checkpoint for shard provenance...",
+                 state)
+        summary["_provenance"] = {
+            "aggregation_schema": AGGREGATION_SCHEMA,
+            "benchmark_repo_id":
+                REPOS["benchmark_dataset"]["repo_id"],
+            "benchmark_revision": bench_revision,
+            "state": state,
+            "checkpoint_sha256": state_checkpoint_sha256(
+                state, repo_root),
+        }
         tmp = shard.with_suffix(".tmp")
         with open(tmp, "w") as f:
             json.dump(summary, f, indent=2)
@@ -397,13 +421,23 @@ def main() -> None:
         log.info("Worker mode done — aggregation deferred.")
         return
 
-    # Aggregation: merge all available shards
+    # Aggregation: merge all available shards (schema-checked)
     by_state: dict = {}
     missing = []
     for state in default_states(repo_root):
         shard = shard_dir / f"{state}.json"
         if shard.exists():
-            by_state[state] = json.loads(shard.read_text())
+            data = json.loads(shard.read_text())
+            schema = data.get("_provenance", {}).get(
+                "aggregation_schema")
+            if schema != AGGREGATION_SCHEMA:
+                raise RuntimeError(
+                    f"Shard {shard.name} has aggregation schema "
+                    f"{schema!r} != current {AGGREGATION_SCHEMA!r}; "
+                    "delete it and re-score.")
+            prov = data.pop("_provenance")
+            prov.pop("aggregation_schema", None)
+            by_state[state] = {"_provenance": prov, **data}
         else:
             missing.append(state)
     if missing:
@@ -411,20 +445,40 @@ def main() -> None:
             f"Missing official-split shards for: {missing}. Score them "
             "first (e.g. with --subset).")
     report = {
-        "experiment_id": "salmu_iter10r4_official_splits",
+        "experiment_id": "salmu_iter10r4a_official_splits",
+        "aggregation_schema": AGGREGATION_SCHEMA,
         "benchmark": REPOS["benchmark_dataset"]["repo_id"],
+        "benchmark_revision": bench_revision,
         "splits": list(SPLITS),
         "protocol": "Released (image, association-caption) pairs "
                     "encoded per checkpoint; cos-similarity point "
-                    "estimates + identity-clustered bootstrap CIs. "
-                    "Leakage = association caption outscores the "
-                    "released per-image generic caption.",
+                    "estimates with clustering-correspondent "
+                    "bootstrap CIs: every CI resamples the same unit "
+                    "its point estimate averages over. Leakage = "
+                    "association caption outscores the released "
+                    "per-image generic caption (pair-level rate with "
+                    "pair-level CI; unit-level rate with unit-level "
+                    "CI).",
+        "clustering": "identity-clustered on released splits with "
+                      "identity units; retain_synth is FORCED "
+                      "pair-level for all rows.",
+        "gmul_target_subsets": "Per split, gmul_target_subset "
+                               "restricts to GMUL target-persona "
+                               "identities and gmul_target_attr_"
+                               "subset further to each persona's "
+                               "designated target attribute "
+                               "(committed manifest + released "
+                               "caption metadata).",
+        "shard_provenance": "Each state entry carries "
+                              "_provenance: benchmark revision + "
+                              "complete-file checkpoint SHA-256 + "
+                              "aggregation schema.",
         "scope_note": "Paper-protocol RetFail (2,001-caption gallery "
                       "MRR), ACS (coherence classifier) and "
                       "IntraIdSim/InterIdSim require the official "
                       "SALMUBench codebase and are NOT reimplemented "
                       "here.",
-        "weighting": "identity_macro_for_CIs; pair-level means also "
+        "weighting": "unit-macro for CIs; pair-level means also "
                      "reported",
         "states": by_state,
     }
