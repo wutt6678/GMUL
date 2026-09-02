@@ -24,6 +24,16 @@ data/generated/*
 data/manifests/*
 data/reports/*
 !data/raw/.gitkeep
+# Iteration 11 pilot-100 taxonomic stratum: commit the AUTHORITATIVE
+# metadata + fetch provenance (small); the 432 CC-licensed photos stay
+# ignored — PROVENANCE.json pins every source URL + SHA-256, so the
+# exact frozen image set is re-fetchable via scripts/fetch_inat_species.py.
+!data/raw/inaturalist/
+data/raw/inaturalist/*
+!data/raw/inaturalist/pilot_v1/
+data/raw/inaturalist/pilot_v1/*
+!data/raw/inaturalist/pilot_v1/annotations.json
+!data/raw/inaturalist/pilot_v1/PROVENANCE.json
 !data/interim/.gitkeep
 !data/processed/.gitkeep
 !data/generated/.gitkeep
