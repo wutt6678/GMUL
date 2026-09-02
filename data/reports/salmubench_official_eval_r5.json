@@ -5,7 +5,7 @@
     "pinned_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
     "verified_head": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
     "worktree_clean": true,
-    "verified_at": "2026-09-02T01:48:56.146550+00:00",
+    "verified_at": "2026-09-02T04:15:04.165086+00:00",
     "entry_point": "evaluation/evaluation.py",
     "invocation": "SALMUBenchEvaluation verbatim; ONLY the data source is redirected to the pinned local snapshot (same benchmark revision); derived splits replicated verbatim.",
     "seed": 42,
@@ -28,6 +28,25 @@
     "B2_lr2e-05": "a84f8c0ce09ebe2ee7f62d1faa1416e4d50828007bfda684dd99709a25612d56",
     "B3_lr2e-06_lam1_c": "56356d613368657efef278db8d13c2248ad37d43d74ee1fdeb8428f0e9edf1c3"
   },
+  "aggregation_gate": {
+    "all_results_binding_validated": true,
+    "binding_fields": [
+      "checkpoint_sha256",
+      "official_repo_commit",
+      "benchmark_revision",
+      "rng_protocol",
+      "result_sha256"
+    ],
+    "note": "aggregate() (including --aggregate-only) refuses with a non-zero exit unless EVERY raw result's sidecar matches the current checkpoint SHA-256, the pinned evaluator commit, the current benchmark revision, the RNG-protocol/schema marker, and the result file's own SHA-256."
+  },
+  "statistical_metadata": {
+    "clustering_unit": "identity_id",
+    "bootstrap": "percentile bootstrap over identity-level unit means (macro); paired differences resample the SAME identities for both states",
+    "n_bootstrap": 1000,
+    "ci_level": 0.95,
+    "seed": 42,
+    "ci_coverage": "target-only CIs cover AssocStr, CoreAssoc, and RetFail (MRR and R@1 via per-row reciprocal-rank / hit means); IdZSC and ACS target-only CIs are NOT computed (their row spaces are filtered/stratified subsets and are out of scope)."
+  },
   "identical_checkpoint_invariants": {
     "B0 == MF": {
       "identical_checkpoint_sha256": "ce6b336849e57463...",
@@ -42,14 +61,15 @@
     "CoreAssoc": "mean max-sim of '{name} {value}' / '{value} {name}' captions on forget",
     "VisIdInt": "mean cos-sim on retain_joint (retain utility, identities also in forget)",
     "FragSim": "mean cos-sim on the fragile subset of retain_disjoint (retain utility)",
-    "target_only": "official metrics restricted to the GMUL target associations (designated target attribute rows of the forget split); identity-clustered bootstrap CIs",
-    "paired_target_only": "paired identity-clustered bootstrap CIs of the target-only difference (state - reference) over the SAME identities"
+    "target_only": "official metrics restricted to the GMUL target associations (designated target attribute rows of the forget split); identity-clustered bootstrap CIs on AssocStr, CoreAssoc, and RetFail (MRR/R@1) — see statistical_metadata",
+    "paired_target_only": "paired identity-clustered bootstrap CIs of the target-only difference (state - reference) over the SAME identities, for AssocStr, CoreAssoc, and RetFail (MRR/R@1)"
   },
   "states": {
     "BASE": {
       "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_BASE_r5.json",
       "results_file_sha256": "63a99cc9190a166b8fd8792a9087c4a9ec7f55e17c6788cfa10925ed7a6e457b",
       "checkpoint_sha256": "cdbe7be083079f265d8422dced9e45056cafd49cada14448f141c6d00c1b8ab5",
+      "binding_validated": true,
       "result_provenance": {
         "official_repo_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
         "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
@@ -87,9 +107,24 @@
           "num_rows": 323
         },
         "RetFail_target": {
-          "MRR": 0.0009,
-          "R@1": 0.0,
-          "num_rows": 323
+          "MRR": {
+            "mean": 0.0009,
+            "ci": [
+              0.0008,
+              0.0011
+            ],
+            "num_units": 46,
+            "num_rows": 323
+          },
+          "R@1": {
+            "mean": 0.0,
+            "ci": [
+              0.0,
+              0.0
+            ],
+            "num_units": 46,
+            "num_rows": 323
+          }
         }
       }
     },
@@ -97,6 +132,7 @@
       "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_COMPROMISED_r5.json",
       "results_file_sha256": "98db87e0e24da37279a11c2eebaf8a73c875a8e467c1097ed7a78000233dbe0e",
       "checkpoint_sha256": "c48f390a39450196f0ddd958b250017e0716f7818d03d0ce6f69042204565466",
+      "binding_validated": true,
       "result_provenance": {
         "official_repo_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
         "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
@@ -134,9 +170,24 @@
           "num_rows": 323
         },
         "RetFail_target": {
-          "MRR": 0.2095,
-          "R@1": 0.096,
-          "num_rows": 323
+          "MRR": {
+            "mean": 0.2125,
+            "ci": [
+              0.1639,
+              0.2709
+            ],
+            "num_units": 46,
+            "num_rows": 323
+          },
+          "R@1": {
+            "mean": 0.1003,
+            "ci": [
+              0.0614,
+              0.1513
+            ],
+            "num_units": 46,
+            "num_rows": 323
+          }
         }
       }
     },
@@ -144,6 +195,7 @@
       "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_MF_r5.json",
       "results_file_sha256": "30ea21c746f8b939470fb7a9a9f9e40d9a5ba07ce187f20ccd88cf7a1497d8ca",
       "checkpoint_sha256": "ce6b336849e57463e3fbee6ec09cf20046c9d0e1bacd46fb8ea277c56cb9c803",
+      "binding_validated": true,
       "result_provenance": {
         "official_repo_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
         "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
@@ -181,9 +233,24 @@
           "num_rows": 323
         },
         "RetFail_target": {
-          "MRR": 0.5532,
-          "R@1": 0.3808,
-          "num_rows": 323
+          "MRR": {
+            "mean": 0.5477,
+            "ci": [
+              0.4607,
+              0.6376
+            ],
+            "num_units": 46,
+            "num_rows": 323
+          },
+          "R@1": {
+            "mean": 0.3794,
+            "ci": [
+              0.2818,
+              0.4865
+            ],
+            "num_units": 46,
+            "num_rows": 323
+          }
         }
       }
     },
@@ -191,6 +258,7 @@
       "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_MG_r5.json",
       "results_file_sha256": "fe630f541da44ec825707aae0564dfd0bab20c36c37369bc80f87124c371d558",
       "checkpoint_sha256": "b9746ced952beee85151785aa2cacb4c4508365ab7afc7bfb6e97268d4c62675",
+      "binding_validated": true,
       "result_provenance": {
         "official_repo_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
         "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
@@ -228,9 +296,24 @@
           "num_rows": 323
         },
         "RetFail_target": {
-          "MRR": 0.4735,
-          "R@1": 0.2941,
-          "num_rows": 323
+          "MRR": {
+            "mean": 0.4754,
+            "ci": [
+              0.3834,
+              0.5651
+            ],
+            "num_units": 46,
+            "num_rows": 323
+          },
+          "R@1": {
+            "mean": 0.3048,
+            "ci": [
+              0.2103,
+              0.4071
+            ],
+            "num_units": 46,
+            "num_rows": 323
+          }
         }
       }
     },
@@ -238,6 +321,7 @@
       "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_MN_r5.json",
       "results_file_sha256": "39635fa5cd209d28a0b4710a36ea5c2335dd88dde1835da97300e85994b99950",
       "checkpoint_sha256": "c76723930214180d3a7ab9bbc2c1004b7861e865b6afa189cc0dab5428f302c9",
+      "binding_validated": true,
       "result_provenance": {
         "official_repo_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
         "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
@@ -275,9 +359,24 @@
           "num_rows": 323
         },
         "RetFail_target": {
-          "MRR": 0.3318,
-          "R@1": 0.1858,
-          "num_rows": 323
+          "MRR": {
+            "mean": 0.3313,
+            "ci": [
+              0.2424,
+              0.4156
+            ],
+            "num_units": 46,
+            "num_rows": 323
+          },
+          "R@1": {
+            "mean": 0.2037,
+            "ci": [
+              0.1258,
+              0.2894
+            ],
+            "num_units": 46,
+            "num_rows": 323
+          }
         }
       }
     },
@@ -285,6 +384,7 @@
       "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_B0_r5.json",
       "results_file_sha256": "6206d0d287a82a9583743809d6117a4b3229e2f702b193ec45c8f4d1263912f5",
       "checkpoint_sha256": "ce6b336849e57463e3fbee6ec09cf20046c9d0e1bacd46fb8ea277c56cb9c803",
+      "binding_validated": true,
       "result_provenance": {
         "official_repo_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
         "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
@@ -322,9 +422,24 @@
           "num_rows": 323
         },
         "RetFail_target": {
-          "MRR": 0.5532,
-          "R@1": 0.3808,
-          "num_rows": 323
+          "MRR": {
+            "mean": 0.5477,
+            "ci": [
+              0.4607,
+              0.6376
+            ],
+            "num_units": 46,
+            "num_rows": 323
+          },
+          "R@1": {
+            "mean": 0.3794,
+            "ci": [
+              0.2818,
+              0.4865
+            ],
+            "num_units": 46,
+            "num_rows": 323
+          }
         }
       }
     },
@@ -332,6 +447,7 @@
       "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_B1_lr2e-06_c_r5.json",
       "results_file_sha256": "9850229de9e6a3d8d656cd31a2bf9d0caca38b92f135a6d116b0cb71ea3b9ba1",
       "checkpoint_sha256": "880941df87cae683f0aa49cc065e9060416c5ee9e6a0b28193795fe24291065f",
+      "binding_validated": true,
       "result_provenance": {
         "official_repo_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
         "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
@@ -369,9 +485,24 @@
           "num_rows": 323
         },
         "RetFail_target": {
-          "MRR": 0.4791,
-          "R@1": 0.3096,
-          "num_rows": 323
+          "MRR": {
+            "mean": 0.4721,
+            "ci": [
+              0.3934,
+              0.5614
+            ],
+            "num_units": 46,
+            "num_rows": 323
+          },
+          "R@1": {
+            "mean": 0.3058,
+            "ci": [
+              0.2179,
+              0.4031
+            ],
+            "num_units": 46,
+            "num_rows": 323
+          }
         }
       }
     },
@@ -379,6 +510,7 @@
       "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_B2_lr2e-05_r5.json",
       "results_file_sha256": "e0eaa65f8764a5eed51dd3e197533ff9109ff08c5e3530c2115922096116fd55",
       "checkpoint_sha256": "a84f8c0ce09ebe2ee7f62d1faa1416e4d50828007bfda684dd99709a25612d56",
+      "binding_validated": true,
       "result_provenance": {
         "official_repo_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
         "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
@@ -416,9 +548,24 @@
           "num_rows": 323
         },
         "RetFail_target": {
-          "MRR": 0.5095,
-          "R@1": 0.3127,
-          "num_rows": 323
+          "MRR": {
+            "mean": 0.5707,
+            "ci": [
+              0.4735,
+              0.6616
+            ],
+            "num_units": 46,
+            "num_rows": 323
+          },
+          "R@1": {
+            "mean": 0.3955,
+            "ci": [
+              0.2854,
+              0.5065
+            ],
+            "num_units": 46,
+            "num_rows": 323
+          }
         }
       }
     },
@@ -426,6 +573,7 @@
       "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_B3_lr2e-06_lam1_c_r5.json",
       "results_file_sha256": "0b4d4235461a3eb11f032550fe3ec546bd7e68b7fe394a2f9b2d95e8c885f3bf",
       "checkpoint_sha256": "56356d613368657efef278db8d13c2248ad37d43d74ee1fdeb8428f0e9edf1c3",
+      "binding_validated": true,
       "result_provenance": {
         "official_repo_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
         "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
@@ -463,9 +611,24 @@
           "num_rows": 323
         },
         "RetFail_target": {
-          "MRR": 0.4949,
-          "R@1": 0.3313,
-          "num_rows": 323
+          "MRR": {
+            "mean": 0.5171,
+            "ci": [
+              0.4286,
+              0.6075
+            ],
+            "num_units": 46,
+            "num_rows": 323
+          },
+          "R@1": {
+            "mean": 0.3592,
+            "ci": [
+              0.2604,
+              0.4657
+            ],
+            "num_units": 46,
+            "num_rows": 323
+          }
         }
       }
     }
@@ -488,6 +651,22 @@
             -0.1167
           ],
           "num_units": 46
+        },
+        "RetFail_MRR_target": {
+          "diff": -0.5468,
+          "ci": [
+            -0.6367,
+            -0.4599
+          ],
+          "num_units": 46
+        },
+        "RetFail_R@1_target": {
+          "diff": -0.3794,
+          "ci": [
+            -0.4865,
+            -0.2818
+          ],
+          "num_units": 46
         }
       },
       "vs_MG": {
@@ -504,6 +683,22 @@
           "ci": [
             -0.1309,
             -0.1108
+          ],
+          "num_units": 46
+        },
+        "RetFail_MRR_target": {
+          "diff": -0.4745,
+          "ci": [
+            -0.5639,
+            -0.3824
+          ],
+          "num_units": 46
+        },
+        "RetFail_R@1_target": {
+          "diff": -0.3048,
+          "ci": [
+            -0.4071,
+            -0.2103
           ],
           "num_units": 46
         }
@@ -526,6 +721,22 @@
             -0.0956
           ],
           "num_units": 46
+        },
+        "RetFail_MRR_target": {
+          "diff": -0.3352,
+          "ci": [
+            -0.4221,
+            -0.25
+          ],
+          "num_units": 46
+        },
+        "RetFail_R@1_target": {
+          "diff": -0.2791,
+          "ci": [
+            -0.3927,
+            -0.1756
+          ],
+          "num_units": 46
         }
       },
       "vs_MG": {
@@ -542,6 +753,22 @@
           "ci": [
             -0.1088,
             -0.0911
+          ],
+          "num_units": 46
+        },
+        "RetFail_MRR_target": {
+          "diff": -0.263,
+          "ci": [
+            -0.3541,
+            -0.1758
+          ],
+          "num_units": 46
+        },
+        "RetFail_R@1_target": {
+          "diff": -0.2045,
+          "ci": [
+            -0.3095,
+            -0.1066
           ],
           "num_units": 46
         }
@@ -564,6 +791,22 @@
             0.0077
           ],
           "num_units": 46
+        },
+        "RetFail_MRR_target": {
+          "diff": 0.0723,
+          "ci": [
+            0.0471,
+            0.103
+          ],
+          "num_units": 46
+        },
+        "RetFail_R@1_target": {
+          "diff": 0.0746,
+          "ci": [
+            0.0391,
+            0.1165
+          ],
+          "num_units": 46
         }
       }
     },
@@ -582,6 +825,22 @@
           "ci": [
             -0.0077,
             -0.0022
+          ],
+          "num_units": 46
+        },
+        "RetFail_MRR_target": {
+          "diff": -0.0723,
+          "ci": [
+            -0.103,
+            -0.0471
+          ],
+          "num_units": 46
+        },
+        "RetFail_R@1_target": {
+          "diff": -0.0746,
+          "ci": [
+            -0.1165,
+            -0.0391
           ],
           "num_units": 46
         }
@@ -604,6 +863,22 @@
             -0.013
           ],
           "num_units": 46
+        },
+        "RetFail_MRR_target": {
+          "diff": -0.2164,
+          "ci": [
+            -0.2739,
+            -0.1638
+          ],
+          "num_units": 46
+        },
+        "RetFail_R@1_target": {
+          "diff": -0.1757,
+          "ci": [
+            -0.2417,
+            -0.1188
+          ],
+          "num_units": 46
         }
       },
       "vs_MG": {
@@ -622,6 +897,22 @@
             -0.0088
           ],
           "num_units": 46
+        },
+        "RetFail_MRR_target": {
+          "diff": -0.1441,
+          "ci": [
+            -0.1954,
+            -0.0993
+          ],
+          "num_units": 46
+        },
+        "RetFail_R@1_target": {
+          "diff": -0.1011,
+          "ci": [
+            -0.1468,
+            -0.0572
+          ],
+          "num_units": 46
         }
       }
     },
@@ -636,6 +927,22 @@
           "num_units": 46
         },
         "CoreAssoc_target": {
+          "diff": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ],
+          "num_units": 46
+        },
+        "RetFail_MRR_target": {
+          "diff": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ],
+          "num_units": 46
+        },
+        "RetFail_R@1_target": {
           "diff": 0.0,
           "ci": [
             0.0,
@@ -660,6 +967,22 @@
             0.0077
           ],
           "num_units": 46
+        },
+        "RetFail_MRR_target": {
+          "diff": 0.0723,
+          "ci": [
+            0.0471,
+            0.103
+          ],
+          "num_units": 46
+        },
+        "RetFail_R@1_target": {
+          "diff": 0.0746,
+          "ci": [
+            0.0391,
+            0.1165
+          ],
+          "num_units": 46
         }
       }
     },
@@ -680,6 +1003,22 @@
             -0.0067
           ],
           "num_units": 46
+        },
+        "RetFail_MRR_target": {
+          "diff": -0.0756,
+          "ci": [
+            -0.112,
+            -0.0419
+          ],
+          "num_units": 46
+        },
+        "RetFail_R@1_target": {
+          "diff": -0.0736,
+          "ci": [
+            -0.1236,
+            -0.0257
+          ],
+          "num_units": 46
         }
       },
       "vs_MG": {
@@ -696,6 +1035,22 @@
           "ci": [
             -0.0089,
             -0.0024
+          ],
+          "num_units": 46
+        },
+        "RetFail_MRR_target": {
+          "diff": -0.0033,
+          "ci": [
+            -0.0422,
+            0.0377
+          ],
+          "num_units": 46
+        },
+        "RetFail_R@1_target": {
+          "diff": 0.001,
+          "ci": [
+            -0.0466,
+            0.0452
           ],
           "num_units": 46
         }
@@ -718,6 +1073,22 @@
             0.0071
           ],
           "num_units": 46
+        },
+        "RetFail_MRR_target": {
+          "diff": 0.023,
+          "ci": [
+            -0.0537,
+            0.1077
+          ],
+          "num_units": 46
+        },
+        "RetFail_R@1_target": {
+          "diff": 0.0161,
+          "ci": [
+            -0.0841,
+            0.1244
+          ],
+          "num_units": 46
         }
       },
       "vs_MG": {
@@ -734,6 +1105,22 @@
           "ci": [
             -0.0016,
             0.0122
+          ],
+          "num_units": 46
+        },
+        "RetFail_MRR_target": {
+          "diff": 0.0952,
+          "ci": [
+            0.0209,
+            0.1775
+          ],
+          "num_units": 46
+        },
+        "RetFail_R@1_target": {
+          "diff": 0.0907,
+          "ci": [
+            -0.003,
+            0.1964
           ],
           "num_units": 46
         }
@@ -756,6 +1143,22 @@
             0.0073
           ],
           "num_units": 46
+        },
+        "RetFail_MRR_target": {
+          "diff": -0.0306,
+          "ci": [
+            -0.0649,
+            0.0011
+          ],
+          "num_units": 46
+        },
+        "RetFail_R@1_target": {
+          "diff": -0.0202,
+          "ci": [
+            -0.0641,
+            0.0255
+          ],
+          "num_units": 46
         }
       },
       "vs_MG": {
@@ -772,6 +1175,22 @@
           "ci": [
             -0.0051,
             0.0106
+          ],
+          "num_units": 46
+        },
+        "RetFail_MRR_target": {
+          "diff": 0.0417,
+          "ci": [
+            0.0057,
+            0.0774
+          ],
+          "num_units": 46
+        },
+        "RetFail_R@1_target": {
+          "diff": 0.0544,
+          "ci": [
+            0.0071,
+            0.1059
           ],
           "num_units": 46
         }

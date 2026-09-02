@@ -107,17 +107,28 @@ def paired_clustered_diff_ci(values_a: list[float],
     }
 
 
-def retrieval_stats(ranks: list[int],
-                    mask: list[bool] | None = None) -> dict | None:
-    """MRR / R@1 over (optionally masked) rank outcomes."""
-    sel = [r for i, r in enumerate(ranks)
-           if mask is None or mask[i]]
+def retrieval_stats(ranks: list[int], clusters: list[str],
+                    mask: list[bool] | None = None,
+                    n_bootstrap: int = 1000, ci_level: float = 0.95,
+                    seed: int = 42) -> dict | None:
+    """MRR / R@1 over (optionally masked) rank outcomes, each with a
+    unit-clustered percentile bootstrap CI computed from the per-row
+    reciprocal ranks / hits (macro over units, 10R5c)."""
+    if mask is not None:
+        sel = [(r, clusters[i]) for i, r in enumerate(ranks)
+               if mask[i]]
+    else:
+        sel = list(zip(ranks, clusters))
     if not sel:
         return None
+    rr = [1.0 / r for r, _ in sel]
+    hit = [1.0 if r == 1 else 0.0 for r, _ in sel]
+    cl = [c for _, c in sel]
     return {
-        "MRR": round(sum(1.0 / r for r in sel) / len(sel), 4),
-        "R@1": round(sum(1 for r in sel if r == 1) / len(sel), 4),
-        "num_rows": len(sel),
+        "MRR": clustered_mean_ci(rr, cl, n_bootstrap=n_bootstrap,
+                                 ci_level=ci_level, seed=seed),
+        "R@1": clustered_mean_ci(hit, cl, n_bootstrap=n_bootstrap,
+                                 ci_level=ci_level, seed=seed),
     }
 
 
@@ -171,11 +182,12 @@ def target_only_from_raw(raw: dict, forget_ids: list[str],
     """Target-only official metrics from ONE raw official result.
 
     Row-aligned metrics over the forget split: AssocStr, CoreAssoc
-    (clustered mean + CI over target identities) and RetFail
-    (MRR/R@1 over target rows).  IdZSC target-only uses the
-    forget_identity row order (forget rows whose identity is NOT in
-    holdout_association) and reports accuracy over target-persona
-    rows.
+    and RetFail (MRR / R@1), each as an identity-clustered mean with
+    a percentile bootstrap CI over the 46 target identities / their
+    target-attribute rows.  IdZSC and ACS target-only variants are
+    deliberately NOT computed here: their official row spaces are a
+    filtered subset (forget_identity) / a stratified probe split,
+    so they are not row-aligned with the forget order.
     """
     out: dict[str, Any] = {}
     assoc = raw.get("efficacy", {}).get("1.2_AssocStr", {}) \
@@ -195,7 +207,8 @@ def target_only_from_raw(raw: dict, forget_ids: list[str],
     ranks = raw.get("efficacy", {}).get("1.1_RetFail", {}) \
         .get("outcomes")
     if ranks and len(ranks) == len(forget_ids):
-        s = retrieval_stats(ranks, tmask)
+        s = retrieval_stats(ranks, forget_ids, tmask,
+                            n_bootstrap=n_bootstrap, seed=seed)
         if s:
             out["RetFail_target"] = s
     return out
@@ -206,7 +219,8 @@ def paired_target_only(raw_a: dict, raw_b: dict,
                        n_bootstrap: int = 1000,
                        seed: int = 42) -> dict[str, Any]:
     """Paired target-only differences (a - b) with identity-clustered
-    CIs for the row-aligned forget metrics."""
+    CIs for the row-aligned forget metrics: AssocStr, CoreAssoc, and
+    RetFail (per-row reciprocal rank and hit, 10R5c)."""
     out: dict[str, Any] = {}
     for name, section, key in (("AssocStr_target", "1.2_AssocStr",
                                 "scores"),
@@ -216,6 +230,22 @@ def paired_target_only(raw_a: dict, raw_b: dict,
         b = raw_b.get("efficacy", {}).get(section, {}).get(key)
         if a and b and len(a) == len(b) == len(forget_ids):
             s = paired_clustered_diff_ci(a, b, forget_ids, tmask,
+                                         n_bootstrap=n_bootstrap,
+                                         seed=seed)
+            if s:
+                out[name] = s
+    ra = raw_a.get("efficacy", {}).get("1.1_RetFail", {}) \
+        .get("outcomes")
+    rb = raw_b.get("efficacy", {}).get("1.1_RetFail", {}) \
+        .get("outcomes")
+    if ra and rb and len(ra) == len(rb) == len(forget_ids):
+        for name, conv in (("RetFail_MRR_target",
+                            lambda r: [1.0 / x for x in r]),
+                           ("RetFail_R@1_target",
+                            lambda r: [1.0 if x == 1 else 0.0
+                                       for x in r])):
+            s = paired_clustered_diff_ci(conv(ra), conv(rb),
+                                         forget_ids, tmask,
                                          n_bootstrap=n_bootstrap,
                                          seed=seed)
             if s:

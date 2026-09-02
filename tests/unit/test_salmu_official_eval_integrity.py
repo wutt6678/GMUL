@@ -45,15 +45,29 @@ def _load(name: str) -> dict:
 
 
 def _write_sidecar(result_path: Path, sha: str, commit: str,
+                   revision: str = "rev1",
+                   rng_protocol: str | None = None,
                    result_sha: str | None = None) -> Path:
     side = runner.sidecar_path(result_path)
     side.write_text(json.dumps({
         "checkpoint_sha256": sha,
         "official_repo_commit": commit,
+        "benchmark_revision": revision,
+        "rng_protocol": rng_protocol if rng_protocol is not None
+        else runner.RNG_PROTOCOL,
         "result_sha256": result_sha if result_sha is not None
         else runner.sha256_file(result_path),
     }))
     return side
+
+
+def _expected(sha: str = "a" * 64, commit: str = "c" * 40,
+              revision: str = "rev1",
+              rng_protocol: str | None = None) -> dict:
+    return {"checkpoint_sha256": sha, "official_commit": commit,
+            "benchmark_revision": revision,
+            **({"rng_protocol": rng_protocol}
+               if rng_protocol is not None else {})}
 
 
 # ── 1. exploratory wording restored ───────────────────────────────
@@ -135,9 +149,10 @@ class TestIdenticalCheckpointInvariant:
 # ── 3. checkpoint-safe reuse of raw results ──────────────────────
 
 class TestCheckpointSafeReuse:
-    """A raw result may be reused ONLY when its sidecar binds the
-    current checkpoint SHA-256, the pinned evaluator commit, and the
-    result file's own SHA-256."""
+    """A raw result may be reused/aggregated ONLY when its sidecar
+    binds ALL five current provenance dimensions: checkpoint SHA-256,
+    pinned evaluator commit, current benchmark revision, RNG-protocol/
+    schema marker, and the result file's own SHA-256 (10R5c)."""
 
     def _result(self, tmp_path: Path) -> Path:
         res = tmp_path / "evaluation_x_r5.json"
@@ -146,36 +161,73 @@ class TestCheckpointSafeReuse:
 
     def test_missing_sidecar_refuses_reuse(self, tmp_path):
         res = self._result(tmp_path)
-        assert not runner.reuse_is_valid(res, "a" * 64, "c" * 40)
+        assert not runner.reuse_is_valid(res, **_expected())
+        assert runner.binding_mismatches(res, **_expected()) == \
+            ["missing_sidecar"]
+
+    def test_missing_result_reported(self, tmp_path):
+        res = tmp_path / "absent.json"
+        assert runner.binding_mismatches(res, **_expected()) == \
+            ["missing_result"]
 
     def test_matching_sidecar_allows_reuse(self, tmp_path):
         res = self._result(tmp_path)
         _write_sidecar(res, "a" * 64, "c" * 40)
-        assert runner.reuse_is_valid(res, "a" * 64, "c" * 40)
+        assert runner.reuse_is_valid(res, **_expected())
+        assert runner.binding_mismatches(res, **_expected()) == []
 
     def test_changed_checkpoint_forces_rescoring(self, tmp_path):
         """The core protection: same filename, NEW checkpoint hash
         (e.g. a retrained state) must not reuse the old result."""
         res = self._result(tmp_path)
         _write_sidecar(res, "a" * 64, "c" * 40)
-        assert not runner.reuse_is_valid(res, "b" * 64, "c" * 40)
+        assert not runner.reuse_is_valid(
+            res, **_expected(sha="b" * 64))
+        assert runner.binding_mismatches(
+            res, **_expected(sha="b" * 64)) == ["checkpoint_sha256"]
 
     def test_changed_evaluator_commit_forces_rescoring(self,
                                                        tmp_path):
         res = self._result(tmp_path)
         _write_sidecar(res, "a" * 64, "c" * 40)
-        assert not runner.reuse_is_valid(res, "a" * 64, "d" * 40)
+        assert not runner.reuse_is_valid(
+            res, **_expected(commit="d" * 40))
+
+    def test_changed_benchmark_revision_forces_rescoring(self,
+                                                         tmp_path):
+        """10R5c: the recorded benchmark revision is now part of the
+        binding — a re-downloaded/updated snapshot invalidates."""
+        res = self._result(tmp_path)
+        _write_sidecar(res, "a" * 64, "c" * 40, revision="rev1")
+        assert not runner.reuse_is_valid(
+            res, **_expected(revision="rev2"))
+        assert "benchmark_revision" in runner.binding_mismatches(
+            res, **_expected(revision="rev2"))
+
+    def test_changed_rng_protocol_forces_rescoring(self, tmp_path):
+        """10R5c: bumping the RNG protocol/schema marker invalidates
+        every previously scored raw result."""
+        res = self._result(tmp_path)
+        _write_sidecar(res, "a" * 64, "c" * 40,
+                       rng_protocol="legacy: advancing global RNG")
+        assert not runner.reuse_is_valid(res, **_expected())
+        assert "rng_protocol" in runner.binding_mismatches(
+            res, **_expected())
 
     def test_tampered_result_forces_rescoring(self, tmp_path):
         res = self._result(tmp_path)
         _write_sidecar(res, "a" * 64, "c" * 40)
         res.write_text(json.dumps({"efficacy": {"tampered": 1}}))
-        assert not runner.reuse_is_valid(res, "a" * 64, "c" * 40)
+        assert not runner.reuse_is_valid(res, **_expected())
+        assert runner.binding_mismatches(res, **_expected()) == \
+            ["result_sha256"]
 
     def test_corrupt_sidecar_refuses_reuse(self, tmp_path):
         res = self._result(tmp_path)
         runner.sidecar_path(res).write_text("{not json")
-        assert not runner.reuse_is_valid(res, "a" * 64, "c" * 40)
+        assert not runner.reuse_is_valid(res, **_expected())
+        assert runner.binding_mismatches(res, **_expected()) == \
+            ["corrupt_sidecar"]
 
     def test_quarantine_moves_result_and_sidecar(self, tmp_path):
         res = self._result(tmp_path)
@@ -327,11 +379,28 @@ class TestTargetOnlyStatistics:
             analysis.clustered_mean_ci([0.5], ["a"], ci_level=1.0)
 
     def test_retrieval_stats(self):
-        s = analysis.retrieval_stats([1, 2, 4, 100],
-                                     [True, True, True, False])
-        assert s["num_rows"] == 3
-        assert s["R@1"] == round(1 / 3, 4)
-        assert s["MRR"] == round((1 + 0.5 + 0.25) / 3, 4)
+        s = analysis.retrieval_stats(
+            [1, 2, 4, 100], ["a", "a", "b", "b"],
+            [True, True, True, False], n_bootstrap=100)
+        assert s["MRR"]["num_rows"] == 3
+        assert s["R@1"]["num_rows"] == 3
+        # unit a: rows (1, 2) -> rr mean (1 + 0.5)/2; unit b: row 4
+        expected = ((1 + 0.5) / 2 + 0.25) / 2
+        assert s["MRR"]["mean"] == pytest.approx(expected, abs=1e-4)
+        assert s["R@1"]["mean"] == pytest.approx((0.5 + 0) / 2,
+                                                 abs=1e-4)
+        for k in ("MRR", "R@1"):
+            lo, hi = s[k]["ci"]
+            assert lo <= s[k]["mean"] <= hi
+            assert s[k]["num_units"] == 2
+
+    def test_retrieval_stats_degenerate_all_rank_one(self):
+        s = analysis.retrieval_stats([1, 1], ["a", "b"],
+                                     n_bootstrap=50)
+        assert s["MRR"]["mean"] == 1.0 and s["MRR"]["ci"] == (1.0,
+                                                              1.0)
+        assert s["R@1"]["mean"] == 1.0 and s["R@1"]["ci"] == (1.0,
+                                                              1.0)
 
     def test_target_attr_mask(self):
         ids = ["t1", "t1", "t2", "x"]
@@ -367,6 +436,37 @@ class TestCommittedTargetOnlyReport:
                 assert lo <= t[m]["mean"] <= hi, (state, m)
                 assert t[m]["num_units"] == n_targets
             assert t["AssocStr_target"]["num_rows"] > 0
+            # 10R5c: RetFail target-only now carries clustered CIs
+            for k in ("MRR", "R@1"):
+                rf = t["RetFail_target"][k]
+                lo, hi = rf["ci"]
+                assert lo <= rf["mean"] <= hi, (state, k)
+                assert rf["num_units"] == n_targets, (state, k)
+                assert rf["num_rows"] == \
+                    t["AssocStr_target"]["num_rows"], (state, k)
+
+    def test_aggregation_gate_recorded(self):
+        """10R5c: aggregation (including --aggregate-only) refuses
+        unvalidated evidence; a passing run records the gate."""
+        rep = _load("salmubench_official_eval_r5")
+        gate = rep["aggregation_gate"]
+        assert gate["all_results_binding_validated"] is True
+        assert set(gate["binding_fields"]) == {
+            "checkpoint_sha256", "official_repo_commit",
+            "benchmark_revision", "rng_protocol", "result_sha256"}
+        for state, entry in rep["states"].items():
+            assert entry.get("binding_validated") is True, state
+
+    def test_statistical_metadata_recorded(self):
+        rep = _load("salmubench_official_eval_r5")
+        sm = rep["statistical_metadata"]
+        assert sm["clustering_unit"] == "identity_id"
+        assert sm["n_bootstrap"] == 1000
+        assert sm["ci_level"] == 0.95
+        assert sm["seed"] == 42
+        # wording must not over-claim CI coverage
+        assert "IdZSC" in sm["ci_coverage"] and "NOT" in \
+            sm["ci_coverage"]
 
     def test_results_files_are_hash_bound(self):
         """The committed report must bind every raw result to its
@@ -403,18 +503,26 @@ class TestCommittedTargetOnlyReport:
             assert state in paired, state
             for ref in ("vs_MF", "vs_MG"):
                 block = paired[state][ref]
-                assert "AssocStr_target" in block
-                d = block["AssocStr_target"]
-                assert d["ci"][0] <= d["diff"] <= d["ci"][1]
+                # 10R5c: RetFail (reciprocal rank + hit) is paired
+                assert set(block) == {"AssocStr_target",
+                                      "CoreAssoc_target",
+                                      "RetFail_MRR_target",
+                                      "RetFail_R@1_target"}, \
+                    (state, ref)
+                for metric, d in block.items():
+                    assert d["ci"][0] <= d["diff"] <= d["ci"][1], \
+                        (state, ref, metric)
+                    assert d["num_units"] == 46
 
     def test_b0_vs_mf_paired_diff_is_degenerate(self):
         """B0 IS MF (identical checkpoint): the paired target-only
         difference must be exactly 0 with a collapsed CI."""
         rep = _load("salmubench_official_eval_r5")
         block = rep["paired_target_only"]["B0"]["vs_MF"]
-        for metric in ("AssocStr_target", "CoreAssoc_target"):
-            assert block[metric]["diff"] == 0.0
-            assert tuple(block[metric]["ci"]) == (0.0, 0.0)
+        for metric in ("AssocStr_target", "CoreAssoc_target",
+                       "RetFail_MRR_target", "RetFail_R@1_target"):
+            assert block[metric]["diff"] == 0.0, metric
+            assert tuple(block[metric]["ci"]) == (0.0, 0.0), metric
 
     def test_target_only_assocstr_matches_full_when_targets_only(
             self):
@@ -424,3 +532,58 @@ class TestCommittedTargetOnlyReport:
         mf = rep["states"]["MF"]
         assert mf["target_only"]["AssocStr_target"]["mean"] != \
             mf["AssocStr"]
+
+
+# ── 6. r5 cross-dataset report (10R5c) ───────────────────────────
+
+class TestCrossDatasetR5:
+    """cross_dataset_comparison_r5.json must read the R5 SALMU
+    reports (not the unsuffixed R4 ones) and embed the official
+    evaluator evidence."""
+
+    def test_r5_report_reads_r5_sources(self):
+        rep = _load("cross_dataset_comparison_r5")
+        assert rep["iteration_suffix"] == "r5"
+        assert rep["salmu_reports"] == {
+            "reference_eval": "salmu_reference_eval_r5.json",
+            "selection": "salmu_unlearning_selection_r5.json",
+            "official_eval": "salmubench_official_eval_r5.json",
+        }
+
+    def test_r5_selects_the_r5_candidates(self):
+        rep = _load("cross_dataset_comparison_r5")
+        sel = rep["salmu"]["selected"]
+        assert sel == {"B0": "B0", "B1": "B1_lr2e-06_c",
+                       "B2": "B2_lr2e-05",
+                       "B3": "B3_lr2e-06_lam1_c"}
+        # the OLD unsuffixed report must still carry a DIFFERENT
+        # (R4-era) B3 — proving the r5 report is not a copy
+        old = _load("cross_dataset_comparison")
+        assert old["salmu"]["selected"]["B3"] != sel["B3"]
+
+    def test_r5_embeds_official_evaluator_evidence(self):
+        rep = _load("cross_dataset_comparison_r5")
+        block = rep["salmu"]["official_salmubench"]
+        assert block["source_report"] == \
+            "salmubench_official_eval_r5.json"
+        assert "UNTOUCHED" in block["evidence_status"]
+        assert len(block["states"]) == 9
+        mf = block["states"]["MF"]
+        assert mf["RetFail_MRR"] is not None
+        assert mf["target_only"]["RetFail_MRR_target"]["ci"]
+        assert block["aggregation_gate"][
+            "all_results_binding_validated"] is True
+        assert "RetFail_MRR_target" in \
+            block["paired_target_only"]["B2_lr2e-05"]["vs_MF"]
+
+    def test_r5_protocol_is_exploratory(self):
+        rep = _load("cross_dataset_comparison_r5")
+        assert "EXPLORATORY" in rep["salmu"]["test_protocol"]
+        findings = " ".join(rep["key_findings"])
+        assert "OFF-TARGET collateral" in findings
+        assert "MU ~= MG" in findings
+
+    def test_mllmu_side_unchanged_between_reports(self):
+        new = _load("cross_dataset_comparison_r5")
+        old = _load("cross_dataset_comparison")
+        assert new["mllmu"]["selected"] == old["mllmu"]["selected"]

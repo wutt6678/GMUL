@@ -1,0 +1,1421 @@
+{
+  "experiment": "Cross-dataset: MLLMU (generative MLLM) vs SALMU (CLIP association)",
+  "iteration_suffix": "r5",
+  "salmu_reports": {
+    "reference_eval": "salmu_reference_eval_r5.json",
+    "selection": "salmu_unlearning_selection_r5.json",
+    "official_eval": "salmubench_official_eval_r5.json"
+  },
+  "method_descriptions": {
+    "B1": "Gradient ascent on fine-target pairs (constrained variants stop at the MG anchor).",
+    "B2": "Target-level positive retraining (SFT on target-level generalized captions).  NOT gradient ascent.",
+    "B2_retain": "Target-level SFT + retain SFT (separate method excluded from B2 family).",
+    "B3": "Target-level SFT + retain SFT + constrained ascent (stop at MG anchor)."
+  },
+  "mllmu": {
+    "model": "Qwen3.5-9B+LoRA",
+    "task": "VQA",
+    "test_metrics": {
+      "BASE": {
+        "filr": 0.0905,
+        "tga": 0.0965,
+        "ancestor_retention": null,
+        "retain_same": null,
+        "retain_other": null,
+        "over_forgetting_rate": null,
+        "wrong_branch_rate": null
+      },
+      "MF": {
+        "filr": 0.6094,
+        "tga": 0.0965,
+        "ancestor_retention": null,
+        "retain_same": null,
+        "retain_other": null,
+        "over_forgetting_rate": null,
+        "wrong_branch_rate": null
+      },
+      "MG": {
+        "filr": 0.0151,
+        "tga": 0.6486,
+        "ancestor_retention": null,
+        "retain_same": null,
+        "retain_other": null,
+        "over_forgetting_rate": null,
+        "wrong_branch_rate": null
+      },
+      "MN": {
+        "filr": 0.1674,
+        "tga": 0.1297,
+        "ancestor_retention": null,
+        "retain_same": null,
+        "retain_other": null,
+        "over_forgetting_rate": null,
+        "wrong_branch_rate": null
+      },
+      "B0": {
+        "filr": 0.6109,
+        "tga": 0.0905,
+        "ancestor_retention": 0.1667,
+        "retain_same": 0.6562,
+        "retain_other": 0.75,
+        "over_forgetting_rate": 0.0,
+        "wrong_branch_rate": 0.1584
+      },
+      "B1": {
+        "filr": 0.0965,
+        "tga": 0.0875,
+        "ancestor_retention": null,
+        "retain_same": null,
+        "retain_other": null,
+        "over_forgetting_rate": null,
+        "wrong_branch_rate": null
+      },
+      "B2": {
+        "filr": 0.009,
+        "tga": 0.6833,
+        "ancestor_retention": null,
+        "retain_same": null,
+        "retain_other": null,
+        "over_forgetting_rate": null,
+        "wrong_branch_rate": null
+      },
+      "B3": {
+        "filr": 0.0,
+        "tga": 0.7059,
+        "ancestor_retention": null,
+        "retain_same": null,
+        "retain_other": null,
+        "over_forgetting_rate": null,
+        "wrong_branch_rate": null
+      },
+      "B1_lr2e-05": {
+        "filr": 0.0905,
+        "tga": 0.0882,
+        "ancestor_retention": 0.1905,
+        "retain_same": 0.2917,
+        "retain_other": 0.375,
+        "over_forgetting_rate": 0.0,
+        "wrong_branch_rate": 0.2195
+      },
+      "B2_lr1e-04": {
+        "filr": 0.0113,
+        "tga": 0.6765,
+        "ancestor_retention": 0.5,
+        "retain_same": 0.0521,
+        "retain_other": 0.05,
+        "over_forgetting_rate": 0.0023,
+        "wrong_branch_rate": 0.0973
+      },
+      "B3_lam0.5": {
+        "filr": 0.0,
+        "tga": 0.7104,
+        "ancestor_retention": 0.6667,
+        "retain_same": 0.5938,
+        "retain_other": 0.675,
+        "over_forgetting_rate": 0.0113,
+        "wrong_branch_rate": 0.086
+      }
+    },
+    "selected": {
+      "B0": "B0",
+      "B1": "B1_lr2e-05",
+      "B2": "B2_lr1e-04",
+      "B3": "B3_lam0.5"
+    }
+  },
+  "salmu": {
+    "model": "CLIP ViT-B/16",
+    "task": "image-text association",
+    "weighting": "association_macro_average",
+    "test_metrics": {
+      "BASE": {
+        "fine_pref": 0.2609,
+        "tnf": 0.413,
+        "sim_fine": 0.1408,
+        "sim_target": 0.1494,
+        "sim_sibling": 0.1452,
+        "same_entity_retain_sim": 0.1356,
+        "other_entity_retain_sim": 0.1422,
+        "per_attribute": {
+          "city": {
+            "fine_pref": 0.4,
+            "tnf": 0.2667,
+            "sim_fine": 0.1432,
+            "sim_target": 0.1489,
+            "num_probes": 90
+          },
+          "job": {
+            "fine_pref": 0.2,
+            "tnf": 0.6,
+            "sim_fine": 0.1409,
+            "sim_target": 0.1495,
+            "num_probes": 90
+          },
+          "blood_type": {
+            "fine_pref": 0.1875,
+            "tnf": 0.375,
+            "sim_fine": 0.1385,
+            "sim_target": 0.1498,
+            "num_probes": 96
+          }
+        },
+        "gmul_proxy_forget": 0.7391,
+        "gmul_proxy_holdout_association": 0.2283,
+        "gmul_proxy_retain_synth": 0.1422
+      },
+      "MF": {
+        "fine_pref": 0.5217,
+        "tnf": 0.2609,
+        "sim_fine": 0.2785,
+        "sim_target": 0.2783,
+        "sim_sibling": 0.2769,
+        "same_entity_retain_sim": 0.2794,
+        "other_entity_retain_sim": 0.2701,
+        "per_attribute": {
+          "city": {
+            "fine_pref": 0.3333,
+            "tnf": 0.3333,
+            "sim_fine": 0.2793,
+            "sim_target": 0.2808,
+            "num_probes": 90
+          },
+          "job": {
+            "fine_pref": 0.6667,
+            "tnf": 0.2667,
+            "sim_fine": 0.2771,
+            "sim_target": 0.2726,
+            "num_probes": 90
+          },
+          "blood_type": {
+            "fine_pref": 0.5625,
+            "tnf": 0.1875,
+            "sim_fine": 0.279,
+            "sim_target": 0.2814,
+            "num_probes": 96
+          }
+        },
+        "gmul_proxy_forget": 0.4783,
+        "gmul_proxy_holdout_association": 0.4239,
+        "gmul_proxy_retain_synth": 0.2701
+      },
+      "MG": {
+        "fine_pref": 0.2609,
+        "tnf": 0.4348,
+        "sim_fine": 0.2718,
+        "sim_target": 0.279,
+        "sim_sibling": 0.2772,
+        "same_entity_retain_sim": 0.2767,
+        "other_entity_retain_sim": 0.2686,
+        "per_attribute": {
+          "city": {
+            "fine_pref": 0.0667,
+            "tnf": 0.5333,
+            "sim_fine": 0.2675,
+            "sim_target": 0.2806,
+            "num_probes": 90
+          },
+          "job": {
+            "fine_pref": 0.4667,
+            "tnf": 0.4,
+            "sim_fine": 0.2729,
+            "sim_target": 0.2762,
+            "num_probes": 90
+          },
+          "blood_type": {
+            "fine_pref": 0.25,
+            "tnf": 0.375,
+            "sim_fine": 0.2749,
+            "sim_target": 0.2802,
+            "num_probes": 96
+          }
+        },
+        "gmul_proxy_forget": 0.7391,
+        "gmul_proxy_holdout_association": 0.3913,
+        "gmul_proxy_retain_synth": 0.2686
+      },
+      "MN": {
+        "fine_pref": 0.3913,
+        "tnf": 0.3261,
+        "sim_fine": 0.2612,
+        "sim_target": 0.2658,
+        "sim_sibling": 0.2647,
+        "same_entity_retain_sim": 0.2703,
+        "other_entity_retain_sim": 0.273,
+        "per_attribute": {
+          "city": {
+            "fine_pref": 0.1333,
+            "tnf": 0.3333,
+            "sim_fine": 0.2639,
+            "sim_target": 0.2754,
+            "num_probes": 90
+          },
+          "job": {
+            "fine_pref": 0.4667,
+            "tnf": 0.4,
+            "sim_fine": 0.2562,
+            "sim_target": 0.2573,
+            "num_probes": 90
+          },
+          "blood_type": {
+            "fine_pref": 0.5625,
+            "tnf": 0.25,
+            "sim_fine": 0.2633,
+            "sim_target": 0.2649,
+            "num_probes": 96
+          }
+        },
+        "gmul_proxy_forget": 0.6087,
+        "gmul_proxy_holdout_association": 0.4348,
+        "gmul_proxy_retain_synth": 0.273
+      },
+      "B0": {
+        "fine_pref": 0.7143,
+        "tnf": 0.2857,
+        "sim_fine": 0.2773,
+        "sim_target": 0.2803,
+        "sim_sibling": 0.2789,
+        "same_entity_retain_sim": 0.2749,
+        "other_entity_retain_sim": 0.2701
+      },
+      "B1_lr2e-06_c": {
+        "fine_pref": 0.7143,
+        "tnf": 0.2857,
+        "sim_fine": 0.271,
+        "sim_target": 0.2757,
+        "sim_sibling": 0.2748,
+        "same_entity_retain_sim": 0.2707,
+        "other_entity_retain_sim": 0.2649
+      },
+      "B2_lr2e-05": {
+        "fine_pref": 0.4286,
+        "tnf": 0.1429,
+        "sim_fine": 0.2799,
+        "sim_target": 0.2808,
+        "sim_sibling": 0.2772,
+        "same_entity_retain_sim": 0.2721,
+        "other_entity_retain_sim": 0.2439
+      },
+      "B3_lr2e-06_lam1_c": {
+        "fine_pref": 0.5714,
+        "tnf": 0.2857,
+        "sim_fine": 0.2815,
+        "sim_target": 0.2856,
+        "sim_sibling": 0.2841,
+        "same_entity_retain_sim": 0.2796,
+        "other_entity_retain_sim": 0.2754
+      }
+    },
+    "test_protocol": "held-out internal test identities (train/val/test = 32/7/7 of 46 target personas). Test metrics are computed for the SELECTED checkpoints only. EXPLORATORY, NOT genuinely untouched (10R5b correction): these test personas are a SUBSET of the 10R2/10R3 10-persona test split, which was inspected candidate-wide with the earlier checkpoints, so the internal test numbers remain exploratory even though the r5 checkpoints themselves were never scored on them. The PRIMARY external evaluation is the validated holdout-clean official-split report (salmu_official_splits_r5.json) plus the official SALMUBench-evaluator report (salmubench_official_eval_r5.json).",
+    "selected": {
+      "B0": "B0",
+      "B1": "B1_lr2e-06_c",
+      "B2": "B2_lr2e-05",
+      "B3": "B3_lr2e-06_lam1_c"
+    },
+    "failure_rates": {
+      "BASE": {
+        "fine_leakage": 0.2609,
+        "target_preferred": 0.413
+      },
+      "MF": {
+        "fine_leakage": 0.5217,
+        "target_preferred": 0.2609
+      },
+      "MG": {
+        "fine_leakage": 0.2609,
+        "target_preferred": 0.4348
+      },
+      "MN": {
+        "fine_leakage": 0.3913,
+        "target_preferred": 0.3261
+      },
+      "B0": {
+        "fine_leakage": 0.7143,
+        "target_preferred": 0.2857
+      },
+      "B1_lr2e-06_c": {
+        "fine_leakage": 0.7143,
+        "target_preferred": 0.2857
+      },
+      "B2_lr2e-05": {
+        "fine_leakage": 0.4286,
+        "target_preferred": 0.1429
+      },
+      "B3_lr2e-06_lam1_c": {
+        "fine_leakage": 0.5714,
+        "target_preferred": 0.2857
+      }
+    },
+    "official_salmubench": {
+      "source_report": "salmubench_official_eval_r5.json",
+      "evidence_status": "UNTOUCHED EXTERNAL EVALUATION — this iteration is VALIDATED holdout-clean (see holdout_clean_validation): targets come exclusively from the official forget split and no holdout_identity/holdout_association pair enters any training group (holdout_consumption holdout counts are 0). All GMUL-chain states (BASE, MF, MG, MN, B0-B3) were retrained holdout-clean for this iteration, so their released-holdout numbers are the protocol-compliant external evaluation. EXCEPTION: COMPROMISED is the benchmark's published starting checkpoint, fine-tuned by SALMUBench's authors on the released sensitive set (forget + holdouts); its holdout numbers are in-sample and shown only as the memorization upper bound.",
+      "official_evaluator": {
+        "repo": "https://github.com/cvc-mmu/salmubench",
+        "pinned_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
+        "verified_head": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
+        "worktree_clean": true,
+        "verified_at": "2026-09-02T04:15:04.165086+00:00",
+        "entry_point": "evaluation/evaluation.py",
+        "invocation": "SALMUBenchEvaluation verbatim; ONLY the data source is redirected to the pinned local snapshot (same benchmark revision); derived splits replicated verbatim.",
+        "seed": 42,
+        "rng_protocol": "numpy global RNG state captured after load_benchmark_data() and restored before EVERY evaluate_model() call: the ACS shuffled negatives (np.random.permutation) are therefore identical across states and identical checkpoints yield identical metrics."
+      },
+      "aggregation_gate": {
+        "all_results_binding_validated": true,
+        "binding_fields": [
+          "checkpoint_sha256",
+          "official_repo_commit",
+          "benchmark_revision",
+          "rng_protocol",
+          "result_sha256"
+        ],
+        "note": "aggregate() (including --aggregate-only) refuses with a non-zero exit unless EVERY raw result's sidecar matches the current checkpoint SHA-256, the pinned evaluator commit, the current benchmark revision, the RNG-protocol/schema marker, and the result file's own SHA-256."
+      },
+      "statistical_metadata": {
+        "clustering_unit": "identity_id",
+        "bootstrap": "percentile bootstrap over identity-level unit means (macro); paired differences resample the SAME identities for both states",
+        "n_bootstrap": 1000,
+        "ci_level": 0.95,
+        "seed": 42,
+        "ci_coverage": "target-only CIs cover AssocStr, CoreAssoc, and RetFail (MRR and R@1 via per-row reciprocal-rank / hit means); IdZSC and ACS target-only CIs are NOT computed (their row spaces are filtered/stratified subsets and are out of scope)."
+      },
+      "identical_checkpoint_invariants": {
+        "B0 == MF": {
+          "identical_checkpoint_sha256": "ce6b336849e57463...",
+          "all_metrics_identical": true
+        }
+      },
+      "states": {
+        "BASE": {
+          "RetFail_MRR": 0.0008147291914218488,
+          "RetFail_R@1": 0.0,
+          "AssocStr": 0.14170072885327753,
+          "ACS": 0.6019430221872129,
+          "IdZSC": 0.01068961022031026,
+          "CoreAssoc": 0.15142476303583371,
+          "InterIdSim": 0.14279569952300036,
+          "IntraIdSim": 0.142809760065544,
+          "VisIdInt": 0.33084542410714285,
+          "FragSim": 0.30910250555908514,
+          "target_only": {
+            "AssocStr_target": {
+              "mean": 0.1414,
+              "ci": [
+                0.1361,
+                0.1466
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "CoreAssoc_target": {
+              "mean": 0.1552,
+              "ci": [
+                0.1481,
+                0.1623
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "RetFail_MRR_target": {
+              "mean": 0.0009,
+              "ci": [
+                0.0008,
+                0.0011
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "RetFail_R@1_target": {
+              "mean": 0.0,
+              "ci": [
+                0.0,
+                0.0
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            }
+          }
+        },
+        "COMPROMISED": {
+          "RetFail_MRR": 0.23610213521746887,
+          "RetFail_R@1": 0.1015819876591834,
+          "AssocStr": 0.3215424541539997,
+          "ACS": 0.9509649468294604,
+          "IdZSC": 0.08356146525876679,
+          "CoreAssoc": 0.18270579945685841,
+          "InterIdSim": 0.3214880499483506,
+          "IntraIdSim": 0.3212805993504484,
+          "VisIdInt": 0.3051500307701936,
+          "FragSim": 0.28008668698379924,
+          "target_only": {
+            "AssocStr_target": {
+              "mean": 0.3202,
+              "ci": [
+                0.3165,
+                0.3238
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "CoreAssoc_target": {
+              "mean": 0.1767,
+              "ci": [
+                0.1686,
+                0.1848
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "RetFail_MRR_target": {
+              "mean": 0.2125,
+              "ci": [
+                0.1639,
+                0.2709
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "RetFail_R@1_target": {
+              "mean": 0.1003,
+              "ci": [
+                0.0614,
+                0.1513
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            }
+          }
+        },
+        "MF": {
+          "RetFail_MRR": 0.4270412694605364,
+          "RetFail_R@1": 0.2632269922541683,
+          "AssocStr": 0.2727952566268298,
+          "ACS": 0.9559209662596823,
+          "IdZSC": 0.7681527832094903,
+          "CoreAssoc": 0.2738897947872563,
+          "InterIdSim": 0.18057893348707396,
+          "IntraIdSim": 0.26428047429842777,
+          "VisIdInt": 0.2222044757593458,
+          "FragSim": 0.21136303990132624,
+          "target_only": {
+            "AssocStr_target": {
+              "mean": 0.2823,
+              "ci": [
+                0.2774,
+                0.287
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "CoreAssoc_target": {
+              "mean": 0.2808,
+              "ci": [
+                0.2748,
+                0.2865
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "RetFail_MRR_target": {
+              "mean": 0.5477,
+              "ci": [
+                0.4607,
+                0.6376
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "RetFail_R@1_target": {
+              "mean": 0.3794,
+              "ci": [
+                0.2818,
+                0.4865
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            }
+          }
+        },
+        "MG": {
+          "RetFail_MRR": 0.41821641261249454,
+          "RetFail_R@1": 0.2570565839569384,
+          "AssocStr": 0.2711961547643224,
+          "ACS": 0.955494289090193,
+          "IdZSC": 0.7713466301655586,
+          "CoreAssoc": 0.27300772980565674,
+          "InterIdSim": 0.1788056127247695,
+          "IntraIdSim": 0.2627170585464348,
+          "VisIdInt": 0.22285891279518524,
+          "FragSim": 0.21223102651981418,
+          "target_only": {
+            "AssocStr_target": {
+              "mean": 0.2754,
+              "ci": [
+                0.269,
+                0.2812
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "CoreAssoc_target": {
+              "mean": 0.2763,
+              "ci": [
+                0.2686,
+                0.2832
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "RetFail_MRR_target": {
+              "mean": 0.4754,
+              "ci": [
+                0.3834,
+                0.5651
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "RetFail_R@1_target": {
+              "mean": 0.3048,
+              "ci": [
+                0.2103,
+                0.4071
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            }
+          }
+        },
+        "MN": {
+          "RetFail_MRR": 0.42414635868119993,
+          "RetFail_R@1": 0.2596166469738742,
+          "AssocStr": 0.27447507361719675,
+          "ACS": 0.9545424707890245,
+          "IdZSC": 0.7551818537348455,
+          "CoreAssoc": 0.27607434976284034,
+          "InterIdSim": 0.1820358141672577,
+          "IntraIdSim": 0.26577949332463363,
+          "VisIdInt": 0.2219589498237233,
+          "FragSim": 0.21091477661908353,
+          "target_only": {
+            "AssocStr_target": {
+              "mean": 0.2626,
+              "ci": [
+                0.255,
+                0.2697
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "CoreAssoc_target": {
+              "mean": 0.2634,
+              "ci": [
+                0.2546,
+                0.2712
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "RetFail_MRR_target": {
+              "mean": 0.3313,
+              "ci": [
+                0.2424,
+                0.4156
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "RetFail_R@1_target": {
+              "mean": 0.2037,
+              "ci": [
+                0.1258,
+                0.2894
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            }
+          }
+        },
+        "B0": {
+          "RetFail_MRR": 0.4270412694605364,
+          "RetFail_R@1": 0.2632269922541683,
+          "AssocStr": 0.2727952566268298,
+          "ACS": 0.9559209662596823,
+          "IdZSC": 0.7681527832094903,
+          "CoreAssoc": 0.2738897947872563,
+          "InterIdSim": 0.18057893348707396,
+          "IntraIdSim": 0.26428047429842777,
+          "VisIdInt": 0.2222044757593458,
+          "FragSim": 0.21136303990132624,
+          "target_only": {
+            "AssocStr_target": {
+              "mean": 0.2823,
+              "ci": [
+                0.2774,
+                0.287
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "CoreAssoc_target": {
+              "mean": 0.2808,
+              "ci": [
+                0.2748,
+                0.2865
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "RetFail_MRR_target": {
+              "mean": 0.5477,
+              "ci": [
+                0.4607,
+                0.6376
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "RetFail_R@1_target": {
+              "mean": 0.3794,
+              "ci": [
+                0.2818,
+                0.4865
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            }
+          }
+        },
+        "B1_lr2e-06_c": {
+          "RetFail_MRR": 0.4065443467933205,
+          "RetFail_R@1": 0.2406131022712354,
+          "AssocStr": 0.2664391606658779,
+          "ACS": 0.9508664828672706,
+          "IdZSC": 0.7281971059835745,
+          "CoreAssoc": 0.26849294719818745,
+          "InterIdSim": 0.16694470826043342,
+          "IntraIdSim": 0.25738392030667057,
+          "VisIdInt": 0.21470929338075767,
+          "FragSim": 0.20025413736151923,
+          "target_only": {
+            "AssocStr_target": {
+              "mean": 0.2707,
+              "ci": [
+                0.2634,
+                0.2769
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "CoreAssoc_target": {
+              "mean": 0.2707,
+              "ci": [
+                0.2627,
+                0.2777
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "RetFail_MRR_target": {
+              "mean": 0.4721,
+              "ci": [
+                0.3934,
+                0.5614
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "RetFail_R@1_target": {
+              "mean": 0.3058,
+              "ci": [
+                0.2179,
+                0.4031
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            }
+          }
+        },
+        "B2_lr2e-05": {
+          "RetFail_MRR": 0.19665548274380712,
+          "RetFail_R@1": 0.09708546671918078,
+          "AssocStr": 0.2493525802173592,
+          "ACS": 0.9206052251542602,
+          "IdZSC": 0.4164385347412332,
+          "CoreAssoc": 0.25267109539747645,
+          "InterIdSim": 0.197133491931921,
+          "IntraIdSim": 0.24367988983135916,
+          "VisIdInt": 0.23303353038426236,
+          "FragSim": 0.2273260211096331,
+          "target_only": {
+            "AssocStr_target": {
+              "mean": 0.2805,
+              "ci": [
+                0.2763,
+                0.2841
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "CoreAssoc_target": {
+              "mean": 0.2816,
+              "ci": [
+                0.277,
+                0.286
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "RetFail_MRR_target": {
+              "mean": 0.5707,
+              "ci": [
+                0.4735,
+                0.6616
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "RetFail_R@1_target": {
+              "mean": 0.3955,
+              "ci": [
+                0.2854,
+                0.5065
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            }
+          }
+        },
+        "B3_lr2e-06_lam1_c": {
+          "RetFail_MRR": 0.44707521078092166,
+          "RetFail_R@1": 0.27868583431797295,
+          "AssocStr": 0.27689504684449745,
+          "ACS": 0.958481029276618,
+          "IdZSC": 0.7976795724155912,
+          "CoreAssoc": 0.27824371769091144,
+          "InterIdSim": 0.1718798523521736,
+          "IntraIdSim": 0.2680200100551366,
+          "VisIdInt": 0.21892552700475634,
+          "FragSim": 0.2069598613579058,
+          "target_only": {
+            "AssocStr_target": {
+              "mean": 0.2768,
+              "ci": [
+                0.2596,
+                0.2879
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "CoreAssoc_target": {
+              "mean": 0.2812,
+              "ci": [
+                0.2646,
+                0.2922
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "RetFail_MRR_target": {
+              "mean": 0.5171,
+              "ci": [
+                0.4286,
+                0.6075
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            },
+            "RetFail_R@1_target": {
+              "mean": 0.3592,
+              "ci": [
+                0.2604,
+                0.4657
+              ],
+              "num_units": 46,
+              "num_rows": 323
+            }
+          }
+        }
+      },
+      "paired_target_only": {
+        "BASE": {
+          "vs_MF": {
+            "AssocStr_target": {
+              "diff": -0.1409,
+              "ci": [
+                -0.1477,
+                -0.1346
+              ],
+              "num_units": 46
+            },
+            "CoreAssoc_target": {
+              "diff": -0.1256,
+              "ci": [
+                -0.1341,
+                -0.1167
+              ],
+              "num_units": 46
+            },
+            "RetFail_MRR_target": {
+              "diff": -0.5468,
+              "ci": [
+                -0.6367,
+                -0.4599
+              ],
+              "num_units": 46
+            },
+            "RetFail_R@1_target": {
+              "diff": -0.3794,
+              "ci": [
+                -0.4865,
+                -0.2818
+              ],
+              "num_units": 46
+            }
+          },
+          "vs_MG": {
+            "AssocStr_target": {
+              "diff": -0.1341,
+              "ci": [
+                -0.1418,
+                -0.1269
+              ],
+              "num_units": 46
+            },
+            "CoreAssoc_target": {
+              "diff": -0.1211,
+              "ci": [
+                -0.1309,
+                -0.1108
+              ],
+              "num_units": 46
+            },
+            "RetFail_MRR_target": {
+              "diff": -0.4745,
+              "ci": [
+                -0.5639,
+                -0.3824
+              ],
+              "num_units": 46
+            },
+            "RetFail_R@1_target": {
+              "diff": -0.3048,
+              "ci": [
+                -0.4071,
+                -0.2103
+              ],
+              "num_units": 46
+            }
+          }
+        },
+        "COMPROMISED": {
+          "vs_MF": {
+            "AssocStr_target": {
+              "diff": 0.0378,
+              "ci": [
+                0.0329,
+                0.0431
+              ],
+              "num_units": 46
+            },
+            "CoreAssoc_target": {
+              "diff": -0.1041,
+              "ci": [
+                -0.1127,
+                -0.0956
+              ],
+              "num_units": 46
+            },
+            "RetFail_MRR_target": {
+              "diff": -0.3352,
+              "ci": [
+                -0.4221,
+                -0.25
+              ],
+              "num_units": 46
+            },
+            "RetFail_R@1_target": {
+              "diff": -0.2791,
+              "ci": [
+                -0.3927,
+                -0.1756
+              ],
+              "num_units": 46
+            }
+          },
+          "vs_MG": {
+            "AssocStr_target": {
+              "diff": 0.0447,
+              "ci": [
+                0.0386,
+                0.0511
+              ],
+              "num_units": 46
+            },
+            "CoreAssoc_target": {
+              "diff": -0.0997,
+              "ci": [
+                -0.1088,
+                -0.0911
+              ],
+              "num_units": 46
+            },
+            "RetFail_MRR_target": {
+              "diff": -0.263,
+              "ci": [
+                -0.3541,
+                -0.1758
+              ],
+              "num_units": 46
+            },
+            "RetFail_R@1_target": {
+              "diff": -0.2045,
+              "ci": [
+                -0.3095,
+                -0.1066
+              ],
+              "num_units": 46
+            }
+          }
+        },
+        "MF": {
+          "vs_MG": {
+            "AssocStr_target": {
+              "diff": 0.0069,
+              "ci": [
+                0.0045,
+                0.0098
+              ],
+              "num_units": 46
+            },
+            "CoreAssoc_target": {
+              "diff": 0.0045,
+              "ci": [
+                0.0022,
+                0.0077
+              ],
+              "num_units": 46
+            },
+            "RetFail_MRR_target": {
+              "diff": 0.0723,
+              "ci": [
+                0.0471,
+                0.103
+              ],
+              "num_units": 46
+            },
+            "RetFail_R@1_target": {
+              "diff": 0.0746,
+              "ci": [
+                0.0391,
+                0.1165
+              ],
+              "num_units": 46
+            }
+          }
+        },
+        "MG": {
+          "vs_MF": {
+            "AssocStr_target": {
+              "diff": -0.0069,
+              "ci": [
+                -0.0098,
+                -0.0045
+              ],
+              "num_units": 46
+            },
+            "CoreAssoc_target": {
+              "diff": -0.0045,
+              "ci": [
+                -0.0077,
+                -0.0022
+              ],
+              "num_units": 46
+            },
+            "RetFail_MRR_target": {
+              "diff": -0.0723,
+              "ci": [
+                -0.103,
+                -0.0471
+              ],
+              "num_units": 46
+            },
+            "RetFail_R@1_target": {
+              "diff": -0.0746,
+              "ci": [
+                -0.1165,
+                -0.0391
+              ],
+              "num_units": 46
+            }
+          }
+        },
+        "MN": {
+          "vs_MF": {
+            "AssocStr_target": {
+              "diff": -0.0197,
+              "ci": [
+                -0.025,
+                -0.0149
+              ],
+              "num_units": 46
+            },
+            "CoreAssoc_target": {
+              "diff": -0.0174,
+              "ci": [
+                -0.0228,
+                -0.013
+              ],
+              "num_units": 46
+            },
+            "RetFail_MRR_target": {
+              "diff": -0.2164,
+              "ci": [
+                -0.2739,
+                -0.1638
+              ],
+              "num_units": 46
+            },
+            "RetFail_R@1_target": {
+              "diff": -0.1757,
+              "ci": [
+                -0.2417,
+                -0.1188
+              ],
+              "num_units": 46
+            }
+          },
+          "vs_MG": {
+            "AssocStr_target": {
+              "diff": -0.0129,
+              "ci": [
+                -0.0178,
+                -0.0084
+              ],
+              "num_units": 46
+            },
+            "CoreAssoc_target": {
+              "diff": -0.013,
+              "ci": [
+                -0.0177,
+                -0.0088
+              ],
+              "num_units": 46
+            },
+            "RetFail_MRR_target": {
+              "diff": -0.1441,
+              "ci": [
+                -0.1954,
+                -0.0993
+              ],
+              "num_units": 46
+            },
+            "RetFail_R@1_target": {
+              "diff": -0.1011,
+              "ci": [
+                -0.1468,
+                -0.0572
+              ],
+              "num_units": 46
+            }
+          }
+        },
+        "B0": {
+          "vs_MF": {
+            "AssocStr_target": {
+              "diff": 0.0,
+              "ci": [
+                0.0,
+                0.0
+              ],
+              "num_units": 46
+            },
+            "CoreAssoc_target": {
+              "diff": 0.0,
+              "ci": [
+                0.0,
+                0.0
+              ],
+              "num_units": 46
+            },
+            "RetFail_MRR_target": {
+              "diff": 0.0,
+              "ci": [
+                0.0,
+                0.0
+              ],
+              "num_units": 46
+            },
+            "RetFail_R@1_target": {
+              "diff": 0.0,
+              "ci": [
+                0.0,
+                0.0
+              ],
+              "num_units": 46
+            }
+          },
+          "vs_MG": {
+            "AssocStr_target": {
+              "diff": 0.0069,
+              "ci": [
+                0.0045,
+                0.0098
+              ],
+              "num_units": 46
+            },
+            "CoreAssoc_target": {
+              "diff": 0.0045,
+              "ci": [
+                0.0022,
+                0.0077
+              ],
+              "num_units": 46
+            },
+            "RetFail_MRR_target": {
+              "diff": 0.0723,
+              "ci": [
+                0.0471,
+                0.103
+              ],
+              "num_units": 46
+            },
+            "RetFail_R@1_target": {
+              "diff": 0.0746,
+              "ci": [
+                0.0391,
+                0.1165
+              ],
+              "num_units": 46
+            }
+          }
+        },
+        "B1_lr2e-06_c": {
+          "vs_MF": {
+            "AssocStr_target": {
+              "diff": -0.0116,
+              "ci": [
+                -0.0155,
+                -0.0081
+              ],
+              "num_units": 46
+            },
+            "CoreAssoc_target": {
+              "diff": -0.0101,
+              "ci": [
+                -0.0133,
+                -0.0067
+              ],
+              "num_units": 46
+            },
+            "RetFail_MRR_target": {
+              "diff": -0.0756,
+              "ci": [
+                -0.112,
+                -0.0419
+              ],
+              "num_units": 46
+            },
+            "RetFail_R@1_target": {
+              "diff": -0.0736,
+              "ci": [
+                -0.1236,
+                -0.0257
+              ],
+              "num_units": 46
+            }
+          },
+          "vs_MG": {
+            "AssocStr_target": {
+              "diff": -0.0048,
+              "ci": [
+                -0.0082,
+                -0.0014
+              ],
+              "num_units": 46
+            },
+            "CoreAssoc_target": {
+              "diff": -0.0056,
+              "ci": [
+                -0.0089,
+                -0.0024
+              ],
+              "num_units": 46
+            },
+            "RetFail_MRR_target": {
+              "diff": -0.0033,
+              "ci": [
+                -0.0422,
+                0.0377
+              ],
+              "num_units": 46
+            },
+            "RetFail_R@1_target": {
+              "diff": 0.001,
+              "ci": [
+                -0.0466,
+                0.0452
+              ],
+              "num_units": 46
+            }
+          }
+        },
+        "B2_lr2e-05": {
+          "vs_MF": {
+            "AssocStr_target": {
+              "diff": -0.0018,
+              "ci": [
+                -0.0076,
+                0.004
+              ],
+              "num_units": 46
+            },
+            "CoreAssoc_target": {
+              "diff": 0.0008,
+              "ci": [
+                -0.0054,
+                0.0071
+              ],
+              "num_units": 46
+            },
+            "RetFail_MRR_target": {
+              "diff": 0.023,
+              "ci": [
+                -0.0537,
+                0.1077
+              ],
+              "num_units": 46
+            },
+            "RetFail_R@1_target": {
+              "diff": 0.0161,
+              "ci": [
+                -0.0841,
+                0.1244
+              ],
+              "num_units": 46
+            }
+          },
+          "vs_MG": {
+            "AssocStr_target": {
+              "diff": 0.005,
+              "ci": [
+                -0.0009,
+                0.0109
+              ],
+              "num_units": 46
+            },
+            "CoreAssoc_target": {
+              "diff": 0.0053,
+              "ci": [
+                -0.0016,
+                0.0122
+              ],
+              "num_units": 46
+            },
+            "RetFail_MRR_target": {
+              "diff": 0.0952,
+              "ci": [
+                0.0209,
+                0.1775
+              ],
+              "num_units": 46
+            },
+            "RetFail_R@1_target": {
+              "diff": 0.0907,
+              "ci": [
+                -0.003,
+                0.1964
+              ],
+              "num_units": 46
+            }
+          }
+        },
+        "B3_lr2e-06_lam1_c": {
+          "vs_MF": {
+            "AssocStr_target": {
+              "diff": -0.0055,
+              "ci": [
+                -0.0211,
+                0.0036
+              ],
+              "num_units": 46
+            },
+            "CoreAssoc_target": {
+              "diff": 0.0004,
+              "ci": [
+                -0.012,
+                0.0073
+              ],
+              "num_units": 46
+            },
+            "RetFail_MRR_target": {
+              "diff": -0.0306,
+              "ci": [
+                -0.0649,
+                0.0011
+              ],
+              "num_units": 46
+            },
+            "RetFail_R@1_target": {
+              "diff": -0.0202,
+              "ci": [
+                -0.0641,
+                0.0255
+              ],
+              "num_units": 46
+            }
+          },
+          "vs_MG": {
+            "AssocStr_target": {
+              "diff": 0.0014,
+              "ci": [
+                -0.0113,
+                0.0094
+              ],
+              "num_units": 46
+            },
+            "CoreAssoc_target": {
+              "diff": 0.0049,
+              "ci": [
+                -0.0051,
+                0.0106
+              ],
+              "num_units": 46
+            },
+            "RetFail_MRR_target": {
+              "diff": 0.0417,
+              "ci": [
+                0.0057,
+                0.0774
+              ],
+              "num_units": 46
+            },
+            "RetFail_R@1_target": {
+              "diff": 0.0544,
+              "ci": [
+                0.0071,
+                0.1059
+              ],
+              "num_units": 46
+            }
+          }
+        }
+      }
+    }
+  },
+  "key_findings": [
+    "Both benchmarks confirm MF != MG != MN separation with per-attribute targeting.",
+    "B1 (gradient ascent) and B2 (target-level SFT) are distinct methods; B2 is closest to MG in SALMU.",
+    "B1 (gradient ascent) collapses representations when unconstrained; constrained ascent (B3 stop at MG anchor) prevents collapse.",
+    "Retain health must be in selection vector.",
+    "SALMU confirms the phenomenon at the controlled CLIP association level.",
+    "Per-attribute targeting enables same-entity retain probes (holdout_association analog).",
+    "Frozen multi-image/caption probes with deterministic IDs ensure reproducibility.",
+    "Selection uses TARGET-ONLY probes (is_target_attr=True), association-weighted (each (identity, attribute) counted once), so same-entity retain probes do not dilute MG-distance and high-variant attributes get no extra weight.",
+    "B2_retain_* excluded from B2 candidate family (different method: target_level SFT + retain SFT).",
+    "SALMU B3 train+val ranking (association-weighted, from the selection report): B3_lr2e-06_lam1_c dist=0.036271; B3_lr5e-06_lam1_c dist=0.038114; B3_lr2e-06_lam0.5_c dist=0.048386; B3_lr5e-06_lam0.5_c dist=0.059457; B3_lr1e-05_lam1 dist=0.664171; B3_lr1e-05_lam0.5 dist=0.669271",
+    "Official SALMUBench evaluator (commit 8b7f4397, RNG-restored per state, checkpoint-bound results): the target-only paired CIs REVISE the full-split verdict — B2's dramatic full-forget RetFail collapse (MRR 0.427 -> 0.197) and IdZSC drop (0.768 -> 0.416) are OFF-TARGET collateral: on the 323 designated target associations B2 is statistically indistinguishable from MF (paired MRR_target +0.023 [-0.054, +0.108], AssocStr_target -0.002 [-0.008, +0.004]), i.e. it over-generalizes WITHOUT reliably unlearning its targets. B3 (constrained ascent) stays close to MG on every official metric — the granularity hypothesis MU ~= MG holds on the benchmark's own evaluator.",
+    "SALMU internal test verdicts are EXPLORATORY (the r5 test personas are a subset of the candidate-wide-inspected 10R2/10R3 split); the validated untouched official holdouts are the primary external evaluation.",
+    "Target-only official metrics (46 personas / 323 target associations) with identity-clustered CIs (AssocStr, CoreAssoc, RetFail MRR/R@1) and paired difference CIs vs MF and MG are embedded under salmu.official_salmubench."
+  ]
+}

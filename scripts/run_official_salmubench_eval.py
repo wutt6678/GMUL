@@ -96,6 +96,11 @@ RNG_PROTOCOL = (
     "negatives (np.random.permutation) are therefore identical "
     "across states and identical checkpoints yield identical "
     "metrics.")
+# The rng_protocol string IS the RNG schema marker: bumping
+# RNG_PROTOCOL invalidates every previously scored raw result.
+RESULT_BINDING_FIELDS = ("checkpoint_sha256", "official_repo_commit",
+                         "benchmark_revision", "rng_protocol",
+                         "result_sha256")
 
 
 def sha256_file(path: Path) -> str | None:
@@ -172,20 +177,47 @@ def sidecar_path(result_path: Path) -> Path:
     return result_path.parent / (result_path.name + ".provenance.json")
 
 
-def reuse_is_valid(result_path: Path, expected_sha: str,
-                   expected_commit: str) -> bool:
-    """A raw result is reused ONLY if its sidecar binds the CURRENT
-    checkpoint SHA-256 AND the pinned evaluator commit (10R5b)."""
+def binding_mismatches(result_path: Path, *,
+                        checkpoint_sha256: str,
+                        official_commit: str,
+                        benchmark_revision: str | None,
+                        rng_protocol: str = RNG_PROTOCOL
+                        ) -> list[str]:
+    """Every field on which a raw result's validity depends.
+
+    Returns the list of binding violations (empty = valid): missing
+    result/sidecar, corrupt sidecar, or any mismatch among the
+    CURRENT checkpoint SHA-256, the pinned evaluator commit, the
+    current benchmark revision, the RNG-protocol/schema marker, and
+    the result file's own SHA-256 (10R5c).
+    """
     side = sidecar_path(result_path)
-    if not result_path.exists() or not side.exists():
-        return False
+    if not result_path.exists():
+        return ["missing_result"]
+    if not side.exists():
+        return ["missing_sidecar"]
     try:
         prov = json.loads(side.read_text())
     except (json.JSONDecodeError, OSError):
-        return False
-    return (prov.get("checkpoint_sha256") == expected_sha
-            and prov.get("official_repo_commit") == expected_commit
-            and prov.get("result_sha256") == sha256_file(result_path))
+        return ["corrupt_sidecar"]
+    bad = []
+    expected = {
+        "checkpoint_sha256": checkpoint_sha256,
+        "official_repo_commit": official_commit,
+        "benchmark_revision": benchmark_revision,
+        "rng_protocol": rng_protocol,
+        "result_sha256": sha256_file(result_path),
+    }
+    for field in RESULT_BINDING_FIELDS:
+        if prov.get(field) != expected[field]:
+            bad.append(field)
+    return bad
+
+
+def reuse_is_valid(result_path: Path, **expected) -> bool:
+    """A raw result is reused ONLY if its sidecar binds ALL current
+    provenance dimensions (see binding_mismatches)."""
+    return not binding_mismatches(result_path, **expected)
 
 
 def quarantine_stale(result_path: Path) -> None:
@@ -370,12 +402,19 @@ def aggregate(results_dir: Path, staged: dict[str, Path],
     raw_by_state: dict[str, dict] = {}
     hashes = {state: sha256_file(p.resolve())
               for state, p in staged.items()}
+    invalid: dict[str, list[str]] = {}
     for state, pth in staged.items():
         out = official_output_path(results_dir, pth)
-        side = sidecar_path(out)
-        if not out.exists():
-            log.warning("[%s] official results missing (%s)", state,
-                        out.name)
+        # 10R5c: aggregation NEVER accepts unvalidated evidence —
+        # every raw result must bind the current checkpoint hash,
+        # pinned evaluator commit, current benchmark revision, RNG
+        # protocol/schema marker, and its own file hash.
+        bad = binding_mismatches(
+            out, checkpoint_sha256=hashes.get(state),
+            official_commit=OFFICIAL_REPO_COMMIT,
+            benchmark_revision=bench_revision)
+        if bad:
+            invalid[state] = bad
             continue
         raw = json.loads(out.read_text())
         raw_by_state[state] = raw
@@ -383,7 +422,9 @@ def aggregate(results_dir: Path, staged: dict[str, Path],
             "results_file": out.name,
             "results_file_sha256": sha256_file(out),
             "checkpoint_sha256": hashes.get(state),
+            "binding_validated": True,
         }
+        side = sidecar_path(out)
         if side.exists():
             prov = json.loads(side.read_text())
             entry["result_provenance"] = {
@@ -398,6 +439,16 @@ def aggregate(results_dir: Path, staged: dict[str, Path],
         entry["target_only"] = analysis.target_only_from_raw(
             raw, forget_ids, forget_files, tmask)
         by_state[state] = entry
+
+    if invalid:
+        raise SystemExit(
+            "Refusing to aggregate UNVALIDATED official results "
+            "(10R5c binding gate — every raw result must bind the "
+            "current checkpoint hash, pinned evaluator commit, "
+            "current benchmark revision, RNG protocol, and its own "
+            "file hash):\n" + "\n".join(
+                f"  {state}: {bad}"
+                for state, bad in sorted(invalid.items())))
 
     # Paired identity-clustered difference CIs vs MF and MG on the
     # target associations.
@@ -485,6 +536,34 @@ def aggregate(results_dir: Path, staged: dict[str, Path],
                        "(official code returns -1 -> null).",
         },
         "checkpoint_sha256": hashes,
+        "aggregation_gate": {
+            "all_results_binding_validated": True,
+            "binding_fields": list(RESULT_BINDING_FIELDS),
+            "note": "aggregate() (including --aggregate-only) "
+                    "refuses with a non-zero exit unless EVERY raw "
+                    "result's sidecar matches the current checkpoint "
+                    "SHA-256, the pinned evaluator commit, the "
+                    "current benchmark revision, the RNG-protocol/"
+                    "schema marker, and the result file's own "
+                    "SHA-256.",
+        },
+        "statistical_metadata": {
+            "clustering_unit": "identity_id",
+            "bootstrap": "percentile bootstrap over identity-level "
+                         "unit means (macro); paired differences "
+                         "resample the SAME identities for both "
+                         "states",
+            "n_bootstrap": 1000,
+            "ci_level": 0.95,
+            "seed": 42,
+            "ci_coverage": "target-only CIs cover AssocStr, "
+                           "CoreAssoc, and RetFail (MRR and R@1 via "
+                           "per-row reciprocal-rank / hit means); "
+                           "IdZSC and ACS target-only CIs are NOT "
+                           "computed (their row spaces are filtered/"
+                           "stratified subsets and are out of "
+                           "scope).",
+        },
         "identical_checkpoint_invariants": invariants,
         "metric_definitions": {
             "RetFail_R@1/RetFail_MRR": "rank of the true association "
@@ -504,11 +583,15 @@ def aggregate(results_dir: Path, staged: dict[str, Path],
             "target_only": "official metrics restricted to the GMUL "
                            "target associations (designated target "
                            "attribute rows of the forget split); "
-                           "identity-clustered bootstrap CIs",
+                           "identity-clustered bootstrap CIs on "
+                           "AssocStr, CoreAssoc, and RetFail "
+                           "(MRR/R@1) — see statistical_metadata",
             "paired_target_only": "paired identity-clustered "
                                   "bootstrap CIs of the target-only "
                                   "difference (state - reference) "
-                                  "over the SAME identities",
+                                  "over the SAME identities, for "
+                                  "AssocStr, CoreAssoc, and RetFail "
+                                  "(MRR/R@1)",
         },
         "states": by_state,
         "paired_target_only": paired,
@@ -578,11 +661,14 @@ def main() -> None:
             result_path = official_output_path(results_dir, pth)
             sha = sha256_file(pth.resolve())
             if result_path.exists():
-                if reuse_is_valid(result_path, sha,
-                                  OFFICIAL_REPO_COMMIT):
+                if reuse_is_valid(
+                        result_path, checkpoint_sha256=sha,
+                        official_commit=OFFICIAL_REPO_COMMIT,
+                        benchmark_revision=bench_revision):
                     log.info("[%s] reusing official result (sidecar "
-                             "matches checkpoint %s and evaluator "
-                             "commit)", state, sha[:12])
+                             "binds checkpoint %s, evaluator commit, "
+                             "benchmark revision, RNG protocol, and "
+                             "result hash)", state, sha[:12])
                     continue
                 quarantine_stale(result_path)
             log.info("=== evaluating %s (%s) ===", state, pth.name)

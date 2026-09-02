@@ -1,19 +1,28 @@
-"""Build cross-dataset comparison report (Iteration 10R3).
+"""Build cross-dataset comparison report (Iteration 10R3; suffix
+support + official SALMUBench metrics in 10R5c).
 
     python scripts/build_cross_dataset_comparison.py
+    python scripts/build_cross_dataset_comparison.py --suffix r5
 
 Reads MLLMU + SALMU reference-eval and selection reports, extracts
 comparable metrics, and writes
-data/reports/cross_dataset_comparison.json.
+data/reports/cross_dataset_comparison[_suffix].json.  With
+``--suffix r5`` the SALMU side reads the holdout-clean r5 reports
+(so the selected B-candidates are the r5 retrained ones) and embeds
+the official SALMUBench-evaluator metric table (including the
+target-only / paired-CI summary) from
+salmubench_official_eval[_suffix].json when present.
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 
 from granunlearn.config import _find_repo_root
 from granunlearn.logging_utils import setup_logger
+from granunlearn.salmu.paths import SalmuPaths
 
 log = setup_logger("build_cross_dataset_comparison")
 
@@ -178,11 +187,57 @@ def _salmu_failure_rates(ref: dict, sel: dict) -> dict:
     return rates
 
 
+def _salmu_official_block(paths: SalmuPaths) -> dict | None:
+    """Embed the official SALMUBench-evaluator evidence for this
+    iteration (10R5c): per-state metric table, target-only summary,
+    paired CIs, evidence status, and the aggregation gate."""
+    rep_path = paths.report("salmubench_official_eval")
+    if not rep_path.exists():
+        return None
+    rep = json.loads(rep_path.read_text())
+    states = {}
+    for state, e in rep.get("states", {}).items():
+        states[state] = {
+            k: e.get(k) for k in
+            ("RetFail_MRR", "RetFail_R@1", "AssocStr", "ACS",
+             "IdZSC", "CoreAssoc", "InterIdSim", "IntraIdSim",
+             "VisIdInt", "FragSim")}
+        t = e.get("target_only", {})
+        states[state]["target_only"] = {
+            "AssocStr_target": t.get("AssocStr_target"),
+            "CoreAssoc_target": t.get("CoreAssoc_target"),
+            "RetFail_MRR_target": (t.get("RetFail_target") or {}).get(
+                "MRR"),
+            "RetFail_R@1_target": (t.get("RetFail_target") or {}).get(
+                "R@1"),
+        }
+    return {
+        "source_report": rep_path.name,
+        "evidence_status": rep.get("evidence_status"),
+        "official_evaluator": rep.get("official_evaluator"),
+        "aggregation_gate": rep.get("aggregation_gate"),
+        "statistical_metadata": rep.get("statistical_metadata"),
+        "identical_checkpoint_invariants":
+            rep.get("identical_checkpoint_invariants"),
+        "states": states,
+        "paired_target_only": rep.get("paired_target_only"),
+    }
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Build the cross-dataset comparison report")
+    parser.add_argument("--suffix", default="",
+                        help="Iteration tag (e.g. r5 -> read the "
+                             "holdout-clean SALMU reports and write "
+                             "cross_dataset_comparison_r5.json)")
+    args = parser.parse_args()
+
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
     reports = repo_root / "data" / "reports"
+    paths = SalmuPaths(repo_root, suffix=args.suffix)
 
-    # MLLMU
+    # MLLMU (no suffixed iteration exists — always the smoke reports)
     mllmu_ref = json.loads(
         (reports / "mllmu_smoke_reference_eval.json").read_text())
     mllmu_sel = json.loads(
@@ -191,12 +246,12 @@ def main() -> None:
     mllmu_test, mllmu_selected = _mllmu_sel_metrics(mllmu_sel)
     mllmu_ref_metrics.update(mllmu_test)
 
-    # SALMU
-    salmu_ref = json.loads(
-        (reports / "salmu_reference_eval.json").read_text())
+    # SALMU (suffix-routed: r5 reads the holdout-clean chain)
+    salmu_ref_path = paths.report("salmu_reference_eval")
+    salmu_ref = json.loads(salmu_ref_path.read_text())
     salmu_ref_metrics = _salmu_ref_target_metrics(salmu_ref)
 
-    salmu_sel_path = reports / "salmu_unlearning_selection.json"
+    salmu_sel_path = paths.report("salmu_unlearning_selection")
     salmu_test: dict = {}
     salmu_selected: dict = {"B0": "B0"}
     salmu_failure: dict = {}
@@ -223,10 +278,18 @@ def main() -> None:
                      "skipping unlearning metrics")
 
     salmu_metrics = {**salmu_ref_metrics, **salmu_test}
+    official_block = _salmu_official_block(paths)
 
     comparison = {
         "experiment": "Cross-dataset: MLLMU (generative MLLM) vs "
                       "SALMU (CLIP association)",
+        "iteration_suffix": args.suffix or None,
+        "salmu_reports": {
+            "reference_eval": salmu_ref_path.name,
+            "selection": salmu_sel_path.name,
+            "official_eval": (official_block or {}).get(
+                "source_report"),
+        },
         "method_descriptions": {
             "B1": "Gradient ascent on fine-target pairs "
                   "(constrained variants stop at the MG anchor).",
@@ -253,6 +316,7 @@ def main() -> None:
             if salmu_sel_path.exists() else None,
             "selected": salmu_selected,
             "failure_rates": salmu_failure,
+            "official_salmubench": official_block,
         },
         "key_findings": [
             "Both benchmarks confirm MF != MG != MN separation "
@@ -280,7 +344,33 @@ def main() -> None:
         ],
     }
 
-    out = reports / "cross_dataset_comparison.json"
+    if official_block:
+        comparison["key_findings"].extend([
+            "Official SALMUBench evaluator (commit 8b7f4397, RNG-"
+            "restored per state, checkpoint-bound results): the "
+            "target-only paired CIs REVISE the full-split verdict — "
+            "B2's dramatic full-forget RetFail collapse (MRR 0.427 "
+            "-> 0.197) and IdZSC drop (0.768 -> 0.416) are OFF-"
+            "TARGET collateral: on the 323 designated target "
+            "associations B2 is statistically indistinguishable "
+            "from MF (paired MRR_target +0.023 [-0.054, +0.108], "
+            "AssocStr_target -0.002 [-0.008, +0.004]), i.e. it "
+            "over-generalizes WITHOUT reliably unlearning its "
+            "targets. B3 (constrained ascent) stays close to MG on "
+            "every official metric — the granularity hypothesis "
+            "MU ~= MG holds on the benchmark's own evaluator.",
+            "SALMU internal test verdicts are EXPLORATORY (the r5 "
+            "test personas are a subset of the candidate-wide-"
+            "inspected 10R2/10R3 split); the validated untouched "
+            "official holdouts are the primary external evaluation.",
+            "Target-only official metrics (46 personas / 323 target "
+            "associations) with identity-clustered CIs (AssocStr, "
+            "CoreAssoc, RetFail MRR/R@1) and paired difference CIs "
+            "vs MF and MG are embedded under "
+            "salmu.official_salmubench.",
+        ])
+
+    out = paths.report("cross_dataset_comparison")
     with open(out, "w") as f:
         json.dump(comparison, f, indent=2, ensure_ascii=False)
     log.info("Wrote cross-dataset comparison -> %s", out)
