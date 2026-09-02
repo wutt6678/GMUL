@@ -2,10 +2,14 @@
   "experiment_id": "salmu_iterr5_official_salmubench_evaluator",
   "official_evaluator": {
     "repo": "https://github.com/cvc-mmu/salmubench",
-    "commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
+    "pinned_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
+    "verified_head": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
+    "worktree_clean": true,
+    "verified_at": "2026-09-02T01:48:56.146550+00:00",
     "entry_point": "evaluation/evaluation.py",
     "invocation": "SALMUBenchEvaluation verbatim; ONLY the data source is redirected to the pinned local snapshot (same benchmark revision); derived splits replicated verbatim.",
-    "seed": 42
+    "seed": 42,
+    "rng_protocol": "numpy global RNG state captured after load_benchmark_data() and restored before EVERY evaluate_model() call: the ACS shuffled negatives (np.random.permutation) are therefore identical across states and identical checkpoints yield identical metrics."
   },
   "benchmark": "cvc-mmu/salmubench-512-redistributed",
   "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
@@ -24,18 +28,34 @@
     "B2_lr2e-05": "a84f8c0ce09ebe2ee7f62d1faa1416e4d50828007bfda684dd99709a25612d56",
     "B3_lr2e-06_lam1_c": "56356d613368657efef278db8d13c2248ad37d43d74ee1fdeb8428f0e9edf1c3"
   },
+  "identical_checkpoint_invariants": {
+    "B0 == MF": {
+      "identical_checkpoint_sha256": "ce6b336849e57463...",
+      "all_metrics_identical": true
+    }
+  },
   "metric_definitions": {
     "RetFail_R@1/RetFail_MRR": "rank of the true association caption in a 2,001-caption gallery over forget",
     "AssocStr": "mean cos-sim on forget",
-    "ACS": "logistic-probe accuracy separating member vs shuffled non-member captions",
+    "ACS": "logistic-probe accuracy separating member vs shuffled non-member captions (RNG-restored: identical shuffle across states)",
     "IdZSC": "zero-shot identity-name classification on forget_identity",
     "CoreAssoc": "mean max-sim of '{name} {value}' / '{value} {name}' captions on forget",
     "VisIdInt": "mean cos-sim on retain_joint (retain utility, identities also in forget)",
-    "FragSim": "mean cos-sim on the fragile subset of retain_disjoint (retain utility)"
+    "FragSim": "mean cos-sim on the fragile subset of retain_disjoint (retain utility)",
+    "target_only": "official metrics restricted to the GMUL target associations (designated target attribute rows of the forget split); identity-clustered bootstrap CIs",
+    "paired_target_only": "paired identity-clustered bootstrap CIs of the target-only difference (state - reference) over the SAME identities"
   },
   "states": {
     "BASE": {
       "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_BASE_r5.json",
+      "results_file_sha256": "63a99cc9190a166b8fd8792a9087c4a9ec7f55e17c6788cfa10925ed7a6e457b",
+      "checkpoint_sha256": "cdbe7be083079f265d8422dced9e45056cafd49cada14448f141c6d00c1b8ab5",
+      "result_provenance": {
+        "official_repo_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
+        "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
+        "rng_protocol": "numpy global RNG state captured after load_benchmark_data() and restored before EVERY evaluate_model() call: the ACS shuffled negatives (np.random.permutation) are therefore identical across states and identical checkpoints yield identical metrics.",
+        "scored_at": "2026-09-02T01:54:33.632790+00:00"
+      },
       "RetFail_R@1": 0.0,
       "RetFail_MRR": 0.0008147291914218488,
       "AssocStr": 0.14170072885327753,
@@ -46,10 +66,43 @@
       "InterIdSim": 0.14279569952300036,
       "IntraIdSim": 0.142809760065544,
       "VisIdInt": 0.33084542410714285,
-      "FragSim": 0.30910250555908514
+      "FragSim": 0.30910250555908514,
+      "target_only": {
+        "AssocStr_target": {
+          "mean": 0.1414,
+          "ci": [
+            0.1361,
+            0.1466
+          ],
+          "num_units": 46,
+          "num_rows": 323
+        },
+        "CoreAssoc_target": {
+          "mean": 0.1552,
+          "ci": [
+            0.1481,
+            0.1623
+          ],
+          "num_units": 46,
+          "num_rows": 323
+        },
+        "RetFail_target": {
+          "MRR": 0.0009,
+          "R@1": 0.0,
+          "num_rows": 323
+        }
+      }
     },
     "COMPROMISED": {
       "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_COMPROMISED_r5.json",
+      "results_file_sha256": "98db87e0e24da37279a11c2eebaf8a73c875a8e467c1097ed7a78000233dbe0e",
+      "checkpoint_sha256": "c48f390a39450196f0ddd958b250017e0716f7818d03d0ce6f69042204565466",
+      "result_provenance": {
+        "official_repo_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
+        "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
+        "rng_protocol": "numpy global RNG state captured after load_benchmark_data() and restored before EVERY evaluate_model() call: the ACS shuffled negatives (np.random.permutation) are therefore identical across states and identical checkpoints yield identical metrics.",
+        "scored_at": "2026-09-02T01:59:48.588017+00:00"
+      },
       "RetFail_R@1": 0.1015819876591834,
       "RetFail_MRR": 0.23610213521746887,
       "AssocStr": 0.3215424541539997,
@@ -60,105 +113,669 @@
       "InterIdSim": 0.3214880499483506,
       "IntraIdSim": 0.3212805993504484,
       "VisIdInt": 0.3051500307701936,
-      "FragSim": 0.28008668698379924
+      "FragSim": 0.28008668698379924,
+      "target_only": {
+        "AssocStr_target": {
+          "mean": 0.3202,
+          "ci": [
+            0.3165,
+            0.3238
+          ],
+          "num_units": 46,
+          "num_rows": 323
+        },
+        "CoreAssoc_target": {
+          "mean": 0.1767,
+          "ci": [
+            0.1686,
+            0.1848
+          ],
+          "num_units": 46,
+          "num_rows": 323
+        },
+        "RetFail_target": {
+          "MRR": 0.2095,
+          "R@1": 0.096,
+          "num_rows": 323
+        }
+      }
     },
     "MF": {
       "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_MF_r5.json",
+      "results_file_sha256": "30ea21c746f8b939470fb7a9a9f9e40d9a5ba07ce187f20ccd88cf7a1497d8ca",
+      "checkpoint_sha256": "ce6b336849e57463e3fbee6ec09cf20046c9d0e1bacd46fb8ea277c56cb9c803",
+      "result_provenance": {
+        "official_repo_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
+        "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
+        "rng_protocol": "numpy global RNG state captured after load_benchmark_data() and restored before EVERY evaluate_model() call: the ACS shuffled negatives (np.random.permutation) are therefore identical across states and identical checkpoints yield identical metrics.",
+        "scored_at": "2026-09-02T02:05:11.373951+00:00"
+      },
       "RetFail_R@1": 0.2632269922541683,
       "RetFail_MRR": 0.4270412694605364,
       "AssocStr": 0.2727952566268298,
-      "ACS": 0.9545424707890245,
+      "ACS": 0.9559209662596823,
       "IdZSC": 0.7681527832094903,
       "CoreAssoc": 0.2738897947872563,
       "GenKnow": null,
       "InterIdSim": 0.18057893348707396,
       "IntraIdSim": 0.26428047429842777,
       "VisIdInt": 0.2222044757593458,
-      "FragSim": 0.21136303990132624
+      "FragSim": 0.21136303990132624,
+      "target_only": {
+        "AssocStr_target": {
+          "mean": 0.2823,
+          "ci": [
+            0.2774,
+            0.287
+          ],
+          "num_units": 46,
+          "num_rows": 323
+        },
+        "CoreAssoc_target": {
+          "mean": 0.2808,
+          "ci": [
+            0.2748,
+            0.2865
+          ],
+          "num_units": 46,
+          "num_rows": 323
+        },
+        "RetFail_target": {
+          "MRR": 0.5532,
+          "R@1": 0.3808,
+          "num_rows": 323
+        }
+      }
     },
     "MG": {
       "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_MG_r5.json",
+      "results_file_sha256": "fe630f541da44ec825707aae0564dfd0bab20c36c37369bc80f87124c371d558",
+      "checkpoint_sha256": "b9746ced952beee85151785aa2cacb4c4508365ab7afc7bfb6e97268d4c62675",
+      "result_provenance": {
+        "official_repo_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
+        "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
+        "rng_protocol": "numpy global RNG state captured after load_benchmark_data() and restored before EVERY evaluate_model() call: the ACS shuffled negatives (np.random.permutation) are therefore identical across states and identical checkpoints yield identical metrics.",
+        "scored_at": "2026-09-02T02:10:34.045650+00:00"
+      },
       "RetFail_R@1": 0.2570565839569384,
       "RetFail_MRR": 0.41821641261249454,
       "AssocStr": 0.2711961547643224,
-      "ACS": 0.9534265458842064,
+      "ACS": 0.955494289090193,
       "IdZSC": 0.7713466301655586,
       "CoreAssoc": 0.27300772980565674,
       "GenKnow": null,
       "InterIdSim": 0.1788056127247695,
       "IntraIdSim": 0.2627170585464348,
       "VisIdInt": 0.22285891279518524,
-      "FragSim": 0.21223102651981418
+      "FragSim": 0.21223102651981418,
+      "target_only": {
+        "AssocStr_target": {
+          "mean": 0.2754,
+          "ci": [
+            0.269,
+            0.2812
+          ],
+          "num_units": 46,
+          "num_rows": 323
+        },
+        "CoreAssoc_target": {
+          "mean": 0.2763,
+          "ci": [
+            0.2686,
+            0.2832
+          ],
+          "num_units": 46,
+          "num_rows": 323
+        },
+        "RetFail_target": {
+          "MRR": 0.4735,
+          "R@1": 0.2941,
+          "num_rows": 323
+        }
+      }
     },
     "MN": {
       "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_MN_r5.json",
+      "results_file_sha256": "39635fa5cd209d28a0b4710a36ea5c2335dd88dde1835da97300e85994b99950",
+      "checkpoint_sha256": "c76723930214180d3a7ab9bbc2c1004b7861e865b6afa189cc0dab5428f302c9",
+      "result_provenance": {
+        "official_repo_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
+        "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
+        "rng_protocol": "numpy global RNG state captured after load_benchmark_data() and restored before EVERY evaluate_model() call: the ACS shuffled negatives (np.random.permutation) are therefore identical across states and identical checkpoints yield identical metrics.",
+        "scored_at": "2026-09-02T02:15:43.306256+00:00"
+      },
       "RetFail_R@1": 0.2596166469738742,
       "RetFail_MRR": 0.42414635868119993,
       "AssocStr": 0.27447507361719675,
-      "ACS": 0.9533609032427465,
+      "ACS": 0.9545424707890245,
       "IdZSC": 0.7551818537348455,
       "CoreAssoc": 0.27607434976284034,
       "GenKnow": null,
       "InterIdSim": 0.1820358141672577,
       "IntraIdSim": 0.26577949332463363,
       "VisIdInt": 0.2219589498237233,
-      "FragSim": 0.21091477661908353
+      "FragSim": 0.21091477661908353,
+      "target_only": {
+        "AssocStr_target": {
+          "mean": 0.2626,
+          "ci": [
+            0.255,
+            0.2697
+          ],
+          "num_units": 46,
+          "num_rows": 323
+        },
+        "CoreAssoc_target": {
+          "mean": 0.2634,
+          "ci": [
+            0.2546,
+            0.2712
+          ],
+          "num_units": 46,
+          "num_rows": 323
+        },
+        "RetFail_target": {
+          "MRR": 0.3318,
+          "R@1": 0.1858,
+          "num_rows": 323
+        }
+      }
     },
     "B0": {
       "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_B0_r5.json",
+      "results_file_sha256": "6206d0d287a82a9583743809d6117a4b3229e2f702b193ec45c8f4d1263912f5",
+      "checkpoint_sha256": "ce6b336849e57463e3fbee6ec09cf20046c9d0e1bacd46fb8ea277c56cb9c803",
+      "result_provenance": {
+        "official_repo_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
+        "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
+        "rng_protocol": "numpy global RNG state captured after load_benchmark_data() and restored before EVERY evaluate_model() call: the ACS shuffled negatives (np.random.permutation) are therefore identical across states and identical checkpoints yield identical metrics.",
+        "scored_at": "2026-09-02T02:20:53.747455+00:00"
+      },
       "RetFail_R@1": 0.2632269922541683,
       "RetFail_MRR": 0.4270412694605364,
       "AssocStr": 0.2727952566268298,
-      "ACS": 0.955527110410923,
+      "ACS": 0.9559209662596823,
       "IdZSC": 0.7681527832094903,
       "CoreAssoc": 0.2738897947872563,
       "GenKnow": null,
       "InterIdSim": 0.18057893348707396,
       "IntraIdSim": 0.26428047429842777,
       "VisIdInt": 0.2222044757593458,
-      "FragSim": 0.21136303990132624
+      "FragSim": 0.21136303990132624,
+      "target_only": {
+        "AssocStr_target": {
+          "mean": 0.2823,
+          "ci": [
+            0.2774,
+            0.287
+          ],
+          "num_units": 46,
+          "num_rows": 323
+        },
+        "CoreAssoc_target": {
+          "mean": 0.2808,
+          "ci": [
+            0.2748,
+            0.2865
+          ],
+          "num_units": 46,
+          "num_rows": 323
+        },
+        "RetFail_target": {
+          "MRR": 0.5532,
+          "R@1": 0.3808,
+          "num_rows": 323
+        }
+      }
     },
     "B1_lr2e-06_c": {
       "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_B1_lr2e-06_c_r5.json",
+      "results_file_sha256": "9850229de9e6a3d8d656cd31a2bf9d0caca38b92f135a6d116b0cb71ea3b9ba1",
+      "checkpoint_sha256": "880941df87cae683f0aa49cc065e9060416c5ee9e6a0b28193795fe24291065f",
+      "result_provenance": {
+        "official_repo_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
+        "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
+        "rng_protocol": "numpy global RNG state captured after load_benchmark_data() and restored before EVERY evaluate_model() call: the ACS shuffled negatives (np.random.permutation) are therefore identical across states and identical checkpoints yield identical metrics.",
+        "scored_at": "2026-09-02T02:26:07.293429+00:00"
+      },
       "RetFail_R@1": 0.2406131022712354,
       "RetFail_MRR": 0.4065443467933205,
       "AssocStr": 0.2664391606658779,
-      "ACS": 0.9497505579624524,
+      "ACS": 0.9508664828672706,
       "IdZSC": 0.7281971059835745,
       "CoreAssoc": 0.26849294719818745,
       "GenKnow": null,
       "InterIdSim": 0.16694470826043342,
       "IntraIdSim": 0.25738392030667057,
       "VisIdInt": 0.21470929338075767,
-      "FragSim": 0.20025413736151923
+      "FragSim": 0.20025413736151923,
+      "target_only": {
+        "AssocStr_target": {
+          "mean": 0.2707,
+          "ci": [
+            0.2634,
+            0.2769
+          ],
+          "num_units": 46,
+          "num_rows": 323
+        },
+        "CoreAssoc_target": {
+          "mean": 0.2707,
+          "ci": [
+            0.2627,
+            0.2777
+          ],
+          "num_units": 46,
+          "num_rows": 323
+        },
+        "RetFail_target": {
+          "MRR": 0.4791,
+          "R@1": 0.3096,
+          "num_rows": 323
+        }
+      }
     },
     "B2_lr2e-05": {
       "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_B2_lr2e-05_r5.json",
+      "results_file_sha256": "e0eaa65f8764a5eed51dd3e197533ff9109ff08c5e3530c2115922096116fd55",
+      "checkpoint_sha256": "a84f8c0ce09ebe2ee7f62d1faa1416e4d50828007bfda684dd99709a25612d56",
+      "result_provenance": {
+        "official_repo_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
+        "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
+        "rng_protocol": "numpy global RNG state captured after load_benchmark_data() and restored before EVERY evaluate_model() call: the ACS shuffled negatives (np.random.permutation) are therefore identical across states and identical checkpoints yield identical metrics.",
+        "scored_at": "2026-09-02T02:31:09.250736+00:00"
+      },
       "RetFail_R@1": 0.09708546671918078,
       "RetFail_MRR": 0.19665548274380712,
       "AssocStr": 0.2493525802173592,
-      "ACS": 0.9176513062885651,
+      "ACS": 0.9206052251542602,
       "IdZSC": 0.4164385347412332,
       "CoreAssoc": 0.25267109539747645,
       "GenKnow": null,
       "InterIdSim": 0.197133491931921,
       "IntraIdSim": 0.24367988983135916,
       "VisIdInt": 0.23303353038426236,
-      "FragSim": 0.2273260211096331
+      "FragSim": 0.2273260211096331,
+      "target_only": {
+        "AssocStr_target": {
+          "mean": 0.2805,
+          "ci": [
+            0.2763,
+            0.2841
+          ],
+          "num_units": 46,
+          "num_rows": 323
+        },
+        "CoreAssoc_target": {
+          "mean": 0.2816,
+          "ci": [
+            0.277,
+            0.286
+          ],
+          "num_units": 46,
+          "num_rows": 323
+        },
+        "RetFail_target": {
+          "MRR": 0.5095,
+          "R@1": 0.3127,
+          "num_rows": 323
+        }
+      }
     },
     "B3_lr2e-06_lam1_c": {
       "results_file": "evaluation_scratch_wutiantong_GMUL_granularity-unlearning_data_salmu_hierarchical_official_eval_models_r5_B3_lr2e-06_lam1_c_r5.json",
+      "results_file_sha256": "0b4d4235461a3eb11f032550fe3ec546bd7e68b7fe394a2f9b2d95e8c885f3bf",
+      "checkpoint_sha256": "56356d613368657efef278db8d13c2248ad37d43d74ee1fdeb8428f0e9edf1c3",
+      "result_provenance": {
+        "official_repo_commit": "8b7f439746862f09b7f0f44ae5004f297cc2dec9",
+        "benchmark_revision": "b76aa3885a696969e51de4786c9f92e8064b4679",
+        "rng_protocol": "numpy global RNG state captured after load_benchmark_data() and restored before EVERY evaluate_model() call: the ACS shuffled negatives (np.random.permutation) are therefore identical across states and identical checkpoints yield identical metrics.",
+        "scored_at": "2026-09-02T02:36:14.561805+00:00"
+      },
       "RetFail_R@1": 0.27868583431797295,
       "RetFail_MRR": 0.44707521078092166,
       "AssocStr": 0.27689504684449745,
-      "ACS": 0.9584482079558881,
+      "ACS": 0.958481029276618,
       "IdZSC": 0.7976795724155912,
       "CoreAssoc": 0.27824371769091144,
       "GenKnow": null,
       "InterIdSim": 0.1718798523521736,
       "IntraIdSim": 0.2680200100551366,
       "VisIdInt": 0.21892552700475634,
-      "FragSim": 0.2069598613579058
+      "FragSim": 0.2069598613579058,
+      "target_only": {
+        "AssocStr_target": {
+          "mean": 0.2768,
+          "ci": [
+            0.2596,
+            0.2879
+          ],
+          "num_units": 46,
+          "num_rows": 323
+        },
+        "CoreAssoc_target": {
+          "mean": 0.2812,
+          "ci": [
+            0.2646,
+            0.2922
+          ],
+          "num_units": 46,
+          "num_rows": 323
+        },
+        "RetFail_target": {
+          "MRR": 0.4949,
+          "R@1": 0.3313,
+          "num_rows": 323
+        }
+      }
+    }
+  },
+  "paired_target_only": {
+    "BASE": {
+      "vs_MF": {
+        "AssocStr_target": {
+          "diff": -0.1409,
+          "ci": [
+            -0.1477,
+            -0.1346
+          ],
+          "num_units": 46
+        },
+        "CoreAssoc_target": {
+          "diff": -0.1256,
+          "ci": [
+            -0.1341,
+            -0.1167
+          ],
+          "num_units": 46
+        }
+      },
+      "vs_MG": {
+        "AssocStr_target": {
+          "diff": -0.1341,
+          "ci": [
+            -0.1418,
+            -0.1269
+          ],
+          "num_units": 46
+        },
+        "CoreAssoc_target": {
+          "diff": -0.1211,
+          "ci": [
+            -0.1309,
+            -0.1108
+          ],
+          "num_units": 46
+        }
+      }
+    },
+    "COMPROMISED": {
+      "vs_MF": {
+        "AssocStr_target": {
+          "diff": 0.0378,
+          "ci": [
+            0.0329,
+            0.0431
+          ],
+          "num_units": 46
+        },
+        "CoreAssoc_target": {
+          "diff": -0.1041,
+          "ci": [
+            -0.1127,
+            -0.0956
+          ],
+          "num_units": 46
+        }
+      },
+      "vs_MG": {
+        "AssocStr_target": {
+          "diff": 0.0447,
+          "ci": [
+            0.0386,
+            0.0511
+          ],
+          "num_units": 46
+        },
+        "CoreAssoc_target": {
+          "diff": -0.0997,
+          "ci": [
+            -0.1088,
+            -0.0911
+          ],
+          "num_units": 46
+        }
+      }
+    },
+    "MF": {
+      "vs_MG": {
+        "AssocStr_target": {
+          "diff": 0.0069,
+          "ci": [
+            0.0045,
+            0.0098
+          ],
+          "num_units": 46
+        },
+        "CoreAssoc_target": {
+          "diff": 0.0045,
+          "ci": [
+            0.0022,
+            0.0077
+          ],
+          "num_units": 46
+        }
+      }
+    },
+    "MG": {
+      "vs_MF": {
+        "AssocStr_target": {
+          "diff": -0.0069,
+          "ci": [
+            -0.0098,
+            -0.0045
+          ],
+          "num_units": 46
+        },
+        "CoreAssoc_target": {
+          "diff": -0.0045,
+          "ci": [
+            -0.0077,
+            -0.0022
+          ],
+          "num_units": 46
+        }
+      }
+    },
+    "MN": {
+      "vs_MF": {
+        "AssocStr_target": {
+          "diff": -0.0197,
+          "ci": [
+            -0.025,
+            -0.0149
+          ],
+          "num_units": 46
+        },
+        "CoreAssoc_target": {
+          "diff": -0.0174,
+          "ci": [
+            -0.0228,
+            -0.013
+          ],
+          "num_units": 46
+        }
+      },
+      "vs_MG": {
+        "AssocStr_target": {
+          "diff": -0.0129,
+          "ci": [
+            -0.0178,
+            -0.0084
+          ],
+          "num_units": 46
+        },
+        "CoreAssoc_target": {
+          "diff": -0.013,
+          "ci": [
+            -0.0177,
+            -0.0088
+          ],
+          "num_units": 46
+        }
+      }
+    },
+    "B0": {
+      "vs_MF": {
+        "AssocStr_target": {
+          "diff": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ],
+          "num_units": 46
+        },
+        "CoreAssoc_target": {
+          "diff": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ],
+          "num_units": 46
+        }
+      },
+      "vs_MG": {
+        "AssocStr_target": {
+          "diff": 0.0069,
+          "ci": [
+            0.0045,
+            0.0098
+          ],
+          "num_units": 46
+        },
+        "CoreAssoc_target": {
+          "diff": 0.0045,
+          "ci": [
+            0.0022,
+            0.0077
+          ],
+          "num_units": 46
+        }
+      }
+    },
+    "B1_lr2e-06_c": {
+      "vs_MF": {
+        "AssocStr_target": {
+          "diff": -0.0116,
+          "ci": [
+            -0.0155,
+            -0.0081
+          ],
+          "num_units": 46
+        },
+        "CoreAssoc_target": {
+          "diff": -0.0101,
+          "ci": [
+            -0.0133,
+            -0.0067
+          ],
+          "num_units": 46
+        }
+      },
+      "vs_MG": {
+        "AssocStr_target": {
+          "diff": -0.0048,
+          "ci": [
+            -0.0082,
+            -0.0014
+          ],
+          "num_units": 46
+        },
+        "CoreAssoc_target": {
+          "diff": -0.0056,
+          "ci": [
+            -0.0089,
+            -0.0024
+          ],
+          "num_units": 46
+        }
+      }
+    },
+    "B2_lr2e-05": {
+      "vs_MF": {
+        "AssocStr_target": {
+          "diff": -0.0018,
+          "ci": [
+            -0.0076,
+            0.004
+          ],
+          "num_units": 46
+        },
+        "CoreAssoc_target": {
+          "diff": 0.0008,
+          "ci": [
+            -0.0054,
+            0.0071
+          ],
+          "num_units": 46
+        }
+      },
+      "vs_MG": {
+        "AssocStr_target": {
+          "diff": 0.005,
+          "ci": [
+            -0.0009,
+            0.0109
+          ],
+          "num_units": 46
+        },
+        "CoreAssoc_target": {
+          "diff": 0.0053,
+          "ci": [
+            -0.0016,
+            0.0122
+          ],
+          "num_units": 46
+        }
+      }
+    },
+    "B3_lr2e-06_lam1_c": {
+      "vs_MF": {
+        "AssocStr_target": {
+          "diff": -0.0055,
+          "ci": [
+            -0.0211,
+            0.0036
+          ],
+          "num_units": 46
+        },
+        "CoreAssoc_target": {
+          "diff": 0.0004,
+          "ci": [
+            -0.012,
+            0.0073
+          ],
+          "num_units": 46
+        }
+      },
+      "vs_MG": {
+        "AssocStr_target": {
+          "diff": 0.0014,
+          "ci": [
+            -0.0113,
+            0.0094
+          ],
+          "num_units": 46
+        },
+        "CoreAssoc_target": {
+          "diff": 0.0049,
+          "ci": [
+            -0.0051,
+            0.0106
+          ],
+          "num_units": 46
+        }
+      }
     }
   },
   "crosscheck_vs_our_evaluator": {

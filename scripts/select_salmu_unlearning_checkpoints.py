@@ -366,12 +366,17 @@ def main() -> None:
         test_protocol = (
             f"held-out internal test identities ({split_desc}). Test "
             "metrics are computed for the SELECTED checkpoints only. "
-            "This iteration's checkpoints and personas were never "
-            "scored on the test split before selection, so these "
-            "internal test numbers are a genuine held-out verdict "
-            "for the 10R5 chain. The untouched EXTERNAL evaluation "
-            "is the validated holdout-clean official-split report "
-            "(salmu_official_splits_r5.json).")
+            "EXPLORATORY, NOT genuinely untouched (10R5b correction): "
+            "these test personas are a SUBSET of the 10R2/10R3 "
+            "10-persona test split, which was inspected "
+            "candidate-wide with the earlier checkpoints, so the "
+            "internal test numbers remain exploratory even though "
+            "the r5 checkpoints themselves were never scored on "
+            "them. The PRIMARY external evaluation is the validated "
+            "holdout-clean official-split report "
+            "(salmu_official_splits_r5.json) plus the official "
+            "SALMUBench-evaluator report "
+            "(salmubench_official_eval_r5.json).")
     else:
         test_protocol = (
             f"held-out internal test identities ({split_desc}). "
@@ -433,11 +438,13 @@ def main() -> None:
             "salmu_official_splits_r5.json:holdout_clean_validation; "
             "released-split evaluation on this chain is therefore an "
             "untouched external evaluation.",
-            "10R5a test-protocol honesty: this iteration's "
-            f"personas/split ({split_desc}) were built fresh from "
-            "the holdout-clean pair set and never scored before "
-            "selection, so the internal test verdict is genuine for "
-            "these checkpoints.",
+            "10R5b test-protocol honesty: this iteration's persona "
+            f"split ({split_desc}) was rebuilt from the holdout-clean "
+            "pair set, but its test identities are a subset of the "
+            "10R2/10R3 candidate-wide-inspected test split — the "
+            "internal test verdict stays EXPLORATORY. The clean "
+            "official holdouts (official-split + official SALMUBench "
+            "evaluator reports) are the primary external evaluation.",
         ] if args.suffix == "r5" else []) + [
             "10R4 corrected selection: association-weighted — "
             f"{tv_target_assoc} train+val target associations "

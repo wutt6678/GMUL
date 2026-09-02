@@ -2,6 +2,8 @@
 
     python scripts/run_official_salmubench_eval.py --suffix r5 \
         --device cuda:1
+    python scripts/run_official_salmubench_eval.py --suffix r5 \
+        --aggregate-only          # re-aggregate existing raw results
 
 Uses the official evaluation code from github.com/cvc-mmu/salmubench
 (``evaluation/evaluation.py``, pinned at commit
@@ -9,6 +11,28 @@ Uses the official evaluation code from github.com/cvc-mmu/salmubench
 DATA SOURCE is redirected from the Hub repo id to our pinned local
 snapshot (same content, same benchmark revision), so the run is
 offline-reproducible against the committed provenance.
+
+10R5b evaluation-integrity protections
+--------------------------------------
+* OFFICIAL REPO VERIFICATION: the supplied repository's actual git
+  HEAD must equal the pinned commit and the worktree must be clean;
+  execution aborts otherwise.
+* PER-STATE RNG RESET: NumPy's global random state is captured after
+  benchmark-data loading and RESTORED before every model evaluation,
+  so the ACS shuffled negatives (and every other draw) are identical
+  across states — identical checkpoints produce identical metrics
+  (MF == B0 invariant, checked in the aggregate report).
+* CHECKPOINT-SAFE REUSE: every raw result carries a sidecar
+  provenance record (checkpoint SHA-256, result-file SHA-256,
+  official repo commit, benchmark revision).  A result is reused ONLY
+  if its sidecar matches the CURRENT checkpoint hash and evaluator
+  commit; stale results are quarantined under ``stale/`` and the
+  state is rescored.
+* TARGET-ONLY + PAIRED CIs: the aggregate report adds the official
+  metrics restricted to the GMUL target associations (identity-
+  clustered CIs) and paired identity-clustered difference CIs vs the
+  MF and MG reference states (see
+  ``granunlearn.salmu.official_eval_analysis``).
 
 Official metrics produced per state:
 * RetFail   (1.1) — R@1 / MRR over a 2,000-distractor caption gallery
@@ -23,12 +47,10 @@ Official metrics produced per state:
   retain_joint / fragile_set (retain utility)
 
 Outputs:
-* raw per-state JSONs (official format) under
+* raw per-state JSONs (official format) + sidecars under
   ``data/salmu_hierarchical/official_salmubench_results[_suffix]/``
-* aggregated report ``data/reports/salmubench_official_eval[_suffix].json``
-  with provenance (official repo commit, benchmark revision,
-  checkpoint SHA-256s) and a cross-check against our own
-  released-split evaluator.
+* aggregated report
+  ``data/reports/salmubench_official_eval[_suffix].json``
 """
 
 from __future__ import annotations
@@ -36,7 +58,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 from granunlearn.config import _find_repo_root
@@ -66,6 +90,13 @@ METRIC_MAP = [
     ("FragSim", "utility", "2.5_FragSim", "mean"),
 ]
 
+RNG_PROTOCOL = (
+    "numpy global RNG state captured after load_benchmark_data() and "
+    "restored before EVERY evaluate_model() call: the ACS shuffled "
+    "negatives (np.random.permutation) are therefore identical "
+    "across states and identical checkpoints yield identical "
+    "metrics.")
+
 
 def sha256_file(path: Path) -> str | None:
     if not path.exists():
@@ -84,6 +115,90 @@ def _snapshot_revision(path: Path) -> str | None:
         if idx + 1 < len(parts):
             return parts[idx + 1]
     return None
+
+
+def verify_official_repo(repo_dir: Path,
+                         expected_commit: str) -> dict:
+    """Verify the supplied official repository's ACTUAL git HEAD and
+    worktree cleanliness before execution (10R5b)."""
+    repo_dir = Path(repo_dir)
+    if not (repo_dir / "evaluation" / "evaluation.py").exists():
+        raise SystemExit(
+            f"Not an official SALMUBench checkout: {repo_dir}")
+
+    def git(*args):
+        return subprocess.run(
+            ["git", "-C", str(repo_dir), *args],
+            capture_output=True, text=True, check=True
+        ).stdout.strip()
+
+    head = git("rev-parse", "HEAD")
+    if head != expected_commit:
+        raise SystemExit(
+            f"Official repo HEAD {head} != pinned commit "
+            f"{expected_commit}. Update OFFICIAL_REPO_COMMIT "
+            "deliberately (and re-validate) to proceed.")
+    # Tracked modifications always mean the evaluation code may
+    # differ from the pinned commit -> fatal.  Untracked files are
+    # fatal too, EXCEPT Python bytecode caches (__pycache__), which
+    # importing the official module inevitably creates and which
+    # cannot alter its source.
+    dirty_tracked = git("status", "--porcelain",
+                        "--untracked-files=no")
+    untracked = [ln for ln in
+                 git("status", "--porcelain").splitlines()
+                 if ln.startswith("??")
+                 and "__pycache__" not in ln]
+    if dirty_tracked or untracked:
+        raise SystemExit(
+            "Official repo worktree is DIRTY — evaluation code may "
+            "differ from the pinned commit:\n"
+            f"{dirty_tracked}\n{chr(10).join(untracked)}")
+    return {"repo": str(repo_dir), "commit": head, "clean": True,
+            "verified_at": datetime.now(timezone.utc).isoformat()}
+
+
+def official_output_path(results_dir: Path, pth: Path) -> Path:
+    """Replicates the official evaluate_model output naming exactly:
+    slug = Path(identifier with '/' and ':' -> '_').stem, then
+    "evaluation_<slug>.json".replace("__", "_").replace("_._", "_")."""
+    slug = Path(str(pth).replace("/", "_").replace(":", "_")).stem
+    name = (f"evaluation_{slug}.json"
+            .replace("__", "_").replace("_._", "_"))
+    return Path(results_dir) / name
+
+
+def sidecar_path(result_path: Path) -> Path:
+    return result_path.parent / (result_path.name + ".provenance.json")
+
+
+def reuse_is_valid(result_path: Path, expected_sha: str,
+                   expected_commit: str) -> bool:
+    """A raw result is reused ONLY if its sidecar binds the CURRENT
+    checkpoint SHA-256 AND the pinned evaluator commit (10R5b)."""
+    side = sidecar_path(result_path)
+    if not result_path.exists() or not side.exists():
+        return False
+    try:
+        prov = json.loads(side.read_text())
+    except (json.JSONDecodeError, OSError):
+        return False
+    return (prov.get("checkpoint_sha256") == expected_sha
+            and prov.get("official_repo_commit") == expected_commit
+            and prov.get("result_sha256") == sha256_file(result_path))
+
+
+def quarantine_stale(result_path: Path) -> None:
+    """Move a stale result (+ sidecar) aside instead of deleting, so
+    the evidence trail survives."""
+    stale = result_path.parent / "stale"
+    stale.mkdir(exist_ok=True)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    for p in (result_path, sidecar_path(result_path)):
+        if p.exists():
+            p.rename(stale / f"{p.name}.{stamp}")
+    log.warning("[%s] quarantined stale result (checkpoint/evaluator "
+                "mismatch)", result_path.name)
 
 
 def stage_checkpoints(paths: SalmuPaths, staging: Path,
@@ -217,34 +332,104 @@ def make_local_evaluator_class(salmubench_repo: Path,
     return LocalSALMUBenchEvaluation
 
 
+def _invariant_groups(staged: dict[str, Path]) -> dict[str, list[str]]:
+    """States sharing an identical checkpoint SHA-256 must produce
+    identical metrics (MF == B0)."""
+    by_sha: dict[str, list[str]] = {}
+    for state, pth in staged.items():
+        sha = sha256_file(pth.resolve())
+        if sha:
+            by_sha.setdefault(sha, []).append(state)
+    return {sha: sorted(v) for sha, v in by_sha.items()
+            if len(v) > 1}
+
+
 def aggregate(results_dir: Path, staged: dict[str, Path],
-              paths: SalmuPaths, bench_revision: str | None,
-              ours_report: Path) -> dict:
-    """Compact per-state metric table + provenance + cross-check
-    against our own released-split evaluator."""
+              paths: SalmuPaths, bench: Path,
+              bench_revision: str | None, ours_report: Path,
+              repo_info: dict | None) -> dict:
+    """Compact per-state metric table + target-only metrics + paired
+    CIs + checkpoint-bound provenance."""
+    from granunlearn.salmu import official_eval_analysis as analysis
+
+    manifest = json.loads(paths.manifest_path.read_text())
+    target_ids = set(manifest["partition"]["target_identity_ids"])
+    target_attr_map = manifest.get("target_attr_map") or {}
+    cap_meta = json.loads(
+        (bench / "sensitive_set_captions_metadata.json").read_text())
+    attr_of = {f: m.get("data_field") for f, m in cap_meta.items()}
+    forget_ids, forget_files = analysis.split_row_order(bench,
+                                                        "forget")
+    tmask = analysis.target_attr_mask(
+        forget_ids, forget_files, target_ids, target_attr_map,
+        attr_of)
+    log.info("Target-only mask: %d of %d forget rows",
+             sum(tmask), len(tmask))
+
     by_state: dict[str, dict] = {}
+    raw_by_state: dict[str, dict] = {}
     hashes = {state: sha256_file(p.resolve())
               for state, p in staged.items()}
     for state, pth in staged.items():
-        # Official output naming (evaluation.py evaluate_model):
-        # slug = Path(identifier with '/' and ':' -> '_').stem, then
-        # "evaluation_<slug>.json".replace("__","_").replace("_._","_")
-        slug = Path(str(pth).replace("/", "_").replace(":", "_")).stem
-        name = (f"evaluation_{slug}.json"
-                .replace("__", "_").replace("_._", "_"))
-        out = results_dir / name
+        out = official_output_path(results_dir, pth)
+        side = sidecar_path(out)
         if not out.exists():
             log.warning("[%s] official results missing (%s)", state,
-                        name)
+                        out.name)
             continue
         raw = json.loads(out.read_text())
-        entry: dict = {"results_file": out.name}
+        raw_by_state[state] = raw
+        entry: dict = {
+            "results_file": out.name,
+            "results_file_sha256": sha256_file(out),
+            "checkpoint_sha256": hashes.get(state),
+        }
+        if side.exists():
+            prov = json.loads(side.read_text())
+            entry["result_provenance"] = {
+                k: prov.get(k) for k in
+                ("official_repo_commit", "benchmark_revision",
+                 "rng_protocol", "scored_at")}
         for name, section, key, stat in METRIC_MAP:
             val = raw.get(section, {}).get(key, {}).get(stat)
             if name == "GenKnow" and val is not None and val < 0:
                 val = None  # -1.0 = skipped by the official code
             entry[name] = val
+        entry["target_only"] = analysis.target_only_from_raw(
+            raw, forget_ids, forget_files, tmask)
         by_state[state] = entry
+
+    # Paired identity-clustered difference CIs vs MF and MG on the
+    # target associations.
+    paired: dict[str, dict] = {}
+    for state, raw in raw_by_state.items():
+        for ref in ("MF", "MG"):
+            if ref not in raw_by_state or state == ref:
+                continue
+            d = analysis.paired_target_only(
+                raw, raw_by_state[ref], forget_ids, tmask)
+            if d:
+                paired.setdefault(state, {})[f"vs_{ref}"] = d
+
+    # Identical-checkpoint invariant (MF == B0): every metric must be
+    # bit-identical across states sharing a checkpoint SHA-256.
+    invariants: dict[str, Any] = {}
+    for sha, group in _invariant_groups(staged).items():
+        present = [s for s in group if s in by_state]
+        if len(present) < 2:
+            continue
+        base = {k: v for k, v in by_state[present[0]].items()
+                if k in {m[0] for m in METRIC_MAP}}
+        ok = all(
+            {k: v for k, v in by_state[s].items()
+             if k in {m[0] for m in METRIC_MAP}} == base
+            for s in present[1:])
+        invariants[" == ".join(present)] = {
+            "identical_checkpoint_sha256": sha[:16] + "...",
+            "all_metrics_identical": ok}
+        if not ok:
+            log.error("INVARIANT VIOLATED: %s share a checkpoint but "
+                      "differ in metrics", present)
 
     crosscheck: dict = {}
     if ours_report.exists():
@@ -279,13 +464,17 @@ def aggregate(results_dir: Path, staged: dict[str, Path],
             "_official_salmubench_evaluator"),
         "official_evaluator": {
             "repo": OFFICIAL_REPO_URL,
-            "commit": OFFICIAL_REPO_COMMIT,
+            "pinned_commit": OFFICIAL_REPO_COMMIT,
+            "verified_head": (repo_info or {}).get("commit"),
+            "worktree_clean": (repo_info or {}).get("clean"),
+            "verified_at": (repo_info or {}).get("verified_at"),
             "entry_point": "evaluation/evaluation.py",
             "invocation": "SALMUBenchEvaluation verbatim; ONLY the "
                           "data source is redirected to the pinned "
                           "local snapshot (same benchmark revision); "
                           "derived splits replicated verbatim.",
             "seed": 42,
+            "rng_protocol": RNG_PROTOCOL,
         },
         "benchmark": REPOS["benchmark_dataset"]["repo_id"],
         "benchmark_revision": bench_revision,
@@ -296,12 +485,14 @@ def aggregate(results_dir: Path, staged: dict[str, Path],
                        "(official code returns -1 -> null).",
         },
         "checkpoint_sha256": hashes,
+        "identical_checkpoint_invariants": invariants,
         "metric_definitions": {
             "RetFail_R@1/RetFail_MRR": "rank of the true association "
                 "caption in a 2,001-caption gallery over forget",
             "AssocStr": "mean cos-sim on forget",
             "ACS": "logistic-probe accuracy separating member vs "
-                   "shuffled non-member captions",
+                   "shuffled non-member captions (RNG-restored: "
+                   "identical shuffle across states)",
             "IdZSC": "zero-shot identity-name classification on "
                      "forget_identity",
             "CoreAssoc": "mean max-sim of '{name} {value}' / "
@@ -310,8 +501,17 @@ def aggregate(results_dir: Path, staged: dict[str, Path],
                         "utility, identities also in forget)",
             "FragSim": "mean cos-sim on the fragile subset of "
                        "retain_disjoint (retain utility)",
+            "target_only": "official metrics restricted to the GMUL "
+                           "target associations (designated target "
+                           "attribute rows of the forget split); "
+                           "identity-clustered bootstrap CIs",
+            "paired_target_only": "paired identity-clustered "
+                                  "bootstrap CIs of the target-only "
+                                  "difference (state - reference) "
+                                  "over the SAME identities",
         },
         "states": by_state,
+        "paired_target_only": paired,
         "crosscheck_vs_our_evaluator": crosscheck,
         "crosscheck_note": "official pipeline uses torch.amp "
                            "autocast + DataLoader batching; ours uses "
@@ -355,6 +555,11 @@ def main() -> None:
         staged = {k: v for k, v in staged.items() if k in wanted}
     log.info("Staged %d states: %s", len(staged), sorted(staged))
 
+    repo_info = verify_official_repo(Path(args.salmubench_repo),
+                                     OFFICIAL_REPO_COMMIT)
+    log.info("Official repo verified at %s (clean)",
+             repo_info["commit"][:12])
+
     if not args.aggregate_only:
         cls = make_local_evaluator_class(
             Path(args.salmubench_repo), bench)
@@ -362,12 +567,45 @@ def main() -> None:
                  batch_size=args.batch_size,
                  num_workers=args.num_workers, imagenet_path=None)
         ev.load_benchmark_data()
-        for state, pth in staged.items():
-            log.info("=== evaluating %s (%s) ===", state, pth.name)
-            ev.evaluate_model(pth)
 
-    report = aggregate(results_dir, staged, paths, bench_revision,
-                       paths.report("salmu_official_splits"))
+        # 10R5b: capture the RNG state AFTER data loading and restore
+        # it before EVERY model so each state sees identical random
+        # draws (ACS shuffled negatives).
+        import numpy as np
+        rng_state = np.random.get_state()
+
+        for state, pth in staged.items():
+            result_path = official_output_path(results_dir, pth)
+            sha = sha256_file(pth.resolve())
+            if result_path.exists():
+                if reuse_is_valid(result_path, sha,
+                                  OFFICIAL_REPO_COMMIT):
+                    log.info("[%s] reusing official result (sidecar "
+                             "matches checkpoint %s and evaluator "
+                             "commit)", state, sha[:12])
+                    continue
+                quarantine_stale(result_path)
+            log.info("=== evaluating %s (%s) ===", state, pth.name)
+            np.random.set_state(rng_state)
+            ev.evaluate_model(pth)
+            # Bind the raw result to its checkpoint + evaluator.
+            side = sidecar_path(result_path)
+            side.write_text(json.dumps({
+                "state": state,
+                "model_identifier": str(pth),
+                "checkpoint_sha256": sha,
+                "result_sha256": sha256_file(result_path),
+                "official_repo_commit": repo_info["commit"],
+                "benchmark_revision": bench_revision,
+                "rng_protocol": RNG_PROTOCOL,
+                "scored_at": datetime.now(timezone.utc).isoformat(),
+            }, indent=2))
+            log.info("[%s] sidecar written -> %s", state, side.name)
+
+    report = aggregate(results_dir, staged, paths, bench,
+                       bench_revision,
+                       paths.report("salmu_official_splits"),
+                       repo_info)
     out = paths.report("salmubench_official_eval")
     with open(out, "w") as f:
         json.dump(report, f, indent=2, ensure_ascii=False)

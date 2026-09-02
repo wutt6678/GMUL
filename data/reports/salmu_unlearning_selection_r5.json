@@ -56,9 +56,9 @@
     ]
   },
   "multi_image": true,
-  "multi_image_note": "Probe variants are CAPPED per (persona, attribute) by max_images/max_captions; association-weighted aggregation makes the cap a variance control, not a weighting change.",
-  "max_images": 3,
-  "max_captions": 2,
+  "multi_image_note": "ALL released image/caption variants per association are used (no cap); max_images/max_captions null = uncapped.",
+  "max_images": null,
+  "max_captions": null,
   "weighting": "association_macro_average",
   "trainval_target_associations": 39,
   "trainval_target_probe_combinations": 234,
@@ -74,7 +74,7 @@
   ],
   "target_only_selection": true,
   "b2_retain_excluded": true,
-  "test_protocol": "held-out internal test identities (train/val/test = 32/7/7 of 46 target personas). Test metrics are computed for the SELECTED checkpoints only. This iteration's checkpoints and personas were never scored on the test split before selection, so these internal test numbers are a genuine held-out verdict for the 10R5 chain. The untouched EXTERNAL evaluation is the validated holdout-clean official-split report (salmu_official_splits_r5.json).",
+  "test_protocol": "held-out internal test identities (train/val/test = 32/7/7 of 46 target personas). Test metrics are computed for the SELECTED checkpoints only. EXPLORATORY, NOT genuinely untouched (10R5b correction): these test personas are a SUBSET of the 10R2/10R3 10-persona test split, which was inspected candidate-wide with the earlier checkpoints, so the internal test numbers remain exploratory even though the r5 checkpoints themselves were never scored on them. The PRIMARY external evaluation is the validated holdout-clean official-split report (salmu_official_splits_r5.json) plus the official SALMUBench-evaluator report (salmubench_official_eval_r5.json).",
   "mg_trainval_vector": {
     "prefers_fine_rate": 0.3077,
     "prefers_target_not_fine_rate": 0.4103,
@@ -2419,7 +2419,7 @@
   "selection_rule": "min distance_to_MG over TARGET-ONLY TRAIN+VAL probes (is_target_attr=True), association-weighted (each (identity, attribute) counted once); same_entity_retain_sim and other_entity_retain_sim are separate components; B2_retain_* excluded from B2 family; test personas frozen.",
   "notes": [
     "10R5 holdout-clean protocol: the pair universe is the official forget split ONLY; no released holdout_association/holdout_identity pair enters ANY training group; target associations are selected exclusively from forget. Holdout cleanliness is VALIDATED (manifest allowed_split == forget and zero exact holdout overlap) in salmu_official_splits_r5.json:holdout_clean_validation; released-split evaluation on this chain is therefore an untouched external evaluation.",
-    "10R5a test-protocol honesty: this iteration's personas/split (train/val/test = 32/7/7 of 46 target personas) were built fresh from the holdout-clean pair set and never scored before selection, so the internal test verdict is genuine for these checkpoints.",
+    "10R5b test-protocol honesty: this iteration's persona split (train/val/test = 32/7/7 of 46 target personas) was rebuilt from the holdout-clean pair set, but its test identities are a subset of the 10R2/10R3 candidate-wide-inspected test split — the internal test verdict stays EXPLORATORY. The clean official holdouts (official-split + official SALMUBench evaluator reports) are the primary external evaluation.",
     "10R4 corrected selection: association-weighted — 39 train+val target associations (234 image-caption combinations macro-averaged); retain similarities are separate summary components; association-bootstrap 95% CIs on every aggregate.",
     "same_entity_retain_sim uses the same identities as the target component it accompanies (train+val for selection, test for the final verdict).",
     "10R4 B3 train+val ranking (target-only, association-weighted): B3_lr2e-06_lam1_c dist=0.036271; B3_lr5e-06_lam1_c dist=0.038114; B3_lr2e-06_lam0.5_c dist=0.048386; B3_lr5e-06_lam0.5_c dist=0.059457; B3_lr1e-05_lam1 dist=0.664171; B3_lr1e-05_lam0.5 dist=0.669271"
