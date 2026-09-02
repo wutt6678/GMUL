@@ -27,6 +27,7 @@ from granunlearn.evaluation.hierarchy_metrics import (
     compute_hierarchy_metrics,
     export_failure_cases,
 )
+from granunlearn.imaging import image_size_kwargs
 from granunlearn.logging_utils import setup_logger
 from granunlearn.schema import AssociationRecord, PredictionRecord, QueryRecord
 
@@ -125,7 +126,7 @@ class ReferenceStateGenerator:
         }
         if images_per_sample is not None:
             kwargs["images"] = images_per_sample
-            kwargs["max_pixels"] = self.max_image_pixels
+            kwargs.update(image_size_kwargs(self.max_image_pixels))
         inputs = self.processor(**kwargs).to(self.device)
         with torch.no_grad():
             gen = self.model.generate(
@@ -143,24 +144,57 @@ class ReferenceStateGenerator:
         repo_root: str | Path,
         batch_size: int = 8,
         max_new_tokens: int = 96,
+        image_batch_size: int = 1,
     ) -> list[str]:
         """Greedy completions; multimodal queries include their image.
 
-        Text-only queries are batched; multimodal queries run one at a
-        time (the processor rejects None entries in ``images`` for mixed
-        batches).  Formatting is identical across checkpoints.
+        Text-only queries are batched.  Image queries run in groups of
+        ``image_batch_size`` (default 1 = the Iteration 7/9 one-at-a-time
+        path): the processor rejects ``None`` entries in ``images``, so a
+        batch may never MIX image and text samples — but an all-image
+        batch is legal, and the pilot-100 set has 2,241 image probes
+        where one-at-a-time generation dominates the wall clock.  A
+        query whose image file is missing degrades to a single-sample
+        text-only call.  Formatting is identical across checkpoints, and
+        every checkpoint is generated with the SAME batch sizes, so
+        cross-state comparability is preserved.
         """
         outputs: list[str] = []
         i = 0
         while i < len(queries):
             if queries[i].image_ids:
-                q = queries[i]
-                text, image = self._render_prompt(
-                    q, associations[q.association_id], repo_root)
-                outputs.extend(self._generate_batch(
-                    [text], [[image]] if image is not None else None,
-                    max_new_tokens))
-                i += 1
+                # maximal image run, capped at image_batch_size
+                j = i
+                while (j < len(queries) and queries[j].image_ids
+                       and j - i < max(1, image_batch_size)):
+                    j += 1
+                texts, images_per_sample, has_image = [], [], False
+                for k in range(i, j):
+                    q = queries[k]
+                    text, image = self._render_prompt(
+                        q, associations[q.association_id], repo_root)
+                    texts.append(text)
+                    images_per_sample.append(
+                        [image] if image is not None else None)
+                    has_image = has_image or image is not None
+                if has_image and any(im is None
+                                      for im in images_per_sample):
+                    # a missing image file would poison the whole batch:
+                    # fall back to per-sample calls for this run
+                    for k in range(i, j):
+                        q = queries[k]
+                        text, image = self._render_prompt(
+                            q, associations[q.association_id], repo_root)
+                        outputs.extend(self._generate_batch(
+                            [text],
+                            [[image]] if image is not None else None,
+                            max_new_tokens))
+                else:
+                    outputs.extend(self._generate_batch(
+                        texts,
+                        images_per_sample if has_image else None,
+                        max_new_tokens))
+                i = j
                 continue
             # maximal text-only run, capped at batch_size
             j = i
@@ -192,6 +226,7 @@ def evaluate_state(
     adapter_dir: str | Path | None,
     experiment_id: str = "mllmu_smoke_iter7",
     batch_size: int = 2,
+    image_batch_size: int = 1,
 ) -> tuple[list[PredictionRecord], dict[str, Any]]:
     """Generate + score one checkpoint over the full query set."""
     by_assoc = {a.association_id: a for a in associations}
@@ -199,7 +234,8 @@ def evaluate_state(
         model_id, device, adapter_dir=adapter_dir)
     t0 = time.time()
     raw_outputs = generator.generate_for_queries(
-        queries, by_assoc, repo_root, batch_size=batch_size)
+        queries, by_assoc, repo_root, batch_size=batch_size,
+        image_batch_size=image_batch_size)
     generator.unload()
 
     predictions = [
@@ -235,6 +271,8 @@ def run_reference_evaluation(
     rescore: bool = False,
     failure_export_dir: str | Path | None = None,
     skip_existing: bool = False,
+    experiment_id: str = "mllmu_smoke_iter7",
+    image_batch_size: int = 1,
 ) -> dict[str, Any]:
     """Evaluate BASE + MF/MG/MN and apply the separation gate.
 
@@ -246,6 +284,9 @@ def run_reference_evaluation(
     Hierarchy metrics (FILR/TGA/failure taxonomy/strata) are reported
     per split with TEST as the primary basis; ``failure_export_dir``
     receives per-example failure exports for inspection.
+    ``experiment_id`` is stamped into every PredictionRecord and the
+    report (Iteration 11: the pilot-100 run uses its own id so its
+    artifacts can never be confused with the Iteration 7 smoke run).
     """
     smoke_dir = Path(smoke_dir)
     checkpoints_dir = Path(checkpoints_dir)
@@ -298,7 +339,8 @@ def run_reference_evaluation(
             log.info("Evaluating state %s...", state)
             preds, gen_info = evaluate_state(
                 state, queries, associations, repo_root, model_id, device,
-                adapter_dir, batch_size=batch_size)
+                adapter_dir, experiment_id=experiment_id,
+                batch_size=batch_size, image_batch_size=image_batch_size)
 
         pooled, per_split = metrics_for_predictions(preds, queries)
         pooled.update(gen_info)
@@ -344,10 +386,17 @@ def run_reference_evaluation(
     test_passed, test_reasons = separation_gate(test_gate_states)
 
     report = {
-        "experiment_id": "mllmu_smoke_iter7",
+        "experiment_id": experiment_id,
         "model_id": model_id,
         "states": states,
         "num_queries": len(queries),
+        "generation_config": {
+            "batch_size": batch_size,
+            "image_batch_size": image_batch_size,
+            "max_new_tokens": 96,
+            "do_sample": False,
+            "note": "identical for every state in this report",
+        },
         "metrics_split_semantics": (
             "metrics_by_state pools train/val/test; metrics_by_split "
             "reports each paraphrase split separately — the TEST numbers "

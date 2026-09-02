@@ -57,9 +57,15 @@ data/raw/inaturalist/pilot_v1/*
 !data/reports/mllmu_pilot100_reference_eval.json
 !data/reports/mllmu_pilot100_unlearning_selection.json
 !data/reports/mllmu_pilot100_reference_provenance.json
+!data/reports/mllmu_pilot100_final_evaluation.json
 # pilot runtime artifacts (large, regenerable): predictions + exports
 data/mllmu_hier_pilot100/predictions*/
 data/mllmu_hier_pilot100/failure_exports/
+# rebuild-verification scratch (used to prove an image re-fetch leaves the
+# frozen parquets byte-identical); never part of the experiment
+data/_rebuild_check/
+# GPU lane locks (outputs/*/ is already ignored; kept explicit)
+outputs/gpu_locks/
 !data/reports/mllmu_smoke_reference_eval.json
 !data/reports/mllmu_smoke_scorer_audit.json
 !data/reports/mllmu_smoke_unlearning_selection.json

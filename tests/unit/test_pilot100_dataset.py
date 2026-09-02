@@ -548,3 +548,33 @@ class TestCommittedPilotArtifacts:
         assert prov["num_photos"] == 432
         assert all(p.get("sha256") and p.get("license_code")
                    for p in prov["photos"])
+
+    def test_inat_photos_pass_the_resolution_gate(self):
+        """Regression guard for the Phase A thumbnail defect.
+
+        The first fetch rewrote ``square.jpg`` -> ``medium.jpg``
+        case-SENSITIVELY, so 198/432 photos (``square.JPG`` /
+        ``.jpeg`` / ``.png``) were stored as 75x75 thumbnails: those
+        objects have no medium rendition at all.  PROVENANCE.json is
+        committed, so the gate is checkable in CI without the
+        (gitignored) photo bytes.
+        """
+        prov_path = (REPO_ROOT / "data" / "raw" / "inaturalist"
+                     / "pilot_v1" / "PROVENANCE.json")
+        prov = json.loads(prov_path.read_text())
+        gate = prov["resolution_gate"]
+        assert gate["min_image_edge_px"] >= 200
+        assert gate["replacement_policy"]
+        assert "case-sensitively" in gate["defect_repaired"]
+        for p in prov["photos"]:
+            assert p["source_url"].endswith("/medium.jpg"), p["file_name"]
+            assert "square." not in p["source_url"].lower()
+            assert p["square_url"].endswith("/square.jpg"), p["file_name"]
+            assert max(p["width"], p["height"]) >= \
+                gate["min_image_edge_px"], p["file_name"]
+            assert p["sha256"] and len(p["sha256"]) == 64
+        # the gate is recorded per species, including empty reject lists
+        rejects = {r["species"]: r["rejected"]
+                   for r in prov["rejected_candidates"]}
+        assert len(rejects) == len(prov["species_list"])
+        assert len(prov["species_list"]) == 36

@@ -19,6 +19,18 @@ Determinism: fixed committed species list; per-species photo pool
 sorted by (observation_id, photo_id); seeded sample (default 42);
 downloads pinned by the recorded source URLs + SHA-256 hashes.
 
+Resolution gate (Iteration 11 repair): the open-data bucket only
+carries the FULL size ladder (small/medium/large/original) for photos
+registered under the modern ``square.jpg`` convention.  Older photos
+expose ``square.JPG`` / ``square.jpeg`` / ``square.png`` and have NO
+medium object at all — the first fetch downloaded 198 such 75x75
+thumbnails because the size rewrite was case-sensitive.  The pool is
+now filtered to photos whose API URL ends in ``square.jpg``, every
+download is validated with PIL (longest edge >= MIN_IMAGE_EDGE), and a
+rejected candidate is replaced by the NEXT photo in the seeded order
+(never by a fabricated or upscaled image).  Rejected candidates are
+recorded in PROVENANCE.json so the gate is auditable.
+
 Output layout (adapter-compatible COCO-style):
     data/raw/inaturalist/pilot_v1/
         annotations.json          # images / annotations / categories
@@ -32,6 +44,7 @@ import argparse
 import hashlib
 import json
 import random
+import shutil
 import sys
 import time
 from datetime import datetime, timezone
@@ -43,6 +56,13 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 API = "https://api.inaturalist.org/v1"
 LICENSES = "cc0,cc-by,cc-by-sa,cc-by-nc,cc-by-nc-sa"
+
+#: Longest-edge floor for an accepted photo.  The bucket's ``medium``
+#: rendition is 500px on its long edge; anything at or below 100px is a
+#: ``square`` thumbnail masquerading as the requested size.
+MIN_IMAGE_EDGE = 200
+#: Only this exact suffix implies the full size ladder exists.
+MODERN_SQUARE_SUFFIX = "square.jpg"
 
 # Committed pilot-100 taxonomic stratum: 36 species, 24 genera,
 # 14 families, 4 orders.  Multi-species genera give sibling/wrong-
@@ -132,12 +152,36 @@ def fetch_taxon(session: requests.Session,
     return {"taxon_id": tid, "ranks": chain}
 
 
+def medium_url(square_url: str) -> str:
+    """``.../photos/<id>/square.jpg`` -> ``.../photos/<id>/medium.jpg``.
+
+    Raises for any URL that is not the modern ``square.jpg`` convention:
+    those objects have no medium rendition in the open-data bucket, so
+    "fixing" the extension case-insensitively would download a 75x75
+    thumbnail (the Iteration 11 Phase A defect).
+    """
+    if not square_url.endswith("/" + MODERN_SQUARE_SUFFIX):
+        raise ValueError(f"no size ladder for {square_url!r}")
+    return square_url[: -len(MODERN_SQUARE_SUFFIX)] + "medium.jpg"
+
+
+class RejectedPhoto(RuntimeError):
+    """A candidate photo failed the resolution gate."""
+
+
 def fetch_photo_pool(session: requests.Session, taxon_id: int,
-                     max_pages: int = 3) -> list[dict]:
+                     max_pages: int = 3) -> tuple[list[dict], int]:
     """Research-grade, CC-licensed observation photos, deterministically
-    ordered by (observation_id, photo_id)."""
+    ordered by (observation_id, photo_id).
+
+    Returns ``(pool, num_thumbnail_only)`` — photos whose API URL is not
+    the modern ``square.jpg`` convention are EXCLUDED (they have no
+    medium rendition) and counted, so the gate is visible rather than
+    silently shrinking the pool.
+    """
     pool: list[dict] = []
     seen: set[int] = set()
+    thumbnail_only = 0
     for page in range(1, max_pages + 1):
         r = _get(session, f"{API}/observations", {
             "taxon_id": taxon_id, "photos": "true",
@@ -156,26 +200,52 @@ def fetch_photo_pool(session: requests.Session, taxon_id: int,
                 lic = (p.get("license_code") or "").lower()
                 if lic and lic not in LICENSES.split(","):
                     continue
+                url = p.get("url") or ""
+                if not url.endswith("/" + MODERN_SQUARE_SUFFIX):
+                    seen.add(p["id"])
+                    thumbnail_only += 1
+                    continue
                 seen.add(p["id"])
                 pool.append({
                     "observation_id": o["id"],
                     "photo_id": p["id"],
                     "license_code": lic or "unknown",
                     "attribution": p.get("attribution"),
-                    "source_url": (p.get("url") or "").replace(
-                        "square.jpg", "medium.jpg") or None,
+                    "square_url": url,
+                    "source_url": medium_url(url),
                 })
     pool.sort(key=lambda p: (p["observation_id"], p["photo_id"]))
-    return pool
+    return pool, thumbnail_only
 
 
 def download_photo(session: requests.Session, url: str,
-                   dest: Path) -> str:
-    """Download one photo; returns its SHA-256."""
+                   dest: Path) -> dict:
+    """Download + resolution-validate one photo.
+
+    Returns ``{"sha256", "width", "height", "format", "bytes"}``.
+    Raises :class:`RejectedPhoto` when the served bytes are a thumbnail
+    (the bucket can serve a small rendition under a medium URL) so the
+    caller can deterministically move to the next candidate.
+    """
+    import io
+
+    from PIL import Image
+
     r = _get(session, url, None, timeout=120)
+    try:
+        with Image.open(io.BytesIO(r.content)) as im:
+            width, height = im.size
+            fmt = im.format
+    except Exception as exc:  # not a decodable image
+        raise RejectedPhoto(f"{url}: undecodable ({exc})") from exc
+    if max(width, height) < MIN_IMAGE_EDGE:
+        raise RejectedPhoto(
+            f"{url}: {width}x{height} below the {MIN_IMAGE_EDGE}px floor")
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_bytes(r.content)
-    return hashlib.sha256(r.content).hexdigest()
+    return {"sha256": hashlib.sha256(r.content).hexdigest(),
+            "width": width, "height": height, "format": fmt,
+            "bytes": dest.stat().st_size}
 
 
 def main() -> None:
@@ -201,6 +271,7 @@ def main() -> None:
     images: list[dict] = []
     annotations: list[dict] = []
     provenance: list[dict] = []
+    species_rejects: list[dict] = []
     img_id = 0
     for cat_id, name in enumerate(species, start=1):
         print(f"[{cat_id}/{len(species)}] {name} ...", flush=True)
@@ -212,32 +283,68 @@ def main() -> None:
             cat["common_name"] = ranks["common_name"]
         categories.append(cat)
 
-        pool = fetch_photo_pool(session, tax["taxon_id"])
+        pool, thumb_only = fetch_photo_pool(session, tax["taxon_id"])
         if len(pool) < args.images_per_species:
             raise SystemExit(
-                f"{name}: only {len(pool)} licensed research-grade "
-                f"photos (< {args.images_per_species})")
-        # Deterministic seeded sample from the sorted pool.
-        chosen = sorted(rng.sample(pool, args.images_per_species),
-                        key=lambda p: (p["observation_id"],
-                                       p["photo_id"]))
+                f"{name}: only {len(pool)} licensed research-grade photos "
+                f"with a full size ladder (< {args.images_per_species}); "
+                f"{thumb_only} more were thumbnail-only and excluded")
+        # Deterministic seeded order over the whole pool, then accept the
+        # first `k` that pass the resolution gate (a rejected candidate is
+        # replaced by the NEXT one in the same seeded order).
+        order = pool[:]
+        rng.shuffle(order)
+        chosen: list[dict] = []
+        rejected: list[dict] = []
+        for cand in order:
+            if len(chosen) >= args.images_per_species:
+                break
+            if args.skip_download:
+                chosen.append(dict(cand))
+                continue
+            try:
+                staged = out / "_staging" / f"{cand['photo_id']}.jpg"
+                info = download_photo(
+                    session, cand["source_url"], staged)
+            except RejectedPhoto as exc:
+                rejected.append({"photo_id": cand["photo_id"],
+                                 "observation_id": cand["observation_id"],
+                                 "source_url": cand["source_url"],
+                                 "reason": str(exc)})
+                time.sleep(0.05)
+                continue
+            rec = dict(cand)
+            rec.update(info)
+            rec["_staged"] = str(staged)
+            chosen.append(rec)
+            time.sleep(0.05)  # gentle on the S3 bucket
+        if len(chosen) < args.images_per_species:
+            raise SystemExit(
+                f"{name}: resolution gate accepted only {len(chosen)} of "
+                f"{args.images_per_species} photos ({len(rejected)} "
+                f"rejected, pool {len(pool)})")
+        chosen.sort(key=lambda p: (p["observation_id"], p["photo_id"]))
         sp_dir = name.replace(" ", "_")
+        print(f"    pool={len(pool)} thumbnail_only={thumb_only} "
+              f"rejected={len(rejected)}", flush=True)
         for n, ph in enumerate(chosen):
             rel = f"images/{sp_dir}/{n:03d}.jpg"
             images.append({"id": img_id, "file_name": rel})
             annotations.append({"id": img_id, "image_id": img_id,
                                 "category_id": cat_id})
+            staged = ph.pop("_staged", None)
             rec = {"species": name, "file_name": rel, **ph}
-            if not args.skip_download:
-                rec["sha256"] = download_photo(
-                    session, ph["source_url"], out / rel)
-                rec["bytes"] = (out / rel).stat().st_size
+            if staged is not None:
+                # validated bytes -> canonical adapter-visible name
+                (out / rel).parent.mkdir(parents=True, exist_ok=True)
+                Path(staged).replace(out / rel)
             provenance.append(rec)
             img_id += 1
-            time.sleep(0.05)  # gentle on the S3 bucket
+        species_rejects.append({"species": name, "rejected": rejected})
         time.sleep(0.5)  # gentle on the API
 
     out.mkdir(parents=True, exist_ok=True)
+    shutil.rmtree(out / "_staging", ignore_errors=True)
     (out / "annotations.json").write_text(json.dumps(
         {"images": images, "annotations": annotations,
          "categories": categories}, indent=1))
@@ -250,9 +357,26 @@ def main() -> None:
         "photo_licenses_allowed": LICENSES,
         "quality_grade": "research",
         "observation_order": "id asc (deterministic pool)",
+        "selection": (
+            "seeded shuffle of the resolution-qualified pool; the first "
+            "k candidates whose downloaded bytes pass the resolution gate "
+            "are accepted, canonicalized by (observation_id, photo_id)"),
+        "resolution_gate": {
+            "min_image_edge_px": MIN_IMAGE_EDGE,
+            "pool_filter": f"API photo URL must end with "
+                           f"/{MODERN_SQUARE_SUFFIX} (only that convention "
+                           f"has a medium rendition in the bucket)",
+            "download_check": "PIL decode + longest-edge floor",
+            "replacement_policy": "next candidate in the same seeded order",
+            "defect_repaired": (
+                "the first Phase A fetch rewrote square.jpg -> medium.jpg "
+                "case-sensitively, so 198/432 photos were stored as 75x75 "
+                "thumbnails (square.JPG/.jpeg/.png have no medium object)"),
+        },
         "retrieved_at": datetime.now(timezone.utc).isoformat(),
         "num_photos": len(provenance),
         "photos": provenance,
+        "rejected_candidates": species_rejects,
     }, indent=1))
     print(f"Wrote {len(categories)} categories, {len(images)} "
           f"images -> {out}")

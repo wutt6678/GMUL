@@ -29,6 +29,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
+from granunlearn.imaging import image_size_kwargs
 from granunlearn.logging_utils import setup_logger
 from granunlearn.training.state_datasets import TrainingExample, load_state_examples
 
@@ -57,9 +58,14 @@ class ReferenceRecipe:
     per_device_batch_size: int = 1
     gradient_accumulation_steps: int = 8
     max_length: int = 1536
-    # 384x384 -> ~729 vision tokens (27x27 patches); must fit inside
-    # max_length together with the chat-template text, otherwise the
-    # processor's image-token alignment check fails under truncation.
+    # 384x384 pixel AREA budget -> a 24x24 patch grid (patch 16, merge 2)
+    # = 144 vision tokens, which must fit inside max_length together with
+    # the chat-template text or the processor's image-token alignment
+    # check fails under truncation.  Enforced through
+    # granunlearn.imaging.image_size_kwargs: Qwen3VLProcessor ignores a
+    # bare ``max_pixels`` kwarg (Iteration 11 finding — it silently left
+    # every image at native resolution, 1024 vision tokens for the
+    # 1024x1024 MLLMU portraits).
     max_image_pixels: int = 384 * 384
     seed: int = 42
     bf16: bool = True
@@ -118,7 +124,7 @@ def _encode_example(example: TrainingExample, processor, max_length: int,
 
     common = {}
     if image is not None:
-        common = {"images": [[image]], "max_pixels": max_pixels}
+        common = {"images": [[image]], **image_size_kwargs(max_pixels)}
     full = processor(text=[full_text], return_tensors="pt",
                      truncation=True, max_length=max_length, **common)
     prompt_only = processor(text=[prompt_text], return_tensors="pt",

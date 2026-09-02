@@ -26,11 +26,17 @@ log = setup_logger("build_state_datasets")
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Build D_F / D_G / D_N for the reference states")
-    parser.add_argument("--smoke-dir", default="data/mllmu_hier_smoke")
+    parser.add_argument("--tag", default="smoke",
+                        help="Dataset tag: smoke -> data/mllmu_hier_"
+                             "smoke + mllmu_smoke_* reports; pilot100 "
+                             "-> the Iteration-11 mixed dataset")
+    parser.add_argument("--smoke-dir", default=None,
+                        help="Override the dataset directory "
+                             "(default: data/mllmu_hier_<tag>)")
     args = parser.parse_args()
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
-    smoke_dir = Path(args.smoke_dir)
+    smoke_dir = Path(args.smoke_dir or f"data/mllmu_hier_{args.tag}")
     if not smoke_dir.is_absolute():
         smoke_dir = repo_root / smoke_dir
 
@@ -38,7 +44,7 @@ def main() -> None:
         smoke_dir / "associations.parquet")
     partition = json.loads(
         (repo_root / "data" / "reports" /
-         "mllmu_smoke_target_retain.json").read_text())
+         f"mllmu_{args.tag}_target_retain.json").read_text())
 
     manifest = write_state_datasets(
         associations, partition, smoke_dir / "training",

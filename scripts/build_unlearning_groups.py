@@ -25,17 +25,20 @@ log = setup_logger("build_unlearning_groups")
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Build unlearning knowledge groups")
-    parser.add_argument("--smoke-dir", default="data/mllmu_hier_smoke")
+    parser.add_argument("--tag", default="smoke")
+    parser.add_argument("--smoke-dir", default=None,
+                        help="Override the dataset directory "
+                             "(default: data/mllmu_hier_<tag>)")
     args = parser.parse_args()
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
-    smoke = Path(args.smoke_dir)
+    smoke = Path(args.smoke_dir or f"data/mllmu_hier_{args.tag}")
     smoke = smoke if smoke.is_absolute() else repo_root / smoke
 
     associations = load_associations_parquet(smoke / "associations.parquet")
     partition = json.loads(
         (repo_root / "data" / "reports" /
-         "mllmu_smoke_target_retain.json").read_text())
+         f"mllmu_{args.tag}_target_retain.json").read_text())
 
     manifest = write_unlearning_groups(
         associations, partition, smoke / "unlearning")

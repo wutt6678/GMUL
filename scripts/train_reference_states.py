@@ -23,16 +23,22 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Train reference states (identical recipe)")
     parser.add_argument("--states", default="MF,MG,MN")
-    parser.add_argument("--smoke-dir", default="data/mllmu_hier_smoke")
-    parser.add_argument("--checkpoints-dir",
-                        default="data/checkpoints/mllmu_smoke")
+    parser.add_argument("--tag", default="smoke",
+                        choices=("smoke", "pilot100"))
+    parser.add_argument("--smoke-dir", default=None,
+                        help="Override the dataset directory "
+                             "(default: data/mllmu_hier_<tag>)")
+    parser.add_argument("--checkpoints-dir", default=None,
+                        help="Override the checkpoint directory "
+                             "(default: data/checkpoints/mllmu_<tag>)")
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--epochs", type=int, default=None)
     args = parser.parse_args()
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
-    smoke_dir = Path(args.smoke_dir)
-    ckpt_dir = Path(args.checkpoints_dir)
+    smoke_dir = Path(args.smoke_dir or f"data/mllmu_hier_{args.tag}")
+    ckpt_dir = Path(args.checkpoints_dir or
+                    f"data/checkpoints/mllmu_{args.tag}")
     smoke_dir = smoke_dir if smoke_dir.is_absolute() else repo_root / smoke_dir
     ckpt_dir = ckpt_dir if ckpt_dir.is_absolute() else repo_root / ckpt_dir
 
