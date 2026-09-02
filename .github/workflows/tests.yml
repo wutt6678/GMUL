@@ -1,0 +1,60 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    # CPU-only: tests/unit is pure (no torch/transformers/GPU).
+    # Heavy GPU integration tests (tests/integration) are deliberately
+    # NOT run here — they need multi-GB model checkpoints and CUDA.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: requirements/ci-unit.txt
+
+      - name: Install minimal unit-test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements/ci-unit.txt
+          pip install -e . --no-deps
+
+      - name: Run unit tests
+        run: pytest tests/unit -q --maxfail=5
+
+      - name: Verify committed report evidence loads
+        # The report-integrity tests read committed JSON evidence
+        # (data/reports/*.json); fail loudly if any is missing.
+        run: |
+          python - <<'EOF'
+          import json
+          from pathlib import Path
+          required = [
+              "data/reports/salmu_official_splits.json",
+              "data/reports/salmu_official_splits_r5.json",
+              "data/reports/salmu_unlearning_selection.json",
+              "data/reports/salmu_unlearning_selection_r5.json",
+              "data/reports/salmu_reference_eval.json",
+              "data/reports/salmu_reference_eval_r5.json",
+              "data/reports/salmubench_official_eval_r5.json",
+              "data/reports/salmu_reference_provenance_r5.json",
+          ]
+          missing = [p for p in required if not Path(p).exists()]
+          if missing:
+              raise SystemExit(f"Missing committed reports: {missing}")
+          for p in required:
+              json.loads(Path(p).read_text())
+          print(f"All {len(required)} committed reports present and valid JSON.")
+          EOF

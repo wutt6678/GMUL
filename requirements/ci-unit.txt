@@ -1,0 +1,13 @@
+# Minimal CPU-only dependency set for running tests/unit in CI.
+#
+# Verified by import analysis: no unit test (and no module it imports at
+# collection time) requires torch/transformers/datasets/open_clip —
+# those are lazily imported only on GPU/integration paths.  The suite
+# runs in ~3 s with just these packages (pip install -e . --no-deps).
+pytest>=8.0
+numpy
+pandas
+pyarrow
+pydantic>=2.0
+pyyaml
+pillow
