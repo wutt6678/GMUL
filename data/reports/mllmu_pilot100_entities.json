@@ -1,0 +1,885 @@
+{
+  "seed": 42,
+  "requested_entities": 64,
+  "ranking": "sha256(seed:smoke:entity_id), ascending",
+  "eligibility": {
+    "min_attribute_types": 6,
+    "require_semantic_hierarchy": true,
+    "require_materialized_image": true
+  },
+  "num_eligible_entities": 496,
+  "selected_entities": [
+    "mllmu_094",
+    "mllmu_308",
+    "mllmu_224",
+    "mllmu_057",
+    "mllmu_060",
+    "mllmu_424",
+    "mllmu_356",
+    "mllmu_442",
+    "mllmu_252",
+    "mllmu_066",
+    "mllmu_462",
+    "mllmu_481",
+    "mllmu_405",
+    "mllmu_078",
+    "mllmu_244",
+    "mllmu_047",
+    "mllmu_432",
+    "mllmu_482",
+    "mllmu_007",
+    "mllmu_272",
+    "mllmu_369",
+    "mllmu_360",
+    "mllmu_182",
+    "mllmu_291",
+    "mllmu_327",
+    "mllmu_239",
+    "mllmu_142",
+    "mllmu_307",
+    "mllmu_096",
+    "mllmu_141",
+    "mllmu_103",
+    "mllmu_131",
+    "mllmu_104",
+    "mllmu_282",
+    "mllmu_117",
+    "mllmu_006",
+    "mllmu_259",
+    "mllmu_090",
+    "mllmu_151",
+    "mllmu_222",
+    "mllmu_318",
+    "mllmu_250",
+    "mllmu_133",
+    "mllmu_443",
+    "mllmu_422",
+    "mllmu_453",
+    "mllmu_341",
+    "mllmu_438",
+    "mllmu_191",
+    "mllmu_159",
+    "mllmu_289",
+    "mllmu_435",
+    "mllmu_258",
+    "mllmu_354",
+    "mllmu_054",
+    "mllmu_108",
+    "mllmu_437",
+    "mllmu_187",
+    "mllmu_361",
+    "mllmu_332",
+    "mllmu_005",
+    "mllmu_465",
+    "mllmu_072",
+    "mllmu_089"
+  ],
+  "selected_per_entity": {
+    "mllmu_094": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_308": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_224": {
+      "num_associations": 6,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence"
+      ]
+    },
+    "mllmu_057": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_060": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_424": {
+      "num_associations": 6,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_356": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_442": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_252": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_066": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_462": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_481": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_405": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_078": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_244": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_047": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_432": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_482": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_007": {
+      "num_associations": 6,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence"
+      ]
+    },
+    "mllmu_272": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_369": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_360": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_182": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_291": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_327": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_239": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_142": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_307": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_096": {
+      "num_associations": 6,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_141": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_103": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_131": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_104": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_282": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_117": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_006": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_259": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_090": {
+      "num_associations": 6,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence"
+      ]
+    },
+    "mllmu_151": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_222": {
+      "num_associations": 6,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence"
+      ]
+    },
+    "mllmu_318": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_250": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_133": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_443": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_422": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_453": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_341": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_438": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_191": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_159": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_289": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_435": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_258": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_354": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_054": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_108": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_437": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_187": {
+      "num_associations": 6,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence"
+      ]
+    },
+    "mllmu_361": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_332": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_005": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_465": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_072": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    },
+    "mllmu_089": {
+      "num_associations": 7,
+      "attributes": [
+        "birthplace",
+        "date_of_birth",
+        "education",
+        "height",
+        "occupation",
+        "residence",
+        "salary"
+      ]
+    }
+  },
+  "salt": "pilot100",
+  "inaturalist_stratum": {
+    "num_species": 36,
+    "num_genera": 24,
+    "num_families": 14,
+    "species": [
+      "Anas crecca",
+      "Anas platyrhynchos",
+      "Anthocharis cardamines",
+      "Branta canadensis",
+      "Branta leucopsis",
+      "Canis lupus",
+      "Carduelis carduelis",
+      "Chloris chloris",
+      "Coloeus monedula",
+      "Corvus corax",
+      "Corvus corone",
+      "Cyanistes caeruleus",
+      "Erithacus rubecula",
+      "Felis catus",
+      "Gonepteryx rhamni",
+      "Mareca strepera",
+      "Mustela erminea",
+      "Mustela nivalis",
+      "Papilio machaon",
+      "Parus major",
+      "Passer domesticus",
+      "Passer hispaniolensis",
+      "Passer montanus",
+      "Periparus ater",
+      "Pieris brassicae",
+      "Pieris napi",
+      "Pieris rapae",
+      "Poecile montanus",
+      "Poecile palustris",
+      "Sturnus vulgaris",
+      "Turdus merula",
+      "Turdus philomelos",
+      "Turdus pilaris",
+      "Vanessa atalanta",
+      "Vanessa cardui",
+      "Vulpes vulpes"
+    ],
+    "photo_provenance": "data/raw/inaturalist/pilot_v1/PROVENANCE.json"
+  }
+}

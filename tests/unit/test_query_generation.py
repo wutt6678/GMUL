@@ -16,6 +16,7 @@ from granunlearn.evaluation.query_generation import (
     BANNED_PROMPT_PHRASES,
     FAMILIES,
     FAMILY_QUERY_TYPE,
+    IMAGE_ONLY_FAMILIES,
     SPLITS,
     UNLEARNING_FAMILIES,
     answer_level_for_family,
@@ -214,12 +215,22 @@ class TestCanonicalContract:
 
     def test_query_type_route_mapping(self):
         assocs, partition = two_entity_pool()
+        by_id = {a.association_id: a for a in assocs}
         queries = generate_queries(assocs, partition, seed=42)
         for q in queries:
             assert q.query_type == FAMILY_QUERY_TYPE[q.family]
             if q.family == "multimodal_image_text":
                 assert q.route == "image_text_to_text"
                 assert len(q.image_ids) == 1
+            elif q.family in IMAGE_ONLY_FAMILIES:
+                # Iteration 11: image_to_text route carries the image
+                # and NEVER names the entity (asked association's
+                # entity — the donor for retain_other_entity_image).
+                assert q.route == "image_to_text"
+                assert len(q.image_ids) == 1
+                ent = by_id[q.association_id]
+                for nm in (ent.entity_name, ent.entity_id):
+                    assert nm.lower() not in q.prompt.lower()
             else:
                 assert q.route == "text_to_text"
                 assert q.image_ids == []
@@ -302,9 +313,11 @@ class TestPartitionAwareGeneration:
         unlearning = sum(1 for q in queries
                          if q.family in UNLEARNING_FAMILIES)
         assert unlearning == expected_unlearning
-        # two_entity_pool: occupation targets are 3-level (13 families),
-        # salary targets are 2-level (12 families, no intermediate)
-        assert unlearning < len(targets) * 13 * 3
+        # two_entity_pool: occupation targets are 3-level (every
+        # unlearning family applies), salary targets are 2-level (no
+        # granular_intermediate) — so the total is strictly below the
+        # full-family upper bound.
+        assert unlearning < len(targets) * len(UNLEARNING_FAMILIES) * 3
         n_retain = len(partition["retain_association_ids"])
         n_targets = len(targets)
         assert sum(1 for q in queries

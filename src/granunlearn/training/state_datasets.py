@@ -46,6 +46,7 @@ ATTRIBUTE_DISPLAY = {
     "birthplace": "place of birth",
     "occupation": "occupation",
     "education": "educational background",
+    "taxonomic_classification": "taxonomic classification",
 }
 
 

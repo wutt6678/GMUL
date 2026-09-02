@@ -1,0 +1,1648 @@
+{
+  "seed": 42,
+  "ranking": "sha256(seed:baltarget:attribute:entity:association)",
+  "balance_quotas": {
+    "semantic": {
+      "residence": 8,
+      "birthplace": 8,
+      "occupation": 7,
+      "education": 7
+    },
+    "numeric": {
+      "date_of_birth": 10,
+      "salary": 10,
+      "height": 10
+    },
+    "taxonomic": {
+      "taxonomic_classification": 30
+    }
+  },
+  "target_association_ids": [
+    "inat_Anas_platyrhynchos",
+    "inat_Branta_canadensis",
+    "inat_Canis_lupus",
+    "inat_Chloris_chloris",
+    "inat_Coloeus_monedula",
+    "inat_Corvus_corax",
+    "inat_Corvus_corone",
+    "inat_Cyanistes_caeruleus",
+    "inat_Felis_catus",
+    "inat_Gonepteryx_rhamni",
+    "inat_Mareca_strepera",
+    "inat_Mustela_erminea",
+    "inat_Mustela_nivalis",
+    "inat_Papilio_machaon",
+    "inat_Parus_major",
+    "inat_Passer_domesticus",
+    "inat_Passer_hispaniolensis",
+    "inat_Periparus_ater",
+    "inat_Pieris_brassicae",
+    "inat_Pieris_napi",
+    "inat_Pieris_rapae",
+    "inat_Poecile_montanus",
+    "inat_Poecile_palustris",
+    "inat_Sturnus_vulgaris",
+    "inat_Turdus_merula",
+    "inat_Turdus_philomelos",
+    "inat_Turdus_pilaris",
+    "inat_Vanessa_atalanta",
+    "inat_Vanessa_cardui",
+    "inat_Vulpes_vulpes",
+    "mllmu_005__date_of_birth",
+    "mllmu_005__salary",
+    "mllmu_054__salary",
+    "mllmu_057__residence",
+    "mllmu_060__height",
+    "mllmu_066__birthplace",
+    "mllmu_066__date_of_birth",
+    "mllmu_078__height",
+    "mllmu_089__residence",
+    "mllmu_090__occupation",
+    "mllmu_094__residence",
+    "mllmu_103__date_of_birth",
+    "mllmu_117__birthplace",
+    "mllmu_131__height",
+    "mllmu_159__birthplace",
+    "mllmu_159__education",
+    "mllmu_159__salary",
+    "mllmu_182__birthplace",
+    "mllmu_182__occupation",
+    "mllmu_187__residence",
+    "mllmu_191__date_of_birth",
+    "mllmu_191__salary",
+    "mllmu_222__height",
+    "mllmu_239__education",
+    "mllmu_244__salary",
+    "mllmu_252__birthplace",
+    "mllmu_252__salary",
+    "mllmu_258__height",
+    "mllmu_259__education",
+    "mllmu_272__date_of_birth",
+    "mllmu_272__education",
+    "mllmu_289__height",
+    "mllmu_291__birthplace",
+    "mllmu_291__education",
+    "mllmu_308__height",
+    "mllmu_318__birthplace",
+    "mllmu_318__occupation",
+    "mllmu_318__salary",
+    "mllmu_327__height",
+    "mllmu_327__salary",
+    "mllmu_332__education",
+    "mllmu_332__occupation",
+    "mllmu_354__birthplace",
+    "mllmu_354__height",
+    "mllmu_354__occupation",
+    "mllmu_356__education",
+    "mllmu_360__date_of_birth",
+    "mllmu_405__date_of_birth",
+    "mllmu_424__date_of_birth",
+    "mllmu_432__occupation",
+    "mllmu_435__occupation",
+    "mllmu_437__date_of_birth",
+    "mllmu_437__height",
+    "mllmu_438__residence",
+    "mllmu_442__residence",
+    "mllmu_462__residence",
+    "mllmu_462__salary",
+    "mllmu_465__residence",
+    "mllmu_465__salary",
+    "mllmu_481__date_of_birth"
+  ],
+  "retain_association_ids": [
+    "inat_Anas_crecca",
+    "inat_Anthocharis_cardamines",
+    "inat_Branta_leucopsis",
+    "inat_Carduelis_carduelis",
+    "inat_Erithacus_rubecula",
+    "inat_Passer_montanus",
+    "mllmu_005__birthplace",
+    "mllmu_005__education",
+    "mllmu_005__height",
+    "mllmu_005__occupation",
+    "mllmu_005__residence",
+    "mllmu_006__birthplace",
+    "mllmu_006__date_of_birth",
+    "mllmu_006__education",
+    "mllmu_006__height",
+    "mllmu_006__occupation",
+    "mllmu_006__residence",
+    "mllmu_006__salary",
+    "mllmu_007__birthplace",
+    "mllmu_007__date_of_birth",
+    "mllmu_007__education",
+    "mllmu_007__height",
+    "mllmu_007__occupation",
+    "mllmu_007__residence",
+    "mllmu_047__birthplace",
+    "mllmu_047__date_of_birth",
+    "mllmu_047__education",
+    "mllmu_047__height",
+    "mllmu_047__occupation",
+    "mllmu_047__residence",
+    "mllmu_047__salary",
+    "mllmu_054__birthplace",
+    "mllmu_054__date_of_birth",
+    "mllmu_054__education",
+    "mllmu_054__height",
+    "mllmu_054__occupation",
+    "mllmu_054__residence",
+    "mllmu_057__birthplace",
+    "mllmu_057__date_of_birth",
+    "mllmu_057__education",
+    "mllmu_057__height",
+    "mllmu_057__occupation",
+    "mllmu_057__salary",
+    "mllmu_060__birthplace",
+    "mllmu_060__date_of_birth",
+    "mllmu_060__education",
+    "mllmu_060__occupation",
+    "mllmu_060__residence",
+    "mllmu_060__salary",
+    "mllmu_066__education",
+    "mllmu_066__height",
+    "mllmu_066__occupation",
+    "mllmu_066__residence",
+    "mllmu_066__salary",
+    "mllmu_072__birthplace",
+    "mllmu_072__date_of_birth",
+    "mllmu_072__education",
+    "mllmu_072__height",
+    "mllmu_072__occupation",
+    "mllmu_072__residence",
+    "mllmu_072__salary",
+    "mllmu_078__birthplace",
+    "mllmu_078__date_of_birth",
+    "mllmu_078__education",
+    "mllmu_078__occupation",
+    "mllmu_078__residence",
+    "mllmu_078__salary",
+    "mllmu_089__birthplace",
+    "mllmu_089__date_of_birth",
+    "mllmu_089__education",
+    "mllmu_089__height",
+    "mllmu_089__occupation",
+    "mllmu_089__salary",
+    "mllmu_090__birthplace",
+    "mllmu_090__date_of_birth",
+    "mllmu_090__education",
+    "mllmu_090__height",
+    "mllmu_090__residence",
+    "mllmu_094__birthplace",
+    "mllmu_094__date_of_birth",
+    "mllmu_094__education",
+    "mllmu_094__height",
+    "mllmu_094__occupation",
+    "mllmu_094__salary",
+    "mllmu_096__birthplace",
+    "mllmu_096__date_of_birth",
+    "mllmu_096__education",
+    "mllmu_096__height",
+    "mllmu_096__residence",
+    "mllmu_096__salary",
+    "mllmu_103__birthplace",
+    "mllmu_103__education",
+    "mllmu_103__height",
+    "mllmu_103__occupation",
+    "mllmu_103__residence",
+    "mllmu_103__salary",
+    "mllmu_104__birthplace",
+    "mllmu_104__date_of_birth",
+    "mllmu_104__education",
+    "mllmu_104__height",
+    "mllmu_104__occupation",
+    "mllmu_104__residence",
+    "mllmu_104__salary",
+    "mllmu_108__birthplace",
+    "mllmu_108__date_of_birth",
+    "mllmu_108__education",
+    "mllmu_108__height",
+    "mllmu_108__occupation",
+    "mllmu_108__residence",
+    "mllmu_108__salary",
+    "mllmu_117__date_of_birth",
+    "mllmu_117__education",
+    "mllmu_117__height",
+    "mllmu_117__occupation",
+    "mllmu_117__residence",
+    "mllmu_117__salary",
+    "mllmu_131__birthplace",
+    "mllmu_131__date_of_birth",
+    "mllmu_131__education",
+    "mllmu_131__occupation",
+    "mllmu_131__residence",
+    "mllmu_131__salary",
+    "mllmu_133__birthplace",
+    "mllmu_133__date_of_birth",
+    "mllmu_133__education",
+    "mllmu_133__height",
+    "mllmu_133__occupation",
+    "mllmu_133__residence",
+    "mllmu_133__salary",
+    "mllmu_141__birthplace",
+    "mllmu_141__date_of_birth",
+    "mllmu_141__education",
+    "mllmu_141__height",
+    "mllmu_141__occupation",
+    "mllmu_141__residence",
+    "mllmu_141__salary",
+    "mllmu_142__birthplace",
+    "mllmu_142__date_of_birth",
+    "mllmu_142__education",
+    "mllmu_142__height",
+    "mllmu_142__occupation",
+    "mllmu_142__residence",
+    "mllmu_142__salary",
+    "mllmu_151__birthplace",
+    "mllmu_151__date_of_birth",
+    "mllmu_151__education",
+    "mllmu_151__height",
+    "mllmu_151__occupation",
+    "mllmu_151__residence",
+    "mllmu_151__salary",
+    "mllmu_159__date_of_birth",
+    "mllmu_159__height",
+    "mllmu_159__occupation",
+    "mllmu_159__residence",
+    "mllmu_182__date_of_birth",
+    "mllmu_182__education",
+    "mllmu_182__height",
+    "mllmu_182__residence",
+    "mllmu_182__salary",
+    "mllmu_187__birthplace",
+    "mllmu_187__date_of_birth",
+    "mllmu_187__education",
+    "mllmu_187__height",
+    "mllmu_187__occupation",
+    "mllmu_191__birthplace",
+    "mllmu_191__education",
+    "mllmu_191__height",
+    "mllmu_191__occupation",
+    "mllmu_191__residence",
+    "mllmu_222__birthplace",
+    "mllmu_222__date_of_birth",
+    "mllmu_222__education",
+    "mllmu_222__occupation",
+    "mllmu_222__residence",
+    "mllmu_224__birthplace",
+    "mllmu_224__date_of_birth",
+    "mllmu_224__education",
+    "mllmu_224__height",
+    "mllmu_224__occupation",
+    "mllmu_224__residence",
+    "mllmu_239__birthplace",
+    "mllmu_239__date_of_birth",
+    "mllmu_239__height",
+    "mllmu_239__occupation",
+    "mllmu_239__residence",
+    "mllmu_239__salary",
+    "mllmu_244__birthplace",
+    "mllmu_244__date_of_birth",
+    "mllmu_244__education",
+    "mllmu_244__height",
+    "mllmu_244__occupation",
+    "mllmu_244__residence",
+    "mllmu_250__birthplace",
+    "mllmu_250__date_of_birth",
+    "mllmu_250__education",
+    "mllmu_250__height",
+    "mllmu_250__occupation",
+    "mllmu_250__residence",
+    "mllmu_250__salary",
+    "mllmu_252__date_of_birth",
+    "mllmu_252__education",
+    "mllmu_252__height",
+    "mllmu_252__occupation",
+    "mllmu_252__residence",
+    "mllmu_258__birthplace",
+    "mllmu_258__date_of_birth",
+    "mllmu_258__education",
+    "mllmu_258__occupation",
+    "mllmu_258__residence",
+    "mllmu_258__salary",
+    "mllmu_259__birthplace",
+    "mllmu_259__date_of_birth",
+    "mllmu_259__height",
+    "mllmu_259__occupation",
+    "mllmu_259__residence",
+    "mllmu_259__salary",
+    "mllmu_272__birthplace",
+    "mllmu_272__height",
+    "mllmu_272__occupation",
+    "mllmu_272__residence",
+    "mllmu_272__salary",
+    "mllmu_282__birthplace",
+    "mllmu_282__date_of_birth",
+    "mllmu_282__education",
+    "mllmu_282__height",
+    "mllmu_282__occupation",
+    "mllmu_282__residence",
+    "mllmu_282__salary",
+    "mllmu_289__birthplace",
+    "mllmu_289__date_of_birth",
+    "mllmu_289__education",
+    "mllmu_289__occupation",
+    "mllmu_289__residence",
+    "mllmu_289__salary",
+    "mllmu_291__date_of_birth",
+    "mllmu_291__height",
+    "mllmu_291__occupation",
+    "mllmu_291__residence",
+    "mllmu_291__salary",
+    "mllmu_307__birthplace",
+    "mllmu_307__date_of_birth",
+    "mllmu_307__education",
+    "mllmu_307__height",
+    "mllmu_307__occupation",
+    "mllmu_307__residence",
+    "mllmu_307__salary",
+    "mllmu_308__birthplace",
+    "mllmu_308__date_of_birth",
+    "mllmu_308__education",
+    "mllmu_308__occupation",
+    "mllmu_308__residence",
+    "mllmu_308__salary",
+    "mllmu_318__date_of_birth",
+    "mllmu_318__education",
+    "mllmu_318__height",
+    "mllmu_318__residence",
+    "mllmu_327__birthplace",
+    "mllmu_327__date_of_birth",
+    "mllmu_327__education",
+    "mllmu_327__occupation",
+    "mllmu_327__residence",
+    "mllmu_332__birthplace",
+    "mllmu_332__date_of_birth",
+    "mllmu_332__height",
+    "mllmu_332__residence",
+    "mllmu_332__salary",
+    "mllmu_341__birthplace",
+    "mllmu_341__date_of_birth",
+    "mllmu_341__education",
+    "mllmu_341__height",
+    "mllmu_341__occupation",
+    "mllmu_341__residence",
+    "mllmu_341__salary",
+    "mllmu_354__date_of_birth",
+    "mllmu_354__education",
+    "mllmu_354__residence",
+    "mllmu_354__salary",
+    "mllmu_356__birthplace",
+    "mllmu_356__date_of_birth",
+    "mllmu_356__height",
+    "mllmu_356__occupation",
+    "mllmu_356__residence",
+    "mllmu_356__salary",
+    "mllmu_360__birthplace",
+    "mllmu_360__education",
+    "mllmu_360__height",
+    "mllmu_360__occupation",
+    "mllmu_360__residence",
+    "mllmu_360__salary",
+    "mllmu_361__birthplace",
+    "mllmu_361__date_of_birth",
+    "mllmu_361__education",
+    "mllmu_361__height",
+    "mllmu_361__occupation",
+    "mllmu_361__residence",
+    "mllmu_361__salary",
+    "mllmu_369__birthplace",
+    "mllmu_369__date_of_birth",
+    "mllmu_369__education",
+    "mllmu_369__height",
+    "mllmu_369__occupation",
+    "mllmu_369__residence",
+    "mllmu_369__salary",
+    "mllmu_405__birthplace",
+    "mllmu_405__education",
+    "mllmu_405__height",
+    "mllmu_405__occupation",
+    "mllmu_405__residence",
+    "mllmu_405__salary",
+    "mllmu_422__birthplace",
+    "mllmu_422__date_of_birth",
+    "mllmu_422__education",
+    "mllmu_422__height",
+    "mllmu_422__occupation",
+    "mllmu_422__residence",
+    "mllmu_422__salary",
+    "mllmu_424__birthplace",
+    "mllmu_424__height",
+    "mllmu_424__occupation",
+    "mllmu_424__residence",
+    "mllmu_424__salary",
+    "mllmu_432__birthplace",
+    "mllmu_432__date_of_birth",
+    "mllmu_432__education",
+    "mllmu_432__height",
+    "mllmu_432__residence",
+    "mllmu_432__salary",
+    "mllmu_435__birthplace",
+    "mllmu_435__date_of_birth",
+    "mllmu_435__education",
+    "mllmu_435__height",
+    "mllmu_435__residence",
+    "mllmu_435__salary",
+    "mllmu_437__birthplace",
+    "mllmu_437__education",
+    "mllmu_437__occupation",
+    "mllmu_437__residence",
+    "mllmu_437__salary",
+    "mllmu_438__birthplace",
+    "mllmu_438__date_of_birth",
+    "mllmu_438__education",
+    "mllmu_438__height",
+    "mllmu_438__occupation",
+    "mllmu_438__salary",
+    "mllmu_442__birthplace",
+    "mllmu_442__date_of_birth",
+    "mllmu_442__education",
+    "mllmu_442__height",
+    "mllmu_442__occupation",
+    "mllmu_442__salary",
+    "mllmu_443__birthplace",
+    "mllmu_443__date_of_birth",
+    "mllmu_443__education",
+    "mllmu_443__height",
+    "mllmu_443__occupation",
+    "mllmu_443__residence",
+    "mllmu_443__salary",
+    "mllmu_453__birthplace",
+    "mllmu_453__date_of_birth",
+    "mllmu_453__education",
+    "mllmu_453__height",
+    "mllmu_453__occupation",
+    "mllmu_453__residence",
+    "mllmu_453__salary",
+    "mllmu_462__birthplace",
+    "mllmu_462__date_of_birth",
+    "mllmu_462__education",
+    "mllmu_462__height",
+    "mllmu_462__occupation",
+    "mllmu_465__birthplace",
+    "mllmu_465__date_of_birth",
+    "mllmu_465__education",
+    "mllmu_465__height",
+    "mllmu_465__occupation",
+    "mllmu_481__birthplace",
+    "mllmu_481__education",
+    "mllmu_481__height",
+    "mllmu_481__occupation",
+    "mllmu_481__residence",
+    "mllmu_481__salary",
+    "mllmu_482__birthplace",
+    "mllmu_482__date_of_birth",
+    "mllmu_482__education",
+    "mllmu_482__height",
+    "mllmu_482__occupation",
+    "mllmu_482__residence",
+    "mllmu_482__salary"
+  ],
+  "target_counts_by_type": {
+    "semantic": 30,
+    "numeric": 30,
+    "taxonomic": 30
+  },
+  "quota_fill": {
+    "semantic:residence": {
+      "quota": 8,
+      "available": 64,
+      "selected": 8,
+      "shortfall": 0
+    },
+    "semantic:birthplace": {
+      "quota": 8,
+      "available": 64,
+      "selected": 8,
+      "shortfall": 0
+    },
+    "semantic:occupation": {
+      "quota": 7,
+      "available": 63,
+      "selected": 7,
+      "shortfall": 0
+    },
+    "semantic:education": {
+      "quota": 7,
+      "available": 63,
+      "selected": 7,
+      "shortfall": 0
+    },
+    "numeric:date_of_birth": {
+      "quota": 10,
+      "available": 64,
+      "selected": 10,
+      "shortfall": 0
+    },
+    "numeric:salary": {
+      "quota": 10,
+      "available": 59,
+      "selected": 10,
+      "shortfall": 0
+    },
+    "numeric:height": {
+      "quota": 10,
+      "available": 64,
+      "selected": 10,
+      "shortfall": 0
+    },
+    "taxonomic:taxonomic_classification": {
+      "quota": 30,
+      "available": 36,
+      "selected": 30,
+      "shortfall": 0
+    }
+  },
+  "per_entity": {
+    "Anas crecca": {
+      "targets": [],
+      "retain": [
+        "inat_Anas_crecca"
+      ]
+    },
+    "Anas platyrhynchos": {
+      "targets": [
+        "inat_Anas_platyrhynchos"
+      ],
+      "retain": []
+    },
+    "Anthocharis cardamines": {
+      "targets": [],
+      "retain": [
+        "inat_Anthocharis_cardamines"
+      ]
+    },
+    "Branta canadensis": {
+      "targets": [
+        "inat_Branta_canadensis"
+      ],
+      "retain": []
+    },
+    "Branta leucopsis": {
+      "targets": [],
+      "retain": [
+        "inat_Branta_leucopsis"
+      ]
+    },
+    "Canis lupus": {
+      "targets": [
+        "inat_Canis_lupus"
+      ],
+      "retain": []
+    },
+    "Carduelis carduelis": {
+      "targets": [],
+      "retain": [
+        "inat_Carduelis_carduelis"
+      ]
+    },
+    "Chloris chloris": {
+      "targets": [
+        "inat_Chloris_chloris"
+      ],
+      "retain": []
+    },
+    "Coloeus monedula": {
+      "targets": [
+        "inat_Coloeus_monedula"
+      ],
+      "retain": []
+    },
+    "Corvus corax": {
+      "targets": [
+        "inat_Corvus_corax"
+      ],
+      "retain": []
+    },
+    "Corvus corone": {
+      "targets": [
+        "inat_Corvus_corone"
+      ],
+      "retain": []
+    },
+    "Cyanistes caeruleus": {
+      "targets": [
+        "inat_Cyanistes_caeruleus"
+      ],
+      "retain": []
+    },
+    "Erithacus rubecula": {
+      "targets": [],
+      "retain": [
+        "inat_Erithacus_rubecula"
+      ]
+    },
+    "Felis catus": {
+      "targets": [
+        "inat_Felis_catus"
+      ],
+      "retain": []
+    },
+    "Gonepteryx rhamni": {
+      "targets": [
+        "inat_Gonepteryx_rhamni"
+      ],
+      "retain": []
+    },
+    "Mareca strepera": {
+      "targets": [
+        "inat_Mareca_strepera"
+      ],
+      "retain": []
+    },
+    "Mustela erminea": {
+      "targets": [
+        "inat_Mustela_erminea"
+      ],
+      "retain": []
+    },
+    "Mustela nivalis": {
+      "targets": [
+        "inat_Mustela_nivalis"
+      ],
+      "retain": []
+    },
+    "Papilio machaon": {
+      "targets": [
+        "inat_Papilio_machaon"
+      ],
+      "retain": []
+    },
+    "Parus major": {
+      "targets": [
+        "inat_Parus_major"
+      ],
+      "retain": []
+    },
+    "Passer domesticus": {
+      "targets": [
+        "inat_Passer_domesticus"
+      ],
+      "retain": []
+    },
+    "Passer hispaniolensis": {
+      "targets": [
+        "inat_Passer_hispaniolensis"
+      ],
+      "retain": []
+    },
+    "Passer montanus": {
+      "targets": [],
+      "retain": [
+        "inat_Passer_montanus"
+      ]
+    },
+    "Periparus ater": {
+      "targets": [
+        "inat_Periparus_ater"
+      ],
+      "retain": []
+    },
+    "Pieris brassicae": {
+      "targets": [
+        "inat_Pieris_brassicae"
+      ],
+      "retain": []
+    },
+    "Pieris napi": {
+      "targets": [
+        "inat_Pieris_napi"
+      ],
+      "retain": []
+    },
+    "Pieris rapae": {
+      "targets": [
+        "inat_Pieris_rapae"
+      ],
+      "retain": []
+    },
+    "Poecile montanus": {
+      "targets": [
+        "inat_Poecile_montanus"
+      ],
+      "retain": []
+    },
+    "Poecile palustris": {
+      "targets": [
+        "inat_Poecile_palustris"
+      ],
+      "retain": []
+    },
+    "Sturnus vulgaris": {
+      "targets": [
+        "inat_Sturnus_vulgaris"
+      ],
+      "retain": []
+    },
+    "Turdus merula": {
+      "targets": [
+        "inat_Turdus_merula"
+      ],
+      "retain": []
+    },
+    "Turdus philomelos": {
+      "targets": [
+        "inat_Turdus_philomelos"
+      ],
+      "retain": []
+    },
+    "Turdus pilaris": {
+      "targets": [
+        "inat_Turdus_pilaris"
+      ],
+      "retain": []
+    },
+    "Vanessa atalanta": {
+      "targets": [
+        "inat_Vanessa_atalanta"
+      ],
+      "retain": []
+    },
+    "Vanessa cardui": {
+      "targets": [
+        "inat_Vanessa_cardui"
+      ],
+      "retain": []
+    },
+    "Vulpes vulpes": {
+      "targets": [
+        "inat_Vulpes_vulpes"
+      ],
+      "retain": []
+    },
+    "mllmu_005": {
+      "targets": [
+        "mllmu_005__date_of_birth",
+        "mllmu_005__salary"
+      ],
+      "retain": [
+        "mllmu_005__birthplace",
+        "mllmu_005__education",
+        "mllmu_005__height",
+        "mllmu_005__occupation",
+        "mllmu_005__residence"
+      ]
+    },
+    "mllmu_006": {
+      "targets": [],
+      "retain": [
+        "mllmu_006__birthplace",
+        "mllmu_006__date_of_birth",
+        "mllmu_006__education",
+        "mllmu_006__height",
+        "mllmu_006__occupation",
+        "mllmu_006__residence",
+        "mllmu_006__salary"
+      ]
+    },
+    "mllmu_007": {
+      "targets": [],
+      "retain": [
+        "mllmu_007__birthplace",
+        "mllmu_007__date_of_birth",
+        "mllmu_007__education",
+        "mllmu_007__height",
+        "mllmu_007__occupation",
+        "mllmu_007__residence"
+      ]
+    },
+    "mllmu_047": {
+      "targets": [],
+      "retain": [
+        "mllmu_047__birthplace",
+        "mllmu_047__date_of_birth",
+        "mllmu_047__education",
+        "mllmu_047__height",
+        "mllmu_047__occupation",
+        "mllmu_047__residence",
+        "mllmu_047__salary"
+      ]
+    },
+    "mllmu_054": {
+      "targets": [
+        "mllmu_054__salary"
+      ],
+      "retain": [
+        "mllmu_054__birthplace",
+        "mllmu_054__date_of_birth",
+        "mllmu_054__education",
+        "mllmu_054__height",
+        "mllmu_054__occupation",
+        "mllmu_054__residence"
+      ]
+    },
+    "mllmu_057": {
+      "targets": [
+        "mllmu_057__residence"
+      ],
+      "retain": [
+        "mllmu_057__birthplace",
+        "mllmu_057__date_of_birth",
+        "mllmu_057__education",
+        "mllmu_057__height",
+        "mllmu_057__occupation",
+        "mllmu_057__salary"
+      ]
+    },
+    "mllmu_060": {
+      "targets": [
+        "mllmu_060__height"
+      ],
+      "retain": [
+        "mllmu_060__birthplace",
+        "mllmu_060__date_of_birth",
+        "mllmu_060__education",
+        "mllmu_060__occupation",
+        "mllmu_060__residence",
+        "mllmu_060__salary"
+      ]
+    },
+    "mllmu_066": {
+      "targets": [
+        "mllmu_066__birthplace",
+        "mllmu_066__date_of_birth"
+      ],
+      "retain": [
+        "mllmu_066__education",
+        "mllmu_066__height",
+        "mllmu_066__occupation",
+        "mllmu_066__residence",
+        "mllmu_066__salary"
+      ]
+    },
+    "mllmu_072": {
+      "targets": [],
+      "retain": [
+        "mllmu_072__birthplace",
+        "mllmu_072__date_of_birth",
+        "mllmu_072__education",
+        "mllmu_072__height",
+        "mllmu_072__occupation",
+        "mllmu_072__residence",
+        "mllmu_072__salary"
+      ]
+    },
+    "mllmu_078": {
+      "targets": [
+        "mllmu_078__height"
+      ],
+      "retain": [
+        "mllmu_078__birthplace",
+        "mllmu_078__date_of_birth",
+        "mllmu_078__education",
+        "mllmu_078__occupation",
+        "mllmu_078__residence",
+        "mllmu_078__salary"
+      ]
+    },
+    "mllmu_089": {
+      "targets": [
+        "mllmu_089__residence"
+      ],
+      "retain": [
+        "mllmu_089__birthplace",
+        "mllmu_089__date_of_birth",
+        "mllmu_089__education",
+        "mllmu_089__height",
+        "mllmu_089__occupation",
+        "mllmu_089__salary"
+      ]
+    },
+    "mllmu_090": {
+      "targets": [
+        "mllmu_090__occupation"
+      ],
+      "retain": [
+        "mllmu_090__birthplace",
+        "mllmu_090__date_of_birth",
+        "mllmu_090__education",
+        "mllmu_090__height",
+        "mllmu_090__residence"
+      ]
+    },
+    "mllmu_094": {
+      "targets": [
+        "mllmu_094__residence"
+      ],
+      "retain": [
+        "mllmu_094__birthplace",
+        "mllmu_094__date_of_birth",
+        "mllmu_094__education",
+        "mllmu_094__height",
+        "mllmu_094__occupation",
+        "mllmu_094__salary"
+      ]
+    },
+    "mllmu_096": {
+      "targets": [],
+      "retain": [
+        "mllmu_096__birthplace",
+        "mllmu_096__date_of_birth",
+        "mllmu_096__education",
+        "mllmu_096__height",
+        "mllmu_096__residence",
+        "mllmu_096__salary"
+      ]
+    },
+    "mllmu_103": {
+      "targets": [
+        "mllmu_103__date_of_birth"
+      ],
+      "retain": [
+        "mllmu_103__birthplace",
+        "mllmu_103__education",
+        "mllmu_103__height",
+        "mllmu_103__occupation",
+        "mllmu_103__residence",
+        "mllmu_103__salary"
+      ]
+    },
+    "mllmu_104": {
+      "targets": [],
+      "retain": [
+        "mllmu_104__birthplace",
+        "mllmu_104__date_of_birth",
+        "mllmu_104__education",
+        "mllmu_104__height",
+        "mllmu_104__occupation",
+        "mllmu_104__residence",
+        "mllmu_104__salary"
+      ]
+    },
+    "mllmu_108": {
+      "targets": [],
+      "retain": [
+        "mllmu_108__birthplace",
+        "mllmu_108__date_of_birth",
+        "mllmu_108__education",
+        "mllmu_108__height",
+        "mllmu_108__occupation",
+        "mllmu_108__residence",
+        "mllmu_108__salary"
+      ]
+    },
+    "mllmu_117": {
+      "targets": [
+        "mllmu_117__birthplace"
+      ],
+      "retain": [
+        "mllmu_117__date_of_birth",
+        "mllmu_117__education",
+        "mllmu_117__height",
+        "mllmu_117__occupation",
+        "mllmu_117__residence",
+        "mllmu_117__salary"
+      ]
+    },
+    "mllmu_131": {
+      "targets": [
+        "mllmu_131__height"
+      ],
+      "retain": [
+        "mllmu_131__birthplace",
+        "mllmu_131__date_of_birth",
+        "mllmu_131__education",
+        "mllmu_131__occupation",
+        "mllmu_131__residence",
+        "mllmu_131__salary"
+      ]
+    },
+    "mllmu_133": {
+      "targets": [],
+      "retain": [
+        "mllmu_133__birthplace",
+        "mllmu_133__date_of_birth",
+        "mllmu_133__education",
+        "mllmu_133__height",
+        "mllmu_133__occupation",
+        "mllmu_133__residence",
+        "mllmu_133__salary"
+      ]
+    },
+    "mllmu_141": {
+      "targets": [],
+      "retain": [
+        "mllmu_141__birthplace",
+        "mllmu_141__date_of_birth",
+        "mllmu_141__education",
+        "mllmu_141__height",
+        "mllmu_141__occupation",
+        "mllmu_141__residence",
+        "mllmu_141__salary"
+      ]
+    },
+    "mllmu_142": {
+      "targets": [],
+      "retain": [
+        "mllmu_142__birthplace",
+        "mllmu_142__date_of_birth",
+        "mllmu_142__education",
+        "mllmu_142__height",
+        "mllmu_142__occupation",
+        "mllmu_142__residence",
+        "mllmu_142__salary"
+      ]
+    },
+    "mllmu_151": {
+      "targets": [],
+      "retain": [
+        "mllmu_151__birthplace",
+        "mllmu_151__date_of_birth",
+        "mllmu_151__education",
+        "mllmu_151__height",
+        "mllmu_151__occupation",
+        "mllmu_151__residence",
+        "mllmu_151__salary"
+      ]
+    },
+    "mllmu_159": {
+      "targets": [
+        "mllmu_159__birthplace",
+        "mllmu_159__education",
+        "mllmu_159__salary"
+      ],
+      "retain": [
+        "mllmu_159__date_of_birth",
+        "mllmu_159__height",
+        "mllmu_159__occupation",
+        "mllmu_159__residence"
+      ]
+    },
+    "mllmu_182": {
+      "targets": [
+        "mllmu_182__birthplace",
+        "mllmu_182__occupation"
+      ],
+      "retain": [
+        "mllmu_182__date_of_birth",
+        "mllmu_182__education",
+        "mllmu_182__height",
+        "mllmu_182__residence",
+        "mllmu_182__salary"
+      ]
+    },
+    "mllmu_187": {
+      "targets": [
+        "mllmu_187__residence"
+      ],
+      "retain": [
+        "mllmu_187__birthplace",
+        "mllmu_187__date_of_birth",
+        "mllmu_187__education",
+        "mllmu_187__height",
+        "mllmu_187__occupation"
+      ]
+    },
+    "mllmu_191": {
+      "targets": [
+        "mllmu_191__date_of_birth",
+        "mllmu_191__salary"
+      ],
+      "retain": [
+        "mllmu_191__birthplace",
+        "mllmu_191__education",
+        "mllmu_191__height",
+        "mllmu_191__occupation",
+        "mllmu_191__residence"
+      ]
+    },
+    "mllmu_222": {
+      "targets": [
+        "mllmu_222__height"
+      ],
+      "retain": [
+        "mllmu_222__birthplace",
+        "mllmu_222__date_of_birth",
+        "mllmu_222__education",
+        "mllmu_222__occupation",
+        "mllmu_222__residence"
+      ]
+    },
+    "mllmu_224": {
+      "targets": [],
+      "retain": [
+        "mllmu_224__birthplace",
+        "mllmu_224__date_of_birth",
+        "mllmu_224__education",
+        "mllmu_224__height",
+        "mllmu_224__occupation",
+        "mllmu_224__residence"
+      ]
+    },
+    "mllmu_239": {
+      "targets": [
+        "mllmu_239__education"
+      ],
+      "retain": [
+        "mllmu_239__birthplace",
+        "mllmu_239__date_of_birth",
+        "mllmu_239__height",
+        "mllmu_239__occupation",
+        "mllmu_239__residence",
+        "mllmu_239__salary"
+      ]
+    },
+    "mllmu_244": {
+      "targets": [
+        "mllmu_244__salary"
+      ],
+      "retain": [
+        "mllmu_244__birthplace",
+        "mllmu_244__date_of_birth",
+        "mllmu_244__education",
+        "mllmu_244__height",
+        "mllmu_244__occupation",
+        "mllmu_244__residence"
+      ]
+    },
+    "mllmu_250": {
+      "targets": [],
+      "retain": [
+        "mllmu_250__birthplace",
+        "mllmu_250__date_of_birth",
+        "mllmu_250__education",
+        "mllmu_250__height",
+        "mllmu_250__occupation",
+        "mllmu_250__residence",
+        "mllmu_250__salary"
+      ]
+    },
+    "mllmu_252": {
+      "targets": [
+        "mllmu_252__birthplace",
+        "mllmu_252__salary"
+      ],
+      "retain": [
+        "mllmu_252__date_of_birth",
+        "mllmu_252__education",
+        "mllmu_252__height",
+        "mllmu_252__occupation",
+        "mllmu_252__residence"
+      ]
+    },
+    "mllmu_258": {
+      "targets": [
+        "mllmu_258__height"
+      ],
+      "retain": [
+        "mllmu_258__birthplace",
+        "mllmu_258__date_of_birth",
+        "mllmu_258__education",
+        "mllmu_258__occupation",
+        "mllmu_258__residence",
+        "mllmu_258__salary"
+      ]
+    },
+    "mllmu_259": {
+      "targets": [
+        "mllmu_259__education"
+      ],
+      "retain": [
+        "mllmu_259__birthplace",
+        "mllmu_259__date_of_birth",
+        "mllmu_259__height",
+        "mllmu_259__occupation",
+        "mllmu_259__residence",
+        "mllmu_259__salary"
+      ]
+    },
+    "mllmu_272": {
+      "targets": [
+        "mllmu_272__date_of_birth",
+        "mllmu_272__education"
+      ],
+      "retain": [
+        "mllmu_272__birthplace",
+        "mllmu_272__height",
+        "mllmu_272__occupation",
+        "mllmu_272__residence",
+        "mllmu_272__salary"
+      ]
+    },
+    "mllmu_282": {
+      "targets": [],
+      "retain": [
+        "mllmu_282__birthplace",
+        "mllmu_282__date_of_birth",
+        "mllmu_282__education",
+        "mllmu_282__height",
+        "mllmu_282__occupation",
+        "mllmu_282__residence",
+        "mllmu_282__salary"
+      ]
+    },
+    "mllmu_289": {
+      "targets": [
+        "mllmu_289__height"
+      ],
+      "retain": [
+        "mllmu_289__birthplace",
+        "mllmu_289__date_of_birth",
+        "mllmu_289__education",
+        "mllmu_289__occupation",
+        "mllmu_289__residence",
+        "mllmu_289__salary"
+      ]
+    },
+    "mllmu_291": {
+      "targets": [
+        "mllmu_291__birthplace",
+        "mllmu_291__education"
+      ],
+      "retain": [
+        "mllmu_291__date_of_birth",
+        "mllmu_291__height",
+        "mllmu_291__occupation",
+        "mllmu_291__residence",
+        "mllmu_291__salary"
+      ]
+    },
+    "mllmu_307": {
+      "targets": [],
+      "retain": [
+        "mllmu_307__birthplace",
+        "mllmu_307__date_of_birth",
+        "mllmu_307__education",
+        "mllmu_307__height",
+        "mllmu_307__occupation",
+        "mllmu_307__residence",
+        "mllmu_307__salary"
+      ]
+    },
+    "mllmu_308": {
+      "targets": [
+        "mllmu_308__height"
+      ],
+      "retain": [
+        "mllmu_308__birthplace",
+        "mllmu_308__date_of_birth",
+        "mllmu_308__education",
+        "mllmu_308__occupation",
+        "mllmu_308__residence",
+        "mllmu_308__salary"
+      ]
+    },
+    "mllmu_318": {
+      "targets": [
+        "mllmu_318__birthplace",
+        "mllmu_318__occupation",
+        "mllmu_318__salary"
+      ],
+      "retain": [
+        "mllmu_318__date_of_birth",
+        "mllmu_318__education",
+        "mllmu_318__height",
+        "mllmu_318__residence"
+      ]
+    },
+    "mllmu_327": {
+      "targets": [
+        "mllmu_327__height",
+        "mllmu_327__salary"
+      ],
+      "retain": [
+        "mllmu_327__birthplace",
+        "mllmu_327__date_of_birth",
+        "mllmu_327__education",
+        "mllmu_327__occupation",
+        "mllmu_327__residence"
+      ]
+    },
+    "mllmu_332": {
+      "targets": [
+        "mllmu_332__education",
+        "mllmu_332__occupation"
+      ],
+      "retain": [
+        "mllmu_332__birthplace",
+        "mllmu_332__date_of_birth",
+        "mllmu_332__height",
+        "mllmu_332__residence",
+        "mllmu_332__salary"
+      ]
+    },
+    "mllmu_341": {
+      "targets": [],
+      "retain": [
+        "mllmu_341__birthplace",
+        "mllmu_341__date_of_birth",
+        "mllmu_341__education",
+        "mllmu_341__height",
+        "mllmu_341__occupation",
+        "mllmu_341__residence",
+        "mllmu_341__salary"
+      ]
+    },
+    "mllmu_354": {
+      "targets": [
+        "mllmu_354__birthplace",
+        "mllmu_354__height",
+        "mllmu_354__occupation"
+      ],
+      "retain": [
+        "mllmu_354__date_of_birth",
+        "mllmu_354__education",
+        "mllmu_354__residence",
+        "mllmu_354__salary"
+      ]
+    },
+    "mllmu_356": {
+      "targets": [
+        "mllmu_356__education"
+      ],
+      "retain": [
+        "mllmu_356__birthplace",
+        "mllmu_356__date_of_birth",
+        "mllmu_356__height",
+        "mllmu_356__occupation",
+        "mllmu_356__residence",
+        "mllmu_356__salary"
+      ]
+    },
+    "mllmu_360": {
+      "targets": [
+        "mllmu_360__date_of_birth"
+      ],
+      "retain": [
+        "mllmu_360__birthplace",
+        "mllmu_360__education",
+        "mllmu_360__height",
+        "mllmu_360__occupation",
+        "mllmu_360__residence",
+        "mllmu_360__salary"
+      ]
+    },
+    "mllmu_361": {
+      "targets": [],
+      "retain": [
+        "mllmu_361__birthplace",
+        "mllmu_361__date_of_birth",
+        "mllmu_361__education",
+        "mllmu_361__height",
+        "mllmu_361__occupation",
+        "mllmu_361__residence",
+        "mllmu_361__salary"
+      ]
+    },
+    "mllmu_369": {
+      "targets": [],
+      "retain": [
+        "mllmu_369__birthplace",
+        "mllmu_369__date_of_birth",
+        "mllmu_369__education",
+        "mllmu_369__height",
+        "mllmu_369__occupation",
+        "mllmu_369__residence",
+        "mllmu_369__salary"
+      ]
+    },
+    "mllmu_405": {
+      "targets": [
+        "mllmu_405__date_of_birth"
+      ],
+      "retain": [
+        "mllmu_405__birthplace",
+        "mllmu_405__education",
+        "mllmu_405__height",
+        "mllmu_405__occupation",
+        "mllmu_405__residence",
+        "mllmu_405__salary"
+      ]
+    },
+    "mllmu_422": {
+      "targets": [],
+      "retain": [
+        "mllmu_422__birthplace",
+        "mllmu_422__date_of_birth",
+        "mllmu_422__education",
+        "mllmu_422__height",
+        "mllmu_422__occupation",
+        "mllmu_422__residence",
+        "mllmu_422__salary"
+      ]
+    },
+    "mllmu_424": {
+      "targets": [
+        "mllmu_424__date_of_birth"
+      ],
+      "retain": [
+        "mllmu_424__birthplace",
+        "mllmu_424__height",
+        "mllmu_424__occupation",
+        "mllmu_424__residence",
+        "mllmu_424__salary"
+      ]
+    },
+    "mllmu_432": {
+      "targets": [
+        "mllmu_432__occupation"
+      ],
+      "retain": [
+        "mllmu_432__birthplace",
+        "mllmu_432__date_of_birth",
+        "mllmu_432__education",
+        "mllmu_432__height",
+        "mllmu_432__residence",
+        "mllmu_432__salary"
+      ]
+    },
+    "mllmu_435": {
+      "targets": [
+        "mllmu_435__occupation"
+      ],
+      "retain": [
+        "mllmu_435__birthplace",
+        "mllmu_435__date_of_birth",
+        "mllmu_435__education",
+        "mllmu_435__height",
+        "mllmu_435__residence",
+        "mllmu_435__salary"
+      ]
+    },
+    "mllmu_437": {
+      "targets": [
+        "mllmu_437__date_of_birth",
+        "mllmu_437__height"
+      ],
+      "retain": [
+        "mllmu_437__birthplace",
+        "mllmu_437__education",
+        "mllmu_437__occupation",
+        "mllmu_437__residence",
+        "mllmu_437__salary"
+      ]
+    },
+    "mllmu_438": {
+      "targets": [
+        "mllmu_438__residence"
+      ],
+      "retain": [
+        "mllmu_438__birthplace",
+        "mllmu_438__date_of_birth",
+        "mllmu_438__education",
+        "mllmu_438__height",
+        "mllmu_438__occupation",
+        "mllmu_438__salary"
+      ]
+    },
+    "mllmu_442": {
+      "targets": [
+        "mllmu_442__residence"
+      ],
+      "retain": [
+        "mllmu_442__birthplace",
+        "mllmu_442__date_of_birth",
+        "mllmu_442__education",
+        "mllmu_442__height",
+        "mllmu_442__occupation",
+        "mllmu_442__salary"
+      ]
+    },
+    "mllmu_443": {
+      "targets": [],
+      "retain": [
+        "mllmu_443__birthplace",
+        "mllmu_443__date_of_birth",
+        "mllmu_443__education",
+        "mllmu_443__height",
+        "mllmu_443__occupation",
+        "mllmu_443__residence",
+        "mllmu_443__salary"
+      ]
+    },
+    "mllmu_453": {
+      "targets": [],
+      "retain": [
+        "mllmu_453__birthplace",
+        "mllmu_453__date_of_birth",
+        "mllmu_453__education",
+        "mllmu_453__height",
+        "mllmu_453__occupation",
+        "mllmu_453__residence",
+        "mllmu_453__salary"
+      ]
+    },
+    "mllmu_462": {
+      "targets": [
+        "mllmu_462__residence",
+        "mllmu_462__salary"
+      ],
+      "retain": [
+        "mllmu_462__birthplace",
+        "mllmu_462__date_of_birth",
+        "mllmu_462__education",
+        "mllmu_462__height",
+        "mllmu_462__occupation"
+      ]
+    },
+    "mllmu_465": {
+      "targets": [
+        "mllmu_465__residence",
+        "mllmu_465__salary"
+      ],
+      "retain": [
+        "mllmu_465__birthplace",
+        "mllmu_465__date_of_birth",
+        "mllmu_465__education",
+        "mllmu_465__height",
+        "mllmu_465__occupation"
+      ]
+    },
+    "mllmu_481": {
+      "targets": [
+        "mllmu_481__date_of_birth"
+      ],
+      "retain": [
+        "mllmu_481__birthplace",
+        "mllmu_481__education",
+        "mllmu_481__height",
+        "mllmu_481__occupation",
+        "mllmu_481__residence",
+        "mllmu_481__salary"
+      ]
+    },
+    "mllmu_482": {
+      "targets": [],
+      "retain": [
+        "mllmu_482__birthplace",
+        "mllmu_482__date_of_birth",
+        "mllmu_482__education",
+        "mllmu_482__height",
+        "mllmu_482__occupation",
+        "mllmu_482__residence",
+        "mllmu_482__salary"
+      ]
+    }
+  },
+  "balance_note": "Targets are balanced across hierarchy types (equal counts) and, within each type, across attributes via per-attribute quotas; unfilled quotas are recorded as shortfalls, never fabricated.  Species above the taxonomic quota remain RETAINED so taxonomic targets have same-stratum other-entity-retain donors.",
+  "balance_evidence": {
+    "target_counts_by_type": {
+      "numeric": 30,
+      "semantic": 30,
+      "taxonomic": 30
+    },
+    "target_counts_by_attribute": {
+      "numeric:date_of_birth": 10,
+      "numeric:height": 10,
+      "numeric:salary": 10,
+      "semantic:birthplace": 8,
+      "semantic:education": 7,
+      "semantic:occupation": 7,
+      "semantic:residence": 8,
+      "taxonomic:taxonomic_classification": 30
+    },
+    "types_balanced": true,
+    "num_targets": 90,
+    "num_retain": 387,
+    "quota_fill": {
+      "semantic:residence": {
+        "quota": 8,
+        "available": 64,
+        "selected": 8,
+        "shortfall": 0
+      },
+      "semantic:birthplace": {
+        "quota": 8,
+        "available": 64,
+        "selected": 8,
+        "shortfall": 0
+      },
+      "semantic:occupation": {
+        "quota": 7,
+        "available": 63,
+        "selected": 7,
+        "shortfall": 0
+      },
+      "semantic:education": {
+        "quota": 7,
+        "available": 63,
+        "selected": 7,
+        "shortfall": 0
+      },
+      "numeric:date_of_birth": {
+        "quota": 10,
+        "available": 64,
+        "selected": 10,
+        "shortfall": 0
+      },
+      "numeric:salary": {
+        "quota": 10,
+        "available": 59,
+        "selected": 10,
+        "shortfall": 0
+      },
+      "numeric:height": {
+        "quota": 10,
+        "available": 64,
+        "selected": 10,
+        "shortfall": 0
+      },
+      "taxonomic:taxonomic_classification": {
+        "quota": 30,
+        "available": 36,
+        "selected": 30,
+        "shortfall": 0
+      }
+    }
+  }
+}

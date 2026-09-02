@@ -80,6 +80,7 @@ ATTRIBUTE_DISPLAY = {
     "birthplace": "place of birth",
     "occupation": "occupation",
     "education": "educational background",
+    "taxonomic_classification": "taxonomic classification",
 }
 
 # ---------------------------------------------------------------------------
@@ -127,6 +128,79 @@ LEVEL_QUESTIONS: dict[str, dict[int | str, str]] = {
         "middle": "Which category describes {name}'s educational "
                   "background, {k} level(s) of abstraction broader than "
                   "the exact institution?",
+    },
+    # Iteration 11 taxonomic stratum (iNaturalist): {name} is the
+    # species' COMMON name; the hierarchy is species -> genus -> family
+    # from authoritative Linnaean metadata.
+    "taxonomic_classification": {
+        0: "Which exact species is {name}?",
+        1: "Which genus does {name} belong to?",
+        2: "Which family does {name} belong to?",
+        -1: "Which family does {name} belong to?",
+    },
+}
+
+# ---------------------------------------------------------------------------
+# Iteration 11: NAMELESS level questions for the image_to_text route —
+# the prompt must NOT name the entity (identity has to be recovered from
+# the image alone), so every template refers to "the person shown in
+# this image" / "the organism in this image" instead of {name}.
+# ---------------------------------------------------------------------------
+NAMELESS_LEVEL_QUESTIONS: dict[str, dict[int | str, str]] = {
+    "date_of_birth": {
+        0: "What is the exact date of birth of the person shown in "
+           "this image?",
+        1: "In what year was the person shown in this image born?",
+        2: "In which decade was the person shown in this image born?",
+    },
+    "salary": {
+        0: "What is the exact annual salary of the person shown in "
+           "this image?",
+        1: "Which salary range does the person shown in this image "
+           "fall into?",
+    },
+    "height": {
+        0: "What is the exact height of the person shown in this image?",
+        1: "Which height range does the person shown in this image "
+           "fall into?",
+    },
+    "residence": {
+        0: "Where exactly does the person shown in this image live, "
+           "including city and country?",
+        -1: "In which country does the person shown in this image live?",
+        "middle": "In which broader region or area does the person "
+                  "shown in this image live?",
+    },
+    "birthplace": {
+        0: "Where exactly was the person shown in this image born, "
+           "including city and country?",
+        -1: "In which country was the person shown in this image born?",
+        "middle": "In which broader region or area was the person "
+                  "shown in this image born?",
+    },
+    "occupation": {
+        0: "What is the exact occupation of the person shown in this "
+           "image?",
+        -1: "What is the broadest occupational category that describes "
+            "the person shown in this image?",
+        "middle": "Which occupational category describes the person "
+                  "shown in this image, {k} level(s) of abstraction "
+                  "broader than their exact occupation?",
+    },
+    "education": {
+        0: "What is the exact educational background of the person "
+           "shown in this image?",
+        -1: "What is the broadest category describing the educational "
+            "background of the person shown in this image?",
+        "middle": "Which category describes the educational background "
+                  "of the person shown in this image, {k} level(s) of "
+                  "abstraction broader than the exact institution?",
+    },
+    "taxonomic_classification": {
+        0: "Which exact species is shown in this image?",
+        1: "Which genus does the organism in this image belong to?",
+        2: "Which family does the organism in this image belong to?",
+        -1: "Which family does the organism in this image belong to?",
     },
 }
 
@@ -199,6 +273,18 @@ FAMILY_TEMPLATES: dict[str, list[str]] = {
         "Given this image of {name}: {question}",
         "For the person shown ({name}): {question}",
     ],
+    # ---- I: image_to_text (Iteration 11; the prompt NEVER names the
+    # entity — identity must be recovered from the image alone) ----
+    "image_fine_direct": [
+        "{question}",
+        "Answer precisely: {question}",
+        "Please respond to the following: {question}",
+    ],
+    "image_target_direct": [
+        "{question}",
+        "Answer precisely: {question}",
+        "Please respond to the following: {question}",
+    ],
     # ---- Retain roles (fine value of the asked association) ----
     "retain_same_entity": [
         "What is {name}'s {attr}?",
@@ -210,10 +296,35 @@ FAMILY_TEMPLATES: dict[str, list[str]] = {
         "Provide the {attr} recorded for {name}.",
         "Tell me the {attr} of {name}.",
     ],
+    # Image-route retain probes (Iteration 11; nameless by design):
+    "retain_same_entity_image": [
+        "{question}",
+        "Answer precisely: {question}",
+        "Please respond to the following: {question}",
+    ],
+    "retain_other_entity_image": [
+        "{question}",
+        "Answer precisely: {question}",
+        "Please respond to the following: {question}",
+    ],
 }
 
+# Families on the image_to_text route: prompts never name the entity.
+IMAGE_ONLY_FAMILIES = frozenset({
+    "image_fine_direct", "image_target_direct",
+    "retain_same_entity_image", "retain_other_entity_image",
+})
+# Families whose image the query carries (image_to_text AND
+# image_text_to_text).
+IMAGE_FAMILIES = IMAGE_ONLY_FAMILIES | {"multimodal_image_text"}
+# Retain-role families (text + image routes).
+RETAIN_FAMILIES = frozenset({
+    "retain_same_entity", "retain_other_entity",
+    "retain_same_entity_image", "retain_other_entity_image",
+})
+
 UNLEARNING_FAMILIES = [f for f in FAMILY_TEMPLATES
-                       if not f.startswith("retain_")]
+                       if f not in RETAIN_FAMILIES]
 FAMILIES = list(FAMILY_TEMPLATES.keys())
 
 FAMILY_QUERY_TYPE = {
@@ -223,8 +334,12 @@ FAMILY_QUERY_TYPE = {
     "granular_coarse": "ancestor",
     **{f: "negation" for f in UNLEARNING_FAMILIES if f.startswith("negation_")},
     "multimodal_image_text": "target_direct",
+    "image_fine_direct": "fine_direct",
+    "image_target_direct": "target_direct",
     "retain_same_entity": "retain_same_entity",
     "retain_other_entity": "retain_other_entity",
+    "retain_same_entity_image": "retain_same_entity",
+    "retain_other_entity_image": "retain_other_entity",
 }
 
 # Prompted-recovery probes: the forgotten fine value is quoted in the
@@ -247,6 +362,7 @@ QUESTION_FAMILIES = {
     "granular_fine", "granular_intermediate", "granular_coarse",
     "negation_direct", "negation_correction", "negation_disambiguation",
     "multimodal_image_text",
+    *IMAGE_ONLY_FAMILIES,
 }
 
 
@@ -263,14 +379,16 @@ def answer_level_for_family(assoc: AssociationRecord, family: str) -> int:
     """Hierarchy level index that a family's answer must come from."""
     n = assoc.num_levels()
     t = assoc.target_level
-    if family.startswith("fine_") or family.startswith("retain_"):
+    if family.startswith("fine_") or family in RETAIN_FAMILIES:
         return 0
-    if family == "granular_fine":
+    if family in ("granular_fine", "image_target_direct"):
         return t
     if family == "granular_intermediate":
         return min(t + 1, n - 1)
     if family == "granular_coarse":
         return n - 1
+    if family == "image_fine_direct":
+        return 0
     if family.startswith("negation_") or family == "multimodal_image_text":
         return t
     raise ValueError(f"Unknown query family: {family!r}")
@@ -285,19 +403,31 @@ def family_applicable(assoc: AssociationRecord, family: str) -> bool:
     prompts requesting a non-existent abstraction.  ``granular_coarse``
     remains permitted when target == coarsest (broadest == target is
     logically valid, merely redundant).
+
+    Iteration 11: image-carrying families require a materialized image
+    on the association (the route is undefined without one).
     """
+    if family in IMAGE_FAMILIES and not assoc.images:
+        return False
     if family == "granular_intermediate":
         return assoc.target_level + 1 < assoc.num_levels()
     return True
 
 
-def level_question(assoc: AssociationRecord, level_idx: int) -> str:
+def level_question(assoc: AssociationRecord, level_idx: int,
+                   nameless: bool = False) -> str:
     """Self-contained question for (attribute, level). Never references
     hidden benchmark metadata; falls back to an explicit depth wording
-    for unknown attributes."""
+    for unknown attributes.
+
+    ``nameless=True`` (Iteration 11 image_to_text route) selects the
+    NAMELESS tables: the entity is never named — it must be recovered
+    from the image.
+    """
     name = assoc.entity_name or assoc.entity_id
     n = assoc.num_levels()
-    table = LEVEL_QUESTIONS.get(assoc.attribute_name, {})
+    table = (NAMELESS_LEVEL_QUESTIONS if nameless
+             else LEVEL_QUESTIONS).get(assoc.attribute_name, {})
     if level_idx in table:
         template = table[level_idx]
     elif level_idx == n - 1 and -1 in table:
@@ -306,8 +436,13 @@ def level_question(assoc: AssociationRecord, level_idx: int) -> str:
         template = table["middle"]
     else:
         attr = _display_attr(assoc.attribute_name)
-        template = ("What is the {k}-th coarser generalization of "
-                    "{name}'s " + attr + "?")
+        if nameless:
+            template = ("What is the {k}-th coarser generalization of "
+                        "the " + attr + " of the entity shown in this "
+                        "image?")
+        else:
+            template = ("What is the {k}-th coarser generalization of "
+                        "{name}'s " + attr + "?")
     return template.format(name=name, k=level_idx)
 
 
@@ -360,7 +495,10 @@ def _make_query(
         "distractor": distractor,
     }
     if family in QUESTION_FAMILIES:
-        fields["question"] = level_question(assoc, answer_idx)
+        # Iteration 11: image_to_text prompts use the NAMELESS level
+        # questions — the entity is never named in the text.
+        fields["question"] = level_question(
+            assoc, answer_idx, nameless=family in IMAGE_ONLY_FAMILIES)
     text = FAMILY_TEMPLATES[family][idx].format(**fields)
 
     acceptable = [assoc.levels[answer_idx].canonical_id]
@@ -375,7 +513,8 @@ def _make_query(
         # target level; every other probe keeps its REQUESTED level valid
         # (the broadest category is still the correct broadest category
         # after unlearning).
-        post_idx = t if family.startswith("fine_") else answer_idx
+        post_idx = t if (family.startswith("fine_")
+                         or family == "image_fine_direct") else answer_idx
         post_acceptable = [assoc.levels[post_idx].canonical_id]
         unlearning_target_level: int | None = t
     else:
@@ -385,14 +524,20 @@ def _make_query(
         leakage_forbidden = []
         post_acceptable = list(acceptable)
 
-    is_multimodal = family == "multimodal_image_text"
+    if family in IMAGE_ONLY_FAMILIES:
+        route = "image_to_text"
+    elif family == "multimodal_image_text":
+        route = "image_text_to_text"
+    else:
+        route = "text_to_text"
+    carries_image = family in IMAGE_FAMILIES and bool(assoc.images)
     return QueryRecord(
         query_id=query_id,
         association_id=assoc.association_id,
-        route="image_text_to_text" if is_multimodal else "text_to_text",
+        route=route,
         query_type=FAMILY_QUERY_TYPE[family],
         family=family,
-        image_ids=[assoc.images[0].image_id] if is_multimodal and assoc.images else [],
+        image_ids=[assoc.images[0].image_id] if carries_image else [],
         prompt=text,
         expected_level=answer_idx,
         acceptable_answer_ids=acceptable,
@@ -474,8 +619,6 @@ def generate_queries(
         for fam in families:
             if not family_applicable(assoc, fam):
                 continue
-            if fam == "multimodal_image_text" and not assoc.images:
-                continue
             for split in SPLITS:
                 idx = template_index(seed, assoc.association_id, fam, split)
                 queries.append(_make_query(
@@ -484,19 +627,24 @@ def generate_queries(
                     is_target_probe=True))
 
     # ---- retain_same_entity: per entity, each retained association ----
+    # (text route always; image route additionally when the association
+    # has a materialized image — Iteration 11)
     per_entity = partition.get("per_entity", {})
     for entity_id in sorted(per_entity):
         for retain_id in per_entity[entity_id]["retain"]:
             assoc = by_id.get(retain_id)
             if assoc is None:
                 continue
-            for split in SPLITS:
-                idx = template_index(seed, retain_id,
-                                     "retain_same_entity", split)
-                queries.append(_make_query(
-                    assoc, "retain_same_entity", split, idx, seed,
-                    query_id=f"{retain_id}__retain_same_entity__{split}",
-                    is_target_probe=False))
+            retain_fams = ["retain_same_entity"]
+            if assoc.images:
+                retain_fams.append("retain_same_entity_image")
+            for fam in retain_fams:
+                for split in SPLITS:
+                    idx = template_index(seed, retain_id, fam, split)
+                    queries.append(_make_query(
+                        assoc, fam, split, idx, seed,
+                        query_id=f"{retain_id}__{fam}__{split}",
+                        is_target_probe=False))
 
     # ---- retain_other_entity: one RETAINED donor association per target ----
     for target in targets:
@@ -505,15 +653,19 @@ def generate_queries(
             partition["retain_association_ids"], seed)
         if donor is None:
             continue
-        for split in SPLITS:
-            idx = template_index(seed, donor.association_id,
-                                 "retain_other_entity", split)
-            queries.append(_make_query(
-                donor, "retain_other_entity", split, idx, seed,
-                query_id=(f"{donor.association_id}__retain_other_entity"
-                          f"__for_{target.association_id}__{split}"),
-                is_target_probe=False,
-                target_association_id=target.association_id))
+        donor_fams = ["retain_other_entity"]
+        if donor.images:
+            donor_fams.append("retain_other_entity_image")
+        for fam in donor_fams:
+            for split in SPLITS:
+                idx = template_index(seed, donor.association_id,
+                                     fam, split)
+                queries.append(_make_query(
+                    donor, fam, split, idx, seed,
+                    query_id=(f"{donor.association_id}__{fam}"
+                              f"__for_{target.association_id}__{split}"),
+                    is_target_probe=False,
+                    target_association_id=target.association_id))
     return queries
 
 
@@ -595,6 +747,18 @@ def validate_queries(
                 errors.append(
                     f"{q.query_id}: prompt references hidden benchmark "
                     f"metadata ({phrase!r})")
+        # Iteration 11: image_to_text prompts must NEVER name the
+        # entity — identity has to be recovered from the image alone.
+        if q.route == "image_to_text":
+            if not q.image_ids:
+                errors.append(
+                    f"{q.query_id}: image_to_text query carries no image")
+            for nm in {assoc.entity_name, assoc.entity_id}:
+                if nm and nm.lower() in lowered:
+                    errors.append(
+                        f"{q.query_id}: image_to_text prompt names the "
+                        f"entity ({nm!r}) — the route would collapse "
+                        "into image_text_to_text")
 
         # ---- FILR (post-unlearning) view ----
         if (q.family or "").startswith("retain_"):
@@ -623,7 +787,8 @@ def validate_queries(
                 errors.append(
                     f"{q.query_id}: leakage_forbidden_ids "
                     f"{q.leakage_forbidden_ids} != {expected_leakage}")
-            post_idx = t if (q.family or "").startswith("fine_") \
+            post_idx = t if ((q.family or "").startswith("fine_")
+                             or q.family == "image_fine_direct") \
                 else q.expected_level
             if q.post_unlearning_acceptable_answer_ids != \
                     [assoc.levels[post_idx].canonical_id]:
@@ -637,7 +802,7 @@ def validate_queries(
         grouped.setdefault((q.association_id, q.family or ""), []).append(q)
 
     for (aid, fam), qs in sorted(grouped.items()):
-        if fam == "retain_other_entity":
+        if fam in ("retain_other_entity", "retain_other_entity_image"):
             # Multiple targets may share a donor; per-target coverage is
             # checked below instead of per (donor, family).
             continue
@@ -656,6 +821,10 @@ def validate_queries(
         same_entity = [q for q in queries
                        if q.family == "retain_same_entity"]
         asked = {(q.association_id, q.split) for q in same_entity}
+        same_entity_img = [q for q in queries
+                           if q.family == "retain_same_entity_image"]
+        asked_img = {(q.association_id, q.split)
+                     for q in same_entity_img}
         for entity_id, parts in per_entity.items():
             for retain_id in parts["retain"]:
                 for split in SPLITS:
@@ -663,11 +832,21 @@ def validate_queries(
                         errors.append(
                             f"retain_same_entity missing for {retain_id} "
                             f"/ {split}")
-        for q in same_entity:
+                    # Iteration 11: image-route retain coverage is
+                    # required exactly when the association has an image.
+                    has_img = bool(by_assoc[retain_id].images) \
+                        if retain_id in by_assoc else False
+                    if has_img and (retain_id, split) not in asked_img:
+                        errors.append(
+                            f"retain_same_entity_image missing for "
+                            f"{retain_id} / {split}")
+        for q in same_entity + same_entity_img:
             if q.association_id in target_ids:
                 errors.append(
                     f"{q.query_id}: retain query asks a TARGET association")
-        other = [q for q in queries if q.family == "retain_other_entity"]
+        other = [q for q in queries
+                 if q.family in ("retain_other_entity",
+                                 "retain_other_entity_image")]
         retain_ids = set(partition["retain_association_ids"])
         per_target: dict[str, list[QueryRecord]] = {}
         for q in other:
@@ -693,17 +872,17 @@ def validate_queries(
             if donor and donor.entity_id == target_assoc.entity_id:
                 errors.append(
                     f"{q.query_id}: other-entity donor from same entity")
-            per_target.setdefault(target_id, []).append(q)
-        for tid, qs in sorted(per_target.items()):
+            per_target.setdefault((target_id, q.family), []).append(q)
+        for (tid, fam), qs in sorted(per_target.items()):
             splits = sorted(q.split for q in qs)
             if splits != sorted(SPLITS):
                 errors.append(
-                    f"retain_other_entity for {tid}: split coverage "
+                    f"{fam} for {tid}: split coverage "
                     f"{splits} != {sorted(SPLITS)}")
             templates = [q.template_id for q in qs]
             if len(set(templates)) != len(qs):
                 errors.append(
-                    f"retain_other_entity for {tid}: templates repeat")
+                    f"{fam} for {tid}: templates repeat")
 
     # ---- Retain-fact dedupe (entity-scoped, non-vacuous) ----
     retain_facts_by_entity = retain_facts_by_entity or {}
@@ -735,12 +914,23 @@ def validate_queries(
             1 for q in queries if q.family == "retain_same_entity"),
         "num_retain_other_entity": sum(
             1 for q in queries if q.family == "retain_other_entity"),
+        "num_retain_same_entity_image": sum(
+            1 for q in queries
+            if q.family == "retain_same_entity_image"),
+        "num_retain_other_entity_image": sum(
+            1 for q in queries
+            if q.family == "retain_other_entity_image"),
+        "by_route": {
+            r: sum(1 for q in queries if q.route == r)
+            for r in ("text_to_text", "image_to_text",
+                      "image_text_to_text")},
         "donor_pairs": [
             {"target_association_id": t, "donor_association_id": d}
             for t, d in sorted(
                 {(q.target_association_id, q.association_id)
                  for q in queries
-                 if q.family == "retain_other_entity"
+                 if q.family in ("retain_other_entity",
+                                 "retain_other_entity_image")
                  and q.target_association_id})
         ],
         "num_associations_with_queries": len({q.association_id for q in queries}),

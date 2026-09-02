@@ -15,10 +15,11 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 # Allowed cross-modal routes.
-# NOTE: the current smoke 'multimodal_image_text' family names the entity
-# in the text, so it exercises image_text_to_text only.  The image_to_text
-# route (identity must be recovered FROM the image) is a later iteration;
-# current M queries are NOT evidence for image->identity->attribute.
+# The smoke 'multimodal_image_text' family names the entity in the
+# text, so it exercises image_text_to_text only.  The image_to_text
+# route (identity must be recovered FROM the image) is exercised by
+# the Iteration-11 'image_*' families, whose prompts NEVER name the
+# entity (enforced by query validation).
 Route = Literal["text_to_text", "image_to_text", "image_text_to_text"]
 
 # Query taxonomy (semantic intent; modality lives in `route`).
@@ -32,7 +33,9 @@ QueryType = Literal[
     "retain_other_entity",    # Ask about a completely different entity
 ]
 
-# Fine-grained generation families (Iteration 6 taxonomy + retain roles).
+# Fine-grained generation families (Iteration 6 taxonomy + retain roles;
+# Iteration 11 adds the image_to_text route families, whose prompts never
+# name the entity — identity must be recovered from the image alone).
 QueryFamily = Literal[
     "fine_direct",
     "fine_descriptive",
@@ -47,8 +50,12 @@ QueryFamily = Literal[
     "negation_correction",
     "negation_disambiguation",
     "multimodal_image_text",
+    "image_fine_direct",
+    "image_target_direct",
     "retain_same_entity",
     "retain_other_entity",
+    "retain_same_entity_image",
+    "retain_other_entity_image",
 ]
 
 

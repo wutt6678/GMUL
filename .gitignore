@@ -50,6 +50,16 @@ data/raw/inaturalist/pilot_v1/*
 !data/reports/mllmu_smoke_entities.json
 !data/reports/mllmu_smoke_query_report.json
 !data/reports/mllmu_smoke_target_retain.json
+# Iteration 11 pilot-100 (mixed MLLMU + real iNat taxonomic stratum)
+!data/reports/mllmu_pilot100_entities.json
+!data/reports/mllmu_pilot100_target_retain.json
+!data/reports/mllmu_pilot100_query_report.json
+!data/reports/mllmu_pilot100_reference_eval.json
+!data/reports/mllmu_pilot100_unlearning_selection.json
+!data/reports/mllmu_pilot100_reference_provenance.json
+# pilot runtime artifacts (large, regenerable): predictions + exports
+data/mllmu_hier_pilot100/predictions*/
+data/mllmu_hier_pilot100/failure_exports/
 !data/reports/mllmu_smoke_reference_eval.json
 !data/reports/mllmu_smoke_scorer_audit.json
 !data/reports/mllmu_smoke_unlearning_selection.json

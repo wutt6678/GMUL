@@ -106,8 +106,14 @@ def select_smoke_entities(
     min_attribute_types: int = 6,
     require_semantic: bool = True,
     require_image: bool = True,
+    salt: str = "smoke",
 ) -> list[str]:
-    """Deterministically select ``n`` coverage-qualified entities."""
+    """Deterministically select ``n`` coverage-qualified entities.
+
+    ``salt`` namespaces the ranking so different iterations select
+    independently (Iteration 11 pilot uses salt="pilot100"); the
+    default reproduces the committed smoke selection exactly.
+    """
     by_entity: dict[str, list[AssociationRecord]] = defaultdict(list)
     for a in associations:
         by_entity[a.entity_id].append(a)
@@ -126,7 +132,7 @@ def select_smoke_entities(
 
     def rank(entity_id: str) -> str:
         return hashlib.sha256(
-            f"{seed}:smoke:{entity_id}".encode()).hexdigest()
+            f"{seed}:{salt}:{entity_id}".encode()).hexdigest()
 
     return sorted(eligible, key=rank)[:n]
 

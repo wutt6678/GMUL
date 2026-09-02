@@ -241,7 +241,8 @@ class TestMetricsAndGate:
             return assoc.levels[0].value
         if state == "MN":
             return "I don't know."
-        if (q.family or "").startswith("fine_"):
+        if (q.family or "").startswith("fine_") \
+                or q.family == "image_fine_direct":
             idx = 0 if state == "MF" else assoc.target_level
         else:
             idx = answer_level_for_family(assoc, q.family)

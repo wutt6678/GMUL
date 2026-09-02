@@ -224,13 +224,14 @@ def compute_hierarchy_metrics(
     }
 
     # Retain slices (baseline view), same as the core evaluator
-    def retain_rows(family: str):
+    def retain_rows(families: tuple[str, ...]):
+        fam_set = set(families)
         return [(q, p) for q, p in
                 ((by_id[p.query_id], p) for p in preds)
-                if q.family == family]
+                if q.family in fam_set]
 
-    def retain_block(family: str) -> dict[str, Any]:
-        rows = retain_rows(family)
+    def retain_block(*families: str) -> dict[str, Any]:
+        rows = retain_rows(families)
         return {
             "num_queries": len(rows),
             "baseline_accuracy": _rate(
@@ -256,7 +257,7 @@ def compute_hierarchy_metrics(
     by_route = {r: stratum_metrics(lambda q, r=r: q.route == r)
                 for r in ROUTE_SLOTS}
     by_type = {}
-    for htype in ("semantic", "numeric"):
+    for htype in ("semantic", "numeric", "taxonomic"):
         by_type[htype] = stratum_metrics(
             lambda q, t=htype:
             by_assoc[q.association_id].hierarchy_type == t)
@@ -283,6 +284,14 @@ def compute_hierarchy_metrics(
         "ancestor_retention": ancestor_retention,
         "retain_same_entity": retain_block("retain_same_entity"),
         "retain_other_entity": retain_block("retain_other_entity"),
+        "retain_same_entity_image":
+            retain_block("retain_same_entity_image"),
+        "retain_other_entity_image":
+            retain_block("retain_other_entity_image"),
+        "retain_same_entity_all_routes": retain_block(
+            "retain_same_entity", "retain_same_entity_image"),
+        "retain_other_entity_all_routes": retain_block(
+            "retain_other_entity", "retain_other_entity_image"),
         "by_route": by_route,
         "by_hierarchy_type": by_type,
         "by_target_depth": by_depth,

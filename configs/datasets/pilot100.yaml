@@ -1,0 +1,65 @@
+# Iteration 11 pilot-100 mixed dataset configuration.
+# 100 entities = 64 MLLMU person entities (semantic + numeric)
+#              + 36 real iNaturalist species (taxonomic).
+# Targets frozen BALANCED: 30 per hierarchy type, per-attribute quotas.
+dataset:
+  name: mllmu_hier_pilot100
+  version: pilot100_v1
+  seed: 42
+
+  # ---- MLLMU stratum (persons) ----
+  mllmu:
+    source: MLLMU-Bench
+    subset: fictitious
+    source_mode: local
+    data_root: data/raw/MLLMU-Bench
+    annotations_file: Full_Set/train-00000-of-00001.parquet
+    source_format: parquet
+    source_revision: e91a01eb060b61be8dbde7edb48b121341bd0890
+    materialize_images: true
+    images_dir: data/processed/mllmu_hier/images
+    split_mode: entity_level
+    min_parse_coverage: 0.95
+    min_parse_coverage_per_attribute:
+      salary: 0.90
+    deterministic_attributes:
+      - residence
+      - birthplace
+      - date_of_birth
+      - salary
+      - height
+    n_person_entities: 64
+    entity_selection_salt: pilot100
+    min_attribute_types: 6
+
+  # ---- iNaturalist stratum (species; real CC-licensed photos) ----
+  inaturalist:
+    data_root: data/raw/inaturalist/pilot_v1
+    annotations_file: annotations.json
+    min_images_per_species: 10
+    max_species: 40
+    min_genera: 15
+    min_families: 10
+    target_level: 1          # species -> genus (MG retains the genus)
+    provenance_file: PROVENANCE.json
+
+# Balanced target contract (frozen; see granunlearn.datasets.pilot).
+balance:
+  targets_per_type: 30
+  quotas:
+    semantic:
+      residence: 8
+      birthplace: 8
+      occupation: 7
+      education: 7
+    numeric:
+      date_of_birth: 10
+      salary: 10
+      height: 10
+    taxonomic:
+      taxonomic_classification: 30
+
+query_families:
+  # All 15 unlearning families (retain families are emitted
+  # automatically for both routes).
+  include_image_route: true

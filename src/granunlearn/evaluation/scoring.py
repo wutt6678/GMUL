@@ -208,10 +208,17 @@ def compute_metrics(
             "negation_direct", "negation_disambiguation"})),
         "multimodal": block(
             select(rows, families={"multimodal_image_text"})),
+        "image_route": block(
+            select(rows, families={"image_fine_direct",
+                                   "image_target_direct"})),
         "retain_same_entity": block(
             select(rows, families={"retain_same_entity"})),
         "retain_other_entity": block(
             select(rows, families={"retain_other_entity"})),
+        "retain_same_entity_image": block(
+            select(rows, families={"retain_same_entity_image"})),
+        "retain_other_entity_image": block(
+            select(rows, families={"retain_other_entity_image"})),
         "adversarial_only": block(
             [(q, p) for q, p in rows if q.adversarial]),
     }
