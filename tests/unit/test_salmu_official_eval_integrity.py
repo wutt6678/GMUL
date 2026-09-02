@@ -369,15 +369,31 @@ class TestCommittedTargetOnlyReport:
             assert t["AssocStr_target"]["num_rows"] > 0
 
     def test_results_files_are_hash_bound(self):
+        """The committed report must bind every raw result to its
+        SHA-256 (this is the portable evidence — the raw files
+        themselves are large gitignored artifacts)."""
         rep = _load("salmubench_official_eval_r5")
         for state, entry in rep["states"].items():
             sha = entry.get("results_file_sha256")
             assert sha and len(sha) == 64, state
-            raw = rep and (REPO_ROOT / "data" / "salmu_hierarchical"
-                           / "official_salmubench_results_r5"
-                           / entry["results_file"])
+            assert all(c in "0123456789abcdef" for c in sha), state
+            assert entry.get("results_file"), state
+
+    def test_local_raw_results_match_recorded_hash(self):
+        """Where the gitignored raw official results exist locally,
+        each file must hash-match the committed report (tamper
+        detection).  Skipped in CI checkouts without the artifacts."""
+        rep = _load("salmubench_official_eval_r5")
+        results_dir = (REPO_ROOT / "data" / "salmu_hierarchical"
+                       / "official_salmubench_results_r5")
+        if not results_dir.exists():
+            pytest.skip("raw official results are gitignored "
+                        "artifacts, absent in this checkout")
+        for state, entry in rep["states"].items():
+            raw = results_dir / entry["results_file"]
             assert raw.exists(), state
-            assert runner.sha256_file(raw) == sha, state
+            assert runner.sha256_file(raw) == \
+                entry["results_file_sha256"], state
 
     def test_paired_cis_present_for_unlearning_states(self):
         rep = _load("salmubench_official_eval_r5")
