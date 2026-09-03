@@ -174,6 +174,16 @@ def main() -> None:
     selection = json.loads(selection_path.read_text()) \
         if selection_path.exists() else None
 
+    # The final evaluation is the iteration's headline artifact, so bind it
+    # here too: without this the provenance record covers the dataset, the
+    # checkpoints and the selection but not the report the claims are read
+    # off, and a reader cannot tell which final-evaluation file belongs to
+    # these exact weights.
+    final_path = reports / f"mllmu_{args.tag}_final_evaluation.json"
+    final = json.loads(final_path.read_text()) if final_path.exists() else None
+    final_one_shot = (final or {}).get("one_shot") or {}
+    final_sens = (final or {}).get("batch_composition_sensitivity") or {}
+
     import torch
     import transformers
     import peft
@@ -200,6 +210,25 @@ def main() -> None:
             "selected": (selection or {}).get("selected"),
             "basis": (selection or {}).get("basis"),
             "selection_scope": (selection or {}).get("selection_scope"),
+        },
+        "final_evaluation": {
+            "report": str(final_path.relative_to(repo_root))
+            if final else None,
+            "report_sha256":
+                hashlib.sha256(final_path.read_bytes()).hexdigest()
+                if final else None,
+            "selection_scope_used": final_one_shot.get("selection_scope"),
+            "num_test_queries": final_one_shot.get("num_test_queries"),
+            "assembled_without_generation":
+                final_one_shot.get("assembled_without_generation"),
+            "b0_equals_mf_passed":
+                ((final or {}).get("b0_equals_mf_invariant") or {}).get(
+                    "passed"),
+            "batch_layout_noise_floor": {
+                "max_abs_metric_delta":
+                    final_sens.get("max_abs_metric_delta"),
+                "max_abs_retain_delta": final_sens.get("max_abs_retain_delta"),
+            },
         },
         "environment": {
             "python": platform.python_version(),

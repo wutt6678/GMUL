@@ -1449,6 +1449,21 @@
       "val"
     ]
   },
+  "final_evaluation": {
+    "report": "data/reports/mllmu_pilot100_final_evaluation.json",
+    "report_sha256": "08486f09eac7e9a9b8cc4549ca634c2523fa28683b2fe735e53085def0007eb9",
+    "selection_scope_used": [
+      "train",
+      "val"
+    ],
+    "num_test_queries": 2259,
+    "assembled_without_generation": true,
+    "b0_equals_mf_passed": true,
+    "batch_layout_noise_floor": {
+      "max_abs_metric_delta": 0.0057,
+      "max_abs_retain_delta": 0.05
+    }
+  },
   "environment": {
     "python": "3.10.20",
     "torch": "2.8.0+cu128",

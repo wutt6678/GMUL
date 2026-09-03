@@ -19,7 +19,9 @@ selection, and a one-shot test evaluation with paired CIs:
    null, and ``ReferenceRecipe`` round-trips through JSON);
 10. the generation batch layout, pinned against a stubbed model — the
    layout is part of the experiment because decoding is not bit-stable
-   across layouts.
+   across layouts;
+11. prediction-file fingerprints, so a reused parquet is traceable to the
+   exact bytes and write time it came from.
 
 Everything here is CPU-only and reads committed artifacts only.
 """
@@ -748,5 +750,52 @@ class TestBatchLayoutIsPinned:
         pcts = [float(m.split("(")[1].split("%")[0]) for m in marks]
         assert pcts == sorted(pcts) and pcts[-1] <= 100.0
         assert all("/2259" in m for m in marks)
+
+
+# ── 11. prediction-file fingerprints ──────────────────────────────
+
+class TestPredictionFingerprint:
+    """A state whose parquet is reused must be traceable to the exact
+    bytes it was read from and when they were written; otherwise "reused"
+    is indistinguishable from "stale"."""
+
+    def test_fingerprint_pins_bytes_and_write_time(self, tmp_path):
+        import hashlib
+        from datetime import datetime, timezone
+        from evaluate_pilot100_final import _parquet_fingerprint
+        p = tmp_path / "predictions_test_MF.parquet"
+        payload = b"not really a parquet, but the bytes are what count"
+        p.write_bytes(payload)
+        fp = _parquet_fingerprint(p)
+        assert fp["sha256"] == hashlib.sha256(payload).hexdigest()
+        assert fp["bytes"] == len(payload)
+        when = datetime.fromisoformat(fp["written_utc"])
+        assert when.tzinfo is not None, "timestamps must be timezone-aware"
+        age = (datetime.now(timezone.utc) - when).total_seconds()
+        assert -5 < age < 60, age
+
+    def test_fingerprint_changes_with_the_bytes(self, tmp_path):
+        from evaluate_pilot100_final import _parquet_fingerprint
+        p = tmp_path / "a.parquet"
+        p.write_bytes(b"one")
+        first = _parquet_fingerprint(p)["sha256"]
+        p.write_bytes(b"two")
+        assert _parquet_fingerprint(p)["sha256"] != first
+
+    def test_committed_report_fingerprints_the_nine_states(self):
+        """End-to-end against the committed evidence: MF and B0 hold the
+        same 2,259 raw outputs yet differ in bytes, because each row also
+        carries its own checkpoint_id.  Distinct hashes for identical
+        behaviour is exactly what the no-op invariant looks like on
+        disk."""
+        report = (REPO_ROOT / "data" / "reports"
+                  / "mllmu_pilot100_final_evaluation.json")
+        if not report.exists():
+            pytest.skip("final evaluation report not present")
+        prov = json.loads(report.read_text())["provenance"]
+        fps = {s: p["test_predictions_fingerprint"] for s, p in prov.items()}
+        assert len({f["sha256"] for f in fps.values()}) == len(fps) == 9
+        assert fps["MF"]["bytes"] == fps["B0"]["bytes"]
+        assert fps["MF"]["sha256"] != fps["B0"]["sha256"]
 
 

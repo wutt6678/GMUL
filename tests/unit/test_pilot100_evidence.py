@@ -23,6 +23,7 @@ What they enforce:
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -332,6 +333,38 @@ class TestFinalEvaluationEvidence:
             assert p["candidate_id"]
             assert p["num_test_predictions"] == NUM_TEST_QUERIES
 
+    def test_each_state_is_bound_to_its_own_prediction_file(self):
+        """Every state must name the parquet it was read from and pin its
+        bytes, so "reused" can never mean "stale" or "someone else's
+        file".  The parquets themselves are gitignored, so only the shape
+        of the record can be checked here."""
+        rep = _load("mllmu_pilot100_final_evaluation")
+        seen = {}
+        for state, p in rep["provenance"].items():
+            fp = p["test_predictions_fingerprint"]
+            assert len(fp["sha256"]) == 64, state
+            assert int(fp["bytes"]) > 0, state
+            datetime.fromisoformat(fp["written_utc"])
+            assert p["test_predictions_file"].endswith(".parquet"), state
+            seen[fp["sha256"]] = state
+        # nine distinct files: no state silently shares another's rows
+        assert len(seen) == len(EXPECTED_STATES | EXPECTED_METHODS)
+
+    def test_reuse_is_documented_as_recovery_not_a_second_look(self):
+        """The one-shot protocol survives a report re-assembly only if the
+        report says so explicitly: generation happens once per state, and
+        a later pass that reads persisted parquets generates nothing."""
+        rep = _load("mllmu_pilot100_final_evaluation")
+        one = rep["one_shot"]
+        assert isinstance(one["assembled_without_generation"], bool)
+        assert "COMPLETE pass" in one["reuse_semantics"]
+        assert "never a second look" in one["reuse_semantics"]
+        reused = set(one["reused_existing_test_predictions"])
+        assert reused <= set(rep["states"])
+        if one["assembled_without_generation"]:
+            assert reused == set(rep["states"]), \
+                "a no-generation assembly must reuse every state"
+
 
 # ── 4. provenance record ──────────────────────────────────────────
 
@@ -442,6 +475,32 @@ class TestProvenanceEvidence:
         sel = _load("mllmu_pilot100_unlearning_selection")
         assert rep["selection"]["selected"] == sel["selected"]
         assert rep["selection"]["selection_scope"] == sel["selection_scope"]
+
+    def test_final_evaluation_report_is_hash_bound(self):
+        """Provenance must pin the headline report, not just the dataset
+        and the weights: otherwise nothing ties these checkpoints to the
+        numbers the claims are read off.  Both files are committed, so the
+        hash is re-verified live here."""
+        import hashlib
+        rep = _load("mllmu_pilot100_reference_provenance")
+        fe = rep["final_evaluation"]
+        assert fe["report"] == \
+            "data/reports/mllmu_pilot100_final_evaluation.json"
+        live = REPO_ROOT / fe["report"]
+        assert hashlib.sha256(live.read_bytes()).hexdigest() == \
+            fe["report_sha256"], "provenance no longer matches the report"
+        assert fe["num_test_queries"] == NUM_TEST_QUERIES
+        assert fe["selection_scope_used"] == ["train", "val"]
+        assert fe["b0_equals_mf_passed"] is True
+        # cross-consistency with the report's own floor measurement
+        final = _load("mllmu_pilot100_final_evaluation")
+        sens = final["batch_composition_sensitivity"]
+        assert fe["batch_layout_noise_floor"]["max_abs_metric_delta"] == \
+            sens["max_abs_metric_delta"]
+        assert fe["batch_layout_noise_floor"]["max_abs_retain_delta"] == \
+            sens["max_abs_retain_delta"]
+        assert fe["assembled_without_generation"] == \
+            final["one_shot"]["assembled_without_generation"]
 
     def test_inaturalist_fetch_contract_pinned(self):
         rep = _load("mllmu_pilot100_reference_provenance")
