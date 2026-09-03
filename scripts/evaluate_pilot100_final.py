@@ -40,8 +40,9 @@ Integrity invariants asserted before the report is written:
 3. every compared state covers the identical test query set, so each
    paired CI is computed over the same probes;
 4. the batch-layout noise floor is MEASURED and reported
-   (``batch_composition_sensitivity``), so a reader can separate it from
-   the between-model effects.
+   (``batch_composition_sensitivity``), separately for the target-side
+   slices the claims are made on and for the retain slices, so a reader
+   can separate it from the between-model effects.
 
 Writes ``data/reports/mllmu_pilot100_final_evaluation.json``.
 """
@@ -145,9 +146,24 @@ def _batch_composition_sensitivity(
     the two views of the SAME checkpoint is a pure numerical-noise floor.
     Reporting it is what lets a reader separate that floor from the
     between-model effects.
+
+    Two floors are reported separately because they have different
+    magnitudes and different causes:
+
+    * ``max_abs_metric_delta`` — the TARGET-side slices (FILR, TGA,
+      wrong-branch) that the headline claims are made on;
+    * ``max_abs_retain_delta`` — the RETAIN slices, which are noisier for
+      an untuned model: BASE answers in long free-form paragraphs that
+      get truncated at ``max_new_tokens``, so a near-tie changes the
+      wording (measured: 42.9% of BASE's raw outputs differ between the
+      two layouts, against 5.4% for the fine-tuned MF/B0) even though
+      hierarchy-relative scoring keeps the target slices almost fixed.
     """
+    retain_keys = (("retain_same", "retain_same_entity_all_routes"),
+                   ("retain_other", "retain_other_entity_all_routes"))
     per_state: dict[str, Any] = {}
     worst = 0.0
+    worst_retain = 0.0
     for state in sorted(set(uniform) & set(gate)):
         a = {p.query_id: p.raw_output for p in uniform[state]}
         b = {p.query_id: p.raw_output for p in gate[state]}
@@ -168,6 +184,12 @@ def _batch_composition_sensitivity(
             if u is not None and g is not None:
                 deltas[key] = round(u - g, 4)
                 worst = max(worst, abs(deltas[key]))
+        for label, block in retain_keys:
+            u = (hm_u.get(block) or {}).get("baseline_accuracy")
+            g = (hm_g.get(block) or {}).get("baseline_accuracy")
+            if u is not None and g is not None:
+                deltas[label] = round(u - g, 4)
+                worst_retain = max(worst_retain, abs(deltas[label]))
         per_state[state] = {
             "num_test_queries_compared": len(common),
             "num_raw_output_mismatches": mism,
@@ -178,12 +200,19 @@ def _batch_composition_sensitivity(
     return {
         "per_state": per_state,
         "max_abs_metric_delta": round(worst, 4),
+        "max_abs_retain_delta": round(worst_retain, 4),
+        "target_side_metrics": ["filr", "tga", "wrong_branch"],
+        "retain_metrics": [label for label, _ in retain_keys],
         "interpretation": (
             "same checkpoint weights, two batch layouts: this is the "
             "numerical noise floor of batched greedy decoding, NOT a "
             "model difference. Every metric reported by this script comes "
             "from the uniform test-only generation, so all cross-state "
-            "comparisons and paired CIs here share one batch layout."),
+            "comparisons and paired CIs here share one batch layout. A "
+            "high raw_output_mismatch_rate with small metric deltas means "
+            "the wording moved while the hierarchy-relative score did "
+            "not — that is expected for an untuned model answering in "
+            "free-form prose under a max_new_tokens truncation."),
     }
 
 
@@ -362,9 +391,10 @@ def main() -> None:
     sensitivity = _batch_composition_sensitivity(
         {s: preds_by_state[s] for s in REFERENCE_STATES},
         gate_preds_by_state, queries, associations)
-    log.info("Batch-layout noise floor: max |metric delta| = %s; "
-             "raw-output mismatch rates %s",
+    log.info("Batch-layout noise floor: target max |delta| = %s, retain max "
+             "|delta| = %s; raw-output mismatch rates %s",
              sensitivity["max_abs_metric_delta"],
+             sensitivity["max_abs_retain_delta"],
              {s: v["raw_output_mismatch_rate"]
               for s, v in sensitivity["per_state"].items()})
 

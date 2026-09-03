@@ -270,11 +270,21 @@ class TestFinalEvaluationEvidence:
         rep = _load("mllmu_pilot100_final_evaluation")
         sens = rep["batch_composition_sensitivity"]
         assert set(sens["per_state"]) == EXPECTED_STATES
-        # the floor must stay an order of magnitude below the effects
+        # the target-side floor — the slices the claims are made on —
+        # must stay an order of magnitude below the effects
         assert sens["max_abs_metric_delta"] <= 0.05, sens
+        # the retain floor is allowed more room: BASE answers in long
+        # free-form prose that is truncated at max_new_tokens, so its
+        # wording (and hence its retain slice) moves more between layouts
+        # than the hierarchy-scored target slices do
+        assert sens["max_abs_retain_delta"] <= 0.10, sens
+        assert sens["target_side_metrics"] == ["filr", "tga", "wrong_branch"]
+        assert sens["retain_metrics"] == ["retain_same", "retain_other"]
         assert sens["interpretation"]
         for state, s in sens["per_state"].items():
             assert s["num_test_queries_compared"] == NUM_TEST_QUERIES, state
+            assert set(s["metric_deltas_uniform_minus_gate"]) >= \
+                set(sens["target_side_metrics"]) | set(sens["retain_metrics"])
 
     def test_routes_and_strata_reported_for_every_state(self):
         rep = _load("mllmu_pilot100_final_evaluation")

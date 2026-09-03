@@ -449,8 +449,11 @@ class TestBatchCompositionSensitivity:
     def _data(self):
         from granunlearn.evaluation.reference_eval import (
             load_associations_parquet, load_queries_parquet)
+        # the frozen parquet is grouped by family, so a plain prefix holds
+        # target probes only and no retain probes at all; stride through it
+        # so a 200-query stub slice still exercises every family
         queries = [q for q in load_queries_parquet(
-            PILOT_DIR / "queries.parquet") if q.split == "test"][:200]
+            PILOT_DIR / "queries.parquet") if q.split == "test"][::11][:200]
         assocs = load_associations_parquet(PILOT_DIR / "associations.parquet")
         return queries, {a.association_id: a for a in assocs}, assocs
 
@@ -464,6 +467,7 @@ class TestBatchCompositionSensitivity:
         assert s["num_raw_output_mismatches"] == 0
         assert s["raw_output_mismatch_rate"] == 0.0
         assert rep["max_abs_metric_delta"] == 0.0
+        assert rep["max_abs_retain_delta"] == 0.0
         assert all(v == 0.0 for v in
                    s["metric_deltas_uniform_minus_gate"].values())
 
@@ -481,7 +485,26 @@ class TestBatchCompositionSensitivity:
         # the floor is reported as a magnitude, and stays far below the
         # between-model effects it must not be confused with
         assert rep["max_abs_metric_delta"] <= 0.2
+        assert rep["max_abs_retain_delta"] <= 0.2
         assert rep["interpretation"]
+
+    def test_both_floors_are_reported_with_their_metric_lists(self):
+        """The target-side floor and the retain floor are separated
+        because an untuned model's free-form answers make the retain
+        slices visibly noisier than the hierarchy-scored target ones."""
+        from evaluate_pilot100_final import _batch_composition_sensitivity
+        qs, by_id, assocs = self._data()
+        rep = _batch_composition_sensitivity(
+            {"MF": self._preds(qs, by_id)},
+            {"MF": self._preds(qs, by_id, flip=5)}, qs, assocs)
+        assert rep["target_side_metrics"] == ["filr", "tga", "wrong_branch"]
+        assert rep["retain_metrics"] == ["retain_same", "retain_other"]
+        deltas = rep["per_state"]["MF"]["metric_deltas_uniform_minus_gate"]
+        assert set(deltas) >= set(rep["target_side_metrics"]) \
+            | set(rep["retain_metrics"])
+        # each reported maximum really is the max over its own group
+        assert rep["max_abs_retain_delta"] == round(max(
+            abs(deltas[k]) for k in rep["retain_metrics"]), 4)
 
     def test_states_present_in_only_one_view_are_skipped(self):
         from evaluate_pilot100_final import _batch_composition_sensitivity
