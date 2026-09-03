@@ -8,12 +8,12 @@ Runs exactly once, AFTER selection.  Inputs:
 * the frozen pilot-100 dataset (``data/mllmu_hier_pilot100``);
 * ``data/reports/mllmu_pilot100_unlearning_selection.json`` — the
   per-method winner chosen on TRAIN+VAL only;
-* full-split predictions for BASE/MF/MG/MN persisted by the
-  reference-state evaluation (reused, never regenerated).
+* the full-split predictions persisted by the reference-state gate, used
+  ONLY to quantify the batch-layout noise floor (below).
 
-Work done here: generate TEST-split completions for the selected
-candidates (their selection-time parquets deliberately contain no test
-rows), then report, for every state and on TEST only:
+Work done here: generate TEST-split completions for EVERY reported state
+— BASE/MF/MG/MN and each selected candidate — over the same test-query
+list with the same batch sizes, then report, on TEST only:
 
 * the three routes — text_to_text, image_to_text, image_text_to_text;
 * paraphrased TARGET probes — FILR / TGA / the full failure taxonomy
@@ -27,12 +27,21 @@ rows), then report, for every state and on TEST only:
 
 Integrity invariants asserted before the report is written:
 
-1. B0 is the MF adapter copied unchanged, so B0's paired difference
-   against MF must be exactly 0.0 with a degenerate CI [0, 0] on all
-   four metrics — and their raw outputs must match query-for-query;
+1. B0 is the MF adapter copied unchanged (identical SHA-256), so B0's
+   paired difference against MF must be exactly 0.0 with a degenerate CI
+   [0, 0] on all four metrics — and their raw outputs must match
+   query-for-query.  This only holds when both are generated under the
+   SAME batch layout: batched greedy decoding with left padding is not
+   bit-stable across different batch compositions, so mixing the gate
+   run's full-split generations with this run's test-only generations
+   makes an identical checkpoint look different (measured: 122/2,259
+   decodes flipped, shifting rates by up to 0.006);
 2. selection used train+val only (read back from the selection report);
 3. every compared state covers the identical test query set, so each
-   paired CI is computed over the same probes.
+   paired CI is computed over the same probes;
+4. the batch-layout noise floor is MEASURED and reported
+   (``batch_composition_sensitivity``), so a reader can separate it from
+   the between-model effects.
 
 Writes ``data/reports/mllmu_pilot100_final_evaluation.json``.
 """
@@ -73,7 +82,7 @@ TEST = ("test",)
 
 def _load_or_generate_test(
     state_id: str,
-    adapter_dir: Path,
+    adapter_dir: Path | None,
     test_queries: list[QueryRecord],
     by_assoc: dict,
     repo_root: Path,
@@ -83,11 +92,20 @@ def _load_or_generate_test(
     batch_size: int,
     image_batch_size: int,
 ) -> tuple[list[PredictionRecord], bool]:
-    """Test-split predictions for one candidate (generated at most once).
+    """Test-split predictions for one state (generated at most once).
 
-    Reusing an existing parquet is crash recovery, not a second look:
-    the file is written only after a complete generation pass, and the
-    reuse is recorded in the report.
+    ``adapter_dir=None`` means BASE (no adapter).  Reusing an existing
+    parquet is crash recovery, not a second look: the file is written
+    only after a complete generation pass, and the reuse is recorded in
+    the report.
+
+    EVERY state reported here is generated over the SAME test-query list
+    with the SAME batch sizes, because left-padded batched generation is
+    not bit-stable across different batch compositions: an identical
+    checkpoint scored inside a 6,777-query run and inside a 2,259-query
+    run produced 122/2,259 differing greedy decodes (near-ties).  Uniform
+    generation is what makes the paired CIs — and the B0 == MF invariant
+    — comparisons of models rather than of batch layouts.
     """
     ppath = predictions_dir / f"predictions_test_{state_id}.parquet"
     if ppath.exists():
@@ -111,6 +129,62 @@ def _load_or_generate_test(
     pd.DataFrame([json.loads(p.model_dump_json()) for p in preds]
                  ).to_parquet(ppath, index=False)
     return preds, False
+
+
+def _batch_composition_sensitivity(
+    uniform: dict[str, list[PredictionRecord]],
+    gate: dict[str, list[PredictionRecord]],
+    queries: list[QueryRecord],
+    associations: list,
+) -> dict[str, Any]:
+    """Measure how much the gate run's batch layout moved the numbers.
+
+    The reference-state gate (C3) generated all 6,777 queries in one
+    pass; this script generates the 2,259 test queries in one pass.  Both
+    are valid, but they are not bit-identical, so the difference between
+    the two views of the SAME checkpoint is a pure numerical-noise floor.
+    Reporting it is what lets a reader separate that floor from the
+    between-model effects.
+    """
+    per_state: dict[str, Any] = {}
+    worst = 0.0
+    for state in sorted(set(uniform) & set(gate)):
+        a = {p.query_id: p.raw_output for p in uniform[state]}
+        b = {p.query_id: p.raw_output for p in gate[state]}
+        common = sorted(set(a) & set(b))
+        mism = sum(1 for q in common if a[q] != b[q])
+        hm_u = compute_hierarchy_metrics(
+            uniform[state], queries, associations, split="test")
+        hm_g = compute_hierarchy_metrics(
+            gate[state], queries, associations, split="test")
+        deltas = {}
+        for key in ("filr", "tga"):
+            if hm_u.get(key) is not None and hm_g.get(key) is not None:
+                deltas[key] = round(hm_u[key] - hm_g[key], 4)
+                worst = max(worst, abs(deltas[key]))
+        for key in ("wrong_branch",):
+            u = (hm_u.get("failure_rates") or {}).get(key)
+            g = (hm_g.get("failure_rates") or {}).get(key)
+            if u is not None and g is not None:
+                deltas[key] = round(u - g, 4)
+                worst = max(worst, abs(deltas[key]))
+        per_state[state] = {
+            "num_test_queries_compared": len(common),
+            "num_raw_output_mismatches": mism,
+            "raw_output_mismatch_rate":
+                round(mism / len(common), 4) if common else None,
+            "metric_deltas_uniform_minus_gate": deltas,
+        }
+    return {
+        "per_state": per_state,
+        "max_abs_metric_delta": round(worst, 4),
+        "interpretation": (
+            "same checkpoint weights, two batch layouts: this is the "
+            "numerical noise floor of batched greedy decoding, NOT a "
+            "model difference. Every metric reported by this script comes "
+            "from the uniform test-only generation, so all cross-state "
+            "comparisons and paired CIs here share one batch layout."),
+    }
 
 
 def _check_b0_equals_mf(preds_by_state: dict[str, list[PredictionRecord]],
@@ -178,29 +252,54 @@ def main() -> None:
 
     preds_by_state: dict[str, list[PredictionRecord]] = {}
     provenance: dict[str, Any] = {}
+    reused: list[str] = []
 
-    # 1. Reference states: reuse the full-split predictions persisted by
-    #    the reference-state evaluation, filtered to TEST here.
+    # 1. Reference states: generate their TEST rows HERE, under the same
+    #    batch layout as the candidates.  The gate run's full-split
+    #    parquets are loaded too, but only to quantify the batch-layout
+    #    noise floor — never as the reported numbers.
+    ref_ckpt = repo_root / "data" / "checkpoints" / f"mllmu_{TAG}"
+    split_of = {q.query_id: q.split for q in queries}
+    gate_preds_by_state: dict[str, list[PredictionRecord]] = {}
     for state in REFERENCE_STATES:
-        ppath = predictions_dir / f"predictions_{state}.parquet"
-        if not ppath.exists():
+        gate_path = predictions_dir / f"predictions_{state}.parquet"
+        if not gate_path.exists():
             raise FileNotFoundError(
-                f"{ppath} — run scripts/evaluate_reference_states.py "
+                f"{gate_path} — run scripts/evaluate_reference_states.py "
                 f"--tag {TAG} first")
-        preds = load_predictions_parquet(ppath)
-        split_of = {q.query_id: q.split for q in queries}
-        test_preds = [p for p in preds if split_of.get(p.query_id) == "test"]
-        preds_by_state[state] = test_preds
+        gate_all = load_predictions_parquet(gate_path)
+        gate_preds_by_state[state] = [
+            p for p in gate_all if split_of.get(p.query_id) == "test"]
+        adapter_dir = None if state == "BASE" else \
+            ref_ckpt / state / "adapters"
+        if adapter_dir is not None and not adapter_dir.exists():
+            raise FileNotFoundError(
+                f"Missing adapter for state {state}: {adapter_dir}")
+        if args.skip_generation:
+            preds = load_predictions_parquet(
+                predictions_dir / f"predictions_test_{state}.parquet")
+            was_reused = True
+        else:
+            preds, was_reused = _load_or_generate_test(
+                state, adapter_dir, test_queries, by_assoc, repo_root,
+                predictions_dir, args.model_id, args.device,
+                args.batch_size, args.image_batch_size)
+        if was_reused:
+            reused.append(state)
+        preds_by_state[state] = preds
         provenance[state] = {
             "kind": "reference_state",
-            "source": str(ppath.relative_to(repo_root)),
-            "reused_full_split_predictions": True,
-            "num_test_predictions": len(test_preds),
+            "test_predictions_file": f"predictions_test_{state}.parquet",
+            "generated_under_uniform_batch_layout": True,
+            "reused_existing_predictions": was_reused,
+            "num_test_predictions": len(preds),
+            "gate_report_source": str(gate_path.relative_to(repo_root)),
+            "gate_test_rows": len(gate_preds_by_state[state]),
         }
-        log.info("[%s] %d test predictions reused", state, len(test_preds))
+        log.info("[%s] %d uniform test predictions", state, len(preds))
 
-    # 2. Selected candidates: one-shot TEST generation.
-    reused: list[str] = []
+    # 2. Selected candidates: one-shot TEST generation (their
+    #    selection-time parquets deliberately contain no test rows).
     for method, cid in sorted(selected.items()):
         adapter_dir = unlearn_ckpt / cid / "adapters"
         if not adapter_dir.exists():
@@ -258,6 +357,17 @@ def main() -> None:
     b0_check = _check_b0_equals_mf(preds_by_state, paired)
     log.info("B0 == MF invariant: %s", b0_check)
 
+    # 6. Numerical noise floor: the SAME reference checkpoints viewed
+    #    through the gate run's batch layout vs this run's.
+    sensitivity = _batch_composition_sensitivity(
+        {s: preds_by_state[s] for s in REFERENCE_STATES},
+        gate_preds_by_state, queries, associations)
+    log.info("Batch-layout noise floor: max |metric delta| = %s; "
+             "raw-output mismatch rates %s",
+             sensitivity["max_abs_metric_delta"],
+             {s: v["raw_output_mismatch_rate"]
+              for s, v in sensitivity["per_state"].items()})
+
     report = {
         "experiment_id": EXPERIMENT_ID,
         "iteration": 11,
@@ -265,10 +375,14 @@ def main() -> None:
         "model_id": args.model_id,
         "one_shot": {
             "protocol": (
-                "TEST-split generation happens only here, only for the "
-                "candidates selected on TRAIN+VAL; reference-state test "
-                "rows are reused from the gate run. Nothing in this "
-                "script feeds back into selection."),
+                "TEST-split generation happens only here and only once per "
+                "state: the candidates were selected on TRAIN+VAL (their "
+                "selection-time parquets contain no test rows), and every "
+                "state reported below — BASE/MF/MG/MN included — is "
+                "generated over the SAME test-query list with the SAME "
+                "batch sizes, so all cross-state comparisons and paired "
+                "CIs share one batch layout. Nothing in this script feeds "
+                "back into selection."),
             "selection_basis": selection.get("basis"),
             "selection_scope": selection.get("selection_scope"),
             "num_test_queries": len(test_queries),
@@ -281,6 +395,7 @@ def main() -> None:
                 "do_sample": False,
             },
         },
+        "batch_composition_sensitivity": sensitivity,
         "selected": selected,
         "states": sorted(preds_by_state),
         "test_query_coverage": coverage,
@@ -299,6 +414,10 @@ def main() -> None:
             "All numbers are the frozen TEST paraphrase split: identical "
             "target associations, unseen wording (template assignment is "
             "deterministic per (association, family, split)).",
+            "Every state — reference states included — was generated over "
+            "the same test-query list with the same batch sizes, so no "
+            "comparison here contains a batch-layout artifact; see "
+            "batch_composition_sensitivity for the measured floor.",
             "Target slices use the POST-unlearning view and exclude "
             "adversarial probes; retain slices use the BASELINE view "
             "(retained facts must stay answerable) across BOTH routes.",

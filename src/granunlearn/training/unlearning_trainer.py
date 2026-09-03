@@ -27,7 +27,7 @@ import json
 import random
 import time
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
@@ -194,12 +194,19 @@ def make_noop_checkpoint(
     method_id: str,
     init_adapter_dir: str | Path,
     output_dir: str | Path,
+    recipe: ReferenceRecipe | None = None,
 ) -> dict[str, Any]:
     """B0: copy the MF adapter unchanged (sanity baseline — identical
-    weights must reproduce MF's metrics through the whole pipeline)."""
+    weights must reproduce MF's metrics through the whole pipeline).
+
+    The summary records the recipe B0 INHERITS from MF (it applies zero
+    updates of its own), so downstream reports never show a null recipe
+    for the no-op arm.
+    """
     import shutil
     output_dir = Path(output_dir)
     init_adapter_dir = Path(init_adapter_dir)
+    recipe = recipe or ReferenceRecipe()
     if (output_dir / "adapters").exists():
         shutil.rmtree(output_dir / "adapters")
     shutil.copytree(init_adapter_dir, output_dir / "adapters")
@@ -211,9 +218,13 @@ def make_noop_checkpoint(
     summary = {
         "method_id": method_id,
         "noop": True,
+        "recipe": recipe.to_dict(),
         "init_adapter_dir": str(init_adapter_dir),
         "num_optimizer_steps": 0,
-        "note": "MF adapter copied unchanged; must reproduce MF metrics.",
+        "groups": [],
+        "note": "MF adapter copied unchanged; must reproduce MF metrics. "
+                "The recorded recipe is the one inherited from MF — B0 "
+                "applies no updates of its own.",
     }
     with open(output_dir / "training_summary.json", "w") as f:
         json.dump(summary, f, indent=2)

@@ -26,6 +26,7 @@ never share a candidate id.
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
 from granunlearn.config import _find_repo_root
@@ -79,6 +80,25 @@ def select_candidates(grid: list[CandidateSpec],
             if c.candidate_id in wanted_ids or c.method in wanted_methods]
 
 
+def mf_inherited_recipe(mf_adapters: Path) -> ReferenceRecipe:
+    """The recipe MF was actually trained with, read back from its summary.
+
+    B0 copies MF's adapter and applies no updates of its own, so the
+    recipe it reports is an INHERITED one rather than a swept one.  Read
+    it from the checkpoint instead of assuming the dataclass default, so
+    a recipe change in a later iteration cannot silently desynchronise
+    B0's provenance from the weights it carries.
+    """
+    summary = mf_adapters.parent / "training_summary.json"
+    if summary.exists():
+        recorded = json.loads(summary.read_text()).get("recipe")
+        if recorded:
+            return ReferenceRecipe.from_dict(recorded)
+    log.warning("MF summary has no recipe (%s) — falling back to the "
+                "ReferenceRecipe default", summary)
+    return ReferenceRecipe()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Train MF->MU baseline candidates")
@@ -113,7 +133,8 @@ def main() -> None:
     for spec in chosen:
         out_dir = out_root / spec.candidate_id
         if spec.noop:
-            make_noop_checkpoint(spec.candidate_id, mf_adapters, out_dir)
+            make_noop_checkpoint(spec.candidate_id, mf_adapters, out_dir,
+                                 recipe=mf_inherited_recipe(mf_adapters))
             continue
         groups = [
             GroupSpec(g.name, dataset_dir / "unlearning" / f"{g.name}.jsonl",

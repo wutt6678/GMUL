@@ -13,7 +13,13 @@ selection, and a one-shot test evaluation with paired CIs:
 4. candidate selection by id / method letter;
 5. the frozen pilot-100 state + unlearning knowledge datasets;
 6. the B0 == MF no-op invariant used by the final evaluation;
-7. GPU lane planning (cost model, LPT balance, no-op pinning).
+7. GPU lane planning (cost model, LPT balance, no-op pinning);
+8. the batch-layout noise floor reported by the final evaluation;
+9. recipe inheritance for the no-op arm (B0 reports MF's recipe, never
+   null, and ``ReferenceRecipe`` round-trips through JSON);
+10. the generation batch layout, pinned against a stubbed model — the
+   layout is part of the experiment because decoding is not bit-stable
+   across layouts.
 
 Everything here is CPU-only and reads committed artifacts only.
 """
@@ -413,3 +419,311 @@ class TestLanePlanning:
     def test_invalid_lane_count(self):
         with pytest.raises(ValueError):
             self.plan(self.grid, self.SIZES, 0, 10)
+
+
+# ── 8. batch-layout noise floor ───────────────────────────────────
+
+class TestBatchCompositionSensitivity:
+    """The same checkpoint scored under two batch layouts is NOT
+    bit-identical (measured on the pilot-100 run: 122/2,259 greedy
+    decodes flipped between the gate's 6,777-query pass and the final
+    2,259-query pass).  The report must expose that floor rather than
+    let it masquerade as a model difference."""
+
+    def _preds(self, queries, assoc_by_id, flip=0):
+        from granunlearn.schema import PredictionRecord
+        out = []
+        for i, q in enumerate(queries):
+            a = assoc_by_id[q.association_id]
+            raw = a.levels[0].value
+            if i < flip:
+                raw = "I don't know."
+            out.append(PredictionRecord(
+                experiment_id="e", checkpoint_id="MF",
+                query_id=q.query_id, raw_output=raw, parsed_answer=None,
+                matched_canonical_id=None, predicted_level=None,
+                is_correct_branch=False, is_finer_than_target=False,
+                is_coarser_than_target=False, metadata={}))
+        return out
+
+    def _data(self):
+        from granunlearn.evaluation.reference_eval import (
+            load_associations_parquet, load_queries_parquet)
+        queries = [q for q in load_queries_parquet(
+            PILOT_DIR / "queries.parquet") if q.split == "test"][:200]
+        assocs = load_associations_parquet(PILOT_DIR / "associations.parquet")
+        return queries, {a.association_id: a for a in assocs}, assocs
+
+    def test_identical_views_have_zero_floor(self):
+        from evaluate_pilot100_final import _batch_composition_sensitivity
+        qs, by_id, assocs = self._data()
+        p = self._preds(qs, by_id)
+        rep = _batch_composition_sensitivity({"MF": p}, {"MF": list(p)},
+                                             qs, assocs)
+        s = rep["per_state"]["MF"]
+        assert s["num_raw_output_mismatches"] == 0
+        assert s["raw_output_mismatch_rate"] == 0.0
+        assert rep["max_abs_metric_delta"] == 0.0
+        assert all(v == 0.0 for v in
+                   s["metric_deltas_uniform_minus_gate"].values())
+
+    def test_flipped_decodes_are_counted_and_bounded(self):
+        from evaluate_pilot100_final import _batch_composition_sensitivity
+        qs, by_id, assocs = self._data()
+        uniform = self._preds(qs, by_id, flip=0)
+        gate = self._preds(qs, by_id, flip=10)
+        rep = _batch_composition_sensitivity({"MF": uniform},
+                                             {"MF": gate}, qs, assocs)
+        s = rep["per_state"]["MF"]
+        assert s["num_test_queries_compared"] == 200
+        assert s["num_raw_output_mismatches"] == 10
+        assert s["raw_output_mismatch_rate"] == 0.05
+        # the floor is reported as a magnitude, and stays far below the
+        # between-model effects it must not be confused with
+        assert rep["max_abs_metric_delta"] <= 0.2
+        assert rep["interpretation"]
+
+    def test_states_present_in_only_one_view_are_skipped(self):
+        from evaluate_pilot100_final import _batch_composition_sensitivity
+        qs, by_id, assocs = self._data()
+        p = self._preds(qs, by_id)
+        rep = _batch_composition_sensitivity({"MF": p}, {"MG": p},
+                                             qs, assocs)
+        assert rep["per_state"] == {}
+        assert rep["max_abs_metric_delta"] == 0.0
+
+
+# ── 9. recipe inheritance for the no-op arm ───────────────────────
+
+class TestNoOpRecipeInheritance:
+    """B0 applies zero updates, so the recipe it reports is the one it
+    INHERITS from MF.  A null recipe there made the selection report look
+    as though the no-op arm had been trained with no configuration at
+    all; the fix reads the recipe back from MF's own summary instead of
+    assuming the dataclass default still matches it."""
+
+    def test_recipe_dict_round_trips(self):
+        from granunlearn.training.reference_trainer import ReferenceRecipe
+        r = ReferenceRecipe()
+        back = ReferenceRecipe.from_dict(r.to_dict())
+        assert back == r
+        # to_dict writes lora_target_modules as a list (JSON has no
+        # tuples); from_dict must coerce it back or the frozen instance
+        # stops being hashable and stops comparing equal
+        assert isinstance(back.lora_target_modules, tuple)
+        assert hash(back) == hash(r)
+
+    def test_round_trip_survives_a_json_cycle(self):
+        from granunlearn.training.reference_trainer import ReferenceRecipe
+        r = ReferenceRecipe(learning_rate=2e-5, num_epochs=5)
+        back = ReferenceRecipe.from_dict(json.loads(json.dumps(r.to_dict())))
+        assert back == r
+        assert back.learning_rate == 2e-5 and back.num_epochs == 5
+
+    def test_from_dict_ignores_unknown_keys(self):
+        """A summary written by another revision may carry extra fields;
+        loading it must not explode."""
+        from granunlearn.training.reference_trainer import ReferenceRecipe
+        d = ReferenceRecipe().to_dict()
+        d["some_future_knob"] = 7
+        assert ReferenceRecipe.from_dict(d) == ReferenceRecipe()
+
+    def test_overrides_produce_a_distinct_recipe(self):
+        from granunlearn.training.reference_trainer import ReferenceRecipe
+        base = ReferenceRecipe()
+        swept = ReferenceRecipe(**{"learning_rate": 2e-5, "num_epochs": 5})
+        assert swept != base
+        assert swept.lora_r == base.lora_r, "only swept knobs may differ"
+
+    def test_mf_summary_recipe_is_inherited_by_the_noop_arm(self):
+        """End-to-end on the real checkpoint: B0's summary must carry
+        MF's recorded recipe verbatim, and the adapter bytes must be
+        unchanged by the copy."""
+        mf = (REPO_ROOT / "data" / "checkpoints" / "mllmu_pilot100" / "MF")
+        b0 = (REPO_ROOT / "data" / "checkpoints" / "mllmu_pilot100_unlearn"
+              / "B0")
+        if not (mf / "training_summary.json").exists():
+            pytest.skip("MF checkpoint is gitignored / not trained here")
+        from granunlearn.training.reference_trainer import ReferenceRecipe
+        mf_recipe = json.loads(
+            (mf / "training_summary.json").read_text())["recipe"]
+        assert mf_recipe == ReferenceRecipe().to_dict(), \
+            "the frozen pilot-100 recipe drifted from ReferenceRecipe"
+        if not (b0 / "training_summary.json").exists():
+            pytest.skip("B0 checkpoint not materialised here")
+        summary = json.loads((b0 / "training_summary.json").read_text())
+        assert summary["noop"] is True
+        assert summary["num_optimizer_steps"] == 0
+        assert summary["groups"] == []
+        assert summary["recipe"] == mf_recipe
+        assert "inherited" in summary["note"].lower()
+
+    def test_inherited_recipe_helper_reads_the_checkpoint(self):
+        mf_adapters = (REPO_ROOT / "data" / "checkpoints" / "mllmu_pilot100"
+                       / "MF" / "adapters")
+        if not (mf_adapters.parent / "training_summary.json").exists():
+            pytest.skip("MF checkpoint is gitignored / not trained here")
+        from granunlearn.training.reference_trainer import ReferenceRecipe
+        from train_unlearning_baselines import mf_inherited_recipe
+        assert mf_inherited_recipe(mf_adapters) == ReferenceRecipe()
+
+    def test_inherited_recipe_helper_falls_back_when_absent(self, tmp_path):
+        from granunlearn.training.reference_trainer import ReferenceRecipe
+        from train_unlearning_baselines import mf_inherited_recipe
+        adapters = tmp_path / "MF" / "adapters"
+        adapters.mkdir(parents=True)
+        assert mf_inherited_recipe(adapters) == ReferenceRecipe()
+
+    def test_noop_checkpoint_records_a_recipe_without_a_checkpoint(self,
+                                                                  tmp_path):
+        """make_noop_checkpoint must never emit recipe: null, even when
+        the caller passes nothing (it falls back to the frozen default)."""
+        from granunlearn.training.unlearning_trainer import \
+            make_noop_checkpoint
+        src = tmp_path / "src" / "adapters"
+        src.mkdir(parents=True)
+        (src / "adapter_model.safetensors").write_bytes(b"weights")
+        out = tmp_path / "out"
+        summary = make_noop_checkpoint("B0", src, out)
+        from granunlearn.training.reference_trainer import ReferenceRecipe
+        assert summary["recipe"] == ReferenceRecipe().to_dict()
+        assert summary["groups"] == []
+        assert json.loads(
+            (out / "training_summary.json").read_text())["recipe"]
+        assert (out / "adapters" / "adapter_model.safetensors").read_bytes() \
+            == b"weights"
+
+
+# ── 10. the generation batch layout is pinned ─────────────────────
+
+class TestBatchLayoutIsPinned:
+    """Batched greedy decoding is not bit-stable across batch layouts
+    (section 8), so the layout itself is part of the experiment: it is
+    driven ONLY by the frozen query order and the two recorded batch
+    sizes.  These tests run the real grouping code against a stubbed
+    ``_generate_batch`` — no model, no GPU — and pin the result, so a
+    refactor of the batching loop cannot silently invalidate every
+    cross-state comparison already committed."""
+
+    def _stub(self):
+        from granunlearn.evaluation.reference_eval import \
+            ReferenceStateGenerator
+        gen = object.__new__(ReferenceStateGenerator)  # skip __init__
+        gen.device = "cpu"
+        gen.max_image_pixels = 384 * 384
+        calls: list[tuple[int, bool, list[bool]]] = []
+
+        def fake_generate_batch(texts, images_per_sample, max_new_tokens):
+            calls.append((
+                len(texts),
+                images_per_sample is not None,
+                [im is not None for im in (images_per_sample or [])],
+            ))
+            return ["x"] * len(texts)
+
+        gen._generate_batch = fake_generate_batch
+        # a stand-in image object: only its None-ness is ever inspected
+        gen._render_prompt = lambda q, a, r: (
+            q.prompt, object() if q.image_ids else None)
+        return gen, calls
+
+    def _data(self):
+        from granunlearn.evaluation.reference_eval import (
+            load_associations_parquet, load_queries_parquet)
+        queries = [q for q in load_queries_parquet(
+            PILOT_DIR / "queries.parquet") if q.split == "test"]
+        assocs = load_associations_parquet(PILOT_DIR / "associations.parquet")
+        return queries, {a.association_id: a for a in assocs}
+
+    def _run(self, batch_size, image_batch_size, missing_image_ids=()):
+        qs, by = self._data()
+        gen, calls = self._stub()
+        if missing_image_ids:
+            def render(q, a, r):
+                if q.query_id in missing_image_ids:
+                    return q.prompt, None
+                return q.prompt, object() if q.image_ids else None
+            gen._render_prompt = render
+        out = gen.generate_for_queries(
+            qs, by, REPO_ROOT, batch_size=batch_size,
+            image_batch_size=image_batch_size)
+        return qs, out, calls
+
+    def test_layout_is_complete_and_deterministic(self):
+        qs, out1, calls1 = self._run(8, 8)
+        _, out2, calls2 = self._run(8, 8)
+        assert len(out1) == len(out2) == len(qs) == 2259
+        assert calls1 == calls2, "grouping must not vary between runs"
+
+    def test_frozen_test_split_layout_at_the_recorded_batch_sizes(self):
+        """The pilot-100 test split interleaves 747 image probes among
+        1,512 text probes and never runs more than 3 image queries
+        together, so image_batch_size=8 is never saturated: the layout is
+        set by the query ORDER in the frozen parquet."""
+        _, _, calls = self._run(8, 8)
+        img = [c for c in calls if c[1]]
+        txt = [c for c in calls if not c[1]]
+        assert len(calls) == 1224
+        assert len(img) == 567 and max(c[0] for c in img) == 3
+        assert len(txt) == 657 and max(c[0] for c in txt) == 8
+        assert sum(c[0] for c in calls) == 2259
+
+    def test_a_batch_never_mixes_image_and_text_samples(self):
+        _, _, calls = self._run(8, 8)
+        for size, is_image, flags in calls:
+            assert size >= 1
+            if is_image:
+                assert all(flags), "an image batch must carry every image"
+            else:
+                assert flags == []
+
+    def test_caps_are_respected_for_every_batch_size(self):
+        for batch_size, image_batch_size in ((8, 8), (4, 8), (8, 2), (1, 1)):
+            _, out, calls = self._run(batch_size, image_batch_size)
+            assert len(out) == 2259
+            for size, is_image, _flags in calls:
+                cap = image_batch_size if is_image else batch_size
+                assert size <= cap, (batch_size, image_batch_size, size)
+
+    def test_batch_sizes_are_part_of_the_recorded_configuration(self):
+        """Different batch sizes give different layouts, hence (per
+        section 8) different decodes for the SAME weights — which is why
+        both sizes are written into every report's generation_config."""
+        _, _, a = self._run(8, 8)
+        _, _, b = self._run(8, 1)
+        _, _, c = self._run(4, 8)
+        assert a != b and a != c and b != c
+        assert len(a) < len(b), "one-at-a-time images means more batches"
+
+    def test_a_missing_image_degrades_to_single_sample_calls(self):
+        """A missing photo must not poison the whole batch: that run of
+        image queries falls back to per-sample text-only calls."""
+        qs, _, calls = self._run(8, 8)
+        victim = next(q.query_id for q in qs if q.image_ids)
+        _, out, degraded = self._run(8, 8, missing_image_ids=(victim,))
+        assert len(out) == 2259
+        # same queries, but the layout changed around the missing image
+        assert degraded != calls
+        assert all(size >= 1 for size, _, _ in degraded)
+
+    def test_progress_marks_are_emitted_without_touching_the_layout(
+            self, caplog):
+        """The progress log is observation-only: it must never influence
+        grouping, and it must not fire for a pass shorter than one mark."""
+        import logging
+        qs, _, calls = self._run(8, 8)
+        assert len(qs) == 2259
+        # caplog captures from the start of the test, so drop the warm-up
+        # run's marks: only one pass may contribute to the sequence below
+        caplog.clear()
+        with caplog.at_level(logging.INFO, logger="reference_eval"):
+            _, _, again = self._run(8, 8)
+        assert again == calls
+        marks = [r.getMessage() for r in caplog.records
+                 if "generation progress" in r.getMessage()]
+        assert marks, "a 2,259-query pass must report progress"
+        pcts = [float(m.split("(")[1].split("%")[0]) for m in marks]
+        assert pcts == sorted(pcts) and pcts[-1] <= 100.0
+        assert all("/2259" in m for m in marks)
+
+

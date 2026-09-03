@@ -161,7 +161,24 @@ class ReferenceStateGenerator:
         """
         outputs: list[str] = []
         i = 0
+        total = len(queries)
+        # A full generation pass is the longest silent phase in the
+        # pipeline (tens of minutes on a shared GPU), so emit a progress
+        # mark with a throughput-based ETA.  Logging only: it must never
+        # influence how the queries are grouped into batches, because
+        # cross-state comparability depends on an identical batch layout.
+        step = max(256, total // 20)
+        next_mark = step
+        started = time.time()
         while i < len(queries):
+            if len(outputs) >= next_mark:
+                elapsed = time.time() - started
+                rate = len(outputs) / elapsed if elapsed > 0 else 0.0
+                eta = ((total - len(outputs)) / rate) if rate > 0 else 0.0
+                log.info("generation progress: %d/%d (%.1f%%) in %.0fs — "
+                         "%.2f q/s, ETA %.0fs", len(outputs), total,
+                         100.0 * len(outputs) / total, elapsed, rate, eta)
+                next_mark += step
             if queries[i].image_ids:
                 # maximal image run, capped at image_batch_size
                 j = i

@@ -22,10 +22,9 @@ Scope notes
 from __future__ import annotations
 
 import json
-import math
 import random
 import time
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 from typing import Any
 
@@ -76,6 +75,22 @@ class ReferenceRecipe:
         d["lora_target_modules"] = list(self.lora_target_modules)
         return d
 
+    @classmethod
+    def from_dict(cls, d: dict[str, Any]) -> "ReferenceRecipe":
+        """Round-trip :meth:`to_dict`, ignoring keys this version does not
+        know so a summary written by another revision still loads.
+
+        ``to_dict`` writes ``lora_target_modules`` as a list (JSON has no
+        tuples); coerce it back so ``from_dict(r.to_dict()) == r`` and the
+        frozen instance stays hashable.
+        """
+        known = {f.name for f in fields(cls)}
+        kwargs = {k: v for k, v in d.items() if k in known}
+        mods = kwargs.get("lora_target_modules")
+        if isinstance(mods, list):
+            kwargs["lora_target_modules"] = tuple(mods)
+        return cls(**kwargs)
+
 
 def set_recipe_seeds(seed: int) -> None:
     import numpy as np
@@ -93,8 +108,6 @@ def _encode_example(example: TrainingExample, processor, max_length: int,
     Labels are masked over everything before the assistant turn, so the
     model is trained to produce the level value given the prompt.
     """
-    import torch
-
     image = None
     user_content: list[dict[str, Any]] = [{"type": "text",
                                            "text": example.prompt}]

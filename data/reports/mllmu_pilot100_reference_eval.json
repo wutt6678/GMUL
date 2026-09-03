@@ -1,0 +1,4459 @@
+{
+  "experiment_id": "mllmu_pilot100_iter11",
+  "model_id": "Qwen/Qwen3.5-9B",
+  "states": [
+    "BASE",
+    "MF",
+    "MG",
+    "MN"
+  ],
+  "num_queries": 6777,
+  "generation_config": {
+    "batch_size": 8,
+    "image_batch_size": 8,
+    "max_new_tokens": 96,
+    "do_sample": false,
+    "note": "identical for every state in this report"
+  },
+  "metrics_split_semantics": "metrics_by_state pools train/val/test; metrics_by_split reports each paraphrase split separately — the TEST numbers measure generalization to unseen wording and are the authoritative held-out view.",
+  "metrics_by_state": {
+    "BASE": {
+      "num_queries": 6777,
+      "all_core": {
+        "num_queries": 6507,
+        "baseline_accuracy": 0.1532,
+        "post_unlearning_accuracy": 0.0894,
+        "leakage_rate": 0.1521,
+        "unmatched_rate": 0.6725
+      },
+      "target_core": {
+        "num_queries": 3645,
+        "baseline_accuracy": 0.2211,
+        "post_unlearning_accuracy": 0.1073,
+        "leakage_rate": 0.2716,
+        "unmatched_rate": 0.5833
+      },
+      "fine_recovery": {
+        "num_queries": 1620,
+        "baseline_accuracy": 0.2932,
+        "post_unlearning_accuracy": 0.0469,
+        "leakage_rate": 0.3093,
+        "unmatched_rate": 0.6111
+      },
+      "granular": {
+        "num_queries": 675,
+        "baseline_accuracy": 0.1185,
+        "post_unlearning_accuracy": 0.1185,
+        "leakage_rate": 0.3393,
+        "unmatched_rate": 0.4874
+      },
+      "negation": {
+        "num_queries": 540,
+        "baseline_accuracy": 0.2593,
+        "post_unlearning_accuracy": 0.2593,
+        "leakage_rate": 0.1296,
+        "unmatched_rate": 0.5815
+      },
+      "multimodal": {
+        "num_queries": 270,
+        "baseline_accuracy": 0.0667,
+        "post_unlearning_accuracy": 0.0667,
+        "leakage_rate": 0.3704,
+        "unmatched_rate": 0.5185
+      },
+      "image_route": {
+        "num_queries": 540,
+        "baseline_accuracy": 0.1722,
+        "post_unlearning_accuracy": 0.1426,
+        "leakage_rate": 0.1667,
+        "unmatched_rate": 0.6537
+      },
+      "retain_same_entity": {
+        "num_queries": 1161,
+        "baseline_accuracy": 0.025,
+        "post_unlearning_accuracy": 0.025,
+        "leakage_rate": 0.0,
+        "unmatched_rate": 0.8062
+      },
+      "retain_other_entity": {
+        "num_queries": 270,
+        "baseline_accuracy": 0.3407,
+        "post_unlearning_accuracy": 0.3407,
+        "leakage_rate": 0.0,
+        "unmatched_rate": 0.6037
+      },
+      "retain_same_entity_image": {
+        "num_queries": 1161,
+        "baseline_accuracy": 0.0121,
+        "post_unlearning_accuracy": 0.0121,
+        "leakage_rate": 0.0,
+        "unmatched_rate": 0.8295
+      },
+      "retain_other_entity_image": {
+        "num_queries": 270,
+        "baseline_accuracy": 0.2074,
+        "post_unlearning_accuracy": 0.2074,
+        "leakage_rate": 0.0,
+        "unmatched_rate": 0.6963
+      },
+      "adversarial_only": {
+        "num_queries": 270,
+        "baseline_accuracy": 0.1037,
+        "post_unlearning_accuracy": 0.1037,
+        "leakage_rate": 0.8704,
+        "unmatched_rate": 0.0259
+      },
+      "generation_seconds": 8108.7
+    },
+    "MF": {
+      "num_queries": 6777,
+      "all_core": {
+        "num_queries": 6507,
+        "baseline_accuracy": 0.5085,
+        "post_unlearning_accuracy": 0.3481,
+        "leakage_rate": 0.251,
+        "unmatched_rate": 0.3581
+      },
+      "target_core": {
+        "num_queries": 3645,
+        "baseline_accuracy": 0.4883,
+        "post_unlearning_accuracy": 0.2019,
+        "leakage_rate": 0.448,
+        "unmatched_rate": 0.3388
+      },
+      "fine_recovery": {
+        "num_queries": 1620,
+        "baseline_accuracy": 0.6185,
+        "post_unlearning_accuracy": 0.0346,
+        "leakage_rate": 0.6352,
+        "unmatched_rate": 0.3216
+      },
+      "granular": {
+        "num_queries": 675,
+        "baseline_accuracy": 0.2607,
+        "post_unlearning_accuracy": 0.2607,
+        "leakage_rate": 0.3378,
+        "unmatched_rate": 0.3659
+      },
+      "negation": {
+        "num_queries": 540,
+        "baseline_accuracy": 0.4481,
+        "post_unlearning_accuracy": 0.4481,
+        "leakage_rate": 0.1685,
+        "unmatched_rate": 0.3796
+      },
+      "multimodal": {
+        "num_queries": 270,
+        "baseline_accuracy": 0.5333,
+        "post_unlearning_accuracy": 0.5333,
+        "leakage_rate": 0.3444,
+        "unmatched_rate": 0.1222
+      },
+      "image_route": {
+        "num_queries": 540,
+        "baseline_accuracy": 0.4,
+        "post_unlearning_accuracy": 0.2185,
+        "leakage_rate": 0.3556,
+        "unmatched_rate": 0.4241
+      },
+      "retain_same_entity": {
+        "num_queries": 1161,
+        "baseline_accuracy": 0.5616,
+        "post_unlearning_accuracy": 0.5616,
+        "leakage_rate": 0.0,
+        "unmatched_rate": 0.3867
+      },
+      "retain_other_entity": {
+        "num_queries": 270,
+        "baseline_accuracy": 0.5815,
+        "post_unlearning_accuracy": 0.5815,
+        "leakage_rate": 0.0,
+        "unmatched_rate": 0.3333
+      },
+      "retain_same_entity_image": {
+        "num_queries": 1161,
+        "baseline_accuracy": 0.509,
+        "post_unlearning_accuracy": 0.509,
+        "leakage_rate": 0.0,
+        "unmatched_rate": 0.3678
+      },
+      "retain_other_entity_image": {
+        "num_queries": 270,
+        "baseline_accuracy": 0.4778,
+        "post_unlearning_accuracy": 0.4778,
+        "leakage_rate": 0.0,
+        "unmatched_rate": 0.4778
+      },
+      "adversarial_only": {
+        "num_queries": 270,
+        "baseline_accuracy": 0.3556,
+        "post_unlearning_accuracy": 0.3556,
+        "leakage_rate": 0.3,
+        "unmatched_rate": 0.3333
+      },
+      "generation_seconds": 2578.9
+    },
+    "MG": {
+      "num_queries": 6777,
+      "all_core": {
+        "num_queries": 6507,
+        "baseline_accuracy": 0.4163,
+        "post_unlearning_accuracy": 0.4743,
+        "leakage_rate": 0.081,
+        "unmatched_rate": 0.381
+      },
+      "target_core": {
+        "num_queries": 3645,
+        "baseline_accuracy": 0.3289,
+        "post_unlearning_accuracy": 0.4324,
+        "leakage_rate": 0.1446,
+        "unmatched_rate": 0.392
+      },
+      "fine_recovery": {
+        "num_queries": 1620,
+        "baseline_accuracy": 0.179,
+        "post_unlearning_accuracy": 0.366,
+        "leakage_rate": 0.1944,
+        "unmatched_rate": 0.4352
+      },
+      "granular": {
+        "num_queries": 675,
+        "baseline_accuracy": 0.32,
+        "post_unlearning_accuracy": 0.32,
+        "leakage_rate": 0.1793,
+        "unmatched_rate": 0.3659
+      },
+      "negation": {
+        "num_queries": 540,
+        "baseline_accuracy": 0.5463,
+        "post_unlearning_accuracy": 0.5463,
+        "leakage_rate": 0.0648,
+        "unmatched_rate": 0.3759
+      },
+      "multimodal": {
+        "num_queries": 270,
+        "baseline_accuracy": 0.863,
+        "post_unlearning_accuracy": 0.863,
+        "leakage_rate": 0.0074,
+        "unmatched_rate": 0.1296
+      },
+      "image_route": {
+        "num_queries": 540,
+        "baseline_accuracy": 0.3056,
+        "post_unlearning_accuracy": 0.4426,
+        "leakage_rate": 0.1,
+        "unmatched_rate": 0.4426
+      },
+      "retain_same_entity": {
+        "num_queries": 1161,
+        "baseline_accuracy": 0.5306,
+        "post_unlearning_accuracy": 0.5306,
+        "leakage_rate": 0.0,
+        "unmatched_rate": 0.3919
+      },
+      "retain_other_entity": {
+        "num_queries": 270,
+        "baseline_accuracy": 0.5889,
+        "post_unlearning_accuracy": 0.5889,
+        "leakage_rate": 0.0,
+        "unmatched_rate": 0.3704
+      },
+      "retain_same_entity_image": {
+        "num_queries": 1161,
+        "baseline_accuracy": 0.5039,
+        "post_unlearning_accuracy": 0.5039,
+        "leakage_rate": 0.0,
+        "unmatched_rate": 0.3411
+      },
+      "retain_other_entity_image": {
+        "num_queries": 270,
+        "baseline_accuracy": 0.5556,
+        "post_unlearning_accuracy": 0.5556,
+        "leakage_rate": 0.0,
+        "unmatched_rate": 0.3667
+      },
+      "adversarial_only": {
+        "num_queries": 270,
+        "baseline_accuracy": 0.4296,
+        "post_unlearning_accuracy": 0.4296,
+        "leakage_rate": 0.2926,
+        "unmatched_rate": 0.2593
+      },
+      "generation_seconds": 2705.7
+    },
+    "MN": {
+      "num_queries": 6777,
+      "all_core": {
+        "num_queries": 6507,
+        "baseline_accuracy": 0.4134,
+        "post_unlearning_accuracy": 0.3509,
+        "leakage_rate": 0.1498,
+        "unmatched_rate": 0.4592
+      },
+      "target_core": {
+        "num_queries": 3645,
+        "baseline_accuracy": 0.2864,
+        "post_unlearning_accuracy": 0.1748,
+        "leakage_rate": 0.2675,
+        "unmatched_rate": 0.5385
+      },
+      "fine_recovery": {
+        "num_queries": 1620,
+        "baseline_accuracy": 0.3167,
+        "post_unlearning_accuracy": 0.0864,
+        "leakage_rate": 0.3574,
+        "unmatched_rate": 0.5333
+      },
+      "granular": {
+        "num_queries": 675,
+        "baseline_accuracy": 0.1926,
+        "post_unlearning_accuracy": 0.1926,
+        "leakage_rate": 0.2933,
+        "unmatched_rate": 0.477
+      },
+      "negation": {
+        "num_queries": 540,
+        "baseline_accuracy": 0.3056,
+        "post_unlearning_accuracy": 0.3056,
+        "leakage_rate": 0.1519,
+        "unmatched_rate": 0.5296
+      },
+      "multimodal": {
+        "num_queries": 270,
+        "baseline_accuracy": 0.3963,
+        "post_unlearning_accuracy": 0.3963,
+        "leakage_rate": 0.0741,
+        "unmatched_rate": 0.5296
+      },
+      "image_route": {
+        "num_queries": 540,
+        "baseline_accuracy": 0.2389,
+        "post_unlearning_accuracy": 0.1759,
+        "leakage_rate": 0.1778,
+        "unmatched_rate": 0.6444
+      },
+      "retain_same_entity": {
+        "num_queries": 1161,
+        "baseline_accuracy": 0.6227,
+        "post_unlearning_accuracy": 0.6227,
+        "leakage_rate": 0.0,
+        "unmatched_rate": 0.3273
+      },
+      "retain_other_entity": {
+        "num_queries": 270,
+        "baseline_accuracy": 0.6593,
+        "post_unlearning_accuracy": 0.6593,
+        "leakage_rate": 0.0,
+        "unmatched_rate": 0.2704
+      },
+      "retain_same_entity_image": {
+        "num_queries": 1161,
+        "baseline_accuracy": 0.5082,
+        "post_unlearning_accuracy": 0.5082,
+        "leakage_rate": 0.0,
+        "unmatched_rate": 0.4005
+      },
+      "retain_other_entity_image": {
+        "num_queries": 270,
+        "baseline_accuracy": 0.5741,
+        "post_unlearning_accuracy": 0.5741,
+        "leakage_rate": 0.0,
+        "unmatched_rate": 0.3963
+      },
+      "adversarial_only": {
+        "num_queries": 270,
+        "baseline_accuracy": 0.363,
+        "post_unlearning_accuracy": 0.363,
+        "leakage_rate": 0.3333,
+        "unmatched_rate": 0.3037
+      },
+      "generation_seconds": 2828.7
+    }
+  },
+  "metrics_by_split": {
+    "train": {
+      "BASE": {
+        "num_queries": 2259,
+        "all_core": {
+          "num_queries": 2169,
+          "baseline_accuracy": 0.1512,
+          "post_unlearning_accuracy": 0.0876,
+          "leakage_rate": 0.154,
+          "unmatched_rate": 0.6745
+        },
+        "target_core": {
+          "num_queries": 1215,
+          "baseline_accuracy": 0.2148,
+          "post_unlearning_accuracy": 0.1012,
+          "leakage_rate": 0.2749,
+          "unmatched_rate": 0.5877
+        },
+        "fine_recovery": {
+          "num_queries": 540,
+          "baseline_accuracy": 0.287,
+          "post_unlearning_accuracy": 0.0463,
+          "leakage_rate": 0.3019,
+          "unmatched_rate": 0.6259
+        },
+        "granular": {
+          "num_queries": 225,
+          "baseline_accuracy": 0.0978,
+          "post_unlearning_accuracy": 0.0978,
+          "leakage_rate": 0.3556,
+          "unmatched_rate": 0.4889
+        },
+        "negation": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.2556,
+          "post_unlearning_accuracy": 0.2556,
+          "leakage_rate": 0.1278,
+          "unmatched_rate": 0.5833
+        },
+        "multimodal": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.0556,
+          "post_unlearning_accuracy": 0.0556,
+          "leakage_rate": 0.3778,
+          "unmatched_rate": 0.5222
+        },
+        "image_route": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.1833,
+          "post_unlearning_accuracy": 0.1389,
+          "leakage_rate": 0.1889,
+          "unmatched_rate": 0.6333
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.0258,
+          "post_unlearning_accuracy": 0.0258,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.8217
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.3444,
+          "post_unlearning_accuracy": 0.3444,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.5889
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.0129,
+          "post_unlearning_accuracy": 0.0129,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.8243
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.2333,
+          "post_unlearning_accuracy": 0.2333,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.6556
+        },
+        "adversarial_only": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.1222,
+          "post_unlearning_accuracy": 0.1222,
+          "leakage_rate": 0.8444,
+          "unmatched_rate": 0.0333
+        }
+      },
+      "MF": {
+        "num_queries": 2259,
+        "all_core": {
+          "num_queries": 2169,
+          "baseline_accuracy": 0.5048,
+          "post_unlearning_accuracy": 0.343,
+          "leakage_rate": 0.2559,
+          "unmatched_rate": 0.3564
+        },
+        "target_core": {
+          "num_queries": 1215,
+          "baseline_accuracy": 0.4823,
+          "post_unlearning_accuracy": 0.1934,
+          "leakage_rate": 0.4568,
+          "unmatched_rate": 0.335
+        },
+        "fine_recovery": {
+          "num_queries": 540,
+          "baseline_accuracy": 0.6259,
+          "post_unlearning_accuracy": 0.0352,
+          "leakage_rate": 0.6426,
+          "unmatched_rate": 0.313
+        },
+        "granular": {
+          "num_queries": 225,
+          "baseline_accuracy": 0.2267,
+          "post_unlearning_accuracy": 0.2267,
+          "leakage_rate": 0.3778,
+          "unmatched_rate": 0.3511
+        },
+        "negation": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.4333,
+          "post_unlearning_accuracy": 0.4333,
+          "leakage_rate": 0.1667,
+          "unmatched_rate": 0.3889
+        },
+        "multimodal": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5333,
+          "post_unlearning_accuracy": 0.5333,
+          "leakage_rate": 0.3444,
+          "unmatched_rate": 0.1222
+        },
+        "image_route": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.3944,
+          "post_unlearning_accuracy": 0.2167,
+          "leakage_rate": 0.3444,
+          "unmatched_rate": 0.4333
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.5452,
+          "post_unlearning_accuracy": 0.5452,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.4005
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.6444,
+          "post_unlearning_accuracy": 0.6444,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.2889
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.509,
+          "post_unlearning_accuracy": 0.509,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3669
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.4778,
+          "post_unlearning_accuracy": 0.4778,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.4778
+        },
+        "adversarial_only": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.3444,
+          "post_unlearning_accuracy": 0.3444,
+          "leakage_rate": 0.2778,
+          "unmatched_rate": 0.3667
+        }
+      },
+      "MG": {
+        "num_queries": 2259,
+        "all_core": {
+          "num_queries": 2169,
+          "baseline_accuracy": 0.4191,
+          "post_unlearning_accuracy": 0.4735,
+          "leakage_rate": 0.0858,
+          "unmatched_rate": 0.3748
+        },
+        "target_core": {
+          "num_queries": 1215,
+          "baseline_accuracy": 0.3276,
+          "post_unlearning_accuracy": 0.4247,
+          "leakage_rate": 0.1531,
+          "unmatched_rate": 0.3885
+        },
+        "fine_recovery": {
+          "num_queries": 540,
+          "baseline_accuracy": 0.187,
+          "post_unlearning_accuracy": 0.3593,
+          "leakage_rate": 0.2074,
+          "unmatched_rate": 0.4278
+        },
+        "granular": {
+          "num_queries": 225,
+          "baseline_accuracy": 0.2978,
+          "post_unlearning_accuracy": 0.2978,
+          "leakage_rate": 0.1867,
+          "unmatched_rate": 0.36
+        },
+        "negation": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.5389,
+          "post_unlearning_accuracy": 0.5389,
+          "leakage_rate": 0.0778,
+          "unmatched_rate": 0.3778
+        },
+        "multimodal": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.8667,
+          "post_unlearning_accuracy": 0.8667,
+          "leakage_rate": 0.0111,
+          "unmatched_rate": 0.1222
+        },
+        "image_route": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.3056,
+          "post_unlearning_accuracy": 0.4444,
+          "leakage_rate": 0.0944,
+          "unmatched_rate": 0.45
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.5401,
+          "post_unlearning_accuracy": 0.5401,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3824
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.6,
+          "post_unlearning_accuracy": 0.6,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3556
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.509,
+          "post_unlearning_accuracy": 0.509,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3359
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5667,
+          "post_unlearning_accuracy": 0.5667,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3444
+        },
+        "adversarial_only": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.4444,
+          "post_unlearning_accuracy": 0.4444,
+          "leakage_rate": 0.3,
+          "unmatched_rate": 0.2333
+        }
+      },
+      "MN": {
+        "num_queries": 2259,
+        "all_core": {
+          "num_queries": 2169,
+          "baseline_accuracy": 0.4112,
+          "post_unlearning_accuracy": 0.3555,
+          "leakage_rate": 0.1503,
+          "unmatched_rate": 0.455
+        },
+        "target_core": {
+          "num_queries": 1215,
+          "baseline_accuracy": 0.2749,
+          "post_unlearning_accuracy": 0.1753,
+          "leakage_rate": 0.2683,
+          "unmatched_rate": 0.535
+        },
+        "fine_recovery": {
+          "num_queries": 540,
+          "baseline_accuracy": 0.3056,
+          "post_unlearning_accuracy": 0.1,
+          "leakage_rate": 0.3444,
+          "unmatched_rate": 0.5296
+        },
+        "granular": {
+          "num_queries": 225,
+          "baseline_accuracy": 0.1689,
+          "post_unlearning_accuracy": 0.1689,
+          "leakage_rate": 0.3244,
+          "unmatched_rate": 0.4578
+        },
+        "negation": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.2944,
+          "post_unlearning_accuracy": 0.2944,
+          "leakage_rate": 0.1611,
+          "unmatched_rate": 0.5389
+        },
+        "multimodal": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.4111,
+          "post_unlearning_accuracy": 0.4111,
+          "leakage_rate": 0.0778,
+          "unmatched_rate": 0.5111
+        },
+        "image_route": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.2278,
+          "post_unlearning_accuracy": 0.1722,
+          "leakage_rate": 0.1722,
+          "unmatched_rate": 0.6556
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.6331,
+          "post_unlearning_accuracy": 0.6331,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3256
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.7111,
+          "post_unlearning_accuracy": 0.7111,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.2222
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.509,
+          "post_unlearning_accuracy": 0.509,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.4031
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5778,
+          "post_unlearning_accuracy": 0.5778,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3889
+        },
+        "adversarial_only": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.4,
+          "post_unlearning_accuracy": 0.4,
+          "leakage_rate": 0.3,
+          "unmatched_rate": 0.3
+        }
+      }
+    },
+    "val": {
+      "BASE": {
+        "num_queries": 2259,
+        "all_core": {
+          "num_queries": 2169,
+          "baseline_accuracy": 0.1485,
+          "post_unlearning_accuracy": 0.0862,
+          "leakage_rate": 0.1517,
+          "unmatched_rate": 0.674
+        },
+        "target_core": {
+          "num_queries": 1215,
+          "baseline_accuracy": 0.2214,
+          "post_unlearning_accuracy": 0.1103,
+          "leakage_rate": 0.2708,
+          "unmatched_rate": 0.5786
+        },
+        "fine_recovery": {
+          "num_queries": 540,
+          "baseline_accuracy": 0.2963,
+          "post_unlearning_accuracy": 0.05,
+          "leakage_rate": 0.3056,
+          "unmatched_rate": 0.6074
+        },
+        "granular": {
+          "num_queries": 225,
+          "baseline_accuracy": 0.1333,
+          "post_unlearning_accuracy": 0.1333,
+          "leakage_rate": 0.3244,
+          "unmatched_rate": 0.4933
+        },
+        "negation": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.2444,
+          "post_unlearning_accuracy": 0.2444,
+          "leakage_rate": 0.1556,
+          "unmatched_rate": 0.5667
+        },
+        "multimodal": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.0667,
+          "post_unlearning_accuracy": 0.0667,
+          "leakage_rate": 0.3778,
+          "unmatched_rate": 0.5
+        },
+        "image_route": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.1611,
+          "post_unlearning_accuracy": 0.15,
+          "leakage_rate": 0.1611,
+          "unmatched_rate": 0.65
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.0258,
+          "post_unlearning_accuracy": 0.0258,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.7959
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.3333,
+          "post_unlearning_accuracy": 0.3333,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.6222
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.0103,
+          "post_unlearning_accuracy": 0.0103,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.8346
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.1,
+          "post_unlearning_accuracy": 0.1,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.8
+        },
+        "adversarial_only": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.1111,
+          "post_unlearning_accuracy": 0.1111,
+          "leakage_rate": 0.8444,
+          "unmatched_rate": 0.0444
+        }
+      },
+      "MF": {
+        "num_queries": 2259,
+        "all_core": {
+          "num_queries": 2169,
+          "baseline_accuracy": 0.5099,
+          "post_unlearning_accuracy": 0.3476,
+          "leakage_rate": 0.2467,
+          "unmatched_rate": 0.3675
+        },
+        "target_core": {
+          "num_queries": 1215,
+          "baseline_accuracy": 0.4905,
+          "post_unlearning_accuracy": 0.2008,
+          "leakage_rate": 0.4403,
+          "unmatched_rate": 0.3506
+        },
+        "fine_recovery": {
+          "num_queries": 540,
+          "baseline_accuracy": 0.6148,
+          "post_unlearning_accuracy": 0.0241,
+          "leakage_rate": 0.6333,
+          "unmatched_rate": 0.337
+        },
+        "granular": {
+          "num_queries": 225,
+          "baseline_accuracy": 0.2711,
+          "post_unlearning_accuracy": 0.2711,
+          "leakage_rate": 0.3022,
+          "unmatched_rate": 0.3956
+        },
+        "negation": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.4556,
+          "post_unlearning_accuracy": 0.4556,
+          "leakage_rate": 0.1611,
+          "unmatched_rate": 0.3833
+        },
+        "multimodal": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5333,
+          "post_unlearning_accuracy": 0.5333,
+          "leakage_rate": 0.3556,
+          "unmatched_rate": 0.1111
+        },
+        "image_route": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.4056,
+          "post_unlearning_accuracy": 0.2222,
+          "leakage_rate": 0.3556,
+          "unmatched_rate": 0.4222
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.5659,
+          "post_unlearning_accuracy": 0.5659,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3824
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5667,
+          "post_unlearning_accuracy": 0.5667,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.4111
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.509,
+          "post_unlearning_accuracy": 0.509,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3695
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.4778,
+          "post_unlearning_accuracy": 0.4778,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.4778
+        },
+        "adversarial_only": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.3556,
+          "post_unlearning_accuracy": 0.3556,
+          "leakage_rate": 0.3,
+          "unmatched_rate": 0.3333
+        }
+      },
+      "MG": {
+        "num_queries": 2259,
+        "all_core": {
+          "num_queries": 2169,
+          "baseline_accuracy": 0.4103,
+          "post_unlearning_accuracy": 0.474,
+          "leakage_rate": 0.0761,
+          "unmatched_rate": 0.385
+        },
+        "target_core": {
+          "num_queries": 1215,
+          "baseline_accuracy": 0.3259,
+          "post_unlearning_accuracy": 0.4395,
+          "leakage_rate": 0.1358,
+          "unmatched_rate": 0.3934
+        },
+        "fine_recovery": {
+          "num_queries": 540,
+          "baseline_accuracy": 0.1704,
+          "post_unlearning_accuracy": 0.3778,
+          "leakage_rate": 0.1852,
+          "unmatched_rate": 0.4352
+        },
+        "granular": {
+          "num_queries": 225,
+          "baseline_accuracy": 0.3511,
+          "post_unlearning_accuracy": 0.3511,
+          "leakage_rate": 0.1511,
+          "unmatched_rate": 0.3644
+        },
+        "negation": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.5278,
+          "post_unlearning_accuracy": 0.5278,
+          "leakage_rate": 0.0667,
+          "unmatched_rate": 0.3833
+        },
+        "multimodal": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.8556,
+          "post_unlearning_accuracy": 0.8556,
+          "leakage_rate": 0.0111,
+          "unmatched_rate": 0.1333
+        },
+        "image_route": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.2944,
+          "post_unlearning_accuracy": 0.4389,
+          "leakage_rate": 0.1,
+          "unmatched_rate": 0.4444
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.522,
+          "post_unlearning_accuracy": 0.522,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3928
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5222,
+          "post_unlearning_accuracy": 0.5222,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.4222
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.5039,
+          "post_unlearning_accuracy": 0.5039,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3437
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5556,
+          "post_unlearning_accuracy": 0.5556,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3778
+        },
+        "adversarial_only": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.4222,
+          "post_unlearning_accuracy": 0.4222,
+          "leakage_rate": 0.2889,
+          "unmatched_rate": 0.2667
+        }
+      },
+      "MN": {
+        "num_queries": 2259,
+        "all_core": {
+          "num_queries": 2169,
+          "baseline_accuracy": 0.4108,
+          "post_unlearning_accuracy": 0.3458,
+          "leakage_rate": 0.1517,
+          "unmatched_rate": 0.461
+        },
+        "target_core": {
+          "num_queries": 1215,
+          "baseline_accuracy": 0.2881,
+          "post_unlearning_accuracy": 0.172,
+          "leakage_rate": 0.2708,
+          "unmatched_rate": 0.5391
+        },
+        "fine_recovery": {
+          "num_queries": 540,
+          "baseline_accuracy": 0.3259,
+          "post_unlearning_accuracy": 0.0833,
+          "leakage_rate": 0.3648,
+          "unmatched_rate": 0.5296
+        },
+        "granular": {
+          "num_queries": 225,
+          "baseline_accuracy": 0.2,
+          "post_unlearning_accuracy": 0.2,
+          "leakage_rate": 0.2711,
+          "unmatched_rate": 0.4933
+        },
+        "negation": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.2833,
+          "post_unlearning_accuracy": 0.2833,
+          "leakage_rate": 0.1778,
+          "unmatched_rate": 0.5278
+        },
+        "multimodal": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.3889,
+          "post_unlearning_accuracy": 0.3889,
+          "leakage_rate": 0.0778,
+          "unmatched_rate": 0.5333
+        },
+        "image_route": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.2389,
+          "post_unlearning_accuracy": 0.1833,
+          "leakage_rate": 0.1778,
+          "unmatched_rate": 0.6389
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.6047,
+          "post_unlearning_accuracy": 0.6047,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3359
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.6444,
+          "post_unlearning_accuracy": 0.6444,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.2889
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.509,
+          "post_unlearning_accuracy": 0.509,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3979
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5778,
+          "post_unlearning_accuracy": 0.5778,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3889
+        },
+        "adversarial_only": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.3556,
+          "post_unlearning_accuracy": 0.3556,
+          "leakage_rate": 0.3444,
+          "unmatched_rate": 0.3
+        }
+      }
+    },
+    "test": {
+      "BASE": {
+        "num_queries": 2259,
+        "all_core": {
+          "num_queries": 2169,
+          "baseline_accuracy": 0.16,
+          "post_unlearning_accuracy": 0.0945,
+          "leakage_rate": 0.1508,
+          "unmatched_rate": 0.669
+        },
+        "target_core": {
+          "num_queries": 1215,
+          "baseline_accuracy": 0.2272,
+          "post_unlearning_accuracy": 0.1103,
+          "leakage_rate": 0.2691,
+          "unmatched_rate": 0.5835
+        },
+        "fine_recovery": {
+          "num_queries": 540,
+          "baseline_accuracy": 0.2963,
+          "post_unlearning_accuracy": 0.0444,
+          "leakage_rate": 0.3204,
+          "unmatched_rate": 0.6
+        },
+        "granular": {
+          "num_queries": 225,
+          "baseline_accuracy": 0.1244,
+          "post_unlearning_accuracy": 0.1244,
+          "leakage_rate": 0.3378,
+          "unmatched_rate": 0.48
+        },
+        "negation": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.2778,
+          "post_unlearning_accuracy": 0.2778,
+          "leakage_rate": 0.1056,
+          "unmatched_rate": 0.5944
+        },
+        "multimodal": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.0778,
+          "post_unlearning_accuracy": 0.0778,
+          "leakage_rate": 0.3556,
+          "unmatched_rate": 0.5333
+        },
+        "image_route": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.1722,
+          "post_unlearning_accuracy": 0.1389,
+          "leakage_rate": 0.15,
+          "unmatched_rate": 0.6778
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.0233,
+          "post_unlearning_accuracy": 0.0233,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.801
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.3444,
+          "post_unlearning_accuracy": 0.3444,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.6
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.0129,
+          "post_unlearning_accuracy": 0.0129,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.8295
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.2889,
+          "post_unlearning_accuracy": 0.2889,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.6333
+        },
+        "adversarial_only": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.0778,
+          "post_unlearning_accuracy": 0.0778,
+          "leakage_rate": 0.9222,
+          "unmatched_rate": 0.0
+        }
+      },
+      "MF": {
+        "num_queries": 2259,
+        "all_core": {
+          "num_queries": 2169,
+          "baseline_accuracy": 0.5108,
+          "post_unlearning_accuracy": 0.3536,
+          "leakage_rate": 0.2503,
+          "unmatched_rate": 0.3504
+        },
+        "target_core": {
+          "num_queries": 1215,
+          "baseline_accuracy": 0.4922,
+          "post_unlearning_accuracy": 0.2115,
+          "leakage_rate": 0.4469,
+          "unmatched_rate": 0.3309
+        },
+        "fine_recovery": {
+          "num_queries": 540,
+          "baseline_accuracy": 0.6148,
+          "post_unlearning_accuracy": 0.0444,
+          "leakage_rate": 0.6296,
+          "unmatched_rate": 0.3148
+        },
+        "granular": {
+          "num_queries": 225,
+          "baseline_accuracy": 0.2844,
+          "post_unlearning_accuracy": 0.2844,
+          "leakage_rate": 0.3333,
+          "unmatched_rate": 0.3511
+        },
+        "negation": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.4556,
+          "post_unlearning_accuracy": 0.4556,
+          "leakage_rate": 0.1778,
+          "unmatched_rate": 0.3667
+        },
+        "multimodal": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5333,
+          "post_unlearning_accuracy": 0.5333,
+          "leakage_rate": 0.3333,
+          "unmatched_rate": 0.1333
+        },
+        "image_route": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.4,
+          "post_unlearning_accuracy": 0.2167,
+          "leakage_rate": 0.3667,
+          "unmatched_rate": 0.4167
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.5736,
+          "post_unlearning_accuracy": 0.5736,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3773
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5333,
+          "post_unlearning_accuracy": 0.5333,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.509,
+          "post_unlearning_accuracy": 0.509,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3669
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.4778,
+          "post_unlearning_accuracy": 0.4778,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.4778
+        },
+        "adversarial_only": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.3667,
+          "post_unlearning_accuracy": 0.3667,
+          "leakage_rate": 0.3222,
+          "unmatched_rate": 0.3
+        }
+      },
+      "MG": {
+        "num_queries": 2259,
+        "all_core": {
+          "num_queries": 2169,
+          "baseline_accuracy": 0.4195,
+          "post_unlearning_accuracy": 0.4753,
+          "leakage_rate": 0.0811,
+          "unmatched_rate": 0.3831
+        },
+        "target_core": {
+          "num_queries": 1215,
+          "baseline_accuracy": 0.3333,
+          "post_unlearning_accuracy": 0.4329,
+          "leakage_rate": 0.1449,
+          "unmatched_rate": 0.3942
+        },
+        "fine_recovery": {
+          "num_queries": 540,
+          "baseline_accuracy": 0.1796,
+          "post_unlearning_accuracy": 0.3611,
+          "leakage_rate": 0.1907,
+          "unmatched_rate": 0.4426
+        },
+        "granular": {
+          "num_queries": 225,
+          "baseline_accuracy": 0.3111,
+          "post_unlearning_accuracy": 0.3111,
+          "leakage_rate": 0.2,
+          "unmatched_rate": 0.3733
+        },
+        "negation": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.5722,
+          "post_unlearning_accuracy": 0.5722,
+          "leakage_rate": 0.05,
+          "unmatched_rate": 0.3667
+        },
+        "multimodal": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.8667,
+          "post_unlearning_accuracy": 0.8667,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.1333
+        },
+        "image_route": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.3167,
+          "post_unlearning_accuracy": 0.4444,
+          "leakage_rate": 0.1056,
+          "unmatched_rate": 0.4333
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.5297,
+          "post_unlearning_accuracy": 0.5297,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.4005
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.6444,
+          "post_unlearning_accuracy": 0.6444,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3333
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.4987,
+          "post_unlearning_accuracy": 0.4987,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3437
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5444,
+          "post_unlearning_accuracy": 0.5444,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3778
+        },
+        "adversarial_only": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.4222,
+          "post_unlearning_accuracy": 0.4222,
+          "leakage_rate": 0.2889,
+          "unmatched_rate": 0.2778
+        }
+      },
+      "MN": {
+        "num_queries": 2259,
+        "all_core": {
+          "num_queries": 2169,
+          "baseline_accuracy": 0.4182,
+          "post_unlearning_accuracy": 0.3513,
+          "leakage_rate": 0.1475,
+          "unmatched_rate": 0.4615
+        },
+        "target_core": {
+          "num_queries": 1215,
+          "baseline_accuracy": 0.2963,
+          "post_unlearning_accuracy": 0.177,
+          "leakage_rate": 0.2634,
+          "unmatched_rate": 0.5416
+        },
+        "fine_recovery": {
+          "num_queries": 540,
+          "baseline_accuracy": 0.3185,
+          "post_unlearning_accuracy": 0.0759,
+          "leakage_rate": 0.363,
+          "unmatched_rate": 0.5407
+        },
+        "granular": {
+          "num_queries": 225,
+          "baseline_accuracy": 0.2089,
+          "post_unlearning_accuracy": 0.2089,
+          "leakage_rate": 0.2844,
+          "unmatched_rate": 0.48
+        },
+        "negation": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.3389,
+          "post_unlearning_accuracy": 0.3389,
+          "leakage_rate": 0.1167,
+          "unmatched_rate": 0.5222
+        },
+        "multimodal": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.3889,
+          "post_unlearning_accuracy": 0.3889,
+          "leakage_rate": 0.0667,
+          "unmatched_rate": 0.5444
+        },
+        "image_route": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.25,
+          "post_unlearning_accuracy": 0.1722,
+          "leakage_rate": 0.1833,
+          "unmatched_rate": 0.6389
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.6305,
+          "post_unlearning_accuracy": 0.6305,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3204
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.6222,
+          "post_unlearning_accuracy": 0.6222,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.3
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.5065,
+          "post_unlearning_accuracy": 0.5065,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.4005
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5667,
+          "post_unlearning_accuracy": 0.5667,
+          "leakage_rate": 0.0,
+          "unmatched_rate": 0.4111
+        },
+        "adversarial_only": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.3333,
+          "post_unlearning_accuracy": 0.3333,
+          "leakage_rate": 0.3556,
+          "unmatched_rate": 0.3111
+        }
+      }
+    }
+  },
+  "hierarchy_metrics": {
+    "test": {
+      "BASE": {
+        "split": "test",
+        "num_target_probes": 1215,
+        "filr": 0.2691,
+        "tga": 0.1103,
+        "failure_taxonomy": {
+          "correct_at_target": 134,
+          "under_forgetting": 327,
+          "over_forgetting": 45,
+          "wrong_branch": 398,
+          "refusal": 123,
+          "hallucination": 188
+        },
+        "failure_rates": {
+          "under_forgetting": 0.2691,
+          "over_forgetting": 0.037,
+          "wrong_branch": 0.3276,
+          "refusal": 0.1012,
+          "hallucination": 0.1547
+        },
+        "ancestor_retention": {
+          "num_queries": 135,
+          "baseline_accuracy": 0.1333,
+          "post_unlearning_accuracy": 0.1333
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.0233,
+          "unmatched_rate": 0.801
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.3444,
+          "unmatched_rate": 0.6
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.0129,
+          "unmatched_rate": 0.8295
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.2889,
+          "unmatched_rate": 0.6333
+        },
+        "retain_same_entity_all_routes": {
+          "num_queries": 774,
+          "baseline_accuracy": 0.0181,
+          "unmatched_rate": 0.8152
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.3167,
+          "unmatched_rate": 0.6167
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 945,
+            "filr": 0.2836,
+            "tga": 0.1079,
+            "failure_categories": {
+              "correct_at_target": 102,
+              "under_forgetting": 268,
+              "over_forgetting": 36,
+              "wrong_branch": 277,
+              "refusal": 119,
+              "hallucination": 143
+            }
+          },
+          "image_to_text": {
+            "num_queries": 180,
+            "filr": 0.15,
+            "tga": 0.1389,
+            "failure_categories": {
+              "correct_at_target": 25,
+              "under_forgetting": 27,
+              "over_forgetting": 6,
+              "wrong_branch": 100,
+              "refusal": 0,
+              "hallucination": 22
+            }
+          },
+          "image_text_to_text": {
+            "num_queries": 90,
+            "filr": 0.3556,
+            "tga": 0.0778,
+            "failure_categories": {
+              "correct_at_target": 7,
+              "under_forgetting": 32,
+              "over_forgetting": 3,
+              "wrong_branch": 21,
+              "refusal": 4,
+              "hallucination": 23
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 400,
+            "filr": 0.0825,
+            "tga": 0.1,
+            "failure_categories": {
+              "correct_at_target": 40,
+              "under_forgetting": 33,
+              "over_forgetting": 33,
+              "wrong_branch": 172,
+              "refusal": 35,
+              "hallucination": 87
+            }
+          },
+          "numeric": {
+            "num_queries": 395,
+            "filr": 0.0228,
+            "tga": 0.0329,
+            "failure_categories": {
+              "correct_at_target": 13,
+              "under_forgetting": 9,
+              "over_forgetting": 2,
+              "wrong_branch": 203,
+              "refusal": 88,
+              "hallucination": 80
+            }
+          },
+          "taxonomic": {
+            "num_queries": 420,
+            "filr": 0.6786,
+            "tga": 0.1929,
+            "failure_categories": {
+              "correct_at_target": 81,
+              "under_forgetting": 285,
+              "over_forgetting": 10,
+              "wrong_branch": 23,
+              "refusal": 0,
+              "hallucination": 21
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 1014,
+            "filr": 0.289,
+            "tga": 0.0986,
+            "failure_categories": {
+              "correct_at_target": 100,
+              "under_forgetting": 293,
+              "over_forgetting": 32,
+              "wrong_branch": 328,
+              "refusal": 108,
+              "hallucination": 153
+            }
+          },
+          "2": {
+            "num_queries": 149,
+            "filr": 0.1074,
+            "tga": 0.1544,
+            "failure_categories": {
+              "correct_at_target": 23,
+              "under_forgetting": 16,
+              "over_forgetting": 13,
+              "wrong_branch": 57,
+              "refusal": 13,
+              "hallucination": 27
+            }
+          },
+          "3": {
+            "num_queries": 52,
+            "filr": 0.3462,
+            "tga": 0.2115,
+            "failure_categories": {
+              "correct_at_target": 11,
+              "under_forgetting": 18,
+              "over_forgetting": 0,
+              "wrong_branch": 13,
+              "refusal": 2,
+              "hallucination": 8
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MF": {
+        "split": "test",
+        "num_target_probes": 1215,
+        "filr": 0.4469,
+        "tga": 0.2115,
+        "failure_taxonomy": {
+          "correct_at_target": 257,
+          "under_forgetting": 543,
+          "over_forgetting": 13,
+          "wrong_branch": 263,
+          "refusal": 0,
+          "hallucination": 139
+        },
+        "failure_rates": {
+          "under_forgetting": 0.4469,
+          "over_forgetting": 0.0107,
+          "wrong_branch": 0.2165,
+          "refusal": 0.0,
+          "hallucination": 0.1144
+        },
+        "ancestor_retention": {
+          "num_queries": 135,
+          "baseline_accuracy": 0.2667,
+          "post_unlearning_accuracy": 0.2667
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.5736,
+          "unmatched_rate": 0.3773
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5333,
+          "unmatched_rate": 0.3
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.509,
+          "unmatched_rate": 0.3669
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.4778,
+          "unmatched_rate": 0.4778
+        },
+        "retain_same_entity_all_routes": {
+          "num_queries": 774,
+          "baseline_accuracy": 0.5413,
+          "unmatched_rate": 0.3721
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.5056,
+          "unmatched_rate": 0.3889
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 945,
+            "filr": 0.473,
+            "tga": 0.1799,
+            "failure_categories": {
+              "correct_at_target": 170,
+              "under_forgetting": 447,
+              "over_forgetting": 13,
+              "wrong_branch": 220,
+              "refusal": 0,
+              "hallucination": 95
+            }
+          },
+          "image_to_text": {
+            "num_queries": 180,
+            "filr": 0.3667,
+            "tga": 0.2167,
+            "failure_categories": {
+              "correct_at_target": 39,
+              "under_forgetting": 66,
+              "over_forgetting": 0,
+              "wrong_branch": 36,
+              "refusal": 0,
+              "hallucination": 39
+            }
+          },
+          "image_text_to_text": {
+            "num_queries": 90,
+            "filr": 0.3333,
+            "tga": 0.5333,
+            "failure_categories": {
+              "correct_at_target": 48,
+              "under_forgetting": 30,
+              "over_forgetting": 0,
+              "wrong_branch": 7,
+              "refusal": 0,
+              "hallucination": 5
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 400,
+            "filr": 0.4225,
+            "tga": 0.1375,
+            "failure_categories": {
+              "correct_at_target": 55,
+              "under_forgetting": 169,
+              "over_forgetting": 1,
+              "wrong_branch": 135,
+              "refusal": 0,
+              "hallucination": 40
+            }
+          },
+          "numeric": {
+            "num_queries": 395,
+            "filr": 0.4025,
+            "tga": 0.1266,
+            "failure_categories": {
+              "correct_at_target": 50,
+              "under_forgetting": 159,
+              "over_forgetting": 0,
+              "wrong_branch": 118,
+              "refusal": 0,
+              "hallucination": 68
+            }
+          },
+          "taxonomic": {
+            "num_queries": 420,
+            "filr": 0.5119,
+            "tga": 0.3619,
+            "failure_categories": {
+              "correct_at_target": 152,
+              "under_forgetting": 215,
+              "over_forgetting": 12,
+              "wrong_branch": 10,
+              "refusal": 0,
+              "hallucination": 31
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 1014,
+            "filr": 0.4448,
+            "tga": 0.2258,
+            "failure_categories": {
+              "correct_at_target": 229,
+              "under_forgetting": 451,
+              "over_forgetting": 13,
+              "wrong_branch": 203,
+              "refusal": 0,
+              "hallucination": 118
+            }
+          },
+          "2": {
+            "num_queries": 149,
+            "filr": 0.3758,
+            "tga": 0.1879,
+            "failure_categories": {
+              "correct_at_target": 28,
+              "under_forgetting": 56,
+              "over_forgetting": 0,
+              "wrong_branch": 50,
+              "refusal": 0,
+              "hallucination": 15
+            }
+          },
+          "3": {
+            "num_queries": 52,
+            "filr": 0.6923,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 36,
+              "over_forgetting": 0,
+              "wrong_branch": 10,
+              "refusal": 0,
+              "hallucination": 6
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MG": {
+        "split": "test",
+        "num_target_probes": 1215,
+        "filr": 0.1449,
+        "tga": 0.4329,
+        "failure_taxonomy": {
+          "correct_at_target": 526,
+          "under_forgetting": 176,
+          "over_forgetting": 34,
+          "wrong_branch": 292,
+          "refusal": 0,
+          "hallucination": 187
+        },
+        "failure_rates": {
+          "under_forgetting": 0.1449,
+          "over_forgetting": 0.028,
+          "wrong_branch": 0.2403,
+          "refusal": 0.0,
+          "hallucination": 0.1539
+        },
+        "ancestor_retention": {
+          "num_queries": 135,
+          "baseline_accuracy": 0.237,
+          "post_unlearning_accuracy": 0.237
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.5297,
+          "unmatched_rate": 0.4005
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.6444,
+          "unmatched_rate": 0.3333
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.4987,
+          "unmatched_rate": 0.3437
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5444,
+          "unmatched_rate": 0.3778
+        },
+        "retain_same_entity_all_routes": {
+          "num_queries": 774,
+          "baseline_accuracy": 0.5142,
+          "unmatched_rate": 0.3721
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.5944,
+          "unmatched_rate": 0.3556
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 945,
+            "filr": 0.1661,
+            "tga": 0.3894,
+            "failure_categories": {
+              "correct_at_target": 368,
+              "under_forgetting": 157,
+              "over_forgetting": 31,
+              "wrong_branch": 245,
+              "refusal": 0,
+              "hallucination": 144
+            }
+          },
+          "image_to_text": {
+            "num_queries": 180,
+            "filr": 0.1056,
+            "tga": 0.4444,
+            "failure_categories": {
+              "correct_at_target": 80,
+              "under_forgetting": 19,
+              "over_forgetting": 3,
+              "wrong_branch": 40,
+              "refusal": 0,
+              "hallucination": 38
+            }
+          },
+          "image_text_to_text": {
+            "num_queries": 90,
+            "filr": 0.0,
+            "tga": 0.8667,
+            "failure_categories": {
+              "correct_at_target": 78,
+              "under_forgetting": 0,
+              "over_forgetting": 0,
+              "wrong_branch": 7,
+              "refusal": 0,
+              "hallucination": 5
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 400,
+            "filr": 0.0825,
+            "tga": 0.48,
+            "failure_categories": {
+              "correct_at_target": 192,
+              "under_forgetting": 33,
+              "over_forgetting": 14,
+              "wrong_branch": 129,
+              "refusal": 0,
+              "hallucination": 32
+            }
+          },
+          "numeric": {
+            "num_queries": 395,
+            "filr": 0.0354,
+            "tga": 0.2481,
+            "failure_categories": {
+              "correct_at_target": 98,
+              "under_forgetting": 14,
+              "over_forgetting": 2,
+              "wrong_branch": 153,
+              "refusal": 0,
+              "hallucination": 128
+            }
+          },
+          "taxonomic": {
+            "num_queries": 420,
+            "filr": 0.3071,
+            "tga": 0.5619,
+            "failure_categories": {
+              "correct_at_target": 236,
+              "under_forgetting": 129,
+              "over_forgetting": 18,
+              "wrong_branch": 10,
+              "refusal": 0,
+              "hallucination": 27
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 1014,
+            "filr": 0.1509,
+            "tga": 0.4586,
+            "failure_categories": {
+              "correct_at_target": 465,
+              "under_forgetting": 153,
+              "over_forgetting": 27,
+              "wrong_branch": 211,
+              "refusal": 0,
+              "hallucination": 158
+            }
+          },
+          "2": {
+            "num_queries": 149,
+            "filr": 0.0872,
+            "tga": 0.302,
+            "failure_categories": {
+              "correct_at_target": 45,
+              "under_forgetting": 13,
+              "over_forgetting": 7,
+              "wrong_branch": 63,
+              "refusal": 0,
+              "hallucination": 21
+            }
+          },
+          "3": {
+            "num_queries": 52,
+            "filr": 0.1923,
+            "tga": 0.3077,
+            "failure_categories": {
+              "correct_at_target": 16,
+              "under_forgetting": 10,
+              "over_forgetting": 0,
+              "wrong_branch": 18,
+              "refusal": 0,
+              "hallucination": 8
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MN": {
+        "split": "test",
+        "num_target_probes": 1215,
+        "filr": 0.2634,
+        "tga": 0.177,
+        "failure_taxonomy": {
+          "correct_at_target": 215,
+          "under_forgetting": 320,
+          "over_forgetting": 22,
+          "wrong_branch": 469,
+          "refusal": 0,
+          "hallucination": 189
+        },
+        "failure_rates": {
+          "under_forgetting": 0.2634,
+          "over_forgetting": 0.0181,
+          "wrong_branch": 0.386,
+          "refusal": 0.0,
+          "hallucination": 0.1556
+        },
+        "ancestor_retention": {
+          "num_queries": 135,
+          "baseline_accuracy": 0.2444,
+          "post_unlearning_accuracy": 0.2444
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.6305,
+          "unmatched_rate": 0.3204
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.6222,
+          "unmatched_rate": 0.3
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.5065,
+          "unmatched_rate": 0.4005
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5667,
+          "unmatched_rate": 0.4111
+        },
+        "retain_same_entity_all_routes": {
+          "num_queries": 774,
+          "baseline_accuracy": 0.5685,
+          "unmatched_rate": 0.3605
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.5944,
+          "unmatched_rate": 0.3556
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 945,
+            "filr": 0.2974,
+            "tga": 0.1577,
+            "failure_categories": {
+              "correct_at_target": 149,
+              "under_forgetting": 281,
+              "over_forgetting": 21,
+              "wrong_branch": 359,
+              "refusal": 0,
+              "hallucination": 135
+            }
+          },
+          "image_to_text": {
+            "num_queries": 180,
+            "filr": 0.1833,
+            "tga": 0.1722,
+            "failure_categories": {
+              "correct_at_target": 31,
+              "under_forgetting": 33,
+              "over_forgetting": 1,
+              "wrong_branch": 78,
+              "refusal": 0,
+              "hallucination": 37
+            }
+          },
+          "image_text_to_text": {
+            "num_queries": 90,
+            "filr": 0.0667,
+            "tga": 0.3889,
+            "failure_categories": {
+              "correct_at_target": 35,
+              "under_forgetting": 6,
+              "over_forgetting": 0,
+              "wrong_branch": 32,
+              "refusal": 0,
+              "hallucination": 17
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 400,
+            "filr": 0.1575,
+            "tga": 0.1175,
+            "failure_categories": {
+              "correct_at_target": 47,
+              "under_forgetting": 63,
+              "over_forgetting": 7,
+              "wrong_branch": 226,
+              "refusal": 0,
+              "hallucination": 57
+            }
+          },
+          "numeric": {
+            "num_queries": 395,
+            "filr": 0.1342,
+            "tga": 0.0608,
+            "failure_categories": {
+              "correct_at_target": 24,
+              "under_forgetting": 53,
+              "over_forgetting": 1,
+              "wrong_branch": 215,
+              "refusal": 0,
+              "hallucination": 102
+            }
+          },
+          "taxonomic": {
+            "num_queries": 420,
+            "filr": 0.4857,
+            "tga": 0.3429,
+            "failure_categories": {
+              "correct_at_target": 144,
+              "under_forgetting": 204,
+              "over_forgetting": 14,
+              "wrong_branch": 28,
+              "refusal": 0,
+              "hallucination": 30
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 1014,
+            "filr": 0.2771,
+            "tga": 0.1874,
+            "failure_categories": {
+              "correct_at_target": 190,
+              "under_forgetting": 281,
+              "over_forgetting": 17,
+              "wrong_branch": 379,
+              "refusal": 0,
+              "hallucination": 147
+            }
+          },
+          "2": {
+            "num_queries": 149,
+            "filr": 0.1007,
+            "tga": 0.1611,
+            "failure_categories": {
+              "correct_at_target": 24,
+              "under_forgetting": 15,
+              "over_forgetting": 5,
+              "wrong_branch": 77,
+              "refusal": 0,
+              "hallucination": 28
+            }
+          },
+          "3": {
+            "num_queries": 52,
+            "filr": 0.4615,
+            "tga": 0.0192,
+            "failure_categories": {
+              "correct_at_target": 1,
+              "under_forgetting": 24,
+              "over_forgetting": 0,
+              "wrong_branch": 13,
+              "refusal": 0,
+              "hallucination": 14
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      }
+    },
+    "train": {
+      "BASE": {
+        "split": "train",
+        "num_target_probes": 1215,
+        "filr": 0.2749,
+        "tga": 0.1012,
+        "failure_taxonomy": {
+          "correct_at_target": 123,
+          "under_forgetting": 334,
+          "over_forgetting": 44,
+          "wrong_branch": 423,
+          "refusal": 118,
+          "hallucination": 173
+        },
+        "failure_rates": {
+          "under_forgetting": 0.2749,
+          "over_forgetting": 0.0362,
+          "wrong_branch": 0.3481,
+          "refusal": 0.0971,
+          "hallucination": 0.1424
+        },
+        "ancestor_retention": {
+          "num_queries": 135,
+          "baseline_accuracy": 0.0889,
+          "post_unlearning_accuracy": 0.0889
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.0258,
+          "unmatched_rate": 0.8217
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.3444,
+          "unmatched_rate": 0.5889
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.0129,
+          "unmatched_rate": 0.8243
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.2333,
+          "unmatched_rate": 0.6556
+        },
+        "retain_same_entity_all_routes": {
+          "num_queries": 774,
+          "baseline_accuracy": 0.0194,
+          "unmatched_rate": 0.823
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.2889,
+          "unmatched_rate": 0.6222
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 945,
+            "filr": 0.2815,
+            "tga": 0.0984,
+            "failure_categories": {
+              "correct_at_target": 93,
+              "under_forgetting": 266,
+              "over_forgetting": 33,
+              "wrong_branch": 313,
+              "refusal": 116,
+              "hallucination": 124
+            }
+          },
+          "image_to_text": {
+            "num_queries": 180,
+            "filr": 0.1889,
+            "tga": 0.1389,
+            "failure_categories": {
+              "correct_at_target": 25,
+              "under_forgetting": 34,
+              "over_forgetting": 7,
+              "wrong_branch": 90,
+              "refusal": 0,
+              "hallucination": 24
+            }
+          },
+          "image_text_to_text": {
+            "num_queries": 90,
+            "filr": 0.3778,
+            "tga": 0.0556,
+            "failure_categories": {
+              "correct_at_target": 5,
+              "under_forgetting": 34,
+              "over_forgetting": 4,
+              "wrong_branch": 20,
+              "refusal": 2,
+              "hallucination": 25
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 400,
+            "filr": 0.0775,
+            "tga": 0.1075,
+            "failure_categories": {
+              "correct_at_target": 43,
+              "under_forgetting": 31,
+              "over_forgetting": 32,
+              "wrong_branch": 180,
+              "refusal": 32,
+              "hallucination": 82
+            }
+          },
+          "numeric": {
+            "num_queries": 395,
+            "filr": 0.0228,
+            "tga": 0.0329,
+            "failure_categories": {
+              "correct_at_target": 13,
+              "under_forgetting": 9,
+              "over_forgetting": 1,
+              "wrong_branch": 217,
+              "refusal": 86,
+              "hallucination": 69
+            }
+          },
+          "taxonomic": {
+            "num_queries": 420,
+            "filr": 0.7,
+            "tga": 0.1595,
+            "failure_categories": {
+              "correct_at_target": 67,
+              "under_forgetting": 294,
+              "over_forgetting": 11,
+              "wrong_branch": 26,
+              "refusal": 0,
+              "hallucination": 22
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 1014,
+            "filr": 0.2998,
+            "tga": 0.0927,
+            "failure_categories": {
+              "correct_at_target": 94,
+              "under_forgetting": 304,
+              "over_forgetting": 23,
+              "wrong_branch": 348,
+              "refusal": 98,
+              "hallucination": 147
+            }
+          },
+          "2": {
+            "num_queries": 149,
+            "filr": 0.0671,
+            "tga": 0.1141,
+            "failure_categories": {
+              "correct_at_target": 17,
+              "under_forgetting": 10,
+              "over_forgetting": 21,
+              "wrong_branch": 65,
+              "refusal": 15,
+              "hallucination": 21
+            }
+          },
+          "3": {
+            "num_queries": 52,
+            "filr": 0.3846,
+            "tga": 0.2308,
+            "failure_categories": {
+              "correct_at_target": 12,
+              "under_forgetting": 20,
+              "over_forgetting": 0,
+              "wrong_branch": 10,
+              "refusal": 5,
+              "hallucination": 5
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MF": {
+        "split": "train",
+        "num_target_probes": 1215,
+        "filr": 0.4568,
+        "tga": 0.1934,
+        "failure_taxonomy": {
+          "correct_at_target": 235,
+          "under_forgetting": 555,
+          "over_forgetting": 18,
+          "wrong_branch": 265,
+          "refusal": 0,
+          "hallucination": 142
+        },
+        "failure_rates": {
+          "under_forgetting": 0.4568,
+          "over_forgetting": 0.0148,
+          "wrong_branch": 0.2181,
+          "refusal": 0.0,
+          "hallucination": 0.1169
+        },
+        "ancestor_retention": {
+          "num_queries": 135,
+          "baseline_accuracy": 0.1778,
+          "post_unlearning_accuracy": 0.1778
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.5452,
+          "unmatched_rate": 0.4005
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.6444,
+          "unmatched_rate": 0.2889
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.509,
+          "unmatched_rate": 0.3669
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.4778,
+          "unmatched_rate": 0.4778
+        },
+        "retain_same_entity_all_routes": {
+          "num_queries": 774,
+          "baseline_accuracy": 0.5271,
+          "unmatched_rate": 0.3837
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.5611,
+          "unmatched_rate": 0.3833
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 945,
+            "filr": 0.4889,
+            "tga": 0.1566,
+            "failure_categories": {
+              "correct_at_target": 148,
+              "under_forgetting": 462,
+              "over_forgetting": 17,
+              "wrong_branch": 224,
+              "refusal": 0,
+              "hallucination": 94
+            }
+          },
+          "image_to_text": {
+            "num_queries": 180,
+            "filr": 0.3444,
+            "tga": 0.2167,
+            "failure_categories": {
+              "correct_at_target": 39,
+              "under_forgetting": 62,
+              "over_forgetting": 1,
+              "wrong_branch": 36,
+              "refusal": 0,
+              "hallucination": 42
+            }
+          },
+          "image_text_to_text": {
+            "num_queries": 90,
+            "filr": 0.3444,
+            "tga": 0.5333,
+            "failure_categories": {
+              "correct_at_target": 48,
+              "under_forgetting": 31,
+              "over_forgetting": 0,
+              "wrong_branch": 5,
+              "refusal": 0,
+              "hallucination": 6
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 400,
+            "filr": 0.435,
+            "tga": 0.13,
+            "failure_categories": {
+              "correct_at_target": 52,
+              "under_forgetting": 174,
+              "over_forgetting": 5,
+              "wrong_branch": 133,
+              "refusal": 0,
+              "hallucination": 36
+            }
+          },
+          "numeric": {
+            "num_queries": 395,
+            "filr": 0.3949,
+            "tga": 0.119,
+            "failure_categories": {
+              "correct_at_target": 47,
+              "under_forgetting": 156,
+              "over_forgetting": 1,
+              "wrong_branch": 124,
+              "refusal": 0,
+              "hallucination": 67
+            }
+          },
+          "taxonomic": {
+            "num_queries": 420,
+            "filr": 0.5357,
+            "tga": 0.3238,
+            "failure_categories": {
+              "correct_at_target": 136,
+              "under_forgetting": 225,
+              "over_forgetting": 12,
+              "wrong_branch": 8,
+              "refusal": 0,
+              "hallucination": 39
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 1014,
+            "filr": 0.4576,
+            "tga": 0.2032,
+            "failure_categories": {
+              "correct_at_target": 206,
+              "under_forgetting": 464,
+              "over_forgetting": 14,
+              "wrong_branch": 208,
+              "refusal": 0,
+              "hallucination": 122
+            }
+          },
+          "2": {
+            "num_queries": 149,
+            "filr": 0.3826,
+            "tga": 0.1946,
+            "failure_categories": {
+              "correct_at_target": 29,
+              "under_forgetting": 57,
+              "over_forgetting": 4,
+              "wrong_branch": 44,
+              "refusal": 0,
+              "hallucination": 15
+            }
+          },
+          "3": {
+            "num_queries": 52,
+            "filr": 0.6538,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 34,
+              "over_forgetting": 0,
+              "wrong_branch": 13,
+              "refusal": 0,
+              "hallucination": 5
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MG": {
+        "split": "train",
+        "num_target_probes": 1215,
+        "filr": 0.1531,
+        "tga": 0.4247,
+        "failure_taxonomy": {
+          "correct_at_target": 516,
+          "under_forgetting": 186,
+          "over_forgetting": 41,
+          "wrong_branch": 297,
+          "refusal": 2,
+          "hallucination": 173
+        },
+        "failure_rates": {
+          "under_forgetting": 0.1531,
+          "over_forgetting": 0.0337,
+          "wrong_branch": 0.2444,
+          "refusal": 0.0016,
+          "hallucination": 0.1424
+        },
+        "ancestor_retention": {
+          "num_queries": 135,
+          "baseline_accuracy": 0.2148,
+          "post_unlearning_accuracy": 0.2148
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.5401,
+          "unmatched_rate": 0.3824
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.6,
+          "unmatched_rate": 0.3556
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.509,
+          "unmatched_rate": 0.3359
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5667,
+          "unmatched_rate": 0.3444
+        },
+        "retain_same_entity_all_routes": {
+          "num_queries": 774,
+          "baseline_accuracy": 0.5245,
+          "unmatched_rate": 0.3592
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.5833,
+          "unmatched_rate": 0.35
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 945,
+            "filr": 0.1778,
+            "tga": 0.3788,
+            "failure_categories": {
+              "correct_at_target": 358,
+              "under_forgetting": 168,
+              "over_forgetting": 39,
+              "wrong_branch": 248,
+              "refusal": 2,
+              "hallucination": 130
+            }
+          },
+          "image_to_text": {
+            "num_queries": 180,
+            "filr": 0.0944,
+            "tga": 0.4444,
+            "failure_categories": {
+              "correct_at_target": 80,
+              "under_forgetting": 17,
+              "over_forgetting": 2,
+              "wrong_branch": 43,
+              "refusal": 0,
+              "hallucination": 38
+            }
+          },
+          "image_text_to_text": {
+            "num_queries": 90,
+            "filr": 0.0111,
+            "tga": 0.8667,
+            "failure_categories": {
+              "correct_at_target": 78,
+              "under_forgetting": 1,
+              "over_forgetting": 0,
+              "wrong_branch": 6,
+              "refusal": 0,
+              "hallucination": 5
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 400,
+            "filr": 0.0975,
+            "tga": 0.47,
+            "failure_categories": {
+              "correct_at_target": 188,
+              "under_forgetting": 39,
+              "over_forgetting": 10,
+              "wrong_branch": 135,
+              "refusal": 1,
+              "hallucination": 27
+            }
+          },
+          "numeric": {
+            "num_queries": 395,
+            "filr": 0.0354,
+            "tga": 0.2582,
+            "failure_categories": {
+              "correct_at_target": 102,
+              "under_forgetting": 14,
+              "over_forgetting": 3,
+              "wrong_branch": 154,
+              "refusal": 1,
+              "hallucination": 121
+            }
+          },
+          "taxonomic": {
+            "num_queries": 420,
+            "filr": 0.3167,
+            "tga": 0.5381,
+            "failure_categories": {
+              "correct_at_target": 226,
+              "under_forgetting": 133,
+              "over_forgetting": 28,
+              "wrong_branch": 8,
+              "refusal": 0,
+              "hallucination": 25
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 1014,
+            "filr": 0.1489,
+            "tga": 0.4566,
+            "failure_categories": {
+              "correct_at_target": 463,
+              "under_forgetting": 151,
+              "over_forgetting": 36,
+              "wrong_branch": 212,
+              "refusal": 2,
+              "hallucination": 150
+            }
+          },
+          "2": {
+            "num_queries": 149,
+            "filr": 0.1208,
+            "tga": 0.2819,
+            "failure_categories": {
+              "correct_at_target": 42,
+              "under_forgetting": 18,
+              "over_forgetting": 5,
+              "wrong_branch": 67,
+              "refusal": 0,
+              "hallucination": 17
+            }
+          },
+          "3": {
+            "num_queries": 52,
+            "filr": 0.3269,
+            "tga": 0.2115,
+            "failure_categories": {
+              "correct_at_target": 11,
+              "under_forgetting": 17,
+              "over_forgetting": 0,
+              "wrong_branch": 18,
+              "refusal": 0,
+              "hallucination": 6
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MN": {
+        "split": "train",
+        "num_target_probes": 1215,
+        "filr": 0.2683,
+        "tga": 0.1753,
+        "failure_taxonomy": {
+          "correct_at_target": 213,
+          "under_forgetting": 326,
+          "over_forgetting": 26,
+          "wrong_branch": 458,
+          "refusal": 0,
+          "hallucination": 192
+        },
+        "failure_rates": {
+          "under_forgetting": 0.2683,
+          "over_forgetting": 0.0214,
+          "wrong_branch": 0.377,
+          "refusal": 0.0,
+          "hallucination": 0.158
+        },
+        "ancestor_retention": {
+          "num_queries": 135,
+          "baseline_accuracy": 0.1704,
+          "post_unlearning_accuracy": 0.1704
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.6331,
+          "unmatched_rate": 0.3256
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.7111,
+          "unmatched_rate": 0.2222
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.509,
+          "unmatched_rate": 0.4031
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5778,
+          "unmatched_rate": 0.3889
+        },
+        "retain_same_entity_all_routes": {
+          "num_queries": 774,
+          "baseline_accuracy": 0.5711,
+          "unmatched_rate": 0.3643
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.6444,
+          "unmatched_rate": 0.3056
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 945,
+            "filr": 0.3048,
+            "tga": 0.1534,
+            "failure_categories": {
+              "correct_at_target": 145,
+              "under_forgetting": 288,
+              "over_forgetting": 26,
+              "wrong_branch": 348,
+              "refusal": 0,
+              "hallucination": 138
+            }
+          },
+          "image_to_text": {
+            "num_queries": 180,
+            "filr": 0.1722,
+            "tga": 0.1722,
+            "failure_categories": {
+              "correct_at_target": 31,
+              "under_forgetting": 31,
+              "over_forgetting": 0,
+              "wrong_branch": 80,
+              "refusal": 0,
+              "hallucination": 38
+            }
+          },
+          "image_text_to_text": {
+            "num_queries": 90,
+            "filr": 0.0778,
+            "tga": 0.4111,
+            "failure_categories": {
+              "correct_at_target": 37,
+              "under_forgetting": 7,
+              "over_forgetting": 0,
+              "wrong_branch": 30,
+              "refusal": 0,
+              "hallucination": 16
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 400,
+            "filr": 0.18,
+            "tga": 0.115,
+            "failure_categories": {
+              "correct_at_target": 46,
+              "under_forgetting": 72,
+              "over_forgetting": 8,
+              "wrong_branch": 224,
+              "refusal": 0,
+              "hallucination": 50
+            }
+          },
+          "numeric": {
+            "num_queries": 395,
+            "filr": 0.1342,
+            "tga": 0.0608,
+            "failure_categories": {
+              "correct_at_target": 24,
+              "under_forgetting": 53,
+              "over_forgetting": 0,
+              "wrong_branch": 209,
+              "refusal": 0,
+              "hallucination": 109
+            }
+          },
+          "taxonomic": {
+            "num_queries": 420,
+            "filr": 0.4786,
+            "tga": 0.3405,
+            "failure_categories": {
+              "correct_at_target": 143,
+              "under_forgetting": 201,
+              "over_forgetting": 18,
+              "wrong_branch": 25,
+              "refusal": 0,
+              "hallucination": 33
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 1014,
+            "filr": 0.2761,
+            "tga": 0.1844,
+            "failure_categories": {
+              "correct_at_target": 187,
+              "under_forgetting": 280,
+              "over_forgetting": 22,
+              "wrong_branch": 373,
+              "refusal": 0,
+              "hallucination": 152
+            }
+          },
+          "2": {
+            "num_queries": 149,
+            "filr": 0.1208,
+            "tga": 0.1678,
+            "failure_categories": {
+              "correct_at_target": 25,
+              "under_forgetting": 18,
+              "over_forgetting": 4,
+              "wrong_branch": 74,
+              "refusal": 0,
+              "hallucination": 28
+            }
+          },
+          "3": {
+            "num_queries": 52,
+            "filr": 0.5385,
+            "tga": 0.0192,
+            "failure_categories": {
+              "correct_at_target": 1,
+              "under_forgetting": 28,
+              "over_forgetting": 0,
+              "wrong_branch": 11,
+              "refusal": 0,
+              "hallucination": 12
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      }
+    },
+    "val": {
+      "BASE": {
+        "split": "val",
+        "num_target_probes": 1215,
+        "filr": 0.2708,
+        "tga": 0.1103,
+        "failure_taxonomy": {
+          "correct_at_target": 134,
+          "under_forgetting": 329,
+          "over_forgetting": 49,
+          "wrong_branch": 394,
+          "refusal": 106,
+          "hallucination": 203
+        },
+        "failure_rates": {
+          "under_forgetting": 0.2708,
+          "over_forgetting": 0.0403,
+          "wrong_branch": 0.3243,
+          "refusal": 0.0872,
+          "hallucination": 0.1671
+        },
+        "ancestor_retention": {
+          "num_queries": 135,
+          "baseline_accuracy": 0.1185,
+          "post_unlearning_accuracy": 0.1185
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.0258,
+          "unmatched_rate": 0.7959
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.3333,
+          "unmatched_rate": 0.6222
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.0103,
+          "unmatched_rate": 0.8346
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.1,
+          "unmatched_rate": 0.8
+        },
+        "retain_same_entity_all_routes": {
+          "num_queries": 774,
+          "baseline_accuracy": 0.0181,
+          "unmatched_rate": 0.8152
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.2167,
+          "unmatched_rate": 0.7111
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 945,
+            "filr": 0.2815,
+            "tga": 0.1069,
+            "failure_categories": {
+              "correct_at_target": 101,
+              "under_forgetting": 266,
+              "over_forgetting": 37,
+              "wrong_branch": 276,
+              "refusal": 103,
+              "hallucination": 162
+            }
+          },
+          "image_to_text": {
+            "num_queries": 180,
+            "filr": 0.1611,
+            "tga": 0.15,
+            "failure_categories": {
+              "correct_at_target": 27,
+              "under_forgetting": 29,
+              "over_forgetting": 7,
+              "wrong_branch": 96,
+              "refusal": 0,
+              "hallucination": 21
+            }
+          },
+          "image_text_to_text": {
+            "num_queries": 90,
+            "filr": 0.3778,
+            "tga": 0.0667,
+            "failure_categories": {
+              "correct_at_target": 6,
+              "under_forgetting": 34,
+              "over_forgetting": 5,
+              "wrong_branch": 22,
+              "refusal": 3,
+              "hallucination": 20
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 400,
+            "filr": 0.07,
+            "tga": 0.105,
+            "failure_categories": {
+              "correct_at_target": 42,
+              "under_forgetting": 28,
+              "over_forgetting": 34,
+              "wrong_branch": 169,
+              "refusal": 32,
+              "hallucination": 95
+            }
+          },
+          "numeric": {
+            "num_queries": 395,
+            "filr": 0.0304,
+            "tga": 0.0405,
+            "failure_categories": {
+              "correct_at_target": 16,
+              "under_forgetting": 12,
+              "over_forgetting": 2,
+              "wrong_branch": 206,
+              "refusal": 74,
+              "hallucination": 85
+            }
+          },
+          "taxonomic": {
+            "num_queries": 420,
+            "filr": 0.6881,
+            "tga": 0.181,
+            "failure_categories": {
+              "correct_at_target": 76,
+              "under_forgetting": 289,
+              "over_forgetting": 13,
+              "wrong_branch": 19,
+              "refusal": 0,
+              "hallucination": 23
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 1014,
+            "filr": 0.2959,
+            "tga": 0.0996,
+            "failure_categories": {
+              "correct_at_target": 101,
+              "under_forgetting": 300,
+              "over_forgetting": 31,
+              "wrong_branch": 322,
+              "refusal": 92,
+              "hallucination": 168
+            }
+          },
+          "2": {
+            "num_queries": 149,
+            "filr": 0.094,
+            "tga": 0.1342,
+            "failure_categories": {
+              "correct_at_target": 20,
+              "under_forgetting": 14,
+              "over_forgetting": 18,
+              "wrong_branch": 58,
+              "refusal": 14,
+              "hallucination": 25
+            }
+          },
+          "3": {
+            "num_queries": 52,
+            "filr": 0.2885,
+            "tga": 0.25,
+            "failure_categories": {
+              "correct_at_target": 13,
+              "under_forgetting": 15,
+              "over_forgetting": 0,
+              "wrong_branch": 14,
+              "refusal": 0,
+              "hallucination": 10
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MF": {
+        "split": "val",
+        "num_target_probes": 1215,
+        "filr": 0.4403,
+        "tga": 0.2008,
+        "failure_taxonomy": {
+          "correct_at_target": 244,
+          "under_forgetting": 535,
+          "over_forgetting": 10,
+          "wrong_branch": 273,
+          "refusal": 0,
+          "hallucination": 153
+        },
+        "failure_rates": {
+          "under_forgetting": 0.4403,
+          "over_forgetting": 0.0082,
+          "wrong_branch": 0.2247,
+          "refusal": 0.0,
+          "hallucination": 0.1259
+        },
+        "ancestor_retention": {
+          "num_queries": 135,
+          "baseline_accuracy": 0.2222,
+          "post_unlearning_accuracy": 0.2222
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.5659,
+          "unmatched_rate": 0.3824
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5667,
+          "unmatched_rate": 0.4111
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.509,
+          "unmatched_rate": 0.3695
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.4778,
+          "unmatched_rate": 0.4778
+        },
+        "retain_same_entity_all_routes": {
+          "num_queries": 774,
+          "baseline_accuracy": 0.5375,
+          "unmatched_rate": 0.376
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.5222,
+          "unmatched_rate": 0.4444
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 945,
+            "filr": 0.4646,
+            "tga": 0.1651,
+            "failure_categories": {
+              "correct_at_target": 156,
+              "under_forgetting": 439,
+              "over_forgetting": 10,
+              "wrong_branch": 232,
+              "refusal": 0,
+              "hallucination": 108
+            }
+          },
+          "image_to_text": {
+            "num_queries": 180,
+            "filr": 0.3556,
+            "tga": 0.2222,
+            "failure_categories": {
+              "correct_at_target": 40,
+              "under_forgetting": 64,
+              "over_forgetting": 0,
+              "wrong_branch": 35,
+              "refusal": 0,
+              "hallucination": 41
+            }
+          },
+          "image_text_to_text": {
+            "num_queries": 90,
+            "filr": 0.3556,
+            "tga": 0.5333,
+            "failure_categories": {
+              "correct_at_target": 48,
+              "under_forgetting": 32,
+              "over_forgetting": 0,
+              "wrong_branch": 6,
+              "refusal": 0,
+              "hallucination": 4
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 400,
+            "filr": 0.4075,
+            "tga": 0.1275,
+            "failure_categories": {
+              "correct_at_target": 51,
+              "under_forgetting": 163,
+              "over_forgetting": 1,
+              "wrong_branch": 138,
+              "refusal": 0,
+              "hallucination": 47
+            }
+          },
+          "numeric": {
+            "num_queries": 395,
+            "filr": 0.3797,
+            "tga": 0.1266,
+            "failure_categories": {
+              "correct_at_target": 50,
+              "under_forgetting": 150,
+              "over_forgetting": 1,
+              "wrong_branch": 127,
+              "refusal": 0,
+              "hallucination": 67
+            }
+          },
+          "taxonomic": {
+            "num_queries": 420,
+            "filr": 0.5286,
+            "tga": 0.3405,
+            "failure_categories": {
+              "correct_at_target": 143,
+              "under_forgetting": 222,
+              "over_forgetting": 8,
+              "wrong_branch": 8,
+              "refusal": 0,
+              "hallucination": 39
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 1014,
+            "filr": 0.4418,
+            "tga": 0.213,
+            "failure_categories": {
+              "correct_at_target": 216,
+              "under_forgetting": 448,
+              "over_forgetting": 10,
+              "wrong_branch": 213,
+              "refusal": 0,
+              "hallucination": 127
+            }
+          },
+          "2": {
+            "num_queries": 149,
+            "filr": 0.3691,
+            "tga": 0.1879,
+            "failure_categories": {
+              "correct_at_target": 28,
+              "under_forgetting": 55,
+              "over_forgetting": 0,
+              "wrong_branch": 47,
+              "refusal": 0,
+              "hallucination": 19
+            }
+          },
+          "3": {
+            "num_queries": 52,
+            "filr": 0.6154,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 32,
+              "over_forgetting": 0,
+              "wrong_branch": 13,
+              "refusal": 0,
+              "hallucination": 7
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MG": {
+        "split": "val",
+        "num_target_probes": 1215,
+        "filr": 0.1358,
+        "tga": 0.4395,
+        "failure_taxonomy": {
+          "correct_at_target": 534,
+          "under_forgetting": 165,
+          "over_forgetting": 38,
+          "wrong_branch": 295,
+          "refusal": 0,
+          "hallucination": 183
+        },
+        "failure_rates": {
+          "under_forgetting": 0.1358,
+          "over_forgetting": 0.0313,
+          "wrong_branch": 0.2428,
+          "refusal": 0.0,
+          "hallucination": 0.1506
+        },
+        "ancestor_retention": {
+          "num_queries": 135,
+          "baseline_accuracy": 0.2963,
+          "post_unlearning_accuracy": 0.2963
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.522,
+          "unmatched_rate": 0.3928
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5222,
+          "unmatched_rate": 0.4222
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.5039,
+          "unmatched_rate": 0.3437
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5556,
+          "unmatched_rate": 0.3778
+        },
+        "retain_same_entity_all_routes": {
+          "num_queries": 774,
+          "baseline_accuracy": 0.5129,
+          "unmatched_rate": 0.3682
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.5389,
+          "unmatched_rate": 0.4
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 945,
+            "filr": 0.1545,
+            "tga": 0.4,
+            "failure_categories": {
+              "correct_at_target": 378,
+              "under_forgetting": 146,
+              "over_forgetting": 35,
+              "wrong_branch": 245,
+              "refusal": 0,
+              "hallucination": 141
+            }
+          },
+          "image_to_text": {
+            "num_queries": 180,
+            "filr": 0.1,
+            "tga": 0.4389,
+            "failure_categories": {
+              "correct_at_target": 79,
+              "under_forgetting": 18,
+              "over_forgetting": 3,
+              "wrong_branch": 43,
+              "refusal": 0,
+              "hallucination": 37
+            }
+          },
+          "image_text_to_text": {
+            "num_queries": 90,
+            "filr": 0.0111,
+            "tga": 0.8556,
+            "failure_categories": {
+              "correct_at_target": 77,
+              "under_forgetting": 1,
+              "over_forgetting": 0,
+              "wrong_branch": 7,
+              "refusal": 0,
+              "hallucination": 5
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 400,
+            "filr": 0.0825,
+            "tga": 0.4725,
+            "failure_categories": {
+              "correct_at_target": 189,
+              "under_forgetting": 33,
+              "over_forgetting": 11,
+              "wrong_branch": 134,
+              "refusal": 0,
+              "hallucination": 33
+            }
+          },
+          "numeric": {
+            "num_queries": 395,
+            "filr": 0.0253,
+            "tga": 0.2633,
+            "failure_categories": {
+              "correct_at_target": 104,
+              "under_forgetting": 10,
+              "over_forgetting": 4,
+              "wrong_branch": 151,
+              "refusal": 0,
+              "hallucination": 126
+            }
+          },
+          "taxonomic": {
+            "num_queries": 420,
+            "filr": 0.2905,
+            "tga": 0.5738,
+            "failure_categories": {
+              "correct_at_target": 241,
+              "under_forgetting": 122,
+              "over_forgetting": 23,
+              "wrong_branch": 10,
+              "refusal": 0,
+              "hallucination": 24
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 1014,
+            "filr": 0.1371,
+            "tga": 0.4684,
+            "failure_categories": {
+              "correct_at_target": 475,
+              "under_forgetting": 139,
+              "over_forgetting": 32,
+              "wrong_branch": 216,
+              "refusal": 0,
+              "hallucination": 152
+            }
+          },
+          "2": {
+            "num_queries": 149,
+            "filr": 0.1007,
+            "tga": 0.302,
+            "failure_categories": {
+              "correct_at_target": 45,
+              "under_forgetting": 15,
+              "over_forgetting": 6,
+              "wrong_branch": 60,
+              "refusal": 0,
+              "hallucination": 23
+            }
+          },
+          "3": {
+            "num_queries": 52,
+            "filr": 0.2115,
+            "tga": 0.2692,
+            "failure_categories": {
+              "correct_at_target": 14,
+              "under_forgetting": 11,
+              "over_forgetting": 0,
+              "wrong_branch": 19,
+              "refusal": 0,
+              "hallucination": 8
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MN": {
+        "split": "val",
+        "num_target_probes": 1215,
+        "filr": 0.2708,
+        "tga": 0.172,
+        "failure_taxonomy": {
+          "correct_at_target": 209,
+          "under_forgetting": 329,
+          "over_forgetting": 22,
+          "wrong_branch": 454,
+          "refusal": 0,
+          "hallucination": 201
+        },
+        "failure_rates": {
+          "under_forgetting": 0.2708,
+          "over_forgetting": 0.0181,
+          "wrong_branch": 0.3737,
+          "refusal": 0.0,
+          "hallucination": 0.1654
+        },
+        "ancestor_retention": {
+          "num_queries": 135,
+          "baseline_accuracy": 0.1926,
+          "post_unlearning_accuracy": 0.1926
+        },
+        "retain_same_entity": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.6047,
+          "unmatched_rate": 0.3359
+        },
+        "retain_other_entity": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.6444,
+          "unmatched_rate": 0.2889
+        },
+        "retain_same_entity_image": {
+          "num_queries": 387,
+          "baseline_accuracy": 0.509,
+          "unmatched_rate": 0.3979
+        },
+        "retain_other_entity_image": {
+          "num_queries": 90,
+          "baseline_accuracy": 0.5778,
+          "unmatched_rate": 0.3889
+        },
+        "retain_same_entity_all_routes": {
+          "num_queries": 774,
+          "baseline_accuracy": 0.5568,
+          "unmatched_rate": 0.3669
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 180,
+          "baseline_accuracy": 0.6111,
+          "unmatched_rate": 0.3389
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 945,
+            "filr": 0.3069,
+            "tga": 0.1492,
+            "failure_categories": {
+              "correct_at_target": 141,
+              "under_forgetting": 290,
+              "over_forgetting": 22,
+              "wrong_branch": 345,
+              "refusal": 0,
+              "hallucination": 147
+            }
+          },
+          "image_to_text": {
+            "num_queries": 180,
+            "filr": 0.1778,
+            "tga": 0.1833,
+            "failure_categories": {
+              "correct_at_target": 33,
+              "under_forgetting": 32,
+              "over_forgetting": 0,
+              "wrong_branch": 79,
+              "refusal": 0,
+              "hallucination": 36
+            }
+          },
+          "image_text_to_text": {
+            "num_queries": 90,
+            "filr": 0.0778,
+            "tga": 0.3889,
+            "failure_categories": {
+              "correct_at_target": 35,
+              "under_forgetting": 7,
+              "over_forgetting": 0,
+              "wrong_branch": 30,
+              "refusal": 0,
+              "hallucination": 18
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 400,
+            "filr": 0.1725,
+            "tga": 0.1175,
+            "failure_categories": {
+              "correct_at_target": 47,
+              "under_forgetting": 69,
+              "over_forgetting": 7,
+              "wrong_branch": 221,
+              "refusal": 0,
+              "hallucination": 56
+            }
+          },
+          "numeric": {
+            "num_queries": 395,
+            "filr": 0.1342,
+            "tga": 0.0582,
+            "failure_categories": {
+              "correct_at_target": 23,
+              "under_forgetting": 53,
+              "over_forgetting": 0,
+              "wrong_branch": 207,
+              "refusal": 0,
+              "hallucination": 112
+            }
+          },
+          "taxonomic": {
+            "num_queries": 420,
+            "filr": 0.4929,
+            "tga": 0.331,
+            "failure_categories": {
+              "correct_at_target": 139,
+              "under_forgetting": 207,
+              "over_forgetting": 15,
+              "wrong_branch": 26,
+              "refusal": 0,
+              "hallucination": 33
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 1014,
+            "filr": 0.284,
+            "tga": 0.1834,
+            "failure_categories": {
+              "correct_at_target": 186,
+              "under_forgetting": 288,
+              "over_forgetting": 16,
+              "wrong_branch": 365,
+              "refusal": 0,
+              "hallucination": 159
+            }
+          },
+          "2": {
+            "num_queries": 149,
+            "filr": 0.1007,
+            "tga": 0.1544,
+            "failure_categories": {
+              "correct_at_target": 23,
+              "under_forgetting": 15,
+              "over_forgetting": 6,
+              "wrong_branch": 77,
+              "refusal": 0,
+              "hallucination": 28
+            }
+          },
+          "3": {
+            "num_queries": 52,
+            "filr": 0.5,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 26,
+              "over_forgetting": 0,
+              "wrong_branch": 12,
+              "refusal": 0,
+              "hallucination": 14
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      }
+    },
+    "pooled": {
+      "BASE": {
+        "split": "pooled",
+        "num_target_probes": 3645,
+        "filr": 0.2716,
+        "tga": 0.1073,
+        "failure_taxonomy": {
+          "correct_at_target": 391,
+          "under_forgetting": 990,
+          "over_forgetting": 138,
+          "wrong_branch": 1215,
+          "refusal": 347,
+          "hallucination": 564
+        },
+        "failure_rates": {
+          "under_forgetting": 0.2716,
+          "over_forgetting": 0.0379,
+          "wrong_branch": 0.3333,
+          "refusal": 0.0952,
+          "hallucination": 0.1547
+        },
+        "ancestor_retention": {
+          "num_queries": 405,
+          "baseline_accuracy": 0.1136,
+          "post_unlearning_accuracy": 0.1136
+        },
+        "retain_same_entity": {
+          "num_queries": 1161,
+          "baseline_accuracy": 0.025,
+          "unmatched_rate": 0.8062
+        },
+        "retain_other_entity": {
+          "num_queries": 270,
+          "baseline_accuracy": 0.3407,
+          "unmatched_rate": 0.6037
+        },
+        "retain_same_entity_image": {
+          "num_queries": 1161,
+          "baseline_accuracy": 0.0121,
+          "unmatched_rate": 0.8295
+        },
+        "retain_other_entity_image": {
+          "num_queries": 270,
+          "baseline_accuracy": 0.2074,
+          "unmatched_rate": 0.6963
+        },
+        "retain_same_entity_all_routes": {
+          "num_queries": 2322,
+          "baseline_accuracy": 0.0185,
+          "unmatched_rate": 0.8178
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 540,
+          "baseline_accuracy": 0.2741,
+          "unmatched_rate": 0.65
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 2835,
+            "filr": 0.2822,
+            "tga": 0.1044,
+            "failure_categories": {
+              "correct_at_target": 296,
+              "under_forgetting": 800,
+              "over_forgetting": 106,
+              "wrong_branch": 866,
+              "refusal": 338,
+              "hallucination": 429
+            }
+          },
+          "image_to_text": {
+            "num_queries": 540,
+            "filr": 0.1667,
+            "tga": 0.1426,
+            "failure_categories": {
+              "correct_at_target": 77,
+              "under_forgetting": 90,
+              "over_forgetting": 20,
+              "wrong_branch": 286,
+              "refusal": 0,
+              "hallucination": 67
+            }
+          },
+          "image_text_to_text": {
+            "num_queries": 270,
+            "filr": 0.3704,
+            "tga": 0.0667,
+            "failure_categories": {
+              "correct_at_target": 18,
+              "under_forgetting": 100,
+              "over_forgetting": 12,
+              "wrong_branch": 63,
+              "refusal": 9,
+              "hallucination": 68
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 1200,
+            "filr": 0.0767,
+            "tga": 0.1042,
+            "failure_categories": {
+              "correct_at_target": 125,
+              "under_forgetting": 92,
+              "over_forgetting": 99,
+              "wrong_branch": 521,
+              "refusal": 99,
+              "hallucination": 264
+            }
+          },
+          "numeric": {
+            "num_queries": 1185,
+            "filr": 0.0253,
+            "tga": 0.0354,
+            "failure_categories": {
+              "correct_at_target": 42,
+              "under_forgetting": 30,
+              "over_forgetting": 5,
+              "wrong_branch": 626,
+              "refusal": 248,
+              "hallucination": 234
+            }
+          },
+          "taxonomic": {
+            "num_queries": 1260,
+            "filr": 0.6889,
+            "tga": 0.1778,
+            "failure_categories": {
+              "correct_at_target": 224,
+              "under_forgetting": 868,
+              "over_forgetting": 34,
+              "wrong_branch": 68,
+              "refusal": 0,
+              "hallucination": 66
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 3042,
+            "filr": 0.2949,
+            "tga": 0.097,
+            "failure_categories": {
+              "correct_at_target": 295,
+              "under_forgetting": 897,
+              "over_forgetting": 86,
+              "wrong_branch": 998,
+              "refusal": 298,
+              "hallucination": 468
+            }
+          },
+          "2": {
+            "num_queries": 447,
+            "filr": 0.0895,
+            "tga": 0.1342,
+            "failure_categories": {
+              "correct_at_target": 60,
+              "under_forgetting": 40,
+              "over_forgetting": 52,
+              "wrong_branch": 180,
+              "refusal": 42,
+              "hallucination": 73
+            }
+          },
+          "3": {
+            "num_queries": 156,
+            "filr": 0.3397,
+            "tga": 0.2308,
+            "failure_categories": {
+              "correct_at_target": 36,
+              "under_forgetting": 53,
+              "over_forgetting": 0,
+              "wrong_branch": 37,
+              "refusal": 7,
+              "hallucination": 23
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MF": {
+        "split": "pooled",
+        "num_target_probes": 3645,
+        "filr": 0.448,
+        "tga": 0.2019,
+        "failure_taxonomy": {
+          "correct_at_target": 736,
+          "under_forgetting": 1633,
+          "over_forgetting": 41,
+          "wrong_branch": 801,
+          "refusal": 0,
+          "hallucination": 434
+        },
+        "failure_rates": {
+          "under_forgetting": 0.448,
+          "over_forgetting": 0.0112,
+          "wrong_branch": 0.2198,
+          "refusal": 0.0,
+          "hallucination": 0.1191
+        },
+        "ancestor_retention": {
+          "num_queries": 405,
+          "baseline_accuracy": 0.2222,
+          "post_unlearning_accuracy": 0.2222
+        },
+        "retain_same_entity": {
+          "num_queries": 1161,
+          "baseline_accuracy": 0.5616,
+          "unmatched_rate": 0.3867
+        },
+        "retain_other_entity": {
+          "num_queries": 270,
+          "baseline_accuracy": 0.5815,
+          "unmatched_rate": 0.3333
+        },
+        "retain_same_entity_image": {
+          "num_queries": 1161,
+          "baseline_accuracy": 0.509,
+          "unmatched_rate": 0.3678
+        },
+        "retain_other_entity_image": {
+          "num_queries": 270,
+          "baseline_accuracy": 0.4778,
+          "unmatched_rate": 0.4778
+        },
+        "retain_same_entity_all_routes": {
+          "num_queries": 2322,
+          "baseline_accuracy": 0.5353,
+          "unmatched_rate": 0.3773
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 540,
+          "baseline_accuracy": 0.5296,
+          "unmatched_rate": 0.4056
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 2835,
+            "filr": 0.4755,
+            "tga": 0.1672,
+            "failure_categories": {
+              "correct_at_target": 474,
+              "under_forgetting": 1348,
+              "over_forgetting": 40,
+              "wrong_branch": 676,
+              "refusal": 0,
+              "hallucination": 297
+            }
+          },
+          "image_to_text": {
+            "num_queries": 540,
+            "filr": 0.3556,
+            "tga": 0.2185,
+            "failure_categories": {
+              "correct_at_target": 118,
+              "under_forgetting": 192,
+              "over_forgetting": 1,
+              "wrong_branch": 107,
+              "refusal": 0,
+              "hallucination": 122
+            }
+          },
+          "image_text_to_text": {
+            "num_queries": 270,
+            "filr": 0.3444,
+            "tga": 0.5333,
+            "failure_categories": {
+              "correct_at_target": 144,
+              "under_forgetting": 93,
+              "over_forgetting": 0,
+              "wrong_branch": 18,
+              "refusal": 0,
+              "hallucination": 15
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 1200,
+            "filr": 0.4217,
+            "tga": 0.1317,
+            "failure_categories": {
+              "correct_at_target": 158,
+              "under_forgetting": 506,
+              "over_forgetting": 7,
+              "wrong_branch": 406,
+              "refusal": 0,
+              "hallucination": 123
+            }
+          },
+          "numeric": {
+            "num_queries": 1185,
+            "filr": 0.3924,
+            "tga": 0.1241,
+            "failure_categories": {
+              "correct_at_target": 147,
+              "under_forgetting": 465,
+              "over_forgetting": 2,
+              "wrong_branch": 369,
+              "refusal": 0,
+              "hallucination": 202
+            }
+          },
+          "taxonomic": {
+            "num_queries": 1260,
+            "filr": 0.5254,
+            "tga": 0.3421,
+            "failure_categories": {
+              "correct_at_target": 431,
+              "under_forgetting": 662,
+              "over_forgetting": 32,
+              "wrong_branch": 26,
+              "refusal": 0,
+              "hallucination": 109
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 3042,
+            "filr": 0.4481,
+            "tga": 0.214,
+            "failure_categories": {
+              "correct_at_target": 651,
+              "under_forgetting": 1363,
+              "over_forgetting": 37,
+              "wrong_branch": 624,
+              "refusal": 0,
+              "hallucination": 367
+            }
+          },
+          "2": {
+            "num_queries": 447,
+            "filr": 0.3758,
+            "tga": 0.1902,
+            "failure_categories": {
+              "correct_at_target": 85,
+              "under_forgetting": 168,
+              "over_forgetting": 4,
+              "wrong_branch": 141,
+              "refusal": 0,
+              "hallucination": 49
+            }
+          },
+          "3": {
+            "num_queries": 156,
+            "filr": 0.6538,
+            "tga": 0.0,
+            "failure_categories": {
+              "correct_at_target": 0,
+              "under_forgetting": 102,
+              "over_forgetting": 0,
+              "wrong_branch": 36,
+              "refusal": 0,
+              "hallucination": 18
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MG": {
+        "split": "pooled",
+        "num_target_probes": 3645,
+        "filr": 0.1446,
+        "tga": 0.4324,
+        "failure_taxonomy": {
+          "correct_at_target": 1576,
+          "under_forgetting": 527,
+          "over_forgetting": 113,
+          "wrong_branch": 884,
+          "refusal": 2,
+          "hallucination": 543
+        },
+        "failure_rates": {
+          "under_forgetting": 0.1446,
+          "over_forgetting": 0.031,
+          "wrong_branch": 0.2425,
+          "refusal": 0.0005,
+          "hallucination": 0.149
+        },
+        "ancestor_retention": {
+          "num_queries": 405,
+          "baseline_accuracy": 0.2494,
+          "post_unlearning_accuracy": 0.2494
+        },
+        "retain_same_entity": {
+          "num_queries": 1161,
+          "baseline_accuracy": 0.5306,
+          "unmatched_rate": 0.3919
+        },
+        "retain_other_entity": {
+          "num_queries": 270,
+          "baseline_accuracy": 0.5889,
+          "unmatched_rate": 0.3704
+        },
+        "retain_same_entity_image": {
+          "num_queries": 1161,
+          "baseline_accuracy": 0.5039,
+          "unmatched_rate": 0.3411
+        },
+        "retain_other_entity_image": {
+          "num_queries": 270,
+          "baseline_accuracy": 0.5556,
+          "unmatched_rate": 0.3667
+        },
+        "retain_same_entity_all_routes": {
+          "num_queries": 2322,
+          "baseline_accuracy": 0.5172,
+          "unmatched_rate": 0.3665
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 540,
+          "baseline_accuracy": 0.5722,
+          "unmatched_rate": 0.3685
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 2835,
+            "filr": 0.1661,
+            "tga": 0.3894,
+            "failure_categories": {
+              "correct_at_target": 1104,
+              "under_forgetting": 471,
+              "over_forgetting": 105,
+              "wrong_branch": 738,
+              "refusal": 2,
+              "hallucination": 415
+            }
+          },
+          "image_to_text": {
+            "num_queries": 540,
+            "filr": 0.1,
+            "tga": 0.4426,
+            "failure_categories": {
+              "correct_at_target": 239,
+              "under_forgetting": 54,
+              "over_forgetting": 8,
+              "wrong_branch": 126,
+              "refusal": 0,
+              "hallucination": 113
+            }
+          },
+          "image_text_to_text": {
+            "num_queries": 270,
+            "filr": 0.0074,
+            "tga": 0.863,
+            "failure_categories": {
+              "correct_at_target": 233,
+              "under_forgetting": 2,
+              "over_forgetting": 0,
+              "wrong_branch": 20,
+              "refusal": 0,
+              "hallucination": 15
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 1200,
+            "filr": 0.0875,
+            "tga": 0.4742,
+            "failure_categories": {
+              "correct_at_target": 569,
+              "under_forgetting": 105,
+              "over_forgetting": 35,
+              "wrong_branch": 398,
+              "refusal": 1,
+              "hallucination": 92
+            }
+          },
+          "numeric": {
+            "num_queries": 1185,
+            "filr": 0.0321,
+            "tga": 0.2565,
+            "failure_categories": {
+              "correct_at_target": 304,
+              "under_forgetting": 38,
+              "over_forgetting": 9,
+              "wrong_branch": 458,
+              "refusal": 1,
+              "hallucination": 375
+            }
+          },
+          "taxonomic": {
+            "num_queries": 1260,
+            "filr": 0.3048,
+            "tga": 0.5579,
+            "failure_categories": {
+              "correct_at_target": 703,
+              "under_forgetting": 384,
+              "over_forgetting": 69,
+              "wrong_branch": 28,
+              "refusal": 0,
+              "hallucination": 76
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 3042,
+            "filr": 0.1456,
+            "tga": 0.4612,
+            "failure_categories": {
+              "correct_at_target": 1403,
+              "under_forgetting": 443,
+              "over_forgetting": 95,
+              "wrong_branch": 639,
+              "refusal": 2,
+              "hallucination": 460
+            }
+          },
+          "2": {
+            "num_queries": 447,
+            "filr": 0.1029,
+            "tga": 0.2953,
+            "failure_categories": {
+              "correct_at_target": 132,
+              "under_forgetting": 46,
+              "over_forgetting": 18,
+              "wrong_branch": 190,
+              "refusal": 0,
+              "hallucination": 61
+            }
+          },
+          "3": {
+            "num_queries": 156,
+            "filr": 0.2436,
+            "tga": 0.2628,
+            "failure_categories": {
+              "correct_at_target": 41,
+              "under_forgetting": 38,
+              "over_forgetting": 0,
+              "wrong_branch": 55,
+              "refusal": 0,
+              "hallucination": 22
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      },
+      "MN": {
+        "split": "pooled",
+        "num_target_probes": 3645,
+        "filr": 0.2675,
+        "tga": 0.1748,
+        "failure_taxonomy": {
+          "correct_at_target": 637,
+          "under_forgetting": 975,
+          "over_forgetting": 70,
+          "wrong_branch": 1381,
+          "refusal": 0,
+          "hallucination": 582
+        },
+        "failure_rates": {
+          "under_forgetting": 0.2675,
+          "over_forgetting": 0.0192,
+          "wrong_branch": 0.3789,
+          "refusal": 0.0,
+          "hallucination": 0.1597
+        },
+        "ancestor_retention": {
+          "num_queries": 405,
+          "baseline_accuracy": 0.2025,
+          "post_unlearning_accuracy": 0.2025
+        },
+        "retain_same_entity": {
+          "num_queries": 1161,
+          "baseline_accuracy": 0.6227,
+          "unmatched_rate": 0.3273
+        },
+        "retain_other_entity": {
+          "num_queries": 270,
+          "baseline_accuracy": 0.6593,
+          "unmatched_rate": 0.2704
+        },
+        "retain_same_entity_image": {
+          "num_queries": 1161,
+          "baseline_accuracy": 0.5082,
+          "unmatched_rate": 0.4005
+        },
+        "retain_other_entity_image": {
+          "num_queries": 270,
+          "baseline_accuracy": 0.5741,
+          "unmatched_rate": 0.3963
+        },
+        "retain_same_entity_all_routes": {
+          "num_queries": 2322,
+          "baseline_accuracy": 0.5655,
+          "unmatched_rate": 0.3639
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 540,
+          "baseline_accuracy": 0.6167,
+          "unmatched_rate": 0.3333
+        },
+        "by_route": {
+          "text_to_text": {
+            "num_queries": 2835,
+            "filr": 0.303,
+            "tga": 0.1534,
+            "failure_categories": {
+              "correct_at_target": 435,
+              "under_forgetting": 859,
+              "over_forgetting": 69,
+              "wrong_branch": 1052,
+              "refusal": 0,
+              "hallucination": 420
+            }
+          },
+          "image_to_text": {
+            "num_queries": 540,
+            "filr": 0.1778,
+            "tga": 0.1759,
+            "failure_categories": {
+              "correct_at_target": 95,
+              "under_forgetting": 96,
+              "over_forgetting": 1,
+              "wrong_branch": 237,
+              "refusal": 0,
+              "hallucination": 111
+            }
+          },
+          "image_text_to_text": {
+            "num_queries": 270,
+            "filr": 0.0741,
+            "tga": 0.3963,
+            "failure_categories": {
+              "correct_at_target": 107,
+              "under_forgetting": 20,
+              "over_forgetting": 0,
+              "wrong_branch": 92,
+              "refusal": 0,
+              "hallucination": 51
+            }
+          }
+        },
+        "by_hierarchy_type": {
+          "semantic": {
+            "num_queries": 1200,
+            "filr": 0.17,
+            "tga": 0.1167,
+            "failure_categories": {
+              "correct_at_target": 140,
+              "under_forgetting": 204,
+              "over_forgetting": 22,
+              "wrong_branch": 671,
+              "refusal": 0,
+              "hallucination": 163
+            }
+          },
+          "numeric": {
+            "num_queries": 1185,
+            "filr": 0.1342,
+            "tga": 0.0599,
+            "failure_categories": {
+              "correct_at_target": 71,
+              "under_forgetting": 159,
+              "over_forgetting": 1,
+              "wrong_branch": 631,
+              "refusal": 0,
+              "hallucination": 323
+            }
+          },
+          "taxonomic": {
+            "num_queries": 1260,
+            "filr": 0.4857,
+            "tga": 0.3381,
+            "failure_categories": {
+              "correct_at_target": 426,
+              "under_forgetting": 612,
+              "over_forgetting": 47,
+              "wrong_branch": 79,
+              "refusal": 0,
+              "hallucination": 96
+            }
+          }
+        },
+        "by_target_depth": {
+          "1": {
+            "num_queries": 3042,
+            "filr": 0.2791,
+            "tga": 0.1851,
+            "failure_categories": {
+              "correct_at_target": 563,
+              "under_forgetting": 849,
+              "over_forgetting": 55,
+              "wrong_branch": 1117,
+              "refusal": 0,
+              "hallucination": 458
+            }
+          },
+          "2": {
+            "num_queries": 447,
+            "filr": 0.1074,
+            "tga": 0.1611,
+            "failure_categories": {
+              "correct_at_target": 72,
+              "under_forgetting": 48,
+              "over_forgetting": 15,
+              "wrong_branch": 228,
+              "refusal": 0,
+              "hallucination": 84
+            }
+          },
+          "3": {
+            "num_queries": 156,
+            "filr": 0.5,
+            "tga": 0.0128,
+            "failure_categories": {
+              "correct_at_target": 2,
+              "under_forgetting": 78,
+              "over_forgetting": 0,
+              "wrong_branch": 36,
+              "refusal": 0,
+              "hallucination": 40
+            }
+          }
+        },
+        "definitions": {
+          "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
+          "tga": "fraction of target probes answered at the intended post-unlearning granularity",
+          "under_forgetting": "output finer than target (fine leakage)",
+          "over_forgetting": "output at an ancestor of the target",
+          "wrong_branch": "output is a level value of a DIFFERENT association's hierarchy",
+          "refusal": "no hierarchy value + refusal phrasing",
+          "hallucination": "no hierarchy value, non-refusal"
+        }
+      }
+    }
+  },
+  "hierarchy_metrics_note": "Frozen Iteration 8 research metrics (FILR, TGA, ancestor retention, under/over-forgetting, wrong-branch, refusal, hallucination, route/type/depth strata). TEST split is the PRIMARY basis; 'pooled' is secondary. These are the metrics Iteration 9's MF->MU baselines will be compared on (central comparison: MU ~= MG with retained non-target knowledge).",
+  "separation_gate": {
+    "passed": true,
+    "reasons": [],
+    "basis": "pooled train/val/test",
+    "definition": {
+      "fine_recovery": "MF > MG and MF > MN by >= 0.15 (baseline accuracy, adversarial excluded)",
+      "target_abstraction": "MG > MN by >= 0.15 on target_core post-unlearning accuracy",
+      "retain": "all states >= 0.5 on same-entity and other-entity retain accuracy"
+    }
+  },
+  "separation_gate_test_split": {
+    "passed": true,
+    "reasons": [],
+    "basis": "test paraphrase split only"
+  }
+}
