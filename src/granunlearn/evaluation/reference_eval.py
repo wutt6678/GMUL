@@ -18,6 +18,13 @@ import time
 from pathlib import Path
 from typing import Any
 
+from granunlearn.evaluation.prediction_provenance import (
+    PredictionFingerprint,
+    dataset_version,
+    validate_prediction_coverage,
+    verify_sidecar,
+    write_sidecar,
+)
 from granunlearn.evaluation.scoring import (
     compute_metrics,
     score_query,
@@ -32,6 +39,14 @@ from granunlearn.logging_utils import setup_logger
 from granunlearn.schema import AssociationRecord, PredictionRecord, QueryRecord
 
 log = setup_logger("reference_eval")
+
+#: Generation defaults, single-sourced so a prediction fingerprint can
+#: record exactly what the generator will do.  Changing either changes the
+#: decoded bytes, which is why both are part of the reuse contract in
+#: :mod:`granunlearn.evaluation.prediction_provenance`.
+DEFAULT_MAX_NEW_TOKENS = 96
+DEFAULT_MAX_LENGTH = 1536
+DEFAULT_MAX_IMAGE_PIXELS = 384 * 384
 
 
 def load_queries_parquet(path: str | Path) -> list[QueryRecord]:
@@ -68,7 +83,7 @@ class ReferenceStateGenerator:
 
     def __init__(self, model_id: str, device: str,
                  adapter_dir: str | Path | None = None,
-                 max_image_pixels: int = 384 * 384):
+                 max_image_pixels: int = DEFAULT_MAX_IMAGE_PIXELS):
         import torch
         from transformers import AutoModelForImageTextToText, AutoProcessor
 
@@ -122,7 +137,7 @@ class ReferenceStateGenerator:
         import torch
         kwargs: dict[str, Any] = {
             "text": texts, "return_tensors": "pt", "padding": True,
-            "truncation": True, "max_length": 1536,
+            "truncation": True, "max_length": DEFAULT_MAX_LENGTH,
         }
         if images_per_sample is not None:
             kwargs["images"] = images_per_sample
@@ -143,7 +158,7 @@ class ReferenceStateGenerator:
         associations: dict[str, AssociationRecord],
         repo_root: str | Path,
         batch_size: int = 8,
-        max_new_tokens: int = 96,
+        max_new_tokens: int = DEFAULT_MAX_NEW_TOKENS,
         image_batch_size: int = 1,
     ) -> list[str]:
         """Greedy completions; multimodal queries include their image.
@@ -244,6 +259,7 @@ def evaluate_state(
     experiment_id: str = "mllmu_smoke_iter7",
     batch_size: int = 2,
     image_batch_size: int = 1,
+    max_new_tokens: int = DEFAULT_MAX_NEW_TOKENS,
 ) -> tuple[list[PredictionRecord], dict[str, Any]]:
     """Generate + score one checkpoint over the full query set."""
     by_assoc = {a.association_id: a for a in associations}
@@ -252,7 +268,7 @@ def evaluate_state(
     t0 = time.time()
     raw_outputs = generator.generate_for_queries(
         queries, by_assoc, repo_root, batch_size=batch_size,
-        image_batch_size=image_batch_size)
+        image_batch_size=image_batch_size, max_new_tokens=max_new_tokens)
     generator.unload()
 
     predictions = [
@@ -290,14 +306,16 @@ def run_reference_evaluation(
     skip_existing: bool = False,
     experiment_id: str = "mllmu_smoke_iter7",
     image_batch_size: int = 1,
+    max_new_tokens: int = DEFAULT_MAX_NEW_TOKENS,
 ) -> dict[str, Any]:
     """Evaluate BASE + MF/MG/MN and apply the separation gate.
 
     With ``rescore=True`` the persisted prediction parquets are re-scored
     (no model loading) — used to regenerate metrics after scorer changes.
     With ``skip_existing=True`` states whose prediction parquet already
-    exists are loaded instead of re-generated (Iteration 9: reference
-    states and selection-time predictions reused in the final run).
+    exists AND whose provenance sidecar matches this run are loaded
+    instead of re-generated; a parquet that does not match (or predates
+    sidecars entirely) is regenerated, never silently trusted.
     Hierarchy metrics (FILR/TGA/failure taxonomy/strata) are reported
     per split with TEST as the primary basis; ``failure_export_dir``
     receives per-example failure exports for inspection.
@@ -317,6 +335,23 @@ def run_reference_evaluation(
     if predictions_dir:
         predictions_dir.mkdir(parents=True, exist_ok=True)
 
+    generation_config = {
+        "batch_size": batch_size,
+        "image_batch_size": image_batch_size,
+        "max_new_tokens": max_new_tokens,
+        "do_sample": False,
+        "max_image_pixels": DEFAULT_MAX_IMAGE_PIXELS,
+        "max_length": DEFAULT_MAX_LENGTH,
+    }
+    query_ids = [q.query_id for q in queries]
+
+    def fingerprint_for(state: str, adapter_dir: Path | None):
+        return PredictionFingerprint.build(
+            experiment_id=experiment_id, checkpoint_id=state,
+            repo_root=repo_root, data_dir=smoke_dir, model_id=model_id,
+            adapter_dir=adapter_dir,
+            generation_config=generation_config, num_rows=len(queries))
+
     metrics_by_state: dict[str, Any] = {}
     metrics_by_split: dict[str, Any] = {
         s: {} for s in ("train", "val", "test")}
@@ -328,36 +363,66 @@ def run_reference_evaluation(
     if failure_export_dir:
         failure_export_dir.mkdir(parents=True, exist_ok=True)
     for state in states:
+        adapter_dir = None if state == "BASE" else \
+            checkpoints_dir / state / "adapters"
+        ppath = (predictions_dir / f"predictions_{state}.parquet"
+                 if predictions_dir else None)
+        expected = fingerprint_for(state, adapter_dir)
+        preds: list[PredictionRecord] | None = None
+        gen_info: dict[str, Any] = {}
+        loaded_existing = False
+
         if rescore:
-            if predictions_dir is None:
+            if ppath is None:
                 raise ValueError("rescore requires predictions_dir")
-            ppath = predictions_dir / f"predictions_{state}.parquet"
             log.info("Rescoring %s from %s...", state, ppath)
             preds = load_predictions_parquet(ppath)
-            gen_info: dict[str, Any] = {"rescored": True}
+            # Rescoring deliberately applies CURRENT scoring code to
+            # previously generated bytes, so a code-fingerprint mismatch is
+            # expected here.  It is recorded rather than refused, so the
+            # report states exactly which generations were rescored.
+            gen_info = {"rescored": True,
+                        "provenance_mismatches": verify_sidecar(ppath,
+                                                                expected)}
             loaded_existing = True
-        elif (skip_existing and predictions_dir is not None
-              and (predictions_dir /
-                   f"predictions_{state}.parquet").exists()):
-            ppath = predictions_dir / f"predictions_{state}.parquet"
-            log.info("[%s] reusing persisted predictions %s",
-                     state, ppath)
-            preds = load_predictions_parquet(ppath)
-            gen_info = {"reused_predictions": True}
-            loaded_existing = True
-        else:
+        elif skip_existing and ppath is not None and ppath.exists():
+            reasons = verify_sidecar(ppath, expected)
+            if reasons:
+                log.warning("[%s] REFUSING to reuse %s — %d provenance "
+                            "mismatch(es); regenerating instead:",
+                            state, ppath.name, len(reasons))
+                for r in reasons:
+                    log.warning("    - %s", r)
+            else:
+                preds = load_predictions_parquet(ppath)
+                problems = validate_prediction_coverage(
+                    preds, query_ids, experiment_id, state)
+                if problems:
+                    raise SystemExit(
+                        f"[{state}] {ppath.name} is provenance-valid but "
+                        f"row-invalid:\n  " + "\n  ".join(problems))
+                log.info("[%s] reusing provenance-validated predictions %s",
+                         state, ppath)
+                gen_info = {"reused_predictions": True}
+                loaded_existing = True
+
+        if preds is None:
             loaded_existing = False
-            adapter_dir = None
-            if state != "BASE":
-                adapter_dir = checkpoints_dir / state / "adapters"
-                if not adapter_dir.exists():
-                    raise FileNotFoundError(
-                        f"Missing adapter for state {state}: {adapter_dir}")
+            if adapter_dir is not None and not adapter_dir.exists():
+                raise FileNotFoundError(
+                    f"Missing adapter for state {state}: {adapter_dir}")
             log.info("Evaluating state %s...", state)
             preds, gen_info = evaluate_state(
                 state, queries, associations, repo_root, model_id, device,
                 adapter_dir, experiment_id=experiment_id,
-                batch_size=batch_size, image_batch_size=image_batch_size)
+                batch_size=batch_size, image_batch_size=image_batch_size,
+                max_new_tokens=max_new_tokens)
+            problems = validate_prediction_coverage(
+                preds, query_ids, experiment_id, state)
+            if problems:
+                raise SystemExit(
+                    f"[{state}] freshly generated predictions are "
+                    f"row-invalid:\n  " + "\n  ".join(problems))
 
         pooled, per_split = metrics_for_predictions(preds, queries)
         pooled.update(gen_info)
@@ -382,9 +447,13 @@ def run_reference_evaluation(
             import pandas as pd
             pd.DataFrame(
                 [json.loads(p.model_dump_json()) for p in preds]
-            ).to_parquet(
-                predictions_dir / f"predictions_{state}.parquet",
-                index=False)
+            ).to_parquet(ppath, index=False)
+            # The sidecar is written with the parquet, never afterwards by
+            # hand: downstream scripts refuse a parquet that has no sidecar,
+            # so a gate run that skipped this step would force every
+            # candidate-selection and final-evaluation pass to regenerate.
+            write_sidecar(ppath, expected)
+            log.info("[%s] wrote %s + provenance sidecar", state, ppath.name)
         log.info("[%s] fine_recovery=%.3f target_post=%.3f "
                  "retain_same=%.3f retain_other=%.3f leakage=%.3f",
                  state,
@@ -407,13 +476,21 @@ def run_reference_evaluation(
         "model_id": model_id,
         "states": states,
         "num_queries": len(queries),
+        # Read from the frozen manifest, never assumed: this gate report is
+        # the artifact that says WHICH dataset the separation was measured
+        # on, and Iteration 11R re-froze the dataset underneath it.
+        "dataset_version": dataset_version(smoke_dir),
         "generation_config": {
-            "batch_size": batch_size,
-            "image_batch_size": image_batch_size,
-            "max_new_tokens": 96,
-            "do_sample": False,
+            **generation_config,
             "note": "identical for every state in this report",
         },
+        "test_split_exposure": (
+            "This gate generates every query in every split, TEST "
+            "included, and reports a separation gate on the test split as "
+            "well as pooled. It runs BEFORE candidate selection, so the "
+            "test split informs a go/no-go decision here and is not an "
+            "untouched hold-out. Candidates are still never ranked on "
+            "their own test predictions — selection is train+val only."),
         "metrics_split_semantics": (
             "metrics_by_state pools train/val/test; metrics_by_split "
             "reports each paraphrase split separately — the TEST numbers "

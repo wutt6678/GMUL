@@ -14,6 +14,8 @@ import json
 from pathlib import Path
 
 from granunlearn.config import _find_repo_root
+from granunlearn.evaluation.image_splits import assert_no_training_drift
+from granunlearn.evaluation.prediction_provenance import dataset_version
 from granunlearn.evaluation.reference_eval import (
     load_associations_parquet,
 )
@@ -21,6 +23,10 @@ from granunlearn.logging_utils import setup_logger
 from granunlearn.training.state_datasets import write_state_datasets
 
 log = setup_logger("build_state_datasets")
+
+#: The three files MF/MG/MN are fitted on.
+STATE_JSONLS = ("training/MF.jsonl", "training/MG.jsonl",
+                "training/MN.jsonl")
 
 
 def main() -> None:
@@ -56,6 +62,17 @@ def main() -> None:
             state, info["num_examples"], info["num_target"],
             info["num_retain"], info["num_image_text"],
             info["target_level_distribution"])
+    # Iteration 11R freeze gate: the repaired visual split reserves
+    # images[0] as the training photograph precisely so that rebuilding on
+    # pilot100_v2 reproduces these three files byte-for-byte.  If a future
+    # edit re-picks the training photograph, MF/MG/MN and every candidate
+    # fitted on them become stale, and the build must say so instead of
+    # writing new bytes under an old version's adapters.
+    measured = assert_no_training_drift(
+        smoke_dir, STATE_JSONLS, dataset_version(smoke_dir))
+    if measured:
+        log.info("No training drift: %d state file(s) byte-identical to "
+                 "pilot100_v1", len(measured))
     log.info("Wrote state datasets -> %s", smoke_dir / "training")
 
 

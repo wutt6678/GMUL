@@ -25,7 +25,18 @@ import json
 from pathlib import Path
 
 from granunlearn.config import _find_repo_root
+from granunlearn.evaluation.prediction_provenance import (
+    SUPERSEDED_V1_COMMIT,
+    PredictionFingerprint,
+    dataset_version,
+    validate_prediction_coverage,
+    verify_sidecar,
+    write_sidecar,
+)
 from granunlearn.evaluation.reference_eval import (
+    DEFAULT_MAX_IMAGE_PIXELS,
+    DEFAULT_MAX_LENGTH,
+    DEFAULT_MAX_NEW_TOKENS,
     ReferenceStateGenerator,
     load_associations_parquet,
     load_predictions_parquet,
@@ -68,34 +79,120 @@ def prediction_filename(state_id: str, splits: tuple[str, ...]) -> str:
 
 def _generate_state(state_id: str, adapter_dir: Path | None,
                     queries, by_assoc, repo_root, device,
-                    predictions_dir: Path, model_id: str,
-                    batch_size: int, image_batch_size: int,
+                    predictions_dir: Path, data_dir: Path, model_id: str,
+                    generation_config: dict,
                     experiment_id: str,
                     splits: tuple[str, ...]):
-    """Generate (or reuse) predictions for one checkpoint over `splits`."""
+    """Generate (or reuse) predictions for one checkpoint over `splits`.
+
+    Reuse requires a provenance sidecar that matches this run's adapter,
+    base-model revision, dataset version and artifact hashes, generation
+    configuration and code fingerprint.  Selection decides which candidate
+    is reported, so a silently stale parquet here would pick the winner on
+    someone else's numbers.
+    """
     ppath = predictions_dir / prediction_filename(state_id, splits)
-    if ppath.exists():
-        log.info("[%s] reusing persisted predictions %s", state_id,
-                 ppath.name)
-        return load_predictions_parquet(ppath)
     subset = queries if set(splits) >= set(ALL_SPLITS) else \
         [q for q in queries if q.split in splits]
+    expected = PredictionFingerprint.build(
+        experiment_id=experiment_id, checkpoint_id=state_id,
+        repo_root=repo_root, data_dir=data_dir, model_id=model_id,
+        adapter_dir=adapter_dir, generation_config=generation_config,
+        num_rows=len(subset))
+    if ppath.exists():
+        reasons = verify_sidecar(ppath, expected)
+        if reasons:
+            log.warning("[%s] REFUSING to reuse %s — %d provenance "
+                        "mismatch(es):", state_id, ppath.name, len(reasons))
+            for r in reasons:
+                log.warning("    - %s", r)
+        else:
+            preds = load_predictions_parquet(ppath)
+            problems = validate_prediction_coverage(
+                preds, [q.query_id for q in subset], experiment_id, state_id)
+            if problems:
+                raise SystemExit(
+                    f"[{state_id}] {ppath.name} is provenance-valid but "
+                    f"row-invalid:\n  " + "\n  ".join(problems))
+            log.info("[%s] reusing provenance-validated predictions %s "
+                     "(%d rows)", state_id, ppath.name, len(preds))
+            return preds
     log.info("[%s] generating %d/%d queries (%s)...", state_id,
              len(subset), len(queries), ",".join(splits))
     generator = ReferenceStateGenerator(
         model_id, device, adapter_dir=adapter_dir)
     raws = generator.generate_for_queries(
-        subset, by_assoc, repo_root, batch_size=batch_size,
-        image_batch_size=image_batch_size)
+        subset, by_assoc, repo_root,
+        batch_size=generation_config["batch_size"],
+        image_batch_size=generation_config["image_batch_size"],
+        max_new_tokens=generation_config["max_new_tokens"])
     generator.unload()
     preds = [score_query(q, by_assoc[q.association_id], raw,
                          experiment_id=experiment_id,
                          checkpoint_id=state_id)
              for q, raw in zip(subset, raws)]
+    problems = validate_prediction_coverage(
+        preds, [q.query_id for q in subset], experiment_id, state_id)
+    if problems:
+        raise SystemExit(f"[{state_id}] freshly generated predictions are "
+                         f"row-invalid:\n  " + "\n  ".join(problems))
     import pandas as pd
     pd.DataFrame([json.loads(p.model_dump_json()) for p in preds]
                  ).to_parquet(ppath, index=False)
+    write_sidecar(ppath, expected)
     return preds
+
+
+def _mg_reference_predictions(
+    queries, by_assoc, repo_root, data_dir, predictions_dir,
+    mg_adapters: Path, model_id: str, device: str,
+    generation_config: dict, experiment_id: str,
+    splits: tuple[str, ...],
+):
+    """MG's behaviour vector on the SELECTION scope (the oracle to approach).
+
+    Two provenance-verified sources are acceptable, in order: a file
+    already scoped to ``splits``, or the reference-state gate's all-split
+    file filtered down — filtering is legitimate because the rows are the
+    same generations, only the scope narrows, and the sidecar still has to
+    match this run's dataset, adapter, configuration and code.  Neither
+    being reusable regenerates the scoped file, which requires MG's
+    adapter: scoring MG with ``adapter_dir=None`` would silently substitute
+    the bare base model for the oracle.
+    """
+    scoped = predictions_dir / prediction_filename("MG", splits)
+    expected = PredictionFingerprint.build(
+        experiment_id=experiment_id, checkpoint_id="MG",
+        repo_root=repo_root, data_dir=data_dir, model_id=model_id,
+        adapter_dir=mg_adapters, generation_config=generation_config)
+    subset_ids = [q.query_id for q in queries
+                  if set(splits) >= set(ALL_SPLITS) or q.split in splits]
+    for path, filter_to_scope in ((scoped, False),
+                                  (predictions_dir / prediction_filename(
+                                      "MG", ALL_SPLITS), True)):
+        if not path.exists():
+            continue
+        reasons = verify_sidecar(path, expected)
+        if reasons:
+            log.warning("[MG] not reusing %s — %d provenance mismatch(es):",
+                        path.name, len(reasons))
+            for r in reasons:
+                log.warning("    - %s", r)
+            continue
+        preds = load_predictions_parquet(path)
+        if filter_to_scope:
+            preds = filter_predictions_by_splits(preds, queries, splits)
+        problems = validate_prediction_coverage(
+            preds, subset_ids, experiment_id, "MG")
+        if problems:
+            raise SystemExit(f"[MG] {path.name} is provenance-valid but "
+                             f"row-invalid:\n  " + "\n  ".join(problems))
+        log.info("[MG] reusing provenance-validated predictions %s (%d rows)",
+                 path.name, len(preds))
+        return preds
+    return _generate_state("MG", mg_adapters, queries, by_assoc, repo_root,
+                           device, predictions_dir, data_dir, model_id,
+                           generation_config, experiment_id, splits)
 
 
 def main() -> None:
@@ -106,6 +203,8 @@ def main() -> None:
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--image-batch-size", type=int, default=1)
+    parser.add_argument("--max-new-tokens", type=int,
+                        default=DEFAULT_MAX_NEW_TOKENS)
     parser.add_argument("--model-id", default="Qwen/Qwen3.5-9B")
     parser.add_argument("--splits", default=None,
                         help="Comma-separated generation scope (default: "
@@ -117,6 +216,19 @@ def main() -> None:
                         help="Score + report only; do not stage selected "
                              "adapters (used by partial lanes)")
     args = parser.parse_args()
+
+    # One generation contract for the whole selection run: MG and every
+    # candidate are scored under identical batch sizes, so D_G compares
+    # models rather than batch layouts.  It is also what the prediction
+    # sidecars are verified against.
+    generation_config = {
+        "batch_size": args.batch_size,
+        "image_batch_size": args.image_batch_size,
+        "max_new_tokens": args.max_new_tokens,
+        "do_sample": False,
+        "max_image_pixels": DEFAULT_MAX_IMAGE_PIXELS,
+        "max_length": DEFAULT_MAX_LENGTH,
+    }
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
     data_dir = repo_root / "data" / f"mllmu_hier_{args.tag}"
@@ -163,21 +275,17 @@ def main() -> None:
                          "scripts/train_unlearning_baselines.py first")
 
     # MG reference vector on the SELECTION scope (oracle to approximate).
-    # MG's predictions come from the reference-state evaluation; when
-    # those were generated over all splits they are filtered down here,
-    # so the reference vector never sees a different scope than the
-    # candidates.
-    mg_path = predictions_dir / prediction_filename("MG", splits)
-    if not mg_path.exists():
-        mg_full = predictions_dir / prediction_filename("MG", ALL_SPLITS)
-        if not mg_full.exists():
-            raise FileNotFoundError(
-                f"MG predictions missing ({mg_path.name} / {mg_full.name}) — "
-                f"run the reference-state evaluation first")
-        mg_preds = filter_predictions_by_splits(
-            load_predictions_parquet(mg_full), queries, splits)
-    else:
-        mg_preds = load_predictions_parquet(mg_path)
+    mg_adapters = repo_root / "data" / "checkpoints" / \
+        f"mllmu_{args.tag}" / "MG" / "adapters"
+    if not mg_adapters.exists():
+        raise FileNotFoundError(
+            f"MG adapter missing: {mg_adapters} — run the reference-state "
+            f"training first (selection must never approximate the oracle "
+            f"with the bare base model)")
+    mg_preds = _mg_reference_predictions(
+        queries, by_assoc, repo_root, data_dir, predictions_dir,
+        mg_adapters, args.model_id, args.device, generation_config,
+        experiment_id, splits)
     mg_tv = trainval_hierarchy_metrics(mg_preds, queries, associations)
     ref_vec = summary_vector(mg_tv)
     log.info("MG %s vector: %s", "+".join(splits), ref_vec)
@@ -186,8 +294,8 @@ def main() -> None:
     for cid, (method, adir) in candidates_dirs.items():
         preds = _generate_state(
             cid, adir, queries, by_assoc, repo_root, args.device,
-            predictions_dir, args.model_id, args.batch_size,
-            args.image_batch_size, experiment_id, splits)
+            predictions_dir, data_dir, args.model_id, generation_config,
+            experiment_id, splits)
         tv_metrics = trainval_hierarchy_metrics(preds, queries, associations)
         summary_path = unlearn_ckpt / cid / "training_summary.json"
         summary = json.loads(summary_path.read_text()) \
@@ -211,11 +319,25 @@ def main() -> None:
 
     report = select_checkpoints(candidates, ref_vec)
     report["tag"] = args.tag
+    report["iteration"] = "11R"
+    report["dataset_version"] = dataset_version(data_dir)
     report["selection_scope"] = list(splits)
     report["scope_note"] = (
         "test queries were NOT generated at selection time"
         if set(splits) < set(ALL_SPLITS) else
         "all splits generated; metrics filtered to train+val")
+    report["supersedes"] = {
+        "commit": SUPERSEDED_V1_COMMIT,
+        "dataset_version": "pilot100_v1",
+        "reason": (
+            "The v1 selection ranked candidates on train+val predictions "
+            "generated over assoc.images[0] — the photograph every "
+            "checkpoint was trained on — for all three splits. Iteration "
+            "11R re-froze the dataset so val queries are served "
+            "photographs disjoint from training, which changes the val "
+            "half of the selection basis, so the ranking is recomputed "
+            "rather than inherited."),
+    }
 
     if not args.no_stage:
         import shutil

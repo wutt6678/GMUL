@@ -84,6 +84,27 @@ class QueryRecord(BaseModel):
         default_factory=list,
         description="Image IDs to include in the prompt (empty for T→T)",
     )
+    image_split: Literal["train", "val", "test"] | None = Field(
+        default=None,
+        description=(
+            "Split label of the photograph actually attached, i.e. which "
+            "split USES it — not the source dataset's pre-assignment. "
+            "Iteration 11R: a MLLMU portrait is labeled 'train' even on a "
+            "test query, because training consumed it and there is no "
+            "second portrait to hold out. None for text-only queries."
+        ),
+    )
+    image_seen_in_training: bool = Field(
+        default=False,
+        description=(
+            "True when the attached photograph is the one the reference "
+            "states and unlearning candidates were trained on. This flag "
+            "— never the source dataset name — decides the image stratum: "
+            "held_out_photo vs seen_photo_unseen_wording. Always True for "
+            "single-photograph entities, which cannot have a held-out "
+            "photograph at all."
+        ),
+    )
     prompt: str = Field(description="Full natural-language prompt sent to the model")
 
     expected_level: int | None = Field(

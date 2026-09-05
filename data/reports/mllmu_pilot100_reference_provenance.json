@@ -3,12 +3,13 @@
   "iteration": 11,
   "tag": "pilot100",
   "dataset": "mllmu_hier_pilot100 (100 entities = 64 MLLMU persons + 36 real iNaturalist species; 477 associations; balanced 30/30/30 semantic/numeric/taxonomic targets)",
+  "dataset_version": "pilot100_v2",
   "dataset_hashes_sha256": {
-    "data/mllmu_hier_pilot100/associations.parquet": "1e79ed5822f7666538eff5dcff69e42c5c85b2ed7cd89224176c20d7e982b3fa",
-    "data/mllmu_hier_pilot100/queries.parquet": "acd46ad5d451aef96a944a406a4c07ae7f67a0dd93f6f069439027506ab27817",
-    "data/mllmu_hier_pilot100/manifest.json": "fdd026dce459edc034143afb3f26bbbe7169e7bd89e8372138762305072a61a5",
+    "data/mllmu_hier_pilot100/associations.parquet": "b4427b201868ff4d08a5f791d55cdcd78561d2f4abc42af97378bba63b1026c1",
+    "data/mllmu_hier_pilot100/queries.parquet": "f66637323754039a28d45ea44a5e05bcb5b51f07b4272329d3f4a6b3b5482d5e",
+    "data/mllmu_hier_pilot100/manifest.json": "be3f71d7094830353eba37dab5f12f31335196b43ab213eb4de50347fa0de737",
     "data/reports/mllmu_pilot100_target_retain.json": "62bf8137b1332f8927d28de630e98112a22f9d22b437c818173da3fbab3fa3ab",
-    "data/reports/mllmu_pilot100_query_report.json": "7ea541e96f083241bdb2d942ccaab094475a48dbaba628b13893714cbe44e51a",
+    "data/reports/mllmu_pilot100_query_report.json": "74b386069966cb8ded37bad10573ba528c0c7a219c8631c80d32bbe6d9553c39",
     "data/mllmu_hier_pilot100/training/state_datasets_manifest.json": "c39ba424094ee7320d4208794ed95f02667439fe741bd012b84b99507a452608",
     "data/mllmu_hier_pilot100/unlearning/unlearning_groups_manifest.json": "ca76e1ee63ce0652d336402e5eddfab5b3c31dac0e41ea256c5392a22cb936fd",
     "data/mllmu_hier_pilot100/training/MF.jsonl": "2238a3ba5ceff0a9ea3b0d85e6382ac3f281bf57a2a96737a21ad69aa77f5315",
@@ -17,7 +18,7 @@
     "data/mllmu_hier_pilot100/unlearning/fine_target.jsonl": "60ef46ac72d601deb64b55b5a5ddfb31c168983dd2adf5a594bd8ce73e8f6765",
     "data/mllmu_hier_pilot100/unlearning/target_level.jsonl": "0c56833660ea701b61de426f2dc2bc4b7823cc5fe59c93840a364bdbd9a0fcbf",
     "data/mllmu_hier_pilot100/unlearning/retain.jsonl": "ed2219be266d2d24e5cf0f020d57bb1442086292186db458dff2efceb983ce45",
-    "configs/datasets/pilot100.yaml": "3bd7eeff299557282f606d626e03f8ffead9e9bde002d62029363e2b9ba8d6a5"
+    "configs/datasets/pilot100.yaml": "e52fb05f33f024ac621bf4ab699117fcc70373e34a3f6a87575cb44d1551710c"
   },
   "base_model": {
     "model_id": "Qwen/Qwen3.5-9B",
@@ -1447,11 +1448,16 @@
     "selection_scope": [
       "train",
       "val"
-    ]
+    ],
+    "dataset_version": "pilot100_v1",
+    "superseded": true
   },
   "final_evaluation": {
     "report": "data/reports/mllmu_pilot100_final_evaluation.json",
     "report_sha256": "08486f09eac7e9a9b8cc4549ca634c2523fa28683b2fe735e53085def0007eb9",
+    "dataset_version": "pilot100_v1",
+    "superseded": true,
+    "superseded_reason": "generated against pilot100_v1; the frozen dataset on disk is pilot100_v2, so these numbers describe the earlier image assignment and must be regenerated",
     "selection_scope_used": [
       "train",
       "val"
@@ -1477,9 +1483,10 @@
     "MF/MG/MN share the recipe verbatim; only D_F/D_G/D_N differ.",
     "Every unlearning candidate continues from the SAME MF adapter and may override only swept knobs (learning_rate, num_epochs, group weights).",
     "Evaluation metrics are reported pooled AND per paraphrase split; adversarial probes are excluded from core slices.",
-    "Checkpoint selection used TRAIN+VAL probes only; the frozen test split was generated once, afterwards, by scripts/evaluate_pilot100_final.py.",
+    "Checkpoint selection used TRAIN+VAL probes only, so no candidate was ranked on its test predictions. The test split is NOT untouched, however: the reference-state gate generated and gated on all test queries for BASE/MF/MG/MN before selection. See 'test_split_exposure' in the final evaluation.",
     "Reproducibility contract = dataset hashes + base-model revision + recipe + adapter hashes. Fields under 'diagnostics' and 'environment' are machine-specific metadata, not part of the contract.",
     "Training jsonl image paths are repo-relative; resolved at load time.",
+    "Iteration 11R re-froze the dataset as pilot100_v2 with a split-aware image assignment: images[0] is the reserved training photograph and val/test queries draw from disjoint pools over the remaining photographs, so the held-out-photo stratum is a genuinely unseen photograph and the single-portrait MLLMU stratum is reported separately as seen-photo/unseen-wording. All six training/unlearning jsonls are byte-identical to v1 (measured above), which is why no adapter was retrained.",
     "max_image_pixels is enforced through granunlearn.imaging.image_size_kwargs: Qwen3VLProcessor silently ignores a bare max_pixels kwarg, which had left every image at native resolution (1024 vision tokens for a 1024x1024 portrait instead of the intended 144)."
   ],
   "inaturalist_stratum": {
@@ -1507,5 +1514,47 @@
       "cc0"
     ],
     "note": "photo bytes are gitignored; PROVENANCE.json pins every observation/photo id, license, attribution, source URL, SHA-256 and measured resolution, so the frozen image set is exactly re-fetchable via scripts/fetch_inat_species.py"
+  },
+  "dataset_transition": {
+    "from": "pilot100_v1",
+    "to": "pilot100_v2",
+    "v1_source_commit": "3850461",
+    "reason": "Iteration 11 assigned assoc.images[0] to every image query in all three splits while training also used images[0], so the 'held-out photograph' route was unseen wording over a seen photograph. 11R reserves images[0] as the training photograph and draws val/test photographs from disjoint pools over the remaining 11.",
+    "training_jsonls_byte_identical": true,
+    "retraining_required": false,
+    "artifacts_changed": [
+      "configs/datasets/pilot100.yaml",
+      "data/mllmu_hier_pilot100/associations.parquet",
+      "data/mllmu_hier_pilot100/manifest.json",
+      "data/mllmu_hier_pilot100/queries.parquet",
+      "data/reports/mllmu_pilot100_query_report.json"
+    ],
+    "artifacts_unchanged": [
+      "data/mllmu_hier_pilot100/training/MF.jsonl",
+      "data/mllmu_hier_pilot100/training/MG.jsonl",
+      "data/mllmu_hier_pilot100/training/MN.jsonl",
+      "data/mllmu_hier_pilot100/training/state_datasets_manifest.json",
+      "data/mllmu_hier_pilot100/unlearning/fine_target.jsonl",
+      "data/mllmu_hier_pilot100/unlearning/retain.jsonl",
+      "data/mllmu_hier_pilot100/unlearning/target_level.jsonl",
+      "data/mllmu_hier_pilot100/unlearning/unlearning_groups_manifest.json",
+      "data/reports/mllmu_pilot100_target_retain.json"
+    ],
+    "v1_artifact_sha256": {
+      "data/mllmu_hier_pilot100/training/MF.jsonl": "2238a3ba5ceff0a9ea3b0d85e6382ac3f281bf57a2a96737a21ad69aa77f5315",
+      "data/mllmu_hier_pilot100/training/MG.jsonl": "60ba21692c1be738f34e713f73d55e55e784da7bd4b5032a7b69b9f443de15d6",
+      "data/mllmu_hier_pilot100/training/MN.jsonl": "4bf7005a5c8a8d6f21b936f6cdbb7e31d32f93f9832a116b9d7352473cc717a2",
+      "data/mllmu_hier_pilot100/unlearning/fine_target.jsonl": "60ef46ac72d601deb64b55b5a5ddfb31c168983dd2adf5a594bd8ce73e8f6765",
+      "data/mllmu_hier_pilot100/unlearning/target_level.jsonl": "0c56833660ea701b61de426f2dc2bc4b7823cc5fe59c93840a364bdbd9a0fcbf",
+      "data/mllmu_hier_pilot100/unlearning/retain.jsonl": "ed2219be266d2d24e5cf0f020d57bb1442086292186db458dff2efceb983ce45",
+      "data/mllmu_hier_pilot100/associations.parquet": "1e79ed5822f7666538eff5dcff69e42c5c85b2ed7cd89224176c20d7e982b3fa",
+      "data/mllmu_hier_pilot100/queries.parquet": "acd46ad5d451aef96a944a406a4c07ae7f67a0dd93f6f069439027506ab27817",
+      "data/mllmu_hier_pilot100/manifest.json": "fdd026dce459edc034143afb3f26bbbe7169e7bd89e8372138762305072a61a5",
+      "data/reports/mllmu_pilot100_query_report.json": "7ea541e96f083241bdb2d942ccaab094475a48dbaba628b13893714cbe44e51a",
+      "data/reports/mllmu_pilot100_target_retain.json": "62bf8137b1332f8927d28de630e98112a22f9d22b437c818173da3fbab3fa3ab",
+      "data/mllmu_hier_pilot100/training/state_datasets_manifest.json": "c39ba424094ee7320d4208794ed95f02667439fe741bd012b84b99507a452608",
+      "data/mllmu_hier_pilot100/unlearning/unlearning_groups_manifest.json": "ca76e1ee63ce0652d336402e5eddfab5b3c31dac0e41ea256c5392a22cb936fd",
+      "configs/datasets/pilot100.yaml": "3bd7eeff299557282f606d626e03f8ffead9e9bde002d62029363e2b9ba8d6a5"
+    }
   }
 }

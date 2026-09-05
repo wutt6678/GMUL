@@ -36,6 +36,7 @@ import argparse
 import hashlib
 import json
 import sys
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -52,6 +53,12 @@ from granunlearn.datasets.smoke import (
     selection_evidence,
     select_smoke_entities,
     subset_associations,
+)
+from granunlearn.evaluation.image_splits import (
+    IMAGE_STRATA,
+    image_stratum,
+    relabel_image_splits,
+    validate_image_splits,
 )
 from granunlearn.evaluation.query_generation import (
     UNLEARNING_FAMILIES,
@@ -166,6 +173,18 @@ def run_pilot_build(config_path: str | Path,
             "(person/species id collision?)")
     log.info("Mixed pilot pool: %d entities, %d associations",
              n_entities, len(pilot))
+
+    # ---- 5b. relabel image splits to reflect ACTUAL use (Iteration 11R) ----
+    # The adapters' 60/20/20 pre-assignment is made before anyone knows
+    # which photograph training will consume; in pilot100_v1 the trained
+    # photograph of 11 target species was labeled val (6) or test (5),
+    # advertising a held-out split that did not exist.  Labels are
+    # re-derived from use: images[0] is the reserved training photograph
+    # (what state_datasets/unlearning_datasets consume), and the spare
+    # photographs form disjoint val/test pools.
+    pilot = [relabel_image_splits(a, seed) for a in pilot]
+    log.info("Image splits relabeled from use: %s",
+             dict(Counter(img.split for a in pilot for img in a.images)))
 
     # ---- 6. balanced target freeze -----------------------------------------
     quotas = balance_cfg.get("quotas") or PILOT_TARGET_QUOTAS
@@ -283,6 +302,23 @@ def run_pilot_build(config_path: str | Path,
     log.info("Generated %d queries; by_route=%s; validation PASSED",
              len(queries), stats["by_route"])
 
+    # ---- 8b. visual-split gate (Iteration 11R) ------------------------------
+    # A build whose val/test image queries are served the photograph that
+    # training consumed is measuring unseen wording over a SEEN image.  That
+    # was pilot100_v1; it is now a hard build failure.
+    image_errors = validate_image_splits(queries, pilot, seed)
+    if image_errors:
+        for e in image_errors[:20]:
+            log.error("VISUAL SPLIT: %s", e)
+        raise RuntimeError(
+            f"Visual-split validation failed with {len(image_errors)} "
+            f"error(s)")
+    strata = Counter(image_stratum(q) for q in queries if q.image_ids)
+    distinct_used = {i for q in queries for i in q.image_ids}
+    log.info("Visual split PASSED: strata=%s; %d/%d distinct photographs "
+             "used by queries", dict(strata), len(distinct_used),
+             len({img.image_id for a in pilot for img in a.images}))
+
     q_path = output_dir / "queries.parquet"
     pd.DataFrame([q.model_dump() for q in queries]).to_parquet(
         q_path, index=False)
@@ -330,10 +366,61 @@ def run_pilot_build(config_path: str | Path,
         "num_associations_with_queries":
             stats["num_associations_with_queries"],
         "num_associations_total": len(pilot),
+        "image_split": {
+            "validation_passed": not image_errors,
+            "strata": {s: strata.get(s, 0) for s in IMAGE_STRATA},
+            "num_distinct_photographs_used": len(distinct_used),
+            "num_distinct_photographs_available":
+                len({img.image_id for a in pilot for img in a.images}),
+            "photographs_per_split_label": dict(Counter(
+                img.split for a in pilot for img in a.images)),
+            "note": (
+                "held_out_photo queries are served a photograph training "
+                "never saw; seen_photo_unseen_wording queries are served "
+                "the trained photograph because their entity has only one "
+                "(every MLLMU person). The two strata are reported "
+                "separately and must never be pooled into a single "
+                "'held-out image' claim."),
+        },
     }
     save_json(query_report, reports / "mllmu_pilot100_query_report.json")
 
     # ---- freeze hashes (added AFTER artifacts exist) ------------------------
+    manifest["num_unique_images_used_by_queries"] = len(distinct_used)
+    manifest["image_strata"] = {s: strata.get(s, 0) for s in IMAGE_STRATA}
+    manifest["image_split_policy"] = {
+        "reserved_training_index": 0,
+        "rule": (
+            "images[0] is RESERVED as the training photograph because "
+            "state_datasets and unlearning_datasets consume it; the "
+            "remaining photographs are ordered by sha256(seed, "
+            "association_id, image_id) and cut in half into disjoint val "
+            "and test pools (11 spares -> 5 val / 6 test). Image queries "
+            "round-robin their own split's pool ordered by query_id."),
+        "override_of_adapter_preassignment": (
+            "ImageRef.split is relabeled from ACTUAL USE, overriding the "
+            "iNaturalist adapter's 60/20/20 pre-assignment, which is made "
+            "before anyone knows which photograph training will consume. "
+            "In pilot100_v1 the trained photograph of 11 of the 30 target "
+            "species was labeled val (6) or test (5)."),
+        "single_photograph_entities": (
+            "An entity with one photograph (every MLLMU person) cannot have "
+            "a held-out photograph: all splits keep the trained portrait "
+            "and every such query carries image_seen_in_training=True, "
+            "which is what places it in the seen_photo_unseen_wording "
+            "stratum rather than the held-out one."),
+        "within_split_repetition": (
+            "12 photographs per species leave 5 val and 6 test for up to 10 "
+            "image queries per split, so a few species repeat a photograph "
+            "within one split. Disjointness from TRAINING is the property "
+            "the held-out claim needs; distinctness between two test "
+            "queries is not, and the repetition is recorded here rather "
+            "than hidden."),
+        "defect_repaired": (
+            "pilot100_v1 assigned images[0] to every train/val/test image "
+            "query, so the image route measured unseen wording over a SEEN "
+            "photograph and 396 of 496 distinct photographs were unused."),
+    }
     manifest["frozen_artifact_sha256"] = {
         "associations.parquet": _sha256(assoc_path),
         "queries.parquet": _sha256(q_path),

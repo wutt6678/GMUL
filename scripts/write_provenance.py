@@ -25,6 +25,10 @@ import platform
 from pathlib import Path
 
 from granunlearn.config import _find_repo_root
+from granunlearn.evaluation.image_splits import (
+    REPAIRED_DATASET_VERSION,
+    V1_TRAINING_JSONL_SHA256,
+)
 from granunlearn.logging_utils import setup_logger
 from granunlearn.training.candidate_grid import grid_for_tag
 from granunlearn.training.reference_trainer import ReferenceRecipe
@@ -39,6 +43,88 @@ DATASET_NOTES = {
                  "36 real iNaturalist species; 477 associations; balanced "
                  "30/30/30 semantic/numeric/taxonomic targets)"),
 }
+
+#: pilot100_v1 artifact hashes, pinned from commit ``3850461``.  Iteration
+#: 11R rebuilt the dataset with a split-aware image assignment; recording
+#: the v1 hashes next to the live ones is what makes the transition
+#: auditable, and comparing the six training/unlearning jsonls against
+#: these pins is the proof that no retraining was required.
+#:
+#: The six TRAINING pins live in ``image_splits`` — the module that owns
+#: the reserved-training-photograph rule they follow from — and are
+#: re-keyed here; only the evaluation artifacts are pinned locally.
+PILOT100_V1_SHA256 = {
+    f"data/mllmu_hier_pilot100/{rel}": sha
+    for rel, sha in V1_TRAINING_JSONL_SHA256.items()
+}
+PILOT100_V1_SHA256.update({
+    "data/mllmu_hier_pilot100/associations.parquet":
+        "1e79ed5822f7666538eff5dcff69e42c5c85b2ed7cd89224176c20d7e982b3fa",
+    "data/mllmu_hier_pilot100/queries.parquet":
+        "acd46ad5d451aef96a944a406a4c07ae7f67a0dd93f6f069439027506ab27817",
+    "data/mllmu_hier_pilot100/manifest.json":
+        "fdd026dce459edc034143afb3f26bbbe7169e7bd89e8372138762305072a61a5",
+    "data/reports/mllmu_pilot100_query_report.json":
+        "7ea541e96f083241bdb2d942ccaab094475a48dbaba628b13893714cbe44e51a",
+    "data/reports/mllmu_pilot100_target_retain.json":
+        "62bf8137b1332f8927d28de630e98112a22f9d22b437c818173da3fbab3fa3ab",
+    "data/mllmu_hier_pilot100/training/state_datasets_manifest.json":
+        "c39ba424094ee7320d4208794ed95f02667439fe741bd012b84b99507a452608",
+    "data/mllmu_hier_pilot100/unlearning/unlearning_groups_manifest.json":
+        "ca76e1ee63ce0652d336402e5eddfab5b3c31dac0e41ea256c5392a22cb936fd",
+    "configs/datasets/pilot100.yaml":
+        "3bd7eeff299557282f606d626e03f8ffead9e9bde002d62029363e2b9ba8d6a5",
+})
+PILOT100_TRAINING_ARTIFACTS = tuple(
+    f"data/mllmu_hier_pilot100/{rel}" for rel in V1_TRAINING_JSONL_SHA256)
+
+
+def manifest_version(repo_root: Path, tag: str) -> str | None:
+    """The version the FROZEN dataset on disk declares for itself."""
+    man = repo_root / "data" / f"mllmu_hier_{tag}" / "manifest.json"
+    if not man.exists():
+        return None
+    return json.loads(man.read_text()).get("version")
+
+
+def dataset_transition(live_hashes: dict[str, str],
+                       version: str | None) -> dict | None:
+    """v1 -> v2 audit trail for the pilot-100 visual-split repair.
+
+    The claim Iteration 11R rests on is that the image re-assignment moved
+    evaluation photographs only, so the six training/unlearning jsonls are
+    byte-identical and every existing adapter stays valid.  That claim is
+    recorded here as a measured comparison against the pinned v1 hashes,
+    not asserted in prose.
+    """
+    if version != REPAIRED_DATASET_VERSION:
+        return None
+    changed, unchanged = [], []
+    for path, v1 in PILOT100_V1_SHA256.items():
+        live = live_hashes.get(path)
+        if live is None:
+            continue
+        (unchanged if live == v1 else changed).append(path)
+    training_identical = all(
+        live_hashes.get(p) == PILOT100_V1_SHA256[p]
+        for p in PILOT100_TRAINING_ARTIFACTS)
+    return {
+        "from": "pilot100_v1",
+        "to": version,
+        "v1_source_commit": "3850461",
+        "reason": (
+            "Iteration 11 assigned assoc.images[0] to every image query "
+            "in all three splits while training also used images[0], so "
+            "the 'held-out photograph' route was unseen wording over a "
+            "seen photograph. 11R reserves images[0] as the training "
+            "photograph and draws val/test photographs from disjoint "
+            "pools over the remaining 11."),
+        "training_jsonls_byte_identical": training_identical,
+        "retraining_required": not training_identical,
+        "artifacts_changed": sorted(changed),
+        "artifacts_unchanged": sorted(unchanged),
+        "v1_artifact_sha256": PILOT100_V1_SHA256,
+    }
 
 
 def sha256_file(path: Path) -> str:
@@ -184,6 +270,22 @@ def main() -> None:
     final_one_shot = (final or {}).get("one_shot") or {}
     final_sens = (final or {}).get("batch_composition_sensitivity") or {}
 
+    live_hashes = dataset_hashes(repo_root, args.tag)
+    version = manifest_version(repo_root, args.tag)
+    transition = dataset_transition(live_hashes, version)
+    # A report generated before the current dataset version describes a
+    # dataset that no longer exists on disk.  It stays committed (git holds
+    # the v1 numbers) but the record must say which version it measured,
+    # so no reader binds v1 conclusions to v2 artifacts.
+    final_version = (final or {}).get("dataset_version") or (
+        "pilot100_v1" if args.tag == "pilot100" else version)
+    final_superseded = bool(version) and final_version != version
+    # The selection report has the same problem: it ranks candidates on
+    # train+val predictions that were generated against v1 images.
+    sel_version = (selection or {}).get("dataset_version") or (
+        "pilot100_v1" if args.tag == "pilot100" else version)
+    sel_superseded = bool(version) and sel_version != version
+
     import torch
     import transformers
     import peft
@@ -198,7 +300,8 @@ def main() -> None:
         "iteration": 11 if args.tag == "pilot100" else 7,
         "tag": args.tag,
         "dataset": DATASET_NOTES[args.tag],
-        "dataset_hashes_sha256": dataset_hashes(repo_root, args.tag),
+        "dataset_version": version,
+        "dataset_hashes_sha256": live_hashes,
         "base_model": base_model_revision(args.model_id),
         "recipe": ReferenceRecipe().to_dict(),
         "reference_state_checkpoints": states,
@@ -210,6 +313,8 @@ def main() -> None:
             "selected": (selection or {}).get("selected"),
             "basis": (selection or {}).get("basis"),
             "selection_scope": (selection or {}).get("selection_scope"),
+            "dataset_version": sel_version if selection else None,
+            "superseded": sel_superseded if selection else None,
         },
         "final_evaluation": {
             "report": str(final_path.relative_to(repo_root))
@@ -217,6 +322,13 @@ def main() -> None:
             "report_sha256":
                 hashlib.sha256(final_path.read_bytes()).hexdigest()
                 if final else None,
+            "dataset_version": final_version if final else None,
+            "superseded": final_superseded if final else None,
+            "superseded_reason": (
+                f"generated against {final_version}; the frozen dataset on "
+                f"disk is {version}, so these numbers describe the earlier "
+                f"image assignment and must be regenerated"
+                if final and final_superseded else None),
             "selection_scope_used": final_one_shot.get("selection_scope"),
             "num_test_queries": final_one_shot.get("num_test_queries"),
             "assembled_without_generation":
@@ -246,9 +358,11 @@ def main() -> None:
             "group weights).",
             "Evaluation metrics are reported pooled AND per paraphrase "
             "split; adversarial probes are excluded from core slices.",
-            "Checkpoint selection used TRAIN+VAL probes only; the frozen "
-            "test split was generated once, afterwards, by "
-            "scripts/evaluate_pilot100_final.py.",
+            "Checkpoint selection used TRAIN+VAL probes only, so no "
+            "candidate was ranked on its test predictions. The test split "
+            "is NOT untouched, however: the reference-state gate generated "
+            "and gated on all test queries for BASE/MF/MG/MN before "
+            "selection. See 'test_split_exposure' in the final evaluation.",
             "Reproducibility contract = dataset hashes + base-model "
             "revision + recipe + adapter hashes. Fields under "
             "'diagnostics' and 'environment' are machine-specific "
@@ -259,6 +373,18 @@ def main() -> None:
     }
     if args.tag == "pilot100":
         provenance["inaturalist_stratum"] = inaturalist_provenance(repo_root)
+        if transition:
+            provenance["dataset_transition"] = transition
+            provenance["notes"].append(
+                "Iteration 11R re-froze the dataset as pilot100_v2 with a "
+                "split-aware image assignment: images[0] is the reserved "
+                "training photograph and val/test queries draw from "
+                "disjoint pools over the remaining photographs, so the "
+                "held-out-photo stratum is a genuinely unseen photograph "
+                "and the single-portrait MLLMU stratum is reported "
+                "separately as seen-photo/unseen-wording. All six "
+                "training/unlearning jsonls are byte-identical to v1 "
+                "(measured above), which is why no adapter was retrained.")
         provenance["notes"].append(
             "max_image_pixels is enforced through "
             "granunlearn.imaging.image_size_kwargs: Qwen3VLProcessor "

@@ -4,7 +4,13 @@ experiment:
 
 dataset:
   name: mllmu_hier
-  version: pilot100_v1
+  # v2 (Iteration 11R): the visual split was repaired — v1 served every
+  # train/val/test image query images[0], the photograph training consumed,
+  # so the image route measured unseen wording over a SEEN photograph.  v2
+  # reserves images[0] for training and draws val/test queries from
+  # disjoint held-out photograph pools.  The training and unlearning JSONLs
+  # are byte-identical between v1 and v2, so no checkpoint is retrained.
+  version: pilot100_v2
   max_entities: 100
   hierarchy_types:
     - semantic

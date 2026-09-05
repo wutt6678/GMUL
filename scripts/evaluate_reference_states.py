@@ -16,7 +16,10 @@ import argparse
 from pathlib import Path
 
 from granunlearn.config import _find_repo_root
-from granunlearn.evaluation.reference_eval import run_reference_evaluation
+from granunlearn.evaluation.reference_eval import (
+    DEFAULT_MAX_NEW_TOKENS,
+    run_reference_evaluation,
+)
 from granunlearn.logging_utils import setup_logger
 
 log = setup_logger("evaluate_reference_states")
@@ -39,12 +42,19 @@ def main() -> None:
     parser.add_argument("--image-batch-size", type=int, default=1,
                         help="Batch size for image probes (pilot100 uses "
                              "8; 1 reproduces the Iteration 7/9 path)")
+    parser.add_argument("--max-new-tokens", type=int,
+                        default=DEFAULT_MAX_NEW_TOKENS,
+                        help="Decode budget; part of the prediction "
+                             "provenance fingerprint, so changing it makes "
+                             "every existing parquet refuse reuse")
     parser.add_argument("--rescore", action="store_true",
                         help="Re-score persisted prediction parquets "
                              "instead of running the model (CPU-only)")
     parser.add_argument("--skip-existing", action="store_true",
-                        help="Reuse persisted predictions for states "
-                             "that already have them")
+                        help="Reuse persisted predictions for states whose "
+                             "provenance sidecar matches this run; a "
+                             "parquet that does not match (or has no "
+                             "sidecar) is regenerated, never trusted")
     args = parser.parse_args()
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
@@ -66,6 +76,7 @@ def main() -> None:
         predictions_dir=smoke_dir / "predictions",
         batch_size=args.batch_size,
         image_batch_size=args.image_batch_size,
+        max_new_tokens=args.max_new_tokens,
         rescore=args.rescore,
         failure_export_dir=smoke_dir / "failure_exports",
         skip_existing=args.skip_existing,

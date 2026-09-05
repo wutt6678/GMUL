@@ -29,7 +29,10 @@ explicit unmatched categories.  With target = California:
 * ``hallucination``     no hierarchy value, non-refusal text.
 
 Stratifications: route (T->T, I->T, I+T->T), hierarchy type (semantic
-vs numeric), and target depth.  Test-split metrics are PRIMARY.
+vs numeric), target depth, and — since Iteration 11R — image provenance
+(``held_out_photo`` vs ``seen_photo_unseen_wording``), which is what
+separates a genuinely unseen photograph from unseen wording over the
+photograph training consumed.  Test-split metrics are PRIMARY.
 """
 
 from __future__ import annotations
@@ -38,6 +41,7 @@ import re
 from collections import defaultdict
 from typing import Any
 
+from granunlearn.evaluation.image_splits import IMAGE_STRATA, image_stratum
 from granunlearn.evaluation.scoring import _normalize
 from granunlearn.schema import AssociationRecord, PredictionRecord, QueryRecord
 
@@ -268,6 +272,25 @@ def compute_hierarchy_metrics(
             lambda q, d=depth:
             by_assoc[q.association_id].target_level == d)
 
+    # Image-provenance strata (Iteration 11R).  The route stratification
+    # above cannot separate "a photograph the model was trained on" from
+    # "a photograph it never saw", because Iteration 11 served images[0] —
+    # the training photograph — to every split.  These two strata are what
+    # make the held-out-photograph claim measurable, and they are derived
+    # from the query's image_seen_in_training FLAG, never from the source
+    # dataset name: a MLLMU person has exactly one portrait and it is
+    # trained on, so it can only ever be seen-photo/unseen-wording.
+    by_image_provenance = {
+        s: stratum_metrics(lambda q, s=s: image_stratum(q) == s)
+        for s in IMAGE_STRATA}
+    by_image_provenance["_note"] = (
+        "Strata over image queries only (text-only target probes are in "
+        "neither), so these two num_queries sum to the image target-probe "
+        "count, not to num_target_probes. held_out_photo = the served "
+        "photograph was never in training; seen_photo_unseen_wording = the "
+        "served photograph IS the training photograph and only the wording "
+        "is new.")
+
     return {
         "split": split or "pooled",
         "num_target_probes": n_target,
@@ -295,6 +318,7 @@ def compute_hierarchy_metrics(
         "by_route": by_route,
         "by_hierarchy_type": by_type,
         "by_target_depth": by_depth,
+        "by_image_provenance": by_image_provenance,
         "definitions": {
             "filr": "fraction of target probes whose output matches a "
                     "level finer than the unlearning target (post view, "

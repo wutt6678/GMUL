@@ -68,6 +68,11 @@ from __future__ import annotations
 import hashlib
 from typing import Any
 
+from granunlearn.evaluation.image_splits import (
+    assign_split_images,
+    image_for_split,
+    photo_labels,
+)
 from granunlearn.schema import AssociationRecord, QueryRecord
 
 SPLITS = ["train", "val", "test"]
@@ -531,13 +536,21 @@ def _make_query(
     else:
         route = "text_to_text"
     carries_image = family in IMAGE_FAMILIES and bool(assoc.images)
+    # Iteration 11R: the photograph depends on the SPLIT.  Slot 0 here is
+    # provisional — ``assign_split_images`` recomputes it over the whole
+    # query set so siblings round-robin distinct held-out photographs.
+    image, seen_in_training = (image_for_split(assoc, split, seed)
+                               if carries_image else (None, False))
     return QueryRecord(
         query_id=query_id,
         association_id=assoc.association_id,
         route=route,
         query_type=FAMILY_QUERY_TYPE[family],
         family=family,
-        image_ids=[assoc.images[0].image_id] if carries_image else [],
+        image_ids=[image.image_id] if image is not None else [],
+        image_split=(photo_labels(assoc, seed)[image.image_id]
+                     if image is not None else None),
+        image_seen_in_training=seen_in_training,
         prompt=text,
         expected_level=answer_idx,
         acceptable_answer_ids=acceptable,
@@ -666,7 +679,12 @@ def generate_queries(
                               f"__for_{target.association_id}__{split}"),
                     is_target_probe=False,
                     target_association_id=target.association_id))
-    return queries
+    # Iteration 11R: give every image query a photograph drawn from ITS
+    # OWN split's pool, round-robin so siblings differ.  Done as a
+    # post-pass because distinctness needs to know a query's siblings, and
+    # grouping by (association, split) then sorting by query_id keeps the
+    # result independent of emission order.
+    return assign_split_images(queries, associations, seed)
 
 
 def validate_queries(

@@ -1,6 +1,6 @@
 {
   "dataset": "mllmu_hier_pilot100",
-  "version": "pilot100_v1",
+  "version": "pilot100_v2",
   "iteration": 11,
   "seed": 42,
   "num_entities": 100,
@@ -696,9 +696,22 @@
       "photo_licenses": "cc0/cc-by/cc-by-sa/cc-by-nc/cc-by-nc-sa (per-photo in PROVENANCE.json)"
     }
   },
+  "num_unique_images_used_by_queries": 342,
+  "image_strata": {
+    "held_out_photo": 252,
+    "seen_photo_unseen_wording": 1989
+  },
+  "image_split_policy": {
+    "reserved_training_index": 0,
+    "rule": "images[0] is RESERVED as the training photograph because state_datasets and unlearning_datasets consume it; the remaining photographs are ordered by sha256(seed, association_id, image_id) and cut in half into disjoint val and test pools (11 spares -> 5 val / 6 test). Image queries round-robin their own split's pool ordered by query_id.",
+    "override_of_adapter_preassignment": "ImageRef.split is relabeled from ACTUAL USE, overriding the iNaturalist adapter's 60/20/20 pre-assignment, which is made before anyone knows which photograph training will consume. In pilot100_v1 the trained photograph of 11 of the 30 target species was labeled val (6) or test (5).",
+    "single_photograph_entities": "An entity with one photograph (every MLLMU person) cannot have a held-out photograph: all splits keep the trained portrait and every such query carries image_seen_in_training=True, which is what places it in the seen_photo_unseen_wording stratum rather than the held-out one.",
+    "within_split_repetition": "12 photographs per species leave 5 val and 6 test for up to 10 image queries per split, so a few species repeat a photograph within one split. Disjointness from TRAINING is the property the held-out claim needs; distinctness between two test queries is not, and the repetition is recorded here rather than hidden.",
+    "defect_repaired": "pilot100_v1 assigned images[0] to every train/val/test image query, so the image route measured unseen wording over a SEEN photograph and 396 of 496 distinct photographs were unused."
+  },
   "frozen_artifact_sha256": {
-    "associations.parquet": "1e79ed5822f7666538eff5dcff69e42c5c85b2ed7cd89224176c20d7e982b3fa",
-    "queries.parquet": "acd46ad5d451aef96a944a406a4c07ae7f67a0dd93f6f069439027506ab27817",
+    "associations.parquet": "b4427b201868ff4d08a5f791d55cdcd78561d2f4abc42af97378bba63b1026c1",
+    "queries.parquet": "f66637323754039a28d45ea44a5e05bcb5b51f07b4272329d3f4a6b3b5482d5e",
     "manifest_pre_hash_note": "hashes computed over the final parquet artifacts"
   }
 }

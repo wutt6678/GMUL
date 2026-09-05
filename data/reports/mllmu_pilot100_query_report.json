@@ -242,5 +242,20 @@
   "num_retain_same_entity_image": 1161,
   "num_retain_other_entity_image": 270,
   "num_associations_with_queries": 477,
-  "num_associations_total": 477
+  "num_associations_total": 477,
+  "image_split": {
+    "validation_passed": true,
+    "strata": {
+      "held_out_photo": 252,
+      "seen_photo_unseen_wording": 1989
+    },
+    "num_distinct_photographs_used": 342,
+    "num_distinct_photographs_available": 496,
+    "photographs_per_split_label": {
+      "train": 477,
+      "val": 180,
+      "test": 216
+    },
+    "note": "held_out_photo queries are served a photograph training never saw; seen_photo_unseen_wording queries are served the trained photograph because their entity has only one (every MLLMU person). The two strata are reported separately and must never be pooled into a single 'held-out image' claim."
+  }
 }

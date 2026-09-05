@@ -15,11 +15,18 @@ import json
 from pathlib import Path
 
 from granunlearn.config import _find_repo_root
+from granunlearn.evaluation.image_splits import assert_no_training_drift
+from granunlearn.evaluation.prediction_provenance import dataset_version
 from granunlearn.evaluation.reference_eval import load_associations_parquet
 from granunlearn.logging_utils import setup_logger
 from granunlearn.training.unlearning_datasets import write_unlearning_groups
 
 log = setup_logger("build_unlearning_groups")
+
+#: The three group files every unlearning candidate is fitted on.
+UNLEARNING_GROUP_JSONLS = ("unlearning/fine_target.jsonl",
+                           "unlearning/target_level.jsonl",
+                           "unlearning/retain.jsonl")
 
 
 def main() -> None:
@@ -45,6 +52,15 @@ def main() -> None:
     for group, info in manifest["groups"].items():
         log.info("%s: %d examples -> %s", group, info["num_examples"],
                  info["path"])
+    # Iteration 11R freeze gate: the repaired visual split may relabel
+    # evaluation photographs, but it must not move one byte of the data the
+    # unlearning candidates were fitted on.  If it does, the correct
+    # response is to retrain, not to keep reporting stale adapters.
+    measured = assert_no_training_drift(
+        smoke, UNLEARNING_GROUP_JSONLS, dataset_version(smoke))
+    if measured:
+        log.info("No training drift: %d group file(s) byte-identical to "
+                 "pilot100_v1", len(measured))
     log.info("Wrote unlearning groups -> %s", smoke / "unlearning")
 
 

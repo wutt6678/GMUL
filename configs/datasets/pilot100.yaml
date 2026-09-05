@@ -4,7 +4,16 @@
 # Targets frozen BALANCED: 30 per hierarchy type, per-attribute quotas.
 dataset:
   name: mllmu_hier_pilot100
-  version: pilot100_v1
+  # v2 (Iteration 11R) — VISUAL SPLIT REPAIR.  v1 served every train/val/test
+  # image query assoc.images[0], the photograph state_datasets and
+  # unlearning_datasets train on, so the image route measured unseen WORDING
+  # over a SEEN photograph and 396 of 496 distinct photographs were unused;
+  # for 11 of the 30 target species the trained photograph was even labeled
+  # val (6) or test (5).  v2 reserves images[0] for training and draws
+  # val/test queries from disjoint held-out pools, relabeling ImageRef.split
+  # from actual use.  The six training/unlearning JSONLs are byte-identical
+  # between v1 and v2, so no checkpoint is retrained.
+  version: pilot100_v2
   seed: 42
 
   # ---- MLLMU stratum (persons) ----
