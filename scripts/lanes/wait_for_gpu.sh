@@ -7,7 +7,8 @@
 #
 # The box is shared with other tenants, so a lane must not assume a
 # device index: it polls nvidia-smi and claims the first GPU that is
-# both big enough and unclaimed.  Claims are atomic (mkdir) and live in
+# both big enough and unclaimed.  Poll interval is POLL seconds
+# (default 1); claims are atomic (mkdir) and live in
 # outputs/gpu_locks/<idx>/ (gitignored); the lock is released when the
 # command exits.  A lane killed with SIGKILL leaves a stale lock — clear
 # it by hand (rmdir outputs/gpu_locks/<idx>) before relaunching.
@@ -33,11 +34,23 @@ mkdir -p "$(dirname "$LOG")"
 
 threshold="$MIN_FREE"
 attempt=0
-echo "$(date -Is) lane waiting for >=${threshold}MiB free: $*" >> "$LOG"
+# Seconds between driver queries.  Default 1s: this box is shared with
+# several tenants whose own waiters are polling too, so the old 60s
+# interval routinely let a freed GPU be claimed by someone else before
+# this lane looked again.  Override with POLL=<seconds>.
+POLL="${POLL:-1}"
+echo "$(date -Is) lane waiting for >=${threshold}MiB free (poll ${POLL}s): $*" >> "$LOG"
 while true; do
-  for idx in 0 1 2 3; do
-    free=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits \
-             -i "$idx" 2>/dev/null | tr -d ' ')
+  # ONE query for every device per poll.  The previous four separate
+  # `nvidia-smi -i N` calls cost ~0.4s of driver time each round, which at
+  # POLL=1 would make the real interval several times what was asked for.
+  mapfile -t frees < <(nvidia-smi --query-gpu=memory.free \
+                         --format=csv,noheader,nounits 2>/dev/null | tr -d ' ')
+  idx=-1
+  # ${arr[@]+...} because `set -u` rejects an empty array expansion on
+  # bash < 4.4, and an nvidia-smi failure leaves this one empty.
+  for free in ${frees[@]+"${frees[@]}"}; do
+    idx=$((idx + 1))
     [ -n "${free:-}" ] || continue
     [ "$free" -ge "$threshold" ] || continue
     if mkdir "$LOCKDIR/$idx" 2>/dev/null; then
@@ -67,5 +80,5 @@ while true; do
       break
     fi
   done
-  sleep 60
+  sleep "$POLL"
 done
