@@ -25,8 +25,10 @@ any mismatch — or a missing sidecar — refuses the file with the reasons
 listed.  Refusal is loud: the caller regenerates or fails, never guesses.
 
 Dimensions bound: adapter bytes, base-model revision, dataset version and
-artifact hashes, generation configuration, and the code fingerprint (git
-commit plus the hashes of the modules that turn queries into scores).
+artifact hashes, generation configuration, and the hashes of the modules
+that turn queries into scores.  The git commit is recorded alongside them
+for the reader, but is not itself a refusal condition — see
+:func:`code_fingerprint`.
 """
 
 from __future__ import annotations
@@ -116,7 +118,17 @@ def git_dirty(repo_root: Path) -> bool | None:
 
 
 def code_fingerprint(repo_root: Path) -> dict[str, Any]:
-    """Commit + per-module hashes for the scoring/generation code."""
+    """Commit + per-module hashes for the scoring/generation code.
+
+    ``modules_sha256`` is the BINDING half of this fingerprint and
+    ``git_commit``/``git_dirty`` are the informational half.  The commit
+    hash is neither necessary nor sufficient for deciding reuse: it changes
+    on edits to lane scripts, tests and prose that cannot move a single
+    decoded token, while a dirty tree can still have byte-identical
+    scoring modules.  Hashing the modules that actually turn queries into
+    scores is both stricter where it matters and stable where it does not,
+    which is what lets a multi-hour regeneration resume across commits.
+    """
     modules = {}
     for rel in CODE_FINGERPRINT_MODULES:
         p = repo_root / rel
@@ -257,9 +269,12 @@ def verify_sidecar(parquet: Path,
                    expected: PredictionFingerprint) -> list[str]:
     """Every reason this parquet may NOT be reused (empty == reusable).
 
-    ``created_utc`` and ``num_rows`` are informational and never cause a
-    refusal: a file regenerated a minute later from identical inputs is
-    still the same evidence.
+    ``created_utc``, ``num_rows``, ``code.git_commit`` and ``code.git_dirty``
+    are informational and never cause a refusal.  The first two because a
+    file regenerated a minute later from identical inputs is still the same
+    evidence; the second two because the commit hash moves on edits that
+    cannot change a decoded token or a score, while ``code.modules_sha256``
+    — which IS binding — hashes exactly the modules that can.
     """
     reasons: list[str] = []
     if not parquet.exists():
@@ -290,10 +305,6 @@ def verify_sidecar(parquet: Path,
                            f"{f_gc.get(key)!r}, this run expects "
                            f"{w_gc.get(key)!r}")
     f_code, w_code = found.get("code") or {}, want["code"]
-    if f_code.get("git_commit") != w_code["git_commit"]:
-        reasons.append(f"code.git_commit: file has "
-                       f"{f_code.get('git_commit')!r}, this run expects "
-                       f"{w_code['git_commit']!r}")
     for rel, sha in (w_code.get("modules_sha256") or {}).items():
         if (f_code.get("modules_sha256") or {}).get(rel) != sha:
             reasons.append(f"code.{rel}: module hash differs (scoring or "

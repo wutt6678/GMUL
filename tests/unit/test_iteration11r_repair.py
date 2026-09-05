@@ -816,11 +816,14 @@ class TestPredictionSidecars:
             "batch_size", "image_batch_size", "max_new_tokens", "do_sample",
             "max_image_pixels", "max_length"}
 
-    def test_a_different_source_commit_is_refused(self, pq):
-        code = dict(_fp().code, git_commit="99" * 20)
-        reasons = verify_sidecar(pq, _fp(code=code))
-        assert len(reasons) == 1
-        assert reasons[0].startswith("code.git_commit:")
+    def test_a_newer_commit_alone_does_not_refuse(self, pq):
+        """The commit hash is recorded for the reader but is not a refusal
+        condition: it moves on edits to lane scripts, tests and prose that
+        cannot change a decoded token, and refusing on it would restart a
+        multi-hour regeneration for nothing.  The module hashes below are
+        what actually bind the code dimension."""
+        code = dict(_fp().code, git_commit="99" * 20, git_dirty=True)
+        assert verify_sidecar(pq, _fp(code=code)) == []
 
     def test_a_changed_scoring_module_is_refused(self, pq):
         """The commit hash alone is not enough: the tree can be dirty, and
