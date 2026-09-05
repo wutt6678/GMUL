@@ -48,6 +48,25 @@ mkdir -p "$LOGDIR"
 
 say() { echo "[$(date -Is)] $*" | tee -a "$LOG"; }
 
+# A phase whose report is already current for pilot100_v2 is skipped.  The
+# per-state sidecar reuse below covers a phase interrupted MID-way; this
+# covers a phase that FINISHED, which is what lets the chain be relaunched
+# after a later phase fails — or after a lane is deliberately killed so its
+# waiter re-queues onto a quieter GPU (a lane that claimed a contended
+# device does not re-poll until it fails, and at ~1 q/s instead of ~3 the
+# remaining states cost hours each).
+report_current() {
+  "$PY" - "$1" <<'PYEOF'
+import json, pathlib, sys
+p = pathlib.Path(sys.argv[1])
+try:
+    ok = json.loads(p.read_text()).get("dataset_version") == "pilot100_v2"
+except Exception:
+    ok = False
+print("yes" if ok else "no")
+PYEOF
+}
+
 # ---- preconditions: fail before spending GPU hours, not during ----------
 version="$("$PY" - <<'PYEOF'
 import json, pathlib
@@ -74,24 +93,35 @@ stale="$(find data/mllmu_hier_pilot100/predictions -name '*.parquet' \
 say "resumable prediction parquets already on disk: $stale"
 
 # ---- c3 and d3 in parallel ---------------------------------------------
-say "launching c3 (gate, all splits) and d3 (selection, train+val)"
-bash scripts/lanes/wait_for_gpu.sh "$MIN_FREE" "$LOGDIR/pilot100_11r_c3.log" \
-  "$PY" scripts/evaluate_reference_states.py \
-    --tag pilot100 --states BASE,MF,MG,MN --device cuda:0 \
-    --batch-size "$BATCH" --image-batch-size "$IMAGE_BATCH" \
-    --skip-existing &
-c3_pid=$!
-bash scripts/lanes/wait_for_gpu.sh "$MIN_FREE" "$LOGDIR/pilot100_11r_d3.log" \
-  "$PY" scripts/select_unlearning_checkpoints.py \
-    --tag pilot100 --device cuda:0 \
-    --batch-size "$BATCH" --image-batch-size "$IMAGE_BATCH" &
-d3_pid=$!
+c3_pid=""; d3_pid=""; c3_rc=0; d3_rc=0
+gate_report="data/reports/mllmu_pilot100_reference_eval.json"
+sel_report="data/reports/mllmu_pilot100_unlearning_selection.json"
 
-c3_rc=0; d3_rc=0
-wait "$c3_pid" || c3_rc=$?
-say "c3 finished rc=$c3_rc"
-wait "$d3_pid" || d3_rc=$?
-say "d3 finished rc=$d3_rc"
+if [ "$(report_current "$gate_report")" = "yes" ]; then
+  say "skipping c3: $gate_report is already current for pilot100_v2"
+else
+  say "launching c3 (gate, all splits)"
+  bash scripts/lanes/wait_for_gpu.sh "$MIN_FREE" "$LOGDIR/pilot100_11r_c3.log" \
+    "$PY" scripts/evaluate_reference_states.py \
+      --tag pilot100 --states BASE,MF,MG,MN --device cuda:0 \
+      --batch-size "$BATCH" --image-batch-size "$IMAGE_BATCH" \
+      --skip-existing &
+  c3_pid=$!
+fi
+
+if [ "$(report_current "$sel_report")" = "yes" ]; then
+  say "skipping d3: $sel_report is already current for pilot100_v2"
+else
+  say "launching d3 (selection, train+val)"
+  bash scripts/lanes/wait_for_gpu.sh "$MIN_FREE" "$LOGDIR/pilot100_11r_d3.log" \
+    "$PY" scripts/select_unlearning_checkpoints.py \
+      --tag pilot100 --device cuda:0 \
+      --batch-size "$BATCH" --image-batch-size "$IMAGE_BATCH" &
+  d3_pid=$!
+fi
+
+if [ -n "$c3_pid" ]; then wait "$c3_pid" || c3_rc=$?; say "c3 finished rc=$c3_rc"; fi
+if [ -n "$d3_pid" ]; then wait "$d3_pid" || d3_rc=$?; say "d3 finished rc=$d3_rc"; fi
 
 if [ "$c3_rc" -ne 0 ] || [ "$d3_rc" -ne 0 ]; then
   say "STOPPING: c3=$c3_rc d3=$d3_rc. Re-run this script after fixing the"
@@ -100,6 +130,10 @@ if [ "$c3_rc" -ne 0 ] || [ "$d3_rc" -ne 0 ]; then
 fi
 
 # ---- e1 then prov, strictly after both ---------------------------------
+# e1 is never skipped on report currency: it consumes d3's selection, so a
+# report left over from a previous selection would look current while
+# naming candidates this run did not choose.  It resumes per state instead,
+# by verified sidecar reuse.
 say "launching e1 (frozen-test evaluation)"
 bash scripts/lanes/wait_for_gpu.sh "$MIN_FREE" "$LOGDIR/pilot100_11r_e1.log" \
   "$PY" scripts/evaluate_pilot100_final.py \
