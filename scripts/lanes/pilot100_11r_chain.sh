@@ -24,6 +24,15 @@
 # decoding is not bit-stable across batch compositions and D_G ranks
 # candidates by distance to MG.
 #
+# Resumption matters here, not just for convenience: this box is shared and
+# a co-tenant growing into our headroom OOMs a lane at a model-load
+# boundary (it happened to c3 between BASE and MF). d3 and e1 verify and
+# reuse completed states on their own; c3 needs --skip-existing to do the
+# same, which is only safe because that flag now means "reuse iff the
+# sidecar matches this run's adapter, dataset, configuration and code" —
+# before Iteration 11R it meant "trust the filename", and passing it would
+# have been how a stale parquet got reported as current.
+#
 # Logs: outputs/lanes/pilot100_11r_{c3,d3,e1,prov,chain}.log
 set -uo pipefail
 
@@ -69,7 +78,8 @@ say "launching c3 (gate, all splits) and d3 (selection, train+val)"
 bash scripts/lanes/wait_for_gpu.sh "$MIN_FREE" "$LOGDIR/pilot100_11r_c3.log" \
   "$PY" scripts/evaluate_reference_states.py \
     --tag pilot100 --states BASE,MF,MG,MN --device cuda:0 \
-    --batch-size "$BATCH" --image-batch-size "$IMAGE_BATCH" &
+    --batch-size "$BATCH" --image-batch-size "$IMAGE_BATCH" \
+    --skip-existing &
 c3_pid=$!
 bash scripts/lanes/wait_for_gpu.sh "$MIN_FREE" "$LOGDIR/pilot100_11r_d3.log" \
   "$PY" scripts/select_unlearning_checkpoints.py \
