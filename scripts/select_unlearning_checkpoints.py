@@ -44,7 +44,6 @@ from granunlearn.evaluation.reference_eval import (
 )
 from granunlearn.evaluation.scoring import score_query
 from granunlearn.evaluation.selection import (
-    filter_predictions_by_splits,
     select_checkpoints,
     summary_vector,
     trainval_hierarchy_metrics,
@@ -151,14 +150,18 @@ def _mg_reference_predictions(
 ):
     """MG's behaviour vector on the SELECTION scope (the oracle to approach).
 
-    Two provenance-verified sources are acceptable, in order: a file
-    already scoped to ``splits``, or the reference-state gate's all-split
-    file filtered down — filtering is legitimate because the rows are the
-    same generations, only the scope narrows, and the sidecar still has to
-    match this run's dataset, adapter, configuration and code.  Neither
-    being reusable regenerates the scoped file, which requires MG's
-    adapter: scoring MG with ``adapter_dir=None`` would silently substitute
-    the bare base model for the oracle.
+    Only a file scoped to EXACTLY ``splits`` is acceptable.  The
+    reference-state gate's all-split parquet covers the same rows and its
+    sidecar would verify, so filtering it down looks free — but it was
+    generated inside a 6,777-query batch layout while every candidate here
+    is generated inside the train+val layout, and left-padded batched
+    greedy decoding is not bit-stable across layouts.  D_G ranks candidates
+    by their distance to MG, so a layout mismatch injects decoding noise
+    into the selection criterion itself and can pick a different winner.
+    MG therefore gets its own scoped pass, like every candidate.
+
+    Regenerating requires MG's adapter: scoring MG with ``adapter_dir=None``
+    would silently substitute the bare base model for the oracle.
     """
     scoped = predictions_dir / prediction_filename("MG", splits)
     expected = PredictionFingerprint.build(
@@ -167,29 +170,30 @@ def _mg_reference_predictions(
         adapter_dir=mg_adapters, generation_config=generation_config)
     subset_ids = [q.query_id for q in queries
                   if set(splits) >= set(ALL_SPLITS) or q.split in splits]
-    for path, filter_to_scope in ((scoped, False),
-                                  (predictions_dir / prediction_filename(
-                                      "MG", ALL_SPLITS), True)):
-        if not path.exists():
-            continue
-        reasons = verify_sidecar(path, expected)
+    if scoped.exists():
+        reasons = verify_sidecar(scoped, expected)
         if reasons:
             log.warning("[MG] not reusing %s — %d provenance mismatch(es):",
-                        path.name, len(reasons))
+                        scoped.name, len(reasons))
             for r in reasons:
                 log.warning("    - %s", r)
-            continue
-        preds = load_predictions_parquet(path)
-        if filter_to_scope:
-            preds = filter_predictions_by_splits(preds, queries, splits)
-        problems = validate_prediction_coverage(
-            preds, subset_ids, experiment_id, "MG")
-        if problems:
-            raise SystemExit(f"[MG] {path.name} is provenance-valid but "
-                             f"row-invalid:\n  " + "\n  ".join(problems))
-        log.info("[MG] reusing provenance-validated predictions %s (%d rows)",
-                 path.name, len(preds))
-        return preds
+        else:
+            preds = load_predictions_parquet(scoped)
+            problems = validate_prediction_coverage(
+                preds, subset_ids, experiment_id, "MG")
+            if problems:
+                raise SystemExit(
+                    f"[MG] {scoped.name} is provenance-valid but "
+                    f"row-invalid:\n  " + "\n  ".join(problems))
+            log.info("[MG] reusing provenance-validated predictions %s "
+                     "(%d rows)", scoped.name, len(preds))
+            return preds
+    gate_all = predictions_dir / prediction_filename("MG", ALL_SPLITS)
+    if gate_all.exists() and set(splits) < set(ALL_SPLITS):
+        log.info("[MG] ignoring the gate's all-split %s: it was generated "
+                 "in a different batch layout, so filtering it into the "
+                 "selection scope would compare MG to the candidates "
+                 "across layouts", gate_all.name)
     return _generate_state("MG", mg_adapters, queries, by_assoc, repo_root,
                            device, predictions_dir, data_dir, model_id,
                            generation_config, experiment_id, splits)
@@ -326,6 +330,13 @@ def main() -> None:
         "test queries were NOT generated at selection time"
         if set(splits) < set(ALL_SPLITS) else
         "all splits generated; metrics filtered to train+val")
+    report["batch_layout_note"] = (
+        "MG and every candidate were generated in ONE batch layout over "
+        "exactly this scope. The reference-state gate's all-split parquet "
+        "was deliberately NOT filtered down and reused for MG: batched "
+        "greedy decoding is not bit-stable across batch compositions, so "
+        "scoring the oracle in a 6,777-query layout against candidates in "
+        "a train+val layout would put decoding noise inside D_G itself.")
     report["supersedes"] = {
         "commit": SUPERSEDED_V1_COMMIT,
         "dataset_version": "pilot100_v1",
