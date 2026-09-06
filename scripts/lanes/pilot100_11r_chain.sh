@@ -208,10 +208,20 @@ PYEOF
   # unsharded: it sees the whole grid, reuses every parquet the shards
   # produced, and generates only what is somehow still missing.
   say "assembling d3 (reuses every shard's parquet, writes the report)"
-  bash scripts/lanes/wait_for_gpu.sh "$MIN_FREE" "$LOGDIR/pilot100_11r_d3.log" \
+  if [ "$total" -eq 0 ]; then
+    # Nothing was outstanding, so nothing can need generating: the
+    # assembler only verifies and reuses.  Claiming a GPU for it would
+    # queue a CPU-only job behind a contended box for no reason.
     "$PY" scripts/select_unlearning_checkpoints.py \
       --tag pilot100 --device cuda:0 --batch-size "$BATCH" \
-      --image-batch-size "$IMAGE_BATCH"
+      --image-batch-size "$IMAGE_BATCH" \
+      >> "$LOGDIR/pilot100_11r_d3.log" 2>&1
+  else
+    bash scripts/lanes/wait_for_gpu.sh "$MIN_FREE" "$LOGDIR/pilot100_11r_d3.log" \
+      "$PY" scripts/select_unlearning_checkpoints.py \
+        --tag pilot100 --device cuda:0 --batch-size "$BATCH" \
+        --image-batch-size "$IMAGE_BATCH"
+  fi
   local asm_rc=$?
   say "d3 assembly finished rc=$asm_rc"
   return "$asm_rc"
