@@ -115,7 +115,18 @@ fi
 # therefore sharded across SHARDS lanes and a single UNSHARDED run
 # assembles the report.  Every shard is --generate-only, so no shard can
 # write a report computed over a subset of the grid.
-SHARDS="${SHARDS:-3}"
+#
+# SHARDS defaults to the size of the grid, i.e. ONE CANDIDATE PER LANE.
+# That granularity is the point, not an excess of processes: a lane does
+# not re-poll for a better device once it has claimed one, so a lane stuck
+# on a contended GPU holds up everything in its shard.  Measured on this
+# box -- 2.36 q/s on a quiet device against 0.87 q/s on a contended one, a
+# 2.7x spread -- a 3-way split put 4 candidates on the slow lane and made
+# it a ~5.7h bottleneck while the fast lane idled after ~2.1h.  With one
+# candidate per lane the GPU queue itself does the load balancing: a slow
+# device simply processes fewer candidates, and lanes whose shard is
+# already done exit at once instead of holding a lock.
+SHARDS="${SHARDS:-16}"
 
 run_d3() {
   if [ "$(report_current "$sel_report")" = "yes" ]; then
