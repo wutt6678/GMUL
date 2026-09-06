@@ -69,6 +69,10 @@ jobs:
               # the committed JSON is the only reproducible record of the
               # sizing decision.
               "data/reports/mllmu_pilot100_confirmation_power.json",
+              # The confirmation protocol freeze, written before any
+              # confirmation inference.  Without it in git there is no way to
+              # show the parameters were fixed beforehand.
+              "data/reports/mllmu_pilot100_confirmation_freeze.json",
           ]
           missing = [p for p in required if not Path(p).exists()]
           if missing:

@@ -1,0 +1,369 @@
+{
+  "analysis": {
+    "alpha_one_sided": 0.025,
+    "averaging_units": {
+      "entity_macro": "the statistic the CI is built for and the one the interval covers",
+      "row_micro": "the published hierarchy_metrics rate; the two differ because entities contribute unequal numbers of probes, so subtracting two published rates does not reproduce the CI's centre"
+    },
+    "bootstrap": {
+      "ci_level": 0.95,
+      "n_bootstrap": 1000,
+      "read_from": "inspect.signature(paired_rate_diff_ci)",
+      "seed": 42
+    },
+    "ci_method": "paired percentile bootstrap",
+    "ci_unit": "entity - the iNaturalist species or the MLLMU person - which is the unit the bootstrap resamples",
+    "icc_bootstrap_seed": 20260907,
+    "paired_metrics": [
+      "filr",
+      "tga",
+      "wrong_branch",
+      "over_forgetting",
+      "retain_same",
+      "retain_other"
+    ]
+  },
+  "b0_is_the_no_op": {
+    "b0_adapter_contract_sha256": "ab25b620a25a9cd03280def621216d590fe41b39e1fd888e56aada3a442b6d3b",
+    "consequence": "MF is excluded from the confirmation because B0 is a byte-identical copy of it, measured here rather than inherited from 11R's output comparison",
+    "how": "adapter_contract() over weights AND adapter_config.json",
+    "identical": true,
+    "measured": true,
+    "mf_adapter_contract_sha256": "ab25b620a25a9cd03280def621216d590fe41b39e1fd888e56aada3a442b6d3b"
+  },
+  "checkpoints": {
+    "B0": {
+      "adapter_contract": {
+        "adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100_unlearn/B0/adapters",
+        "files": {
+          "adapter_config.json": "acfd3f78b297d873e50193c618c34d059a0be665bcee785617f9abe98333ce7e",
+          "adapter_model.safetensors": "4ee78bd1bb5cf6a721b99f8225a964a89a74bf2a533804acb294acd8beacfa24"
+        },
+        "missing_files": [],
+        "sha256": "ab25b620a25a9cd03280def621216d590fe41b39e1fd888e56aada3a442b6d3b"
+      },
+      "adapter_dir": "data/checkpoints/mllmu_pilot100_unlearn/B0/adapters",
+      "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "checkpoint_id": "B0",
+      "distance_to_mg_on_the_exploratory_split": 0.1021,
+      "init_adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MF/adapters",
+      "noop": true,
+      "num_optimizer_steps": 0,
+      "recipe": {
+        "bf16": true,
+        "gradient_accumulation_steps": 8,
+        "gradient_checkpointing": true,
+        "learning_rate": 0.0001,
+        "lora_alpha": 32,
+        "lora_dropout": 0.05,
+        "lora_r": 16,
+        "lora_target_modules": [
+          "q_proj",
+          "k_proj",
+          "v_proj",
+          "o_proj",
+          "gate_proj",
+          "up_proj",
+          "down_proj"
+        ],
+        "max_image_pixels": 147456,
+        "max_length": 1536,
+        "model_id": "Qwen/Qwen3.5-9B",
+        "num_epochs": 10,
+        "per_device_batch_size": 1,
+        "seed": 42,
+        "weight_decay": 0.0
+      },
+      "role": "the no-op comparator: B3-vs-B0 carries TGA superiority and FILR reduction, and the descriptive retention intervals",
+      "unlearning_groups": []
+    },
+    "B3": {
+      "adapter_contract": {
+        "adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100_unlearn/B3_lam0.5_lr2e-05_ep5/adapters",
+        "files": {
+          "adapter_config.json": "a10f59a9fd0efe9ce9191724fa39ebfcca4775c5e134d4275a46f127ad3a00ec",
+          "adapter_model.safetensors": "67cc961c89fe7fd522d3e0104ff3416da6c7ba2c32a81ba1db2854f3dcb863a6"
+        },
+        "missing_files": [],
+        "sha256": "0c800430e127bc45a523984437149fa18a602c60e87f21dad5e2a24c224311fe"
+      },
+      "adapter_dir": "data/checkpoints/mllmu_pilot100_unlearn/B3_lam0.5_lr2e-05_ep5/adapters",
+      "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "checkpoint_id": "B3_lam0.5_lr2e-05_ep5",
+      "distance_to_mg_on_the_exploratory_split": 0.041043,
+      "granularity_lambda": 0.5,
+      "init_adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MF/adapters",
+      "noop": null,
+      "num_optimizer_steps": 355,
+      "recipe": {
+        "bf16": true,
+        "gradient_accumulation_steps": 8,
+        "gradient_checkpointing": true,
+        "learning_rate": 2e-05,
+        "lora_alpha": 32,
+        "lora_dropout": 0.05,
+        "lora_r": 16,
+        "lora_target_modules": [
+          "q_proj",
+          "k_proj",
+          "v_proj",
+          "o_proj",
+          "gate_proj",
+          "up_proj",
+          "down_proj"
+        ],
+        "max_image_pixels": 147456,
+        "max_length": 1536,
+        "model_id": "Qwen/Qwen3.5-9B",
+        "num_epochs": 5,
+        "per_device_batch_size": 1,
+        "seed": 42,
+        "weight_decay": 0.0
+      },
+      "role": "subject of both primary claims and of every descriptive interval",
+      "unlearning_groups": [
+        {
+          "mode": "gd",
+          "name": "fine_target",
+          "num_examples": 90,
+          "weight": 0.5
+        },
+        {
+          "mode": "sft",
+          "name": "target_level",
+          "num_examples": 90,
+          "weight": 1.0
+        },
+        {
+          "mode": "sft",
+          "name": "retain",
+          "num_examples": 387,
+          "weight": 1.0
+        }
+      ]
+    },
+    "MG": {
+      "adapter_contract": {
+        "adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MG/adapters",
+        "files": {
+          "adapter_config.json": "903d9f9eaec8ee740aa77dce433870e1bcdad2a0ab7afb9930570e2b769fbfa2",
+          "adapter_model.safetensors": "358a557817c5845cf44e3b0953eacb099104841e59ac263f460cb91d1271a893"
+        },
+        "missing_files": [],
+        "sha256": "a22a1461ad75c188efab528e0f9c8aa3ba514336bc09c6837997a9d12e3f2794"
+      },
+      "adapter_dir": "data/checkpoints/mllmu_pilot100/MG/adapters",
+      "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "checkpoint_id": "MG",
+      "role": "the granularity oracle, DESCRIPTIVE only: its interval is published with an explicit statement that equivalence is NOT concluded"
+    }
+  },
+  "claims": {
+    "descriptive_and_why": {
+      "B3_minus_B0:retain_other": "demoted_to_descriptive",
+      "B3_minus_B0:retain_same": "demoted_to_descriptive",
+      "B3_minus_MG:filr": "secondary_descriptive_only",
+      "B3_minus_MG:tga": "secondary_descriptive_only"
+    },
+    "evidence": "preregistration_decisions in the power report bound above",
+    "holm_thresholds": [
+      0.025,
+      0.05
+    ],
+    "k": 2,
+    "mg_claim_kinds": {
+      "filr": "descriptive",
+      "over_forgetting": "descriptive",
+      "retain_other": "descriptive",
+      "retain_same": "descriptive",
+      "tga": "descriptive",
+      "wrong_branch": "descriptive"
+    },
+    "multiplicity": "Holm",
+    "primary_claim_kinds": {
+      "B3_minus_B0:filr": "superiority",
+      "B3_minus_B0:tga": "superiority"
+    },
+    "primary_family": [
+      "B3_minus_B0:tga",
+      "B3_minus_B0:filr"
+    ],
+    "worst_case_alpha_for_a_single_claim": 0.025
+  },
+  "code": {
+    "analysis_scripts_sha256": {
+      "scripts/evaluate_pilot100_final.py": "508354306410a0e60917ff267470f07a8ff5cc0fe3f11e54a960513f2949e14f",
+      "scripts/freeze_confirmation_protocol.py": "9480d93b14f3e372fec6b2ffc7f096f32312246d92e33e4cce51b274b6470d19",
+      "scripts/power_analysis_confirmation.py": "b621714e7bd0caecf3e25d9945e02bd4fb373737bbb0739b14c77ecb1f8ca84a",
+      "scripts/select_unlearning_checkpoints.py": "ecacee99a9dd52cba7c419081e11a628f931fc40e8300b45b489946e6da25f2d"
+    },
+    "fingerprinted_module_list": [
+      "src/granunlearn/evaluation/reference_eval.py",
+      "src/granunlearn/evaluation/query_generation.py",
+      "src/granunlearn/evaluation/scoring.py",
+      "src/granunlearn/evaluation/hierarchy_metrics.py",
+      "src/granunlearn/evaluation/image_splits.py",
+      "src/granunlearn/imaging.py",
+      "src/granunlearn/schema/association.py",
+      "src/granunlearn/schema/hierarchy.py",
+      "src/granunlearn/schema/prediction.py",
+      "src/granunlearn/schema/query.py"
+    ],
+    "fingerprinted_modules": {
+      "src/granunlearn/evaluation/hierarchy_metrics.py": "67e75fd4b12c3f22bfe86f7c77678df945d5a1152a43447d0a088da10b46966c",
+      "src/granunlearn/evaluation/image_splits.py": "5a63e8df7c1c0bc9b60cffafe70ed01c2f0c8cbfdf8c53fd9e524492f695775c",
+      "src/granunlearn/evaluation/query_generation.py": "1713cee1bea6606fdbea32ea027a66d0d9dac5683679fa944169973fbc265c0c",
+      "src/granunlearn/evaluation/reference_eval.py": "645440c1fd36c07f94d6771e099be7db1bfa6fb8915fcdb0df81ab373da115dd",
+      "src/granunlearn/evaluation/scoring.py": "4f37289b66a9389e94830b9b65bb51a6d198b4272926e9d38be7522edd73f891",
+      "src/granunlearn/imaging.py": "b9f330f18c972b4ec116a58f4ab6110edf083a6b58e416bd1ae0662b68aed119",
+      "src/granunlearn/schema/association.py": "78fc642461d06c704162c50d7e018f2b91e9df96c38383d09f18396f0a6acaa0",
+      "src/granunlearn/schema/hierarchy.py": "1ea96658c972ddc58034c09b9c0ecc49892fcae3b5ec4844e464b1f209a2b4ad",
+      "src/granunlearn/schema/prediction.py": "a69e45f416fb1630df07b6b73904a0abd0f8fa7c9cb7f20b3446d0f64db47124",
+      "src/granunlearn/schema/query.py": "4b6b4cc9ce18c8e04871f24714ffcf3a922b8bb18068794992f224c6ddfd699e"
+    },
+    "why_analysis_scripts_are_bound_separately": "CODE_FINGERPRINT_MODULES binds the modules that turn queries into scores. These turn scores into claims, and an edit to either would change what the frozen protocol means without changing a single prediction - so the sidecars would still verify while the conclusion moved."
+  },
+  "environment": {
+    "package_versions": {
+      "numpy": "2.2.6",
+      "pandas": "2.3.3",
+      "peft": "0.20.0",
+      "pyarrow": "25.0.0",
+      "torch": "2.8.0+cu128",
+      "transformers": "5.14.1"
+    },
+    "python_executable": "/scratch/wutiantong/miniconda3/envs/gmul/bin/python",
+    "python_version": "3.10.20"
+  },
+  "exploratory_dataset": {
+    "artifacts_sha256": {
+      "associations.parquet": "b4427b201868ff4d08a5f791d55cdcd78561d2f4abc42af97378bba63b1026c1",
+      "manifest.json": "be3f71d7094830353eba37dab5f12f31335196b43ab213eb4de50347fa0de737",
+      "queries.parquet": "f66637323754039a28d45ea44a5e05bcb5b51f07b4272329d3f4a6b3b5482d5e"
+    },
+    "data_dir": "data/mllmu_hier_pilot100",
+    "image_manifest_sha256": "99d930ca74e428d2286d164e961b37571b73106641d8cc3dccb539c9a5aefe34",
+    "num_images_pinned": 496,
+    "role": "the dataset the checkpoints were SELECTED on. It is bound here to prove what the confirmation is not: the confirmation split is a different dataset whose own hashes are committed at stage 4, and no query in it may overlap this one.",
+    "selection_basis": "train+val probes only (test split held out)",
+    "selection_scope": [
+      "train",
+      "val"
+    ],
+    "version": "pilot100_v2"
+  },
+  "freeze": "iteration_11c_confirmation_protocol",
+  "frozen_at_utc": "2026-09-06T21:30:06+00:00",
+  "generation": {
+    "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+    "batch_layout": "ONE uniform layout for every scored state: all confirmation queries in a single pass, same batch_size and image_batch_size for B3, B0 and MG. Batched greedy decoding is not bit-stable across batch compositions, so two layouts would put decoding noise inside the paired difference itself.",
+    "batch_size": 8,
+    "do_sample": false,
+    "image_batch_size": 8,
+    "max_image_pixels": 147456,
+    "max_length": 1536,
+    "max_new_tokens": 96,
+    "module_defaults_cross_check": {
+      "max_image_pixels": 147456,
+      "max_length": 1536,
+      "max_new_tokens": 96
+    },
+    "module_defaults_match": true,
+    "source": "the single generation_config shared by all 30 committed 11R predictions"
+  },
+  "git_commit": "401d52267b294fe32a11359b0b4beae389ce0b80",
+  "git_dirty": true,
+  "inputs_bound": {
+    "final_evaluation": {
+      "path": "data/reports/mllmu_pilot100_final_evaluation.json",
+      "sha256": "1d331a519ddd18b995c753baa2fadb46b5e365b88b1544468352e6410503da28"
+    },
+    "power_analysis": {
+      "path": "data/reports/mllmu_pilot100_confirmation_power.json",
+      "sha256": "15ee862364aea937a7309ee2a520754a23aa57317a19a188d6c94469c22b360b"
+    },
+    "prediction_manifest": {
+      "path": "data/reports/mllmu_pilot100_prediction_manifest.json",
+      "sha256": "34246925aac2a0b282b3064c5c2f46a116fda5383d31f59500f8160a3c38ad7d"
+    },
+    "selection": {
+      "path": "data/reports/mllmu_pilot100_unlearning_selection.json",
+      "sha256": "d07b0cfb1052390bba1a2d284ec2dd56e8935577f39449d4fedf767ea3e43800"
+    }
+  },
+  "iteration": "11C",
+  "provenance_contract_version": 2,
+  "purpose": "Bind every parameter the confirmatory claims depend on before any confirmation probe is built or scored, so that a result produced afterwards cannot be explained by a parameter that moved beforehand.",
+  "refusals": [],
+  "scorer": {
+    "equivalence_margin": {
+      "margin_rationale": "prespecified: one third of the 0.15 separation the reference-state gate requires between MF/MG/MN",
+      "mg_decision": "secondary_descriptive_only",
+      "mg_equivalence_test_run": false,
+      "read_from": "evaluate_pilot100_final.EQUIVALENCE_MARGIN_TGA",
+      "retention_decision": "demoted_to_descriptive",
+      "retention_declared_margin": null,
+      "role": "REPORTING YARDSTICK, not a tested margin",
+      "value": 0.05,
+      "what_it_is_used_for": "the published half-widths are read against it and the reports state whether an interval could have concluded equivalence at it; no TOST and no non-inferiority test is run against it on the confirmation split",
+      "why": "both margin claims were demoted by the 11C-2a decisions, so there is no hypothesis test left for this margin to serve"
+    },
+    "modules_sha256": {
+      "src/granunlearn/evaluation/hierarchy_metrics.py": "67e75fd4b12c3f22bfe86f7c77678df945d5a1152a43447d0a088da10b46966c",
+      "src/granunlearn/evaluation/scoring.py": "4f37289b66a9389e94830b9b65bb51a6d198b4272926e9d38be7522edd73f891"
+    }
+  },
+  "sealed_split_invariants": [
+    {
+      "checked_at": "stage 3, before the stage-4 tag",
+      "enforced_by": "the stage-3 probe builder, by hash and by query_id, before the split is written",
+      "invariant": "no confirmation query_id, association, paraphrase template or photograph appears in the exploratory dataset bound above",
+      "why": "the reference-state gate inspected the exploratory test split before candidate selection, which is why those results stay exploratory; a confirmation probe reused from that split inherits the exposure"
+    },
+    {
+      "checked_at": "stage 5, before scoring",
+      "enforced_by": "evaluate_reference_states.py is pointed at the exploratory data_dir only; the freeze records that data_dir here",
+      "invariant": "the confirmation split never enters the reference-state gate",
+      "why": "the gate is a go/no-go on the oracle, and letting it see confirmation data would make the confirmation exploratory in the same way"
+    },
+    {
+      "checked_at": "stage 5, before scoring",
+      "enforced_by": "select_unlearning_checkpoints.py keeps selection_scope train+val on the exploratory dataset; no confirmation artifact is an input to it",
+      "invariant": "the confirmation split never enters candidate selection or any other go/no-go decision",
+      "why": "selection is already complete and frozen; re-running it on confirmation data would be selecting on the test set"
+    },
+    {
+      "checked_at": "stage 5",
+      "enforced_by": "the stage-5 runner assembles only after all states' sidecars verify; crashes resume through verified sidecars alone",
+      "invariant": "partial state results are not inspected before every scored state has finished",
+      "why": "looking at B3 before MG has run is how a layout or scoring change gets made mid-flight and the score-exactly-once property is lost"
+    },
+    {
+      "checked_at": "stage 5, at reporting",
+      "enforced_by": "this freeze, plus the analysis-script hashes bound above: a retune changes those hashes",
+      "invariant": "a failed primary claim is reported as failed",
+      "why": "retuning on confirmation data converts a confirmatory result back into an exploratory one"
+    }
+  ],
+  "states": {
+    "excluded": {
+      "B1": "not the subject of any preregistered claim",
+      "B2": "not the subject of any preregistered claim",
+      "B2R": "not the subject of any preregistered claim",
+      "BASE": "no confirmation claim references the un-finetuned model",
+      "MF": "excluded only if the measured adapter contract proves B0 IS the no-op copy of it; see b0_is_the_no_op. If that check fails the freeze refuses rather than dropping a distinct state.",
+      "MN": "the negative-control oracle carries no confirmation claim"
+    },
+    "scored": [
+      "B3",
+      "B0",
+      "MG"
+    ],
+    "scored_because": {
+      "B0": "the no-op comparator: B3-vs-B0 carries TGA superiority and FILR reduction, and the descriptive retention intervals",
+      "B3": "subject of both primary claims and of every descriptive interval",
+      "MG": "the granularity oracle, DESCRIPTIVE only: its interval is published with an explicit statement that equivalence is NOT concluded"
+    }
+  },
+  "tag": "pilot100"
+}

@@ -66,6 +66,11 @@ data/raw/inaturalist/pilot_v1/*
 # committed BEFORE the confirmation split is scored, or it is not a
 # preregistration.
 !data/reports/mllmu_pilot100_confirmation_power.json
+# The confirmation protocol freeze. Written once, before any confirmation
+# probe is built or scored, and binding the checkpoints, generation settings,
+# scorer, margin role, CI unit and analysis-code hashes. If this is not in
+# git then "frozen before inference" is an unverifiable claim.
+!data/reports/mllmu_pilot100_confirmation_freeze.json
 # Frozen sha256s for every image the dataset references; binds the photographs
 # the predictions were actually generated over.
 !data/mllmu_hier_pilot100/image_manifest.json
