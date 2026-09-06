@@ -500,6 +500,22 @@ def main() -> None:
                              "predictions only (no GPU).  Each file is "
                              "still provenance-verified; one that does not "
                              "match is a hard error, not a silent load.")
+    parser.add_argument("--only-states", default=None,
+                        help="Comma-separated state keys to generate "
+                             "(reference states BASE/MF/MG/MN and the "
+                             "selected method keys). Used to shard "
+                             "generation across GPUs; an unrecognised key "
+                             "is an error rather than a silent no-op.")
+    parser.add_argument("--generate-only", action="store_true",
+                        help="Generate (or verify-reuse) the test "
+                             "predictions for the requested states and "
+                             "stop, before pairing, bootstrapping and "
+                             "report writing. Pair with --only-states to "
+                             "shard generation; the report must come from "
+                             "one unsharded run, because its paired CIs, "
+                             "its B0 == MF invariant and its batch-layout "
+                             "noise floor are all computed over whichever "
+                             "states are present.")
     args = parser.parse_args()
 
     generation_config = _generation_config(
@@ -531,6 +547,16 @@ def main() -> None:
     preds_by_state: dict[str, list[PredictionRecord]] = {}
     provenance: dict[str, Any] = {}
     reused: list[str] = []
+    only = {s.strip() for s in args.only_states.split(",") if s.strip()} \
+        if args.only_states else None
+    if only is not None:
+        known = set(REFERENCE_STATES) | set(selected)
+        unknown = only - known
+        if unknown:
+            raise SystemExit(
+                f"--only-states names states this run cannot produce: "
+                f"{sorted(unknown)}. Known: {sorted(known)}")
+        log.info("restricted to %d state(s): %s", len(only), sorted(only))
 
     # 1. Reference states: generate their TEST rows HERE, under the same
     #    batch layout as the candidates.  The gate run's full-split
@@ -540,6 +566,8 @@ def main() -> None:
     split_of = {q.query_id: q.split for q in queries}
     gate_preds_by_state: dict[str, list[PredictionRecord]] = {}
     for state in REFERENCE_STATES:
+        if only is not None and state not in only:
+            continue
         gate_path = predictions_dir / f"predictions_{state}.parquet"
         if not gate_path.exists():
             raise FileNotFoundError(
@@ -576,6 +604,8 @@ def main() -> None:
     # 2. Selected candidates: one-shot TEST generation (their
     #    selection-time parquets deliberately contain no test rows).
     for method, cid in sorted(selected.items()):
+        if only is not None and method not in only:
+            continue
         adapter_dir = unlearn_ckpt / cid / "adapters"
         if not adapter_dir.exists():
             raise FileNotFoundError(
@@ -604,6 +634,18 @@ def main() -> None:
                 selection["candidates"].get(cid, {}).get("distance_to_mg"),
         }
         log.info("[%s <- %s] %d test predictions", key, cid, len(preds))
+
+    if args.generate_only:
+        # Stop before pairing, bootstrapping and the report.  A report
+        # assembled from a SUBSET of states would not merely be incomplete:
+        # its paired CIs, its B0 == MF invariant and its batch-layout noise
+        # floor are all computed over whichever states happen to be present,
+        # so the numbers would look like the real thing while covering fewer
+        # comparisons than they claim.  Only the unsharded run writes one.
+        log.info("generate-only: %d state(s) now have uniform test "
+                 "predictions on disk; no report written",
+                 len(preds_by_state))
+        return
 
     # 3. Pairing completeness: EXACT, not an intersection size.  A paired
     #    CI is only a comparison of models if both states were scored over

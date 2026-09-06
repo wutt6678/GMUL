@@ -228,16 +228,64 @@ if [ "$c3_rc" -ne 0 ] || [ "$d3_rc" -ne 0 ]; then
   exit 1
 fi
 
-# ---- e1 then prov, strictly after both ---------------------------------
+# ---- e1: shard test generation, then assemble ---------------------------
 # e1 is never skipped on report currency: it consumes d3's selection, so a
 # report left over from a previous selection would look current while
 # naming candidates this run did not choose.  It resumes per state instead,
 # by verified sidecar reuse.
+#
+# Its nine states are generated one per lane for the same reason d3's
+# candidates are: a lane never re-polls once it has claimed a device, so a
+# coarse split lets one contended GPU set the finish time.  Assembly is a
+# single unsharded --skip-generation run -- no GPU at all, and a hard error
+# rather than a silent load if any state's parquet is missing or fails
+# provenance.  A report assembled from a subset would be worse than
+# incomplete: its paired CIs, B0 == MF invariant and batch-layout noise
+# floor are computed over whichever states are present, so it would look
+# like the real thing while covering fewer comparisons than it claims.
 say "launching e1 (frozen-test evaluation)"
-bash scripts/lanes/wait_for_gpu.sh "$MIN_FREE" "$LOGDIR/pilot100_11r_e1.log" \
+mapfile -t e1_states < <("$PY" - <<'PYEOF'
+import json, pathlib
+pred = pathlib.Path("data/mllmu_hier_pilot100/predictions")
+sel = json.loads(pathlib.Path(
+    "data/reports/mllmu_pilot100_unlearning_selection.json").read_text())
+for s in ("BASE", "MF", "MG", "MN"):
+    if not (pred / f"predictions_test_{s}.parquet").exists():
+        print(s)
+# a candidate's test parquet is filed under its CANDIDATE id, while e1 is
+# addressed by its method key -- so the existence check and the flag differ.
+for method, cid in sorted((sel.get("selected") or {}).items()):
+    if not (pred / f"predictions_test_{cid}.parquet").exists():
+        print(method)
+PYEOF
+)
+say "e1 states still needing test predictions: ${#e1_states[@]}"
+e1_pids=()
+for st in ${e1_states[@]+"${e1_states[@]}"}; do
+  say "  e1 lane: $st"
+  bash scripts/lanes/wait_for_gpu.sh "$MIN_FREE" \
+    "$LOGDIR/pilot100_11r_e1_${st}.log" \
+    "$PY" scripts/evaluate_pilot100_final.py \
+      --device cuda:0 --batch-size "$BATCH" --image-batch-size "$IMAGE_BATCH" \
+      --generate-only --only-states "$st" &
+  e1_pids+=($!)
+done
+
+e1_rc=0
+for pid in ${e1_pids[@]+"${e1_pids[@]}"}; do
+  wait "$pid" || { e1_rc=1; say "an e1 generation lane failed (pid $pid)"; }
+done
+if [ "$e1_rc" -eq 0 ]; then
+  say "assembling e1 (no GPU: verified reuse of every test parquet)"
   "$PY" scripts/evaluate_pilot100_final.py \
-    --device cuda:0 --batch-size "$BATCH" --image-batch-size "$IMAGE_BATCH"
-e1_rc=$?
+    --device cuda:0 --batch-size "$BATCH" --image-batch-size "$IMAGE_BATCH" \
+    --skip-generation >> "$LOGDIR/pilot100_11r_e1.log" 2>&1
+  e1_rc=$?
+else
+  say "STOPPING: not assembling a final report while a generation lane"
+  say "  failed; a subset report would look complete but cover fewer"
+  say "  comparisons than it claims. Re-run: finished states resume."
+fi
 say "e1 finished rc=$e1_rc"
 if [ "$e1_rc" -ne 0 ]; then
   say "STOPPING: not writing provenance over a failed final evaluation —"
