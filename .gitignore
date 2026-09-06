@@ -58,6 +58,13 @@ data/raw/inaturalist/pilot_v1/*
 !data/reports/mllmu_pilot100_unlearning_selection.json
 !data/reports/mllmu_pilot100_reference_provenance.json
 !data/reports/mllmu_pilot100_final_evaluation.json
+# The prediction parquets and sidecars above stay ignored (large, regenerable),
+# but their identities must be pinned in git or "all sidecars verify" is an
+# unreproducible claim about one machine's working tree.
+!data/reports/mllmu_pilot100_prediction_manifest.json
+# Frozen sha256s for every image the dataset references; binds the photographs
+# the predictions were actually generated over.
+!data/mllmu_hier_pilot100/image_manifest.json
 # pilot runtime artifacts (large, regenerable): predictions + exports
 data/mllmu_hier_pilot100/predictions*/
 data/mllmu_hier_pilot100/failure_exports/

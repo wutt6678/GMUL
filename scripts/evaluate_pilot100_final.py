@@ -77,6 +77,7 @@ from granunlearn.evaluation.paired_ci import (
     paired_metrics_report,
 )
 from granunlearn.evaluation.prediction_provenance import (
+    PROVENANCE_CONTRACT_VERSION,
     SUPERSEDED_V1_COMMIT,
     PredictionFingerprint,
     dataset_version,
@@ -145,11 +146,32 @@ def _equivalence_vs_reference(
     claims: ``significant_difference`` is whether the CI excludes zero
     (a difference was detected), ``equivalence_concluded`` is whether the
     CI lies ENTIRELY within (-margin, +margin) (the state is close enough
-    to ``ref`` to be treated as equivalent).  A wide interval can make
-    both false, and that is the informative case: ``power_note`` then says
-    the design could not have concluded equivalence even at a true
-    difference of exactly zero, because the achieved half-width exceeds
-    the margin.
+    to ``ref`` to be treated as equivalent).
+
+    ``power_note`` is chosen by SIGNIFICANCE FIRST and by achieved power
+    second, which is the only order that cannot contradict the numbers it
+    sits beside.  An interval that excludes zero is a positive finding and
+    must never be narrated as "no significant difference detected", no
+    matter how wide it is — that phrasing is reserved for intervals that
+    actually straddle zero.  The four cases are:
+
+    1. CI inside (-margin, +margin)   -> equivalence concluded.
+    2. CI excludes zero               -> a difference IS detected; not
+       equivalent.  If the half-width also exceeds the margin the note
+       adds that the design could not have concluded equivalence even at
+       a true difference of zero, which qualifies the ABSENT equivalence
+       claim without weakening the detected difference.
+    3. CI straddles zero and the half-width is >= margin -> INDETERMINATE:
+       no difference detected, and the design could not have concluded
+       equivalence either way.
+    4. CI straddles zero but is narrower than the margin -> not concluded:
+       no difference detected, yet a difference of margin size is still
+       not excluded.
+
+    Iteration 11R tested the half-width before the significance and so
+    emitted case 3's wording for M_F/B0, whose intervals exclude zero by
+    a wide margin — a narrative that directly contradicted the
+    ``significant_difference: true`` field beside it.
     """
     out: dict[str, Any] = {
         "metric": metric,
@@ -176,22 +198,44 @@ def _equivalence_vs_reference(
         half_width = round((high - low) / 2, 4)
         concluded = bool(low > -margin and high < margin)
         significant = bool(low > 0.0 or high < 0.0)
+        rlo, rhi = round(low, 4), round(high, 4)
         if concluded:
             note = (f"the whole CI lies within +/-{margin}, so {state} is "
                     f"equivalent to {ref} on {metric} at this margin")
+        elif significant:
+            direction = "above" if low > 0.0 else "below"
+            if half_width >= margin:
+                power = (
+                    f" Separately, the achieved half-width {half_width} over "
+                    f"{block['num_units']} entity clusters is >= the "
+                    f"{margin} margin, so this design could not conclude "
+                    f"equivalence even if the true difference were exactly "
+                    f"0; that shortfall qualifies the ABSENT equivalence "
+                    f"claim only, not the difference detected above.")
+            else:
+                power = (f" The interval also reaches beyond +/-{margin} "
+                         f"(half-width {half_width}), so a difference of "
+                         f"that size is not excluded.")
+            note = (
+                f"DIFFERENT FROM {ref}: the CI [{rlo}, {rhi}] excludes "
+                f"zero, so a difference in {metric} IS detected and "
+                f"{state} sits significantly {direction} {ref}. "
+                f"Equivalence is NOT concluded.{power}")
         elif half_width >= margin:
             note = (
-                f"INDETERMINATE, not equivalent: the achieved CI half-width "
-                f"{half_width} over {block['num_units']} entity clusters is "
-                f">= the {margin} margin, so this design could not conclude "
+                f"INDETERMINATE, not equivalent: the CI [{rlo}, {rhi}] "
+                f"straddles zero, and the achieved half-width {half_width} "
+                f"over {block['num_units']} entity clusters is >= the "
+                f"{margin} margin, so this design could not conclude "
                 f"equivalence even if the true difference were exactly 0. "
                 f"'No significant difference detected' is the most this "
                 f"interval supports.")
         else:
             note = (
-                f"not concluded: the CI reaches beyond +/-{margin} "
-                f"(half-width {half_width}), so a difference of that size "
-                f"is not excluded")
+                f"not concluded: the CI [{rlo}, {rhi}] straddles zero, so "
+                f"no significant difference was detected, but it reaches "
+                f"beyond +/-{margin} (half-width {half_width}), so a "
+                f"difference of that size is not excluded")
         out["states"][state] = {
             "diff": block["diff"],
             "ci": [low, high],
@@ -694,6 +738,34 @@ def main() -> None:
     report = {
         "experiment_id": EXPERIMENT_ID,
         "iteration": "11R",
+        "revision": {
+            "evidence_generation": "11R",
+            "narrative_and_provenance_revision": "11R1",
+            "provenance_contract_version": PROVENANCE_CONTRACT_VERSION,
+            "predictions_regenerated": False,
+            "what_changed": [
+                "equivalence_vs_MG[*].power_note is now chosen by "
+                "significance before achieved half-width. Under 11R the "
+                "half-width was tested first, so B0 and M_F — both "
+                "significantly below M_G — were narrated as 'No significant "
+                "difference detected' beside significant_difference: true.",
+                "prediction sidecars moved to provenance contract v2, which "
+                "binds the prediction parquet's own sha256 and row count, "
+                "adapter_config.json alongside the weights, a frozen "
+                "manifest of all 496 referenced image bytes, and the four "
+                "schema modules that define how a persisted row is read.",
+            ],
+            "what_did_not_change": (
+                "No prediction was regenerated and no metric moved. Diffing "
+                "this report against the committed 11R version yields "
+                "exactly ten differences: the eight per-state power_note "
+                "strings, one added entry in notes, and this revision block "
+                "itself. Every number in hierarchy_metrics_test, "
+                "paired_cis_test and equivalence_vs_MG is unchanged, and "
+                "re-running the reference-state gate over the same "
+                "provenance-validated predictions reproduced its report "
+                "byte-for-byte."),
+        },
         "dataset": f"mllmu_hier_{TAG}",
         "dataset_version": ds_version,
         "model_id": args.model_id,
@@ -841,6 +913,14 @@ def main() -> None:
             "that claim requires the prespecified margin tested in "
             "equivalence_vs_MG, which also states the achieved CI "
             "half-width so limited power is visible.",
+            "equivalence_vs_MG[*].power_note is chosen by SIGNIFICANCE "
+            "first and by achieved half-width second, so the phrase 'no "
+            "significant difference detected' can only ever appear next to "
+            "significant_difference=false. An interval that excludes zero "
+            "is reported as a detected difference no matter how wide it "
+            "is; wide-but-significant gets both statements, because the "
+            "power shortfall qualifies the absent equivalence claim and "
+            "not the difference that was found.",
             "'diff'/'ci' in paired_cis_test are ENTITY-MACRO (the unit the "
             "bootstrap resamples); 'point_estimates.row_*' are ROW-MICRO "
             "and equal the rates in hierarchy_metrics_test. The two differ "

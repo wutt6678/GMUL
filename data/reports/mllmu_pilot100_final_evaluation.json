@@ -1,6 +1,17 @@
 {
   "experiment_id": "mllmu_pilot100_iter11",
   "iteration": "11R",
+  "revision": {
+    "evidence_generation": "11R",
+    "narrative_and_provenance_revision": "11R1",
+    "provenance_contract_version": 2,
+    "predictions_regenerated": false,
+    "what_changed": [
+      "equivalence_vs_MG[*].power_note is now chosen by significance before achieved half-width. Under 11R the half-width was tested first, so B0 and M_F — both significantly below M_G — were narrated as 'No significant difference detected' beside significant_difference: true.",
+      "prediction sidecars moved to provenance contract v2, which binds the prediction parquet's own sha256 and row count, adapter_config.json alongside the weights, a frozen manifest of all 496 referenced image bytes, and the four schema modules that define how a persisted row is read."
+    ],
+    "what_did_not_change": "No prediction was regenerated and no metric moved. Diffing this report against the committed 11R version yields exactly ten differences: the eight per-state power_note strings, one added entry in notes, and this revision block itself. Every number in hierarchy_metrics_test, paired_cis_test and equivalence_vs_MG is unchanged, and re-running the reference-state gate over the same provenance-validated predictions reproduced its report byte-for-byte."
+  },
   "dataset": "mllmu_hier_pilot100",
   "dataset_version": "pilot100_v2",
   "model_id": "Qwen/Qwen3.5-9B",
@@ -5341,7 +5352,7 @@
         },
         "significant_difference": true,
         "equivalence_concluded": false,
-        "power_note": "INDETERMINATE, not equivalent: the achieved CI half-width 0.0502 over 72 entity clusters is >= the 0.05 margin, so this design could not conclude equivalence even if the true difference were exactly 0. 'No significant difference detected' is the most this interval supports."
+        "power_note": "DIFFERENT FROM MG: the CI [-0.2714, -0.1709] excludes zero, so a difference in tga IS detected and B0 sits significantly below MG. Equivalence is NOT concluded. Separately, the achieved half-width 0.0502 over 72 entity clusters is >= the 0.05 margin, so this design could not conclude equivalence even if the true difference were exactly 0; that shortfall qualifies the ABSENT equivalence claim only, not the difference detected above."
       },
       "B1": {
         "diff": -0.2162,
@@ -5365,7 +5376,7 @@
         },
         "significant_difference": true,
         "equivalence_concluded": false,
-        "power_note": "not concluded: the CI reaches beyond +/-0.05 (half-width 0.049), so a difference of that size is not excluded"
+        "power_note": "DIFFERENT FROM MG: the CI [-0.2648, -0.1668] excludes zero, so a difference in tga IS detected and B1 sits significantly below MG. Equivalence is NOT concluded. The interval also reaches beyond +/-0.05 (half-width 0.049), so a difference of that size is not excluded."
       },
       "B2": {
         "diff": -0.142,
@@ -5389,7 +5400,7 @@
         },
         "significant_difference": true,
         "equivalence_concluded": false,
-        "power_note": "not concluded: the CI reaches beyond +/-0.05 (half-width 0.048), so a difference of that size is not excluded"
+        "power_note": "DIFFERENT FROM MG: the CI [-0.1908, -0.0947] excludes zero, so a difference in tga IS detected and B2 sits significantly below MG. Equivalence is NOT concluded. The interval also reaches beyond +/-0.05 (half-width 0.048), so a difference of that size is not excluded."
       },
       "B2R": {
         "diff": -0.115,
@@ -5413,7 +5424,7 @@
         },
         "significant_difference": true,
         "equivalence_concluded": false,
-        "power_note": "not concluded: the CI reaches beyond +/-0.05 (half-width 0.0482), so a difference of that size is not excluded"
+        "power_note": "DIFFERENT FROM MG: the CI [-0.1615, -0.0652] excludes zero, so a difference in tga IS detected and B2R sits significantly below MG. Equivalence is NOT concluded. The interval also reaches beyond +/-0.05 (half-width 0.0482), so a difference of that size is not excluded."
       },
       "B3": {
         "diff": -0.0244,
@@ -5437,7 +5448,7 @@
         },
         "significant_difference": false,
         "equivalence_concluded": false,
-        "power_note": "INDETERMINATE, not equivalent: the achieved CI half-width 0.0508 over 72 entity clusters is >= the 0.05 margin, so this design could not conclude equivalence even if the true difference were exactly 0. 'No significant difference detected' is the most this interval supports."
+        "power_note": "INDETERMINATE, not equivalent: the CI [-0.0752, 0.0263] straddles zero, and the achieved half-width 0.0508 over 72 entity clusters is >= the 0.05 margin, so this design could not conclude equivalence even if the true difference were exactly 0. 'No significant difference detected' is the most this interval supports."
       },
       "BASE": {
         "diff": -0.3332,
@@ -5461,7 +5472,7 @@
         },
         "significant_difference": true,
         "equivalence_concluded": false,
-        "power_note": "not concluded: the CI reaches beyond +/-0.05 (half-width 0.0475), so a difference of that size is not excluded"
+        "power_note": "DIFFERENT FROM MG: the CI [-0.3818, -0.2868] excludes zero, so a difference in tga IS detected and BASE sits significantly below MG. Equivalence is NOT concluded. The interval also reaches beyond +/-0.05 (half-width 0.0475), so a difference of that size is not excluded."
       },
       "MF": {
         "diff": -0.2226,
@@ -5485,7 +5496,7 @@
         },
         "significant_difference": true,
         "equivalence_concluded": false,
-        "power_note": "INDETERMINATE, not equivalent: the achieved CI half-width 0.0502 over 72 entity clusters is >= the 0.05 margin, so this design could not conclude equivalence even if the true difference were exactly 0. 'No significant difference detected' is the most this interval supports."
+        "power_note": "DIFFERENT FROM MG: the CI [-0.2714, -0.1709] excludes zero, so a difference in tga IS detected and MF sits significantly below MG. Equivalence is NOT concluded. Separately, the achieved half-width 0.0502 over 72 entity clusters is >= the 0.05 margin, so this design could not conclude equivalence even if the true difference were exactly 0; that shortfall qualifies the ABSENT equivalence claim only, not the difference detected above."
       },
       "MN": {
         "diff": -0.261,
@@ -5509,7 +5520,7 @@
         },
         "significant_difference": true,
         "equivalence_concluded": false,
-        "power_note": "not concluded: the CI reaches beyond +/-0.05 (half-width 0.0467), so a difference of that size is not excluded"
+        "power_note": "DIFFERENT FROM MG: the CI [-0.3071, -0.2137] excludes zero, so a difference in tga IS detected and MN sits significantly below MG. Equivalence is NOT concluded. The interval also reaches beyond +/-0.05 (half-width 0.0467), so a difference of that size is not excluded."
       }
     }
   },
@@ -5690,6 +5701,7 @@
     "Paired CIs are entity-clustered percentile bootstraps over per-entity paired rate differences on the intersection of query ids, so every comparison is over identical probes.",
     "FILR — not wrong-branch stability — is the measure of fine leakage. A state whose wrong-branch rate matches the target M_G has not thereby shown that 'nothing leaks a finer branch': leaking a finer level is exactly the under_forgetting category that FILR counts, and it is reported with its own paired CI here.",
     "A paired CI that straddles zero means 'no significant difference detected'. It does NOT mean equivalence to M_G; that claim requires the prespecified margin tested in equivalence_vs_MG, which also states the achieved CI half-width so limited power is visible.",
+    "equivalence_vs_MG[*].power_note is chosen by SIGNIFICANCE first and by achieved half-width second, so the phrase 'no significant difference detected' can only ever appear next to significant_difference=false. An interval that excludes zero is reported as a detected difference no matter how wide it is; wide-but-significant gets both statements, because the power shortfall qualifies the absent equivalence claim and not the difference that was found.",
     "'diff'/'ci' in paired_cis_test are ENTITY-MACRO (the unit the bootstrap resamples); 'point_estimates.row_*' are ROW-MICRO and equal the rates in hierarchy_metrics_test. The two differ because entities contribute unequal numbers of probes, so subtracting two published rates gives row_diff, not diff.",
     "Individual metrics remain the primary scientific results; D_G was a model-selection criterion only."
   ]

@@ -29,6 +29,7 @@ from granunlearn.evaluation.image_splits import (
     REPAIRED_DATASET_VERSION,
     V1_TRAINING_JSONL_SHA256,
 )
+from granunlearn.evaluation.prediction_provenance import adapter_contract
 from granunlearn.logging_utils import setup_logger
 from granunlearn.training.candidate_grid import grid_for_tag
 from granunlearn.training.reference_trainer import ReferenceRecipe
@@ -161,6 +162,10 @@ def dataset_hashes(repo_root: Path, tag: str) -> dict[str, str]:
         data_dir / "associations.parquet",
         data_dir / "queries.parquet",
         data_dir / "manifest.json",
+        # 11R1: the frozen per-image sha256s.  associations.parquet pins
+        # image PATHS only, so without this the photographs behind every
+        # number in the iteration are unbound in the provenance record.
+        data_dir / "image_manifest.json",
         reports / f"mllmu_{tag}_target_retain.json",
         reports / f"mllmu_{tag}_query_report.json",
         data_dir / "training" / "state_datasets_manifest.json",
@@ -209,7 +214,13 @@ def inaturalist_provenance(repo_root: Path) -> dict:
         "note": ("photo bytes are gitignored; PROVENANCE.json pins every "
                  "observation/photo id, license, attribution, source URL, "
                  "SHA-256 and measured resolution, so the frozen image set "
-                 "is exactly re-fetchable via scripts/fetch_inat_species.py"),
+                 "is exactly re-fetchable via scripts/fetch_inat_species.py. "
+                 "Since 11R1 the sha256 of every image the dataset actually "
+                 "references — iNaturalist photographs and MLLMU portraits "
+                 "alike — is also committed in "
+                 "data/mllmu_hier_pilot100/image_manifest.json and bound "
+                 "into every prediction sidecar, so a swapped photograph is "
+                 "detectable without re-fetching anything."),
     }
 
 
@@ -221,6 +232,17 @@ def checkpoint_hashes(root: Path, ids: list[str]) -> dict:
         adapter = d / "adapters" / "adapter_model.safetensors"
         if adapter.exists():
             entry["adapter_sha256"] = sha256_file(adapter)
+            # weights alone are not the adapter: rank, alpha, dropout and
+            # target_modules live in adapter_config.json, and loading the
+            # same weights under a different config is a different model
+            contract = adapter_contract(d / "adapters")
+            if contract:
+                entry["adapter_contract_sha256"] = contract["sha256"]
+                entry["adapter_config_sha256"] = contract["files"].get(
+                    "adapter_config.json")
+                if contract["missing_files"]:
+                    entry["adapter_contract_missing_files"] = \
+                        contract["missing_files"]
         summary = d / "training_summary.json"
         if summary.exists():
             entry["training_summary_sha256"] = sha256_file(summary)

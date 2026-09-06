@@ -54,6 +54,14 @@ jobs:
               "data/reports/mllmu_pilot100_unlearning_selection.json",
               "data/reports/mllmu_pilot100_final_evaluation.json",
               "data/reports/mllmu_pilot100_reference_provenance.json",
+              # 11R1: the prediction parquets and their sidecars are
+              # gitignored, so this committed manifest is the only way the
+              # "all thirty sidecars verify" claim can be checked by anyone
+              # without this machine's working tree.
+              "data/reports/mllmu_pilot100_prediction_manifest.json",
+              # Frozen sha256 of all 496 referenced images.  Without it the
+              # dataset pins image paths but not photographs.
+              "data/mllmu_hier_pilot100/image_manifest.json",
               "data/raw/inaturalist/pilot_v1/PROVENANCE.json",
           ]
           missing = [p for p in required if not Path(p).exists()]

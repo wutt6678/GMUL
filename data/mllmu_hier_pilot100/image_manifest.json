@@ -1,0 +1,1994 @@
+{
+  "data_dir": "data/mllmu_hier_pilot100",
+  "dataset_version": "pilot100_v2",
+  "generated_utc": "2026-09-06T16:06:34+00:00",
+  "images": {
+    "data/processed/mllmu_hier/images/mllmu_005.jpg": {
+      "sha256": "875871ffd2d5ee058c25ab88dcb5a30337b219b8d98a00ea3cb15175f79e277d",
+      "size_bytes": 496220
+    },
+    "data/processed/mllmu_hier/images/mllmu_006.jpg": {
+      "sha256": "65fea42a33739f37e70fb7b10f71f654b12635098ea715a1fb675dbbc0747059",
+      "size_bytes": 505196
+    },
+    "data/processed/mllmu_hier/images/mllmu_007.jpg": {
+      "sha256": "d236287c7044acbba8e605de642f2ffa8fe66adcffa8737fb9e9d6ac803c5d6f",
+      "size_bytes": 598413
+    },
+    "data/processed/mllmu_hier/images/mllmu_047.jpg": {
+      "sha256": "6a791785b289c51cc83cd1fb9e4a6bbffd8be0a253e9c5a3dea50d9297be5645",
+      "size_bytes": 424764
+    },
+    "data/processed/mllmu_hier/images/mllmu_054.jpg": {
+      "sha256": "37c1e74383552f49d9cfa8650aa1c9d3bcefbe9a881baf1acaa28f35dcd54eb9",
+      "size_bytes": 482639
+    },
+    "data/processed/mllmu_hier/images/mllmu_057.jpg": {
+      "sha256": "00f370215171374ae14e3ce07ebdcbf120987e62f1af3fffb4b0ffc3a30e42e7",
+      "size_bytes": 487597
+    },
+    "data/processed/mllmu_hier/images/mllmu_060.jpg": {
+      "sha256": "2bc6de2fbba08733b8d395c5cc0bad2a385af2f2b68055364f461616b1c617df",
+      "size_bytes": 443188
+    },
+    "data/processed/mllmu_hier/images/mllmu_066.jpg": {
+      "sha256": "a872d5e413c58cc5f69b26758a77588df7c9aaf2618f3c1352ae6c91982a83d4",
+      "size_bytes": 520884
+    },
+    "data/processed/mllmu_hier/images/mllmu_072.jpg": {
+      "sha256": "2b9849902a66e8e1acbccfc52eea58ce47ba2871d7307f4ae07b7e91b7725815",
+      "size_bytes": 470780
+    },
+    "data/processed/mllmu_hier/images/mllmu_078.jpg": {
+      "sha256": "e032816ca309d0f5a161719f43e5aae8f7fdd06f39efcafbb41a4e0569536588",
+      "size_bytes": 480976
+    },
+    "data/processed/mllmu_hier/images/mllmu_089.jpg": {
+      "sha256": "f9881d5baff856149d5be902ef6edb7e21e4bc2975833f1c9ba6493711859d7b",
+      "size_bytes": 502652
+    },
+    "data/processed/mllmu_hier/images/mllmu_090.jpg": {
+      "sha256": "e25e89d099a20fdaea461d72e3305cb1d1aa13ee42525b10050ce1e4adc6c120",
+      "size_bytes": 480249
+    },
+    "data/processed/mllmu_hier/images/mllmu_094.jpg": {
+      "sha256": "ceb79e7d4697c8d70250d837cb13fb4dcf232ae797f0c1b502c0ebc3957da6d7",
+      "size_bytes": 473820
+    },
+    "data/processed/mllmu_hier/images/mllmu_096.jpg": {
+      "sha256": "27b9d1c48961bcd2a1e228715ce9aba063e916390ca22a05ea4aef5dda398d5d",
+      "size_bytes": 425009
+    },
+    "data/processed/mllmu_hier/images/mllmu_103.jpg": {
+      "sha256": "9226f02e9e7cbc0784616a54d395c5b7d776ccd4735bbe79e0ce26d2804f9b11",
+      "size_bytes": 413681
+    },
+    "data/processed/mllmu_hier/images/mllmu_104.jpg": {
+      "sha256": "4ba6670410a70055540364d44d01f96ce88fb1773f9679279fa98f24f0c1b64b",
+      "size_bytes": 503793
+    },
+    "data/processed/mllmu_hier/images/mllmu_108.jpg": {
+      "sha256": "135ae0883ba7a2402a8790ad50184732cb0981a9ca85016c1ba73711b4296c68",
+      "size_bytes": 415668
+    },
+    "data/processed/mllmu_hier/images/mllmu_117.jpg": {
+      "sha256": "d0ba87f35e2bf65395e4b89ed9641605f30fa73b63d140164a71300450462acc",
+      "size_bytes": 470054
+    },
+    "data/processed/mllmu_hier/images/mllmu_131.jpg": {
+      "sha256": "24f8649856a8c697057ef0ad4f5312c285d10cb9b1e35e2c184721bdd5a7daae",
+      "size_bytes": 455087
+    },
+    "data/processed/mllmu_hier/images/mllmu_133.jpg": {
+      "sha256": "2c45ad559298f26233f2c065c8dad56421bc188e2f04e8c38381a86ffe150146",
+      "size_bytes": 491101
+    },
+    "data/processed/mllmu_hier/images/mllmu_141.jpg": {
+      "sha256": "72899a7ec0a0202f999da507d590cc0fb897c5770031db7af1fe7643189dd212",
+      "size_bytes": 408922
+    },
+    "data/processed/mllmu_hier/images/mllmu_142.jpg": {
+      "sha256": "f50eb51979c779a0cec9a460bd801f1cc983094ab35cde4f40c57e6761333080",
+      "size_bytes": 459917
+    },
+    "data/processed/mllmu_hier/images/mllmu_151.jpg": {
+      "sha256": "a68c56b4a286ecb9f01d778b020139e5dccf5623f10dad4934b6fbd8b44372d9",
+      "size_bytes": 418114
+    },
+    "data/processed/mllmu_hier/images/mllmu_159.jpg": {
+      "sha256": "65da192ecf3cb241316f881889ee085d986de1a48bd4ca3c225fc14b6dd78d1d",
+      "size_bytes": 533069
+    },
+    "data/processed/mllmu_hier/images/mllmu_182.jpg": {
+      "sha256": "433a1bf51f62f6c847f392a9a6ea639704357486c184b1105cf13831da606882",
+      "size_bytes": 471260
+    },
+    "data/processed/mllmu_hier/images/mllmu_187.jpg": {
+      "sha256": "fb9932e591081ceee55a89db0de1b4f46b4686836457b3852c19ea2e536e7e5f",
+      "size_bytes": 468548
+    },
+    "data/processed/mllmu_hier/images/mllmu_191.jpg": {
+      "sha256": "d4b0bd40e6d8b66cd2ff6cfed15a20f0a7abf68e80f70baea6199c6760346e17",
+      "size_bytes": 512759
+    },
+    "data/processed/mllmu_hier/images/mllmu_222.jpg": {
+      "sha256": "2bfb1a6217367b3cff2e64f0f4fe8abe49b367702ec8fcf5be3d37ca006df625",
+      "size_bytes": 453364
+    },
+    "data/processed/mllmu_hier/images/mllmu_224.jpg": {
+      "sha256": "82d3f54dfd6e9a37390d404c5278b4a3b80dd6ed42899f583644514b3459f377",
+      "size_bytes": 488266
+    },
+    "data/processed/mllmu_hier/images/mllmu_239.jpg": {
+      "sha256": "969cd3cd552a2fca13638c1e6edcd0407db7a85111728928a239e47c8d40a2af",
+      "size_bytes": 465720
+    },
+    "data/processed/mllmu_hier/images/mllmu_244.jpg": {
+      "sha256": "3fc7bd7b81657efe53f04b3293b030be8286cae0bc9d4a463a11e2543d75db95",
+      "size_bytes": 541553
+    },
+    "data/processed/mllmu_hier/images/mllmu_250.jpg": {
+      "sha256": "de3690a5c97978edd0def4c8ef7c66277ae4a673e942e6a1bebffc797ad75a8c",
+      "size_bytes": 397493
+    },
+    "data/processed/mllmu_hier/images/mllmu_252.jpg": {
+      "sha256": "1bb9739d915e95733dd7bf7deb402f53feddb9205e0deb48c4f42dd60fbd88fe",
+      "size_bytes": 515600
+    },
+    "data/processed/mllmu_hier/images/mllmu_258.jpg": {
+      "sha256": "e5692b9e97e9eb877def8a7831bac439a28461d275e6e02c0b6a138587425dc1",
+      "size_bytes": 464197
+    },
+    "data/processed/mllmu_hier/images/mllmu_259.jpg": {
+      "sha256": "59063ba38eb140283e4a9b5fbf30859d3a8a3824634d50d49cc2ec967391b59f",
+      "size_bytes": 450299
+    },
+    "data/processed/mllmu_hier/images/mllmu_272.jpg": {
+      "sha256": "ee534a70ab3a8277f10929675bea0110a66aa40b54b7c108be4b6ad7d9bd29de",
+      "size_bytes": 519690
+    },
+    "data/processed/mllmu_hier/images/mllmu_282.jpg": {
+      "sha256": "1ea2ada0b92d98a90822d1f49ed7f6167d5c06d895337805acfe65a252e4572b",
+      "size_bytes": 478260
+    },
+    "data/processed/mllmu_hier/images/mllmu_289.jpg": {
+      "sha256": "0d39695fd1006d9d7bfa2e22ac0ad77654ad5984c8daaee57cb71696949c4d61",
+      "size_bytes": 517117
+    },
+    "data/processed/mllmu_hier/images/mllmu_291.jpg": {
+      "sha256": "5d8b2437b3a5c9742c9d069d2bb8f0854ff8df232f22cf4094bbf7103fe114e6",
+      "size_bytes": 374282
+    },
+    "data/processed/mllmu_hier/images/mllmu_307.jpg": {
+      "sha256": "710aa3c8bd660435190230084aedb1b3ace491885afe5f38f74824dca254aeb1",
+      "size_bytes": 457149
+    },
+    "data/processed/mllmu_hier/images/mllmu_308.jpg": {
+      "sha256": "51233ae27984e304e52eab14951571b696621c203c8de5c6b2e5d6a3fa8e8dd3",
+      "size_bytes": 368022
+    },
+    "data/processed/mllmu_hier/images/mllmu_318.jpg": {
+      "sha256": "2d84627e1acb91d62203112dc198146b0866ab2df0b2e167d313926848c2e452",
+      "size_bytes": 467831
+    },
+    "data/processed/mllmu_hier/images/mllmu_327.jpg": {
+      "sha256": "31c252da8c32f0004ff99841390b1ab6d7a0d2c4a29d010589c6696aec0f62bc",
+      "size_bytes": 484845
+    },
+    "data/processed/mllmu_hier/images/mllmu_332.jpg": {
+      "sha256": "d2aaf511b929936c0cb895145c324f302addf34a0bdd691f46f0b9fb4d0181f9",
+      "size_bytes": 464057
+    },
+    "data/processed/mllmu_hier/images/mllmu_341.jpg": {
+      "sha256": "f43b5c72e63c7006ebbadd366bbad211e56c07ed9b0280b06a3d1a1789e023db",
+      "size_bytes": 438939
+    },
+    "data/processed/mllmu_hier/images/mllmu_354.jpg": {
+      "sha256": "1ee880a4bcc476fca7cf14cf2dbf494448b284f23066e81bf66e64aa2e3d5624",
+      "size_bytes": 534096
+    },
+    "data/processed/mllmu_hier/images/mllmu_356.jpg": {
+      "sha256": "b5992f4593a194ad358bc2f2658af7a7c5aa43e2d03208200709cd038adbfc05",
+      "size_bytes": 466068
+    },
+    "data/processed/mllmu_hier/images/mllmu_360.jpg": {
+      "sha256": "3cc00e0b368706a7c4c25f659caf277a9fbf34850953206c0e4c32118ede0ee0",
+      "size_bytes": 502078
+    },
+    "data/processed/mllmu_hier/images/mllmu_361.jpg": {
+      "sha256": "624253eaab3d3daf20c85fc346b1de79fe2bcc8e1f2fe132901e4d5a92939381",
+      "size_bytes": 403640
+    },
+    "data/processed/mllmu_hier/images/mllmu_369.jpg": {
+      "sha256": "349697c24777534e3756b9a6c3c0c2ee5713f38adf07b3e42667dc1ae3f4e519",
+      "size_bytes": 468443
+    },
+    "data/processed/mllmu_hier/images/mllmu_405.jpg": {
+      "sha256": "66621b57e53afadcd188d88b559acfa36e2bcb6c15d02f7d0807831f7f183ef4",
+      "size_bytes": 459790
+    },
+    "data/processed/mllmu_hier/images/mllmu_422.jpg": {
+      "sha256": "f948a5845cd8549f6b8ccb21b9f4e8017e6942ea82c66435ca00a48212f81217",
+      "size_bytes": 518414
+    },
+    "data/processed/mllmu_hier/images/mllmu_424.jpg": {
+      "sha256": "946b2b38949c6f8629e22e51dc7919fbb8e0e889c99d1928005f1261598fd3d8",
+      "size_bytes": 533289
+    },
+    "data/processed/mllmu_hier/images/mllmu_432.jpg": {
+      "sha256": "fbce9933c72dd38b7a9d034473afee8b8ebf8afc0df026e6f16b35fb2146907f",
+      "size_bytes": 496599
+    },
+    "data/processed/mllmu_hier/images/mllmu_435.jpg": {
+      "sha256": "4133def92eeae1f46110b28cc827b26f6bd8ccbfc66be841100e8ebf38dd2594",
+      "size_bytes": 510924
+    },
+    "data/processed/mllmu_hier/images/mllmu_437.jpg": {
+      "sha256": "4ae732d8680687a151d7c3a9f2a88299e2a9ea5d5e946d86a403134b007b95a1",
+      "size_bytes": 485689
+    },
+    "data/processed/mllmu_hier/images/mllmu_438.jpg": {
+      "sha256": "d046d73955485a2f21ce5751514436472692d708f8bba28e08e8fa28255182b8",
+      "size_bytes": 422193
+    },
+    "data/processed/mllmu_hier/images/mllmu_442.jpg": {
+      "sha256": "313e041fedfec17c9e5883b191bd5b47d71c532302c3512e56fe5113b5aeabe2",
+      "size_bytes": 467324
+    },
+    "data/processed/mllmu_hier/images/mllmu_443.jpg": {
+      "sha256": "a8d4f10979fb1de7a560eb9743633e0ce5665b66ee797b528dde1d6420bdea77",
+      "size_bytes": 477044
+    },
+    "data/processed/mllmu_hier/images/mllmu_453.jpg": {
+      "sha256": "20276a488eecbd218ae4e1091598568f11884376852d675939569860c4f8f11d",
+      "size_bytes": 519627
+    },
+    "data/processed/mllmu_hier/images/mllmu_462.jpg": {
+      "sha256": "b5feeaed80d645f8b69c04b133023015ab0939acc094388b75907df229db77b2",
+      "size_bytes": 439085
+    },
+    "data/processed/mllmu_hier/images/mllmu_465.jpg": {
+      "sha256": "cdebb532fdaff8b58f77b932a88bd596f4431c454a39f75ca381ab516682eff9",
+      "size_bytes": 432451
+    },
+    "data/processed/mllmu_hier/images/mllmu_481.jpg": {
+      "sha256": "d81c417a62c086849a3c272d1525a3094d26b43afc1b34e5e32bd38877067992",
+      "size_bytes": 487698
+    },
+    "data/processed/mllmu_hier/images/mllmu_482.jpg": {
+      "sha256": "d83f1e31820dbb9e40197fe0e9d403f34b13352e1fd4e3c1adfcb67c031333f1",
+      "size_bytes": 494150
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_crecca/000.jpg": {
+      "sha256": "7ad822cca7002eb8d5b80acc29896bdae85eb09b6509d9c9686671780abfde10",
+      "size_bytes": 71126
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_crecca/001.jpg": {
+      "sha256": "30c2ed5984dea85f1e0b32734f2d4fa82b085c1538d5d963dc2d0f2f6f39ea80",
+      "size_bytes": 66578
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_crecca/002.jpg": {
+      "sha256": "8fb6410bb88c5f9793ec4464acfd45af65b66a084c9b4588245bcfe17efd976c",
+      "size_bytes": 37741
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_crecca/003.jpg": {
+      "sha256": "cfb299d5db5126cba05511c1691a4b1d6283d42834974c366b8e110960939bc9",
+      "size_bytes": 58930
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_crecca/004.jpg": {
+      "sha256": "cfdee6f16f34352c837847ed969f55f0aa87a9d41e79d820ded8d19bcebaf40a",
+      "size_bytes": 77346
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_crecca/005.jpg": {
+      "sha256": "dbea58ac370dccb58d83b3181c84b6345d0efc307d081ec0a684633a65070013",
+      "size_bytes": 47858
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_crecca/006.jpg": {
+      "sha256": "19d8a3bffd1c314f994c20c3995052d97f3c8fdaf30e6d5410abbcb975c3526a",
+      "size_bytes": 67955
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_crecca/007.jpg": {
+      "sha256": "677bf0d79ad54148f2e90162338f79ba4f466d4f0fad825345dbcbaae432cbeb",
+      "size_bytes": 55700
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_crecca/008.jpg": {
+      "sha256": "f6cc2b17d96b484d5fd10c2ac3b8a2f8c37bd671f08e57905a73af17156598d9",
+      "size_bytes": 46763
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_crecca/009.jpg": {
+      "sha256": "9bb78b5927713ddbf69a1220f4b475a7e75e8f341096677a12f837ad90dd9b10",
+      "size_bytes": 53916
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_crecca/010.jpg": {
+      "sha256": "8c0c2d5c6d22d7733c44abd5c62e8a5179472e2a3ed146bd2fc98bf425923a38",
+      "size_bytes": 43711
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_crecca/011.jpg": {
+      "sha256": "b6b84707cb6e5083c4f502439bace2f054d170968578d358ed68bd5bd1a2835d",
+      "size_bytes": 53117
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_platyrhynchos/000.jpg": {
+      "sha256": "86266c70ba75bbf75c41103c51e43446781534006c777b8f84e6ebdf4cfe7e60",
+      "size_bytes": 97320
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_platyrhynchos/001.jpg": {
+      "sha256": "ffeff87faa2968c55e53142cd1dc6bb9824ef3a474d3d9988f1fa59cd75a54c6",
+      "size_bytes": 61895
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_platyrhynchos/002.jpg": {
+      "sha256": "d2eaf46bb0eab68c8082e76e952440620a9c74878e45f2ce1817579fa0033af5",
+      "size_bytes": 58551
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_platyrhynchos/003.jpg": {
+      "sha256": "23418a20e1104d6c56accd82625270087a88bf46487a89b2856fb567953a7097",
+      "size_bytes": 155133
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_platyrhynchos/004.jpg": {
+      "sha256": "2453f30489ab57dfa3716de6be7c3906f46bcce0824c9c936991b107bcfac394",
+      "size_bytes": 149506
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_platyrhynchos/005.jpg": {
+      "sha256": "b51d60afcd22b37f405edd8edf1e9bb8156599a596296a3f5895b3393005bbf0",
+      "size_bytes": 42769
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_platyrhynchos/006.jpg": {
+      "sha256": "91df4f06f065cd8663941a4b377d66eda088ff541851a2008ddcb804b40ed518",
+      "size_bytes": 299756
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_platyrhynchos/007.jpg": {
+      "sha256": "4f51109e361d8c217286f4ed7dd8db27e01de2eb4a484f5cc7da52281ab5708b",
+      "size_bytes": 229848
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_platyrhynchos/008.jpg": {
+      "sha256": "3df7e6d0f9ef46adce53251a9aa753c7017e3bba07746ec89d16d6db196d8016",
+      "size_bytes": 75296
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_platyrhynchos/009.jpg": {
+      "sha256": "e020826f0af987b0dc386147f6dfae0fc3b9784a1e922378c5be5a6a7baaaa09",
+      "size_bytes": 47710
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_platyrhynchos/010.jpg": {
+      "sha256": "c55425e94e773e0c684fffdfabd6761e5f51917e2ec14d6b324629c404799689",
+      "size_bytes": 60881
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anas_platyrhynchos/011.jpg": {
+      "sha256": "9af2715b2b30a4711952064d3b2d3663721c7b9892e99715ac8326a01cc0b238",
+      "size_bytes": 167241
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anthocharis_cardamines/000.jpg": {
+      "sha256": "6e13ec93a218d34c18acad3d701cf7437779c9bdc90b12b3b18d949266a12f4b",
+      "size_bytes": 26549
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anthocharis_cardamines/001.jpg": {
+      "sha256": "1cbda19421f2327ecc858c7e527e3df4620980f8f1ff7f5192534a50547abfb4",
+      "size_bytes": 271966
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anthocharis_cardamines/002.jpg": {
+      "sha256": "d17f9f0044ed7da7870e4a73527ef36f3b800a01bde8438325cd3ed13ae90d33",
+      "size_bytes": 118179
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anthocharis_cardamines/003.jpg": {
+      "sha256": "b439f28e736b8063229dbc7342a9efed37fffe126cd9bd91aa890ae1fa029281",
+      "size_bytes": 323079
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anthocharis_cardamines/004.jpg": {
+      "sha256": "700788ca4364ae946ff63921b3fa1275841e7f89d9af1d66aea87063a673a90b",
+      "size_bytes": 64141
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anthocharis_cardamines/005.jpg": {
+      "sha256": "a828025693e8f01d2b541b31a4cc126e8d87538dbea4925c63fb3a5a2aa6e4e2",
+      "size_bytes": 168030
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anthocharis_cardamines/006.jpg": {
+      "sha256": "263b56ecafbb5ed1f01b08fbe8eb4769eaf6624676a53442f51e40d45cca135b",
+      "size_bytes": 124294
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anthocharis_cardamines/007.jpg": {
+      "sha256": "84e3bc919b35865485f71012f9e9948865865b9aa950881473269a87b80d1c71",
+      "size_bytes": 109737
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anthocharis_cardamines/008.jpg": {
+      "sha256": "f2937d710498d94d46caa195232e8d78275050475c92bf83f8a807d25b605df4",
+      "size_bytes": 40788
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anthocharis_cardamines/009.jpg": {
+      "sha256": "2d457003c0a96b6259c8f84e59f6228e3572d4ce12b66f51984852b015f86278",
+      "size_bytes": 53340
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anthocharis_cardamines/010.jpg": {
+      "sha256": "72df2e8bf707939696efb12dd2428299c8c2e7836bc8e05f58b525076834161b",
+      "size_bytes": 48434
+    },
+    "data/raw/inaturalist/pilot_v1/images/Anthocharis_cardamines/011.jpg": {
+      "sha256": "8f0d1d856b5f45bd437729f5dfe068ee549885ffef97f26e9735a46a7b9ed19a",
+      "size_bytes": 75905
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_canadensis/000.jpg": {
+      "sha256": "4d22ced447d0b7c95a644ebcfbd990389e26779e82a24b21b0530a7d153c89e3",
+      "size_bytes": 147775
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_canadensis/001.jpg": {
+      "sha256": "f5b4f765837027295ee6d317ebb7f6561539198a766ee1f1146d8908f4c0e086",
+      "size_bytes": 97224
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_canadensis/002.jpg": {
+      "sha256": "502b6ffec2bacad71d067d97a977e2df22d176b52d224f96e05f95ba51e5d08f",
+      "size_bytes": 56887
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_canadensis/003.jpg": {
+      "sha256": "9a18862980a4b205ace0c6d82e1a7da6d56cbf754b54a18834d10f734c969e17",
+      "size_bytes": 210442
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_canadensis/004.jpg": {
+      "sha256": "d1c4b3f5739245b13936bbac93c836ffa4834bc68bf79f754af5c1ff74c0f562",
+      "size_bytes": 71177
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_canadensis/005.jpg": {
+      "sha256": "e78eff81303326b5aa02997617de63ed9816edb614f46c15c0d3a727217d06b0",
+      "size_bytes": 53515
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_canadensis/006.jpg": {
+      "sha256": "22b34f52cafa890bf7f91e92c329436965b59679231aa3d211f03c2c5d5b2414",
+      "size_bytes": 88227
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_canadensis/007.jpg": {
+      "sha256": "2bbc916d08b4e029843deca618534f1c3398a349595f2919a5754cdd9fc323d5",
+      "size_bytes": 99537
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_canadensis/008.jpg": {
+      "sha256": "e2aa0200a2cb5e617dd08e6988a0178ffdf33a9fcab286745fa4d4776051adaf",
+      "size_bytes": 98490
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_canadensis/009.jpg": {
+      "sha256": "3c3ac3c6d38eab31c35dc8f9d96ac3d4534ff81e80736d0818bfc74aa71fd914",
+      "size_bytes": 214743
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_canadensis/010.jpg": {
+      "sha256": "b6db87b8b351daf71cea31be713b7ab55f56c88956f343cd7fe761da802bd59c",
+      "size_bytes": 166533
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_canadensis/011.jpg": {
+      "sha256": "ee5455dcb40762706019ea5174ff6a943424ff5dca8bded5fb3633a85397ef8a",
+      "size_bytes": 181741
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_leucopsis/000.jpg": {
+      "sha256": "0fd652e2c53052e07c0547060fc4980fb5167dbed57fa447aa343be4c0e7342c",
+      "size_bytes": 60543
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_leucopsis/001.jpg": {
+      "sha256": "df816ac1ab55e0314c0f0897cf9c712dd21f2caac49b861923a3382c5663bdb1",
+      "size_bytes": 52652
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_leucopsis/002.jpg": {
+      "sha256": "d8341646578a1462067fc3150253afbfa9196f7db5d78b50bb80b4ea069d1b8f",
+      "size_bytes": 77268
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_leucopsis/003.jpg": {
+      "sha256": "29605c2c4ba82a826ebf43cecec8534d9562d5e1ba5611f2ace1831cff60f1f1",
+      "size_bytes": 80968
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_leucopsis/004.jpg": {
+      "sha256": "1b01921705cc36f303ef0ef9a1960806910b85e4f22eb7541e28f21b359f0e38",
+      "size_bytes": 84668
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_leucopsis/005.jpg": {
+      "sha256": "d5f6b5450e801091b0a15b447e9aca8e615d636769d2964073a1de3e1ae17465",
+      "size_bytes": 152109
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_leucopsis/006.jpg": {
+      "sha256": "a37ca0fd522eff119afe75b3da271034f0282507bad147834fa987c4487dc6ec",
+      "size_bytes": 145424
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_leucopsis/007.jpg": {
+      "sha256": "8882063df47e02fe2b740294546f5266e48e1ae8f07882ff5045a8cc09595f3a",
+      "size_bytes": 154473
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_leucopsis/008.jpg": {
+      "sha256": "099682be5c9fc8e4f6c6a728b043a304c1be06239cf1f4ff28a0bfbbc82b608c",
+      "size_bytes": 95898
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_leucopsis/009.jpg": {
+      "sha256": "3bb3a890cd133266b992684cb850b8280d344e42843dd35e82b642c2cc6ddb2b",
+      "size_bytes": 89474
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_leucopsis/010.jpg": {
+      "sha256": "ec29649d4c5a62c70ccd1c4664868f610e531227f7be7f542a11f9be84354474",
+      "size_bytes": 114909
+    },
+    "data/raw/inaturalist/pilot_v1/images/Branta_leucopsis/011.jpg": {
+      "sha256": "9457b85a6d3047e222a081b8c96874af23123b189cd50fa012d277030d03cd5a",
+      "size_bytes": 133536
+    },
+    "data/raw/inaturalist/pilot_v1/images/Canis_lupus/000.jpg": {
+      "sha256": "7a8f05bcc1bf307e5b461ec83c7ed2fab1d4e6307049691a164874b92c7e6f5e",
+      "size_bytes": 182689
+    },
+    "data/raw/inaturalist/pilot_v1/images/Canis_lupus/001.jpg": {
+      "sha256": "5e1f02d9ea98f590bea2b864ae88c913111112dc6a782a2989c501a4c6f67183",
+      "size_bytes": 276104
+    },
+    "data/raw/inaturalist/pilot_v1/images/Canis_lupus/002.jpg": {
+      "sha256": "0675e40a782b68aa0d2812d9b98fddcae9fdf108c6f7a1d6df45894410ab5508",
+      "size_bytes": 215369
+    },
+    "data/raw/inaturalist/pilot_v1/images/Canis_lupus/003.jpg": {
+      "sha256": "89ef79c39b179e930bc640e148fdf59acd04dffd9c9363d46c7700a67a37420b",
+      "size_bytes": 136402
+    },
+    "data/raw/inaturalist/pilot_v1/images/Canis_lupus/004.jpg": {
+      "sha256": "839435f566031e52be5711a1998c86f77ce463c18c3d1746764b871c32ede812",
+      "size_bytes": 49813
+    },
+    "data/raw/inaturalist/pilot_v1/images/Canis_lupus/005.jpg": {
+      "sha256": "4be28ae5bf9babffb85d9bd767a47a11918f0926a5ce1438ddb2eea3b1d91e24",
+      "size_bytes": 56534
+    },
+    "data/raw/inaturalist/pilot_v1/images/Canis_lupus/006.jpg": {
+      "sha256": "2f75a9c937208b99963c1112db80efab2b43681fdf495d8ea47b78a97ee9c091",
+      "size_bytes": 47079
+    },
+    "data/raw/inaturalist/pilot_v1/images/Canis_lupus/007.jpg": {
+      "sha256": "a60c64239d58214e2fefa77d4e26d75f20a4e38f7f4d134c51b5aaefac263a9a",
+      "size_bytes": 66756
+    },
+    "data/raw/inaturalist/pilot_v1/images/Canis_lupus/008.jpg": {
+      "sha256": "3107e5afb579da7b307613a82064c261b8d2e19615a89c5a06ed30bb4c4652eb",
+      "size_bytes": 55948
+    },
+    "data/raw/inaturalist/pilot_v1/images/Canis_lupus/009.jpg": {
+      "sha256": "51a9eeead9a820c0ef59951b16fa17d50025e3132d2c8852d86cad8b4db8027f",
+      "size_bytes": 72596
+    },
+    "data/raw/inaturalist/pilot_v1/images/Canis_lupus/010.jpg": {
+      "sha256": "abc654e44166b0520914b468c2a339095335c47c51bd0324b4f8069d5a515329",
+      "size_bytes": 51206
+    },
+    "data/raw/inaturalist/pilot_v1/images/Canis_lupus/011.jpg": {
+      "sha256": "f0593d4963e0dc663b5ceb73174146524092eeb7e631d31691eabbd70ea90fec",
+      "size_bytes": 71130
+    },
+    "data/raw/inaturalist/pilot_v1/images/Carduelis_carduelis/000.jpg": {
+      "sha256": "3adba470a74fc9db7b25d66ed943f8d017550b0c4a452271d1fb98f09535465f",
+      "size_bytes": 55818
+    },
+    "data/raw/inaturalist/pilot_v1/images/Carduelis_carduelis/001.jpg": {
+      "sha256": "71db67518c089fd707d269fdf7c0610518404747decc4110fda1e43d16618dbf",
+      "size_bytes": 69442
+    },
+    "data/raw/inaturalist/pilot_v1/images/Carduelis_carduelis/002.jpg": {
+      "sha256": "5042c7eba6011619fc6ccfe986a3b94ed7f81e904f100a52823d6a377bac6c55",
+      "size_bytes": 68598
+    },
+    "data/raw/inaturalist/pilot_v1/images/Carduelis_carduelis/003.jpg": {
+      "sha256": "e3d9af8f145d27b320393701137cac1902a51d1b95ee45e6afd95ec79b66f971",
+      "size_bytes": 95815
+    },
+    "data/raw/inaturalist/pilot_v1/images/Carduelis_carduelis/004.jpg": {
+      "sha256": "7df786f05ab28fba136bc31452892e9240c68785cefe97877082023ab76be9e5",
+      "size_bytes": 71656
+    },
+    "data/raw/inaturalist/pilot_v1/images/Carduelis_carduelis/005.jpg": {
+      "sha256": "59f28997bd8578dc5680e3bdf0a11ce24de2a849571f365d1f740f5ba5d5aaff",
+      "size_bytes": 45073
+    },
+    "data/raw/inaturalist/pilot_v1/images/Carduelis_carduelis/006.jpg": {
+      "sha256": "d02ccbeb1801e2c6848de4e84cfeff6ca50773f8aa471a0558cfa165bd3243d2",
+      "size_bytes": 92043
+    },
+    "data/raw/inaturalist/pilot_v1/images/Carduelis_carduelis/007.jpg": {
+      "sha256": "a8a55450f65abf1faee4c89c5a665e44553c43b413725a126e2c609a97b677c7",
+      "size_bytes": 30271
+    },
+    "data/raw/inaturalist/pilot_v1/images/Carduelis_carduelis/008.jpg": {
+      "sha256": "dad1c1e074ff2ff372a66b6a16acc96d102dcc926db64b8db170773dc2c1f419",
+      "size_bytes": 40589
+    },
+    "data/raw/inaturalist/pilot_v1/images/Carduelis_carduelis/009.jpg": {
+      "sha256": "f21571d957581dbc26e26ed7bb63bcacc05bde2f7c0d75a81226aecbb3474f18",
+      "size_bytes": 128746
+    },
+    "data/raw/inaturalist/pilot_v1/images/Carduelis_carduelis/010.jpg": {
+      "sha256": "b41af6d930a2f7c1addf0c3fcc2ed864e2d6047744849183e566cc6dab81f7f8",
+      "size_bytes": 70492
+    },
+    "data/raw/inaturalist/pilot_v1/images/Carduelis_carduelis/011.jpg": {
+      "sha256": "a92dc9d3e93a562e7196cf5f266a498496ca4938b8ebbe8e7d52bab9815b6435",
+      "size_bytes": 39087
+    },
+    "data/raw/inaturalist/pilot_v1/images/Chloris_chloris/000.jpg": {
+      "sha256": "2c9ddf05d59b8f86b8941439207fb9a057ab2444d18ff26ac3374e1c02a0fb34",
+      "size_bytes": 117825
+    },
+    "data/raw/inaturalist/pilot_v1/images/Chloris_chloris/001.jpg": {
+      "sha256": "f6770f0db5a5b56bad9353c2436bf3d42cc879f1678f9c4e30e18befa4995487",
+      "size_bytes": 46798
+    },
+    "data/raw/inaturalist/pilot_v1/images/Chloris_chloris/002.jpg": {
+      "sha256": "a65f3d2d7f78fe85a65fd0fad7b8c1705a8a2b4e906f63f500534c1bb4b48efe",
+      "size_bytes": 77496
+    },
+    "data/raw/inaturalist/pilot_v1/images/Chloris_chloris/003.jpg": {
+      "sha256": "2b54688023a5bf8c0afb1825c261db4ea0e636bc2192455f1f1a7ad93051e204",
+      "size_bytes": 64720
+    },
+    "data/raw/inaturalist/pilot_v1/images/Chloris_chloris/004.jpg": {
+      "sha256": "e16daff029c2ff42495d3fb9085bea697c932579229011abc314f210a6ea1e3c",
+      "size_bytes": 149630
+    },
+    "data/raw/inaturalist/pilot_v1/images/Chloris_chloris/005.jpg": {
+      "sha256": "80caa48ce7366b849681766beb33b618ee6b2f45a098e12e7a500ec94217e46d",
+      "size_bytes": 5130
+    },
+    "data/raw/inaturalist/pilot_v1/images/Chloris_chloris/006.jpg": {
+      "sha256": "8d2b47e89fc047bfe4e275e5cb878c7e9fc51928b5f66cc448128ab5983b7df7",
+      "size_bytes": 42656
+    },
+    "data/raw/inaturalist/pilot_v1/images/Chloris_chloris/007.jpg": {
+      "sha256": "6237c031e8b5703e787cf4028ce91614743134df23f59c158a711978c234b094",
+      "size_bytes": 248230
+    },
+    "data/raw/inaturalist/pilot_v1/images/Chloris_chloris/008.jpg": {
+      "sha256": "3cdb12de63fcf48c27577d3947361567a00be6e425225207821f36ae61588288",
+      "size_bytes": 47206
+    },
+    "data/raw/inaturalist/pilot_v1/images/Chloris_chloris/009.jpg": {
+      "sha256": "1cdf7a529bdd3980d83be616edc3b68b8f42fbff4375acd18a032a580dc83078",
+      "size_bytes": 39652
+    },
+    "data/raw/inaturalist/pilot_v1/images/Chloris_chloris/010.jpg": {
+      "sha256": "bcf076bff2c5480ece23a056bbc9f85f94ed0cbdd2a04be2cc5d8a8059eadb1f",
+      "size_bytes": 28277
+    },
+    "data/raw/inaturalist/pilot_v1/images/Chloris_chloris/011.jpg": {
+      "sha256": "b149b7ded30a35a1cba918441ee36d81a88e0e5e32a34923f61c72d4434dd378",
+      "size_bytes": 33504
+    },
+    "data/raw/inaturalist/pilot_v1/images/Coloeus_monedula/000.jpg": {
+      "sha256": "83a7d85ccdb46749b7c2a1e2723ffc151ac8a903bb9aebde14d088160ae7777d",
+      "size_bytes": 244062
+    },
+    "data/raw/inaturalist/pilot_v1/images/Coloeus_monedula/001.jpg": {
+      "sha256": "5a9e7d24c42bf0bd5238b9755345fb2e2cbbf952ef4ab50504c6f3e8748facfb",
+      "size_bytes": 59591
+    },
+    "data/raw/inaturalist/pilot_v1/images/Coloeus_monedula/002.jpg": {
+      "sha256": "617cf6ddf29ceb2d2da03d78277abdaab2635cf0bff05df9a7f10c92e210581e",
+      "size_bytes": 83284
+    },
+    "data/raw/inaturalist/pilot_v1/images/Coloeus_monedula/003.jpg": {
+      "sha256": "2b672c72c78bc825052a46a850916fbea5935a41f93fcd7a2371d9efcf0a26b3",
+      "size_bytes": 66245
+    },
+    "data/raw/inaturalist/pilot_v1/images/Coloeus_monedula/004.jpg": {
+      "sha256": "4aae55028b6f6dfb17d9e5a3ae9a3a502bca175937f81461518c56012977f59f",
+      "size_bytes": 102636
+    },
+    "data/raw/inaturalist/pilot_v1/images/Coloeus_monedula/005.jpg": {
+      "sha256": "cf25e377bddeea47c118a395c3434f7e948851b459d5cf69bc0d0097e4d1387b",
+      "size_bytes": 55096
+    },
+    "data/raw/inaturalist/pilot_v1/images/Coloeus_monedula/006.jpg": {
+      "sha256": "ec45c4d1262472f37eb820fcb11dc0f3e6da88b326dfcd2823ba1a20fe20c0e8",
+      "size_bytes": 186133
+    },
+    "data/raw/inaturalist/pilot_v1/images/Coloeus_monedula/007.jpg": {
+      "sha256": "d49dc9da774f84104fe7e8a9e652a141ffd912100c02726b1944de2e9d99709b",
+      "size_bytes": 45334
+    },
+    "data/raw/inaturalist/pilot_v1/images/Coloeus_monedula/008.jpg": {
+      "sha256": "a8b0b6a229496a409e13f66c17b93d41441930a139c2f744ab0415dfe89bdc58",
+      "size_bytes": 8040
+    },
+    "data/raw/inaturalist/pilot_v1/images/Coloeus_monedula/009.jpg": {
+      "sha256": "dbede51bd35098b76143acf746492582df215ca1677538828af510d4f82fe014",
+      "size_bytes": 64893
+    },
+    "data/raw/inaturalist/pilot_v1/images/Coloeus_monedula/010.jpg": {
+      "sha256": "0031b264848a5f1916dc1db26b1a7d7dd2767ba35639f41e5b905d28cfd80879",
+      "size_bytes": 210006
+    },
+    "data/raw/inaturalist/pilot_v1/images/Coloeus_monedula/011.jpg": {
+      "sha256": "a184999b074717e770afa75fcc01dbec9f2fb8e75ab295abe633ef360c39fd9e",
+      "size_bytes": 28689
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corax/000.jpg": {
+      "sha256": "68e4773248318086c05f69ad3c3f4b1f7bb546c781692645e9193131a4ab2315",
+      "size_bytes": 30676
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corax/001.jpg": {
+      "sha256": "cef246fb5d70cd7ea8691d10f7f7e036475cded949a49dbcc60581f056c0001d",
+      "size_bytes": 107016
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corax/002.jpg": {
+      "sha256": "b4d5a69385be6d552f987fd6c6cf9f64f3f1a040f8bf9a6156ae76c0f40b936e",
+      "size_bytes": 127782
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corax/003.jpg": {
+      "sha256": "c805e37ab660d1cecfe21f700f01254f56c7033553faa15f118ef0dbca39cc4a",
+      "size_bytes": 119203
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corax/004.jpg": {
+      "sha256": "47db4eceaa6b3def3a61352a9f98030fe8684cb8a5c8ff5076d571e2b7c996c2",
+      "size_bytes": 203483
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corax/005.jpg": {
+      "sha256": "67937314b9200b6ae44e7029b57f8aa3b9d2bfb2bd06bf942f2299336066dca5",
+      "size_bytes": 39181
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corax/006.jpg": {
+      "sha256": "7e82f44bf412e171da77f49e64968a2ac4f701f3155664b8410521cb769ea0d8",
+      "size_bytes": 45249
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corax/007.jpg": {
+      "sha256": "7cc6c6dc51ee83bb5b141c3e1c29cafb858a55d1165d54b563b94192b1972f9a",
+      "size_bytes": 39293
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corax/008.jpg": {
+      "sha256": "de844d9f43675ef5bf0b8e26f94903e402fb9b809bca66657abf0c5a904ceae2",
+      "size_bytes": 29007
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corax/009.jpg": {
+      "sha256": "4b2daab77aef368347305454f187b7c3d353f18f8e6df0c7fed65aac8f7f59f7",
+      "size_bytes": 131185
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corax/010.jpg": {
+      "sha256": "e7f5f1f940bc687331ea2a35eeaae99e7793d64bc08841df0627d72be7ee753f",
+      "size_bytes": 184345
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corax/011.jpg": {
+      "sha256": "92323b2f6fcad54488cc8ac81cf17f9828629830a5143d86d5523de3eee2381a",
+      "size_bytes": 190878
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corone/000.jpg": {
+      "sha256": "fe730a6111a76105bd63890163bab8540ed8e5d0d726b254f4346343021f7320",
+      "size_bytes": 8508
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corone/001.jpg": {
+      "sha256": "1f230ce69b15349d85ccd6af77f66f0faa489282deaa5f441cbc2f06a7db0c1f",
+      "size_bytes": 34076
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corone/002.jpg": {
+      "sha256": "773301703506ef5c06f425e4d877f1bfa6a0c7ca71657953ca62b48d6a81a12b",
+      "size_bytes": 24515
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corone/003.jpg": {
+      "sha256": "c92c1b97fa5648e4f01f6640e2b9ab2401d6db932c97ad7b77c43ef3e403cb18",
+      "size_bytes": 109263
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corone/004.jpg": {
+      "sha256": "48bc878a8ff8900a9c3f7ceb2a6a277c4475b700a54b43b1d6b9c7c0d435694d",
+      "size_bytes": 181663
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corone/005.jpg": {
+      "sha256": "dac2b8f8e63c18c188a678cbd17e28326c6ac5005b3b597aef838df88ee6fbea",
+      "size_bytes": 57112
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corone/006.jpg": {
+      "sha256": "a67a6860eb29f288b38e04b5a783f3c71e6132e25111f76456ee09ec1881ed58",
+      "size_bytes": 73113
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corone/007.jpg": {
+      "sha256": "02107000abac57845edd020a2e9b9ddd2038742a82672b5ff2bc042041ee3cb2",
+      "size_bytes": 57038
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corone/008.jpg": {
+      "sha256": "81820748dfb00df1e1071041a4a27e5a1accb2d72d649ddcbf47d4a11d50d662",
+      "size_bytes": 243853
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corone/009.jpg": {
+      "sha256": "91eac2771de35b16871bfad2ff9f033cce8a8f0e2a9afda36079e1076075d70f",
+      "size_bytes": 4447
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corone/010.jpg": {
+      "sha256": "4aff307b9c7601acf74bec74fa3c15aa6acf9c4ba8b7f749813ac63225d6042d",
+      "size_bytes": 89669
+    },
+    "data/raw/inaturalist/pilot_v1/images/Corvus_corone/011.jpg": {
+      "sha256": "77c0b2c628eaeecdb05907649a52da0ecb61924bce5179650d814e226f5a50e9",
+      "size_bytes": 95823
+    },
+    "data/raw/inaturalist/pilot_v1/images/Cyanistes_caeruleus/000.jpg": {
+      "sha256": "d010a3e239b4d98a8591e58a0563c2625ab552e907cd4df4200d097673b0c317",
+      "size_bytes": 89377
+    },
+    "data/raw/inaturalist/pilot_v1/images/Cyanistes_caeruleus/001.jpg": {
+      "sha256": "938a25cf77dc7a48815cf6e664c84622dcf742b142f67fcc37c0c5f4eb197d1e",
+      "size_bytes": 56109
+    },
+    "data/raw/inaturalist/pilot_v1/images/Cyanistes_caeruleus/002.jpg": {
+      "sha256": "c05aa80107a1f0ccec58e1f7cf04187d49a6120146db15957d0943b9db66a114",
+      "size_bytes": 19628
+    },
+    "data/raw/inaturalist/pilot_v1/images/Cyanistes_caeruleus/003.jpg": {
+      "sha256": "86ea1f397658ae89036806f076467f349bb7de46cd8621d3caa3c58c969a6f5c",
+      "size_bytes": 68738
+    },
+    "data/raw/inaturalist/pilot_v1/images/Cyanistes_caeruleus/004.jpg": {
+      "sha256": "aed5c720dfa84ab17a0a5c489c98229e3446bd4cb7d077fe52cc7cdb40355dac",
+      "size_bytes": 34927
+    },
+    "data/raw/inaturalist/pilot_v1/images/Cyanistes_caeruleus/005.jpg": {
+      "sha256": "f538e5d3b910942569a4e6aa3823e7b8bcfd533c531c476fc9554b841fa26c70",
+      "size_bytes": 103465
+    },
+    "data/raw/inaturalist/pilot_v1/images/Cyanistes_caeruleus/006.jpg": {
+      "sha256": "fc02ca95bddf31e9f4117818e35464753604984c2a6bbea228f246dd410b7082",
+      "size_bytes": 16964
+    },
+    "data/raw/inaturalist/pilot_v1/images/Cyanistes_caeruleus/007.jpg": {
+      "sha256": "43e5575b9c20843132fad381228dfa42b6a9caaf3f100e87701bc7efa58b641d",
+      "size_bytes": 163658
+    },
+    "data/raw/inaturalist/pilot_v1/images/Cyanistes_caeruleus/008.jpg": {
+      "sha256": "f1961002106faa40e54b4a59ffbbd2662638eeff3515a953c6a462053bea56c2",
+      "size_bytes": 52529
+    },
+    "data/raw/inaturalist/pilot_v1/images/Cyanistes_caeruleus/009.jpg": {
+      "sha256": "7cb5173f9f54cc3eb4d254ba08809b53df3fc628c5ec607fec7f09ef1196032e",
+      "size_bytes": 17079
+    },
+    "data/raw/inaturalist/pilot_v1/images/Cyanistes_caeruleus/010.jpg": {
+      "sha256": "2121b65aea4556bfd4e195f112ce954bf1fa1c8bde16732e23615d12bc1108db",
+      "size_bytes": 208653
+    },
+    "data/raw/inaturalist/pilot_v1/images/Cyanistes_caeruleus/011.jpg": {
+      "sha256": "f23d837bfabbfc58b129b4a7756fcdc529c12d3e27aeb5cb4136dff0991909e8",
+      "size_bytes": 80729
+    },
+    "data/raw/inaturalist/pilot_v1/images/Erithacus_rubecula/000.jpg": {
+      "sha256": "f0e6f54f63598d4271594bc66eb51e48d72bdb2b14e5c6917065dc6d9888ed99",
+      "size_bytes": 78996
+    },
+    "data/raw/inaturalist/pilot_v1/images/Erithacus_rubecula/001.jpg": {
+      "sha256": "ae0ad06d862dae6816c2f10692e6fbf6456cc77041fcae04fe5334a3f0f050a7",
+      "size_bytes": 98294
+    },
+    "data/raw/inaturalist/pilot_v1/images/Erithacus_rubecula/002.jpg": {
+      "sha256": "4866c9c9304b8c1b8db780efa392831f868069cdd4f90f962cda7699b4795c98",
+      "size_bytes": 71759
+    },
+    "data/raw/inaturalist/pilot_v1/images/Erithacus_rubecula/003.jpg": {
+      "sha256": "287579b85d88713a6026e5a508c5738add29b661f940b0f9fd5cf5ebcb5814cd",
+      "size_bytes": 146451
+    },
+    "data/raw/inaturalist/pilot_v1/images/Erithacus_rubecula/004.jpg": {
+      "sha256": "bda6b370a27590c68a11916b0cb3061c21f061e456fb97b6c641b8ffd6f7e9e0",
+      "size_bytes": 102921
+    },
+    "data/raw/inaturalist/pilot_v1/images/Erithacus_rubecula/005.jpg": {
+      "sha256": "6d66d917b6790642ab2264faf555d170fb3fc7c8bf403c6ef5c25217c83535e0",
+      "size_bytes": 213836
+    },
+    "data/raw/inaturalist/pilot_v1/images/Erithacus_rubecula/006.jpg": {
+      "sha256": "df5080efa1d049a23dc16ac50a7f70bf3ed65bcda3689e7642d9e57db7ab50be",
+      "size_bytes": 115853
+    },
+    "data/raw/inaturalist/pilot_v1/images/Erithacus_rubecula/007.jpg": {
+      "sha256": "7281da0980e351ee29a04322bfc39a6931960c2dd68a31ef640bedd4f6767b80",
+      "size_bytes": 183595
+    },
+    "data/raw/inaturalist/pilot_v1/images/Erithacus_rubecula/008.jpg": {
+      "sha256": "a772cc24ac458e4bf2ba7b9ca766b7fdca8a9137df198d0072519b8058e01cdc",
+      "size_bytes": 250348
+    },
+    "data/raw/inaturalist/pilot_v1/images/Erithacus_rubecula/009.jpg": {
+      "sha256": "4f7cd8ff2f3bd2113fc3ac027369bc4ca1964db7ffdc3ea960b777fe1118865e",
+      "size_bytes": 45739
+    },
+    "data/raw/inaturalist/pilot_v1/images/Erithacus_rubecula/010.jpg": {
+      "sha256": "e869c1efff7fe15a4da2a61252822eb9fda7afc037ad30f629796dd907fbb5c5",
+      "size_bytes": 110393
+    },
+    "data/raw/inaturalist/pilot_v1/images/Erithacus_rubecula/011.jpg": {
+      "sha256": "692b563fdcec9f6b4bbae73737eb611b136386c874d5a4cd8f6978263a470ba2",
+      "size_bytes": 56871
+    },
+    "data/raw/inaturalist/pilot_v1/images/Felis_catus/000.jpg": {
+      "sha256": "75e5ebb93ed42dce657d6a19029369d6f31106b0f3df071d6a7345f8c3d315bc",
+      "size_bytes": 330634
+    },
+    "data/raw/inaturalist/pilot_v1/images/Felis_catus/001.jpg": {
+      "sha256": "be6f79c45d2de37f7f780774930b956c9db6359bbdf9de176e71b0b9d04f2a34",
+      "size_bytes": 108347
+    },
+    "data/raw/inaturalist/pilot_v1/images/Felis_catus/002.jpg": {
+      "sha256": "d50a1d50a0129cefbce839e6e1886aec0da49fa92bda6959a3bc194453a3e5e3",
+      "size_bytes": 72586
+    },
+    "data/raw/inaturalist/pilot_v1/images/Felis_catus/003.jpg": {
+      "sha256": "6495dac81298fc6177fb0e9caff007611a82afd31fb7758435ac63b4e20162c4",
+      "size_bytes": 95631
+    },
+    "data/raw/inaturalist/pilot_v1/images/Felis_catus/004.jpg": {
+      "sha256": "a573ea70729786bb4eef06be62b66d89a7b530479993a76dbc67036459231064",
+      "size_bytes": 93305
+    },
+    "data/raw/inaturalist/pilot_v1/images/Felis_catus/005.jpg": {
+      "sha256": "18bb860037512df135ef8477797701e4ea370c4203e7ce01237a70443f310a65",
+      "size_bytes": 226525
+    },
+    "data/raw/inaturalist/pilot_v1/images/Felis_catus/006.jpg": {
+      "sha256": "e0eef508c1fb72879d6d0fcbcb9369e143354e85537ef28a9c582562a7336823",
+      "size_bytes": 54840
+    },
+    "data/raw/inaturalist/pilot_v1/images/Felis_catus/007.jpg": {
+      "sha256": "375cf948982fc14e5ed3a07bc05a2f81e5d9ee5181c5da4bd8879e0951b3ef37",
+      "size_bytes": 58670
+    },
+    "data/raw/inaturalist/pilot_v1/images/Felis_catus/008.jpg": {
+      "sha256": "b45dcaece33ef3dfbc9a03e15efa0aa112a73de6557da329953b3a14431d1377",
+      "size_bytes": 174613
+    },
+    "data/raw/inaturalist/pilot_v1/images/Felis_catus/009.jpg": {
+      "sha256": "61bc60082431109e313cf569bea458628f23cad04df5ae84b84f53872661c659",
+      "size_bytes": 203652
+    },
+    "data/raw/inaturalist/pilot_v1/images/Felis_catus/010.jpg": {
+      "sha256": "21db312e0e17e30739bfef4364f88ee8687882970e8063285945cd0210085364",
+      "size_bytes": 100302
+    },
+    "data/raw/inaturalist/pilot_v1/images/Felis_catus/011.jpg": {
+      "sha256": "1c6417dd870f863888001d46bd07e718b39be17a0e209a0bd010402edac2b2f6",
+      "size_bytes": 29455
+    },
+    "data/raw/inaturalist/pilot_v1/images/Gonepteryx_rhamni/000.jpg": {
+      "sha256": "c63a05d1c6fab8ebde56dec7991d327063e5dcac25995fc2ce7600d861d7846d",
+      "size_bytes": 218512
+    },
+    "data/raw/inaturalist/pilot_v1/images/Gonepteryx_rhamni/001.jpg": {
+      "sha256": "50e7e40420b5acf19394033b7196657b0567bee98c59f5403654cf87a4d3cd37",
+      "size_bytes": 59394
+    },
+    "data/raw/inaturalist/pilot_v1/images/Gonepteryx_rhamni/002.jpg": {
+      "sha256": "5ad54afb19406c8640219882faac171d82326a85a214b2481bbd7560b5a0da90",
+      "size_bytes": 201832
+    },
+    "data/raw/inaturalist/pilot_v1/images/Gonepteryx_rhamni/003.jpg": {
+      "sha256": "d6495fe42889cc7fb1f5a6977b37892bf5c8264d628019bd443d64fc8578da68",
+      "size_bytes": 135774
+    },
+    "data/raw/inaturalist/pilot_v1/images/Gonepteryx_rhamni/004.jpg": {
+      "sha256": "abf700f9c3a7777d36f2a9fb68caf50d8e56d1052ab691537ed878c5fd56af84",
+      "size_bytes": 76326
+    },
+    "data/raw/inaturalist/pilot_v1/images/Gonepteryx_rhamni/005.jpg": {
+      "sha256": "92618ae33b062df24540c6b9c9a424f128f51d347698960b5e2bd8f65fd1f29a",
+      "size_bytes": 66075
+    },
+    "data/raw/inaturalist/pilot_v1/images/Gonepteryx_rhamni/006.jpg": {
+      "sha256": "3c969951100817a00f981f64340a47990d23e4b231bbb93cdc1fd0ee7c22ea86",
+      "size_bytes": 81308
+    },
+    "data/raw/inaturalist/pilot_v1/images/Gonepteryx_rhamni/007.jpg": {
+      "sha256": "1b603d96646385ccebd3e93e72fcf8f85144f39512f4869068ca007528ab94b1",
+      "size_bytes": 240410
+    },
+    "data/raw/inaturalist/pilot_v1/images/Gonepteryx_rhamni/008.jpg": {
+      "sha256": "b83d67e8a3e77e6cb1977a10b00298cee23ec55de54e988d7df960fa58f5c600",
+      "size_bytes": 126353
+    },
+    "data/raw/inaturalist/pilot_v1/images/Gonepteryx_rhamni/009.jpg": {
+      "sha256": "7634d5118e244a8f59137264c2731020bb5d4167e64962d22d65ee61df456e16",
+      "size_bytes": 129306
+    },
+    "data/raw/inaturalist/pilot_v1/images/Gonepteryx_rhamni/010.jpg": {
+      "sha256": "600dfd909fe2b1aaa02cd7d58f809eec0ef024c0e805a018db0a6e08b6c41057",
+      "size_bytes": 92898
+    },
+    "data/raw/inaturalist/pilot_v1/images/Gonepteryx_rhamni/011.jpg": {
+      "sha256": "329f59644ceef89f1b3e32c099388e463bd23fd560a49be1926ea6483911225b",
+      "size_bytes": 40573
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mareca_strepera/000.jpg": {
+      "sha256": "477a33224f9b339c23845a45a19e28187804a9121122d5f79a7f4196ad210de8",
+      "size_bytes": 56933
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mareca_strepera/001.jpg": {
+      "sha256": "5150bc415514a7111b83105f8084d96dd43559dfe84da2c7ba3fa0cc3e4d2bf4",
+      "size_bytes": 63058
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mareca_strepera/002.jpg": {
+      "sha256": "b156bc51cbbca09c9358fa2081b81815903131d0e64f886ef089720dcdd9b3dd",
+      "size_bytes": 18807
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mareca_strepera/003.jpg": {
+      "sha256": "884e832fcd64017c6c43d73de7af8b8a86fb57b1c5612d2f12049b2141d013ff",
+      "size_bytes": 75204
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mareca_strepera/004.jpg": {
+      "sha256": "c02321b7729572120b2a47fd5b469b0c5fd54faa593ade2a196d40eb35e276ac",
+      "size_bytes": 104311
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mareca_strepera/005.jpg": {
+      "sha256": "bb4397192601398b5fbfb7572fdfbbd80796f35029a5963f50fcde4a858a35fa",
+      "size_bytes": 95441
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mareca_strepera/006.jpg": {
+      "sha256": "f56c2e96f75a4d7b5e755f4986e971b21a14cbc1c1b2afe87044121e06c9b261",
+      "size_bytes": 65128
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mareca_strepera/007.jpg": {
+      "sha256": "10ab4aed6155135462a7b94604d3ca89146de6a2c41778c4fe017199616160e5",
+      "size_bytes": 131436
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mareca_strepera/008.jpg": {
+      "sha256": "991a257e6e3d7bd08ead09703a4ee35637465b59846653f3872f686c28ddd214",
+      "size_bytes": 78575
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mareca_strepera/009.jpg": {
+      "sha256": "5ed7173e84f110d7878ee200183889fe205eb88d78c96bbb3b288caf11ae19b3",
+      "size_bytes": 75881
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mareca_strepera/010.jpg": {
+      "sha256": "2aad345442df75e6d46a59112ea955634890890956db09652937e9b6f99d894d",
+      "size_bytes": 163223
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mareca_strepera/011.jpg": {
+      "sha256": "88f91052135a48568ce6d6963385eec0f1a439657975cc6b064028b7ac69a771",
+      "size_bytes": 74495
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_erminea/000.jpg": {
+      "sha256": "0211bf202ae0a31214b24dae4e6d8ed8b893b416a6aacad92b46e9321845ecf5",
+      "size_bytes": 64797
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_erminea/001.jpg": {
+      "sha256": "f6bd54223f8985da1f2826a772a60f677015c5d6d6f984c4f71271bf717201a1",
+      "size_bytes": 275669
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_erminea/002.jpg": {
+      "sha256": "32b13baaeeab2cd41828c8f11dda918392c44bb494865a22a17ed080030bb36e",
+      "size_bytes": 110126
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_erminea/003.jpg": {
+      "sha256": "8ce928d2f68cee14f7acb6afdef23a8bf9004d4e43edac7ee4f78b60e8905b9b",
+      "size_bytes": 48386
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_erminea/004.jpg": {
+      "sha256": "82b4a488f2e0224ed7312aef305ecde2e28647009bf1ec9a75f71495063e5805",
+      "size_bytes": 97023
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_erminea/005.jpg": {
+      "sha256": "fdef588c2d3f85ec459813a7e81b611330bbff8235a5dacb0004e9c83f58fa70",
+      "size_bytes": 104481
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_erminea/006.jpg": {
+      "sha256": "a63acbb534ed7949103dccc985e368ff17538773f602f9b1434e71d588d4462e",
+      "size_bytes": 152909
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_erminea/007.jpg": {
+      "sha256": "4192502802f4134aeef5d207458d5ea23dce822add6bff14fdb983f853097f57",
+      "size_bytes": 68084
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_erminea/008.jpg": {
+      "sha256": "bb97364329148681e7404b66075482dfef545864b887f8433cedb4f0f223b80d",
+      "size_bytes": 17336
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_erminea/009.jpg": {
+      "sha256": "daba84091d47f69f271a452d78a3c16259b1c7c46686c866222f35938a3f6c85",
+      "size_bytes": 90380
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_erminea/010.jpg": {
+      "sha256": "2b820b90f9fd605881ee42369c1295e7d3cb988d2c4cae3590f77222b0557092",
+      "size_bytes": 69948
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_erminea/011.jpg": {
+      "sha256": "b5126bc20eb5130294d6fe9877ef5f9207125bb0bc17ee122230a3c9d36d32a0",
+      "size_bytes": 105012
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_nivalis/000.jpg": {
+      "sha256": "ce3de0de5ec4da335b60ef79fd38b40756411fcab2b9e9edc793961dc74ddb20",
+      "size_bytes": 89785
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_nivalis/001.jpg": {
+      "sha256": "4b03902c11daef176aa7b3c20b2bf0c1c3b4ae43238ddcde84f9c4dee49b6d61",
+      "size_bytes": 121588
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_nivalis/002.jpg": {
+      "sha256": "2ca019a5da52e4479a5680a08dea38d8bf550f0dc8a38c7ed6f11af7b08aa7ac",
+      "size_bytes": 118724
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_nivalis/003.jpg": {
+      "sha256": "e6f8d086abf71615412e02118a73d1db7e17b9a14e011dd3f635ff616b1bbe93",
+      "size_bytes": 101027
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_nivalis/004.jpg": {
+      "sha256": "8abc326aad264f6c2331c75c595f0cbeb3d070664e5b598a2741799215c80a13",
+      "size_bytes": 165951
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_nivalis/005.jpg": {
+      "sha256": "dfe5aef9866b2f36257f29d19c86466effbfe87f033ac264ffe85e24dd0804c2",
+      "size_bytes": 36257
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_nivalis/006.jpg": {
+      "sha256": "bdfa79b753ad51113e3a060e2b5254d7145da94e89c69b0e870d676b8088bd91",
+      "size_bytes": 108274
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_nivalis/007.jpg": {
+      "sha256": "d3ad21fd567d445a530e85878ff4c96219e4694808503e71ad09ee82f1d70f99",
+      "size_bytes": 17573
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_nivalis/008.jpg": {
+      "sha256": "efb1eacf8b613fb8f2fda7905ddcedf5a4f5ba5adb881975a81ed654807b47e2",
+      "size_bytes": 55464
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_nivalis/009.jpg": {
+      "sha256": "64861875d42364b771dcb5e63ab596ae837d8a3203e4b537f0a2588873429b03",
+      "size_bytes": 72231
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_nivalis/010.jpg": {
+      "sha256": "8072a9efce5f72bdd9b86c69fc1ed791ecf8c959de6099ff63a032513050b0c6",
+      "size_bytes": 100687
+    },
+    "data/raw/inaturalist/pilot_v1/images/Mustela_nivalis/011.jpg": {
+      "sha256": "43dab1fffef4c06626fb5bf9009c5cd6abf877c9f504d126e3f7dcf7c649ecb7",
+      "size_bytes": 156545
+    },
+    "data/raw/inaturalist/pilot_v1/images/Papilio_machaon/000.jpg": {
+      "sha256": "969541ed957874a3d1f86b213233c02f2eefd0dd5851c4525e01c276ccc76908",
+      "size_bytes": 33769
+    },
+    "data/raw/inaturalist/pilot_v1/images/Papilio_machaon/001.jpg": {
+      "sha256": "f5ade94b160133383694e6063e4ad02e798c9b641d02a2e771d2a9348eec8b06",
+      "size_bytes": 48239
+    },
+    "data/raw/inaturalist/pilot_v1/images/Papilio_machaon/002.jpg": {
+      "sha256": "52a0746d2e8267fdbade32d89184bd6dd48efdbb499c6f1ff1589707dd289221",
+      "size_bytes": 110463
+    },
+    "data/raw/inaturalist/pilot_v1/images/Papilio_machaon/003.jpg": {
+      "sha256": "b579231ed05a35966423f0234074cb7484355fcebe52e7a5258d81308ed7fa50",
+      "size_bytes": 281757
+    },
+    "data/raw/inaturalist/pilot_v1/images/Papilio_machaon/004.jpg": {
+      "sha256": "7baa09ece76f4e440266e33d50661f30d6e83e48dd6050bed54aefd12b1b7e11",
+      "size_bytes": 29102
+    },
+    "data/raw/inaturalist/pilot_v1/images/Papilio_machaon/005.jpg": {
+      "sha256": "fb0d602cef8555a6710930db624bef1f33b36173e0b6992f74b2c1d2612795e0",
+      "size_bytes": 15493
+    },
+    "data/raw/inaturalist/pilot_v1/images/Papilio_machaon/006.jpg": {
+      "sha256": "c35450c052fb3902a539faac666cb4dce683b654cac1ce4ac809baae4e244c96",
+      "size_bytes": 296793
+    },
+    "data/raw/inaturalist/pilot_v1/images/Papilio_machaon/007.jpg": {
+      "sha256": "6546f6e30630671e0c80e67002bb3d957f12a284962bd1a19200e5bb88b380b5",
+      "size_bytes": 92580
+    },
+    "data/raw/inaturalist/pilot_v1/images/Papilio_machaon/008.jpg": {
+      "sha256": "44c8599f405fb31c4829f7b07dd913b7f3193920410f1189ffc09e483634325e",
+      "size_bytes": 46839
+    },
+    "data/raw/inaturalist/pilot_v1/images/Papilio_machaon/009.jpg": {
+      "sha256": "f6d573c1c763e1fde25e618442b3b515d67a61113b5d8cba6a65811507d8e0f1",
+      "size_bytes": 25906
+    },
+    "data/raw/inaturalist/pilot_v1/images/Papilio_machaon/010.jpg": {
+      "sha256": "3d1181927921c83dba8af68d49fd67097615ea6c62b79d8134cabca85221147c",
+      "size_bytes": 71355
+    },
+    "data/raw/inaturalist/pilot_v1/images/Papilio_machaon/011.jpg": {
+      "sha256": "dc7a84eba491bc673af0ebf85c8e1facfd6ed8f908c1224709d09dc95045a21d",
+      "size_bytes": 158196
+    },
+    "data/raw/inaturalist/pilot_v1/images/Parus_major/000.jpg": {
+      "sha256": "674d71307e74bb085021d187265e5f41e8aa88154e50984e647fd046a9642a8a",
+      "size_bytes": 76831
+    },
+    "data/raw/inaturalist/pilot_v1/images/Parus_major/001.jpg": {
+      "sha256": "1ee8ab655190d324d47ea6acfade7a9b08ba9f03fa1c45a4a10a63d9b4b707f0",
+      "size_bytes": 88224
+    },
+    "data/raw/inaturalist/pilot_v1/images/Parus_major/002.jpg": {
+      "sha256": "9af41a2f9da53daedb1fd7bf31d1dbb065f858f32ec178d8f48189387426b146",
+      "size_bytes": 90879
+    },
+    "data/raw/inaturalist/pilot_v1/images/Parus_major/003.jpg": {
+      "sha256": "4e23f60bbe9e6d68a413f0ace5d692a04cfdbcbbb0b911e5b4c0ebd6c7b54a0e",
+      "size_bytes": 39962
+    },
+    "data/raw/inaturalist/pilot_v1/images/Parus_major/004.jpg": {
+      "sha256": "22ad73e3ea1d81a46fbd76f453a6c781b50f5155f38a10a2a9bf5173d7a97a95",
+      "size_bytes": 36527
+    },
+    "data/raw/inaturalist/pilot_v1/images/Parus_major/005.jpg": {
+      "sha256": "3fa5ecaf1990e9353d27689e0142d7fa5c81a89b71790318bdab6a4ecf018fca",
+      "size_bytes": 17304
+    },
+    "data/raw/inaturalist/pilot_v1/images/Parus_major/006.jpg": {
+      "sha256": "ee8c85333ea69dfde0ec3d1802447bee6a79f5547b9fdca4c2b2dc940c8fd1a0",
+      "size_bytes": 132263
+    },
+    "data/raw/inaturalist/pilot_v1/images/Parus_major/007.jpg": {
+      "sha256": "d0fc1b45d0cfe0768abbb4a24422bf2fc51358d42b1675088a1def68b2da5715",
+      "size_bytes": 116669
+    },
+    "data/raw/inaturalist/pilot_v1/images/Parus_major/008.jpg": {
+      "sha256": "55abaedeffb9ac76a7b0d3b7a414732c2ae1d9bae2b7c2ec678739b1570c9653",
+      "size_bytes": 127031
+    },
+    "data/raw/inaturalist/pilot_v1/images/Parus_major/009.jpg": {
+      "sha256": "3f0c4cc09c6074c2ae1f04b90ac76172250f7d01a79a6d9eea30b542f825a97e",
+      "size_bytes": 192145
+    },
+    "data/raw/inaturalist/pilot_v1/images/Parus_major/010.jpg": {
+      "sha256": "23dc2d428fdc194f58aa01eec79735a543344f4b70cd0baf72f349d79639d546",
+      "size_bytes": 76735
+    },
+    "data/raw/inaturalist/pilot_v1/images/Parus_major/011.jpg": {
+      "sha256": "7de04dcbd242b220fd9d07b9bd6da9fc262554a8c1e8af1b0ee3d985b5408084",
+      "size_bytes": 128239
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_domesticus/000.jpg": {
+      "sha256": "e597a74f61fe651aef08b96264f071c96425558329b1d0f88be2badc868d34fd",
+      "size_bytes": 54157
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_domesticus/001.jpg": {
+      "sha256": "9950b6eecebaa718ac7b79123a0829204324cc521afc4b21d87080ea11015e1b",
+      "size_bytes": 180363
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_domesticus/002.jpg": {
+      "sha256": "b8ce3b09dfa92ec9a5a484fd2357051875c8dae1e3d3e5d5f8a87d2c5eb8c141",
+      "size_bytes": 75927
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_domesticus/003.jpg": {
+      "sha256": "fef7f8e2e7981aa32116a20a3b9d6020e181b38a9d72e8987c7f59dabc26cb90",
+      "size_bytes": 64342
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_domesticus/004.jpg": {
+      "sha256": "5688d8fcf8a969891bd7b8e9c7a06fdf071048569336e719a25c831b91010e40",
+      "size_bytes": 55226
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_domesticus/005.jpg": {
+      "sha256": "d0039b3c102f3404aff64cded9e3453b09bbb48cdc2ec58bb96deaebb66936f7",
+      "size_bytes": 210541
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_domesticus/006.jpg": {
+      "sha256": "f4155d9d376da8935293862734a4cc93a344c0cf5e35cf936b8bb734f7b52019",
+      "size_bytes": 129383
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_domesticus/007.jpg": {
+      "sha256": "b1b7b0197e41858d7c6e65644a555c13a801014a49e5946bf6131dfd9650c352",
+      "size_bytes": 49087
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_domesticus/008.jpg": {
+      "sha256": "f81744ef9c1b5ec3ea4932ed18515d202385c19d8c8a888af40c6feabd9a0420",
+      "size_bytes": 54125
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_domesticus/009.jpg": {
+      "sha256": "6bd015abe1e4be53ac029fa161c204ad986f3432216c41ce0bb942f094d94fbc",
+      "size_bytes": 88116
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_domesticus/010.jpg": {
+      "sha256": "fd47a716fc9b4cf7a23f1fe7faebc26f3850a75f0602acc47ce2c14458067d9f",
+      "size_bytes": 34993
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_domesticus/011.jpg": {
+      "sha256": "bb9b7160283937f7887ad31369d086c50af46b323423e03a13d5760045986e3d",
+      "size_bytes": 441544
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_hispaniolensis/000.jpg": {
+      "sha256": "e02b74dadcefcaa40e22315e51d002a1ae1f9328807fe6a578fbe3d6d2a8e4e5",
+      "size_bytes": 155134
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_hispaniolensis/001.jpg": {
+      "sha256": "b022bc8bd73f46873f96f98928b160cc8773fa58be9cba213cef8238025752ac",
+      "size_bytes": 56631
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_hispaniolensis/002.jpg": {
+      "sha256": "e84dc2efc6eed0e08f259de880955e8dee41d967b666cd5cd3a25b9fd1f44d9f",
+      "size_bytes": 143332
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_hispaniolensis/003.jpg": {
+      "sha256": "651c83b85036227a3a42d33a5bbe819e4425fbafdfdfc2a362974c0bfd38b355",
+      "size_bytes": 204726
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_hispaniolensis/004.jpg": {
+      "sha256": "3f89985235ebc16cb7597f45ee9a7130cab382cc8c165eceb9ae3b68fa86ac27",
+      "size_bytes": 127947
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_hispaniolensis/005.jpg": {
+      "sha256": "abd1265f009bfdb2db6e3f284548ba35f86a2290a2e87ee65fae72d3ddc804ca",
+      "size_bytes": 63641
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_hispaniolensis/006.jpg": {
+      "sha256": "dd55bbae625c8d04468aa8c213434f29233439706f54ae3ab80564f27822c3f7",
+      "size_bytes": 92260
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_hispaniolensis/007.jpg": {
+      "sha256": "66af579a908a932408b9479cda40685813e7a98a6b516268c8fc4daefaa1a938",
+      "size_bytes": 28372
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_hispaniolensis/008.jpg": {
+      "sha256": "d1a2ab7621c4e0db80324e24ea4cf5390bbae122e691a12b15c445464a17b65d",
+      "size_bytes": 99164
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_hispaniolensis/009.jpg": {
+      "sha256": "ad6f7a6ee4e23ab0d6cdaeaeda85ab4af1369e5b4dd485b06815aff77b47f4a7",
+      "size_bytes": 175511
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_hispaniolensis/010.jpg": {
+      "sha256": "d46cd170330ff6019103ee508c4d8abda28c513f8b0f3ec3f78b7c25197f38f1",
+      "size_bytes": 56005
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_hispaniolensis/011.jpg": {
+      "sha256": "48700ab9219cacef10c4a2a46ecf335fc07dab92d71fdb33f739f0009a5074ff",
+      "size_bytes": 35767
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_montanus/000.jpg": {
+      "sha256": "68092aa2189573b4bfa23f8d4cf1e7a1f5460d906d864e24f4b063c5acc8dd46",
+      "size_bytes": 91161
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_montanus/001.jpg": {
+      "sha256": "1ebc9b7d118e2d28c4778fcb33113114cd3a092eceecd02bef5ab99677635e12",
+      "size_bytes": 74309
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_montanus/002.jpg": {
+      "sha256": "140b64ebb66b3fd1986651bb1293f513a0b59ffcf4be61d40d04a4878a535c20",
+      "size_bytes": 31885
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_montanus/003.jpg": {
+      "sha256": "c44dae27645b381089f3b91809af0b4549ac8e56cbc972ebf66afc2428a7da78",
+      "size_bytes": 130025
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_montanus/004.jpg": {
+      "sha256": "c27e1d01bd5c6742499abe87adff31f1d8608aec1b12f2896a6d250f8ec22faf",
+      "size_bytes": 19091
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_montanus/005.jpg": {
+      "sha256": "7c84e1115bfe31250fcb5ccbb41a7a82509620f326676231601a8732339e73c6",
+      "size_bytes": 32037
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_montanus/006.jpg": {
+      "sha256": "89630271162e229aa5cc74903c21a2852e9fc2db88c290db06270f968335559a",
+      "size_bytes": 75848
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_montanus/007.jpg": {
+      "sha256": "0b61829f5c15194509e16e6784b052e5d48af9683398ceddb3a71f6e3b1a5bc2",
+      "size_bytes": 91748
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_montanus/008.jpg": {
+      "sha256": "f0dd66c44626f785a64b92b4e2f86b4b014e81f095f8e4e8fb999975c55ac9b5",
+      "size_bytes": 126888
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_montanus/009.jpg": {
+      "sha256": "20dd09c71b1a0440884faece9de7e931cd4ac365bb3cc5b453d63c150ee8238d",
+      "size_bytes": 59578
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_montanus/010.jpg": {
+      "sha256": "2f681df5153a0588103375c9b79bff3562fa56c45c77046bfe2512e8cfe5d58c",
+      "size_bytes": 63262
+    },
+    "data/raw/inaturalist/pilot_v1/images/Passer_montanus/011.jpg": {
+      "sha256": "60b44cd2c37e89e8f2cbbb1fe6c58b7f83ffa891aea3048515eb943c6d9954e3",
+      "size_bytes": 50030
+    },
+    "data/raw/inaturalist/pilot_v1/images/Periparus_ater/000.jpg": {
+      "sha256": "bcaacfb60396fd40a51137504918d3e0df089ae847beef1ba0f457c4040e3517",
+      "size_bytes": 37614
+    },
+    "data/raw/inaturalist/pilot_v1/images/Periparus_ater/001.jpg": {
+      "sha256": "42842d037a85e9b6b7383c95efb8a8dd1c5f7e26c4f2dc233842d99caea52fe0",
+      "size_bytes": 41296
+    },
+    "data/raw/inaturalist/pilot_v1/images/Periparus_ater/002.jpg": {
+      "sha256": "b2a3b06c3d6786b7e3eead32ca536ad37ff137ce320e8f7e33eaa2d4fce73062",
+      "size_bytes": 43449
+    },
+    "data/raw/inaturalist/pilot_v1/images/Periparus_ater/003.jpg": {
+      "sha256": "d0a632ffc773395508181188b5fd93765a75d226465096f978d20b6d2ac2e57b",
+      "size_bytes": 158384
+    },
+    "data/raw/inaturalist/pilot_v1/images/Periparus_ater/004.jpg": {
+      "sha256": "ff5c1f741c0515961fdeda73d312f256456d9e9d8884f8c0672c9f18a8f88da3",
+      "size_bytes": 45406
+    },
+    "data/raw/inaturalist/pilot_v1/images/Periparus_ater/005.jpg": {
+      "sha256": "aea9a792949cdff4d696aa9bbb24da8d5ada42e022a0572d345ea959c6189921",
+      "size_bytes": 168080
+    },
+    "data/raw/inaturalist/pilot_v1/images/Periparus_ater/006.jpg": {
+      "sha256": "c3a025bba2e369fa7185aa1ace05465a8ab54d8fdf6f687b4cf867f85c439736",
+      "size_bytes": 52861
+    },
+    "data/raw/inaturalist/pilot_v1/images/Periparus_ater/007.jpg": {
+      "sha256": "5d8da9c3c9192f71f38885b548e7b15877ba0375af4e7796d77b1aff042bd139",
+      "size_bytes": 51601
+    },
+    "data/raw/inaturalist/pilot_v1/images/Periparus_ater/008.jpg": {
+      "sha256": "50c434a976360dc175404fd09705f1f4161ccae189a9c887d135b892e973c6ec",
+      "size_bytes": 47501
+    },
+    "data/raw/inaturalist/pilot_v1/images/Periparus_ater/009.jpg": {
+      "sha256": "f179b30abc64e3db5b252a77aa575fe6265554be9ae1d8b19f800e22ce6d47fc",
+      "size_bytes": 48104
+    },
+    "data/raw/inaturalist/pilot_v1/images/Periparus_ater/010.jpg": {
+      "sha256": "380f53471a998a563f0104b7eb349e7a8230825b06a5ac09aef41c1dcace2bb6",
+      "size_bytes": 61729
+    },
+    "data/raw/inaturalist/pilot_v1/images/Periparus_ater/011.jpg": {
+      "sha256": "82f29d9667fcf832d041f95e188854a3c0e6fcd9d70690300e1f62250d842042",
+      "size_bytes": 113845
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_brassicae/000.jpg": {
+      "sha256": "543b75abf79107d7b00c94d340cc8c5af7ea19f99fe29b87a6a8cee7ced6c9fe",
+      "size_bytes": 206274
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_brassicae/001.jpg": {
+      "sha256": "9b253e417badfa66a5f132ae610020baa63f15f7b2f5e16475670cc76820cc34",
+      "size_bytes": 141617
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_brassicae/002.jpg": {
+      "sha256": "ee39c1372a95bbebdc9dffd5b956743c3378b271efd50a6a12f84a9aee858a30",
+      "size_bytes": 80995
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_brassicae/003.jpg": {
+      "sha256": "117c5e9cabc5964bf9f8d75b5dc73ec0582ddbdee9e29e72e4795e7488fdaf88",
+      "size_bytes": 95179
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_brassicae/004.jpg": {
+      "sha256": "e7ee24e4644e10707bf59ddd6f67f3d87a7b9b0b83681a5c346ff27da2e1d9a5",
+      "size_bytes": 48551
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_brassicae/005.jpg": {
+      "sha256": "e742423487e4cab3e0c35ede5c7aaf9da1f082b37cb293f465ec50293cbb3883",
+      "size_bytes": 46018
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_brassicae/006.jpg": {
+      "sha256": "ff706901727eb2f2a9fc6d616196eaacdc714447020c5bc8f567322ea225f4fa",
+      "size_bytes": 38857
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_brassicae/007.jpg": {
+      "sha256": "3ddb3138ba3c5ff45012bb19888fc8497c542cc2acab0fe1ca9eff7e1bf5a0f6",
+      "size_bytes": 23886
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_brassicae/008.jpg": {
+      "sha256": "0b1db8c68a5267a18aa77db53f777557f6deed53032efcbb4603820fd61f900c",
+      "size_bytes": 24170
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_brassicae/009.jpg": {
+      "sha256": "84f436b2d478626e46aeb0811059eaf8f8c241391ee13ec2bebceba79265169e",
+      "size_bytes": 26358
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_brassicae/010.jpg": {
+      "sha256": "aeae32d42796e65e3f7e138bd8e17274043359c646a4969b6f7fa67a2447a641",
+      "size_bytes": 49399
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_brassicae/011.jpg": {
+      "sha256": "9166940afc080f17fb8e7feb586e3031062e2d1f91260dbb23113baf2abe2a49",
+      "size_bytes": 56559
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_napi/000.jpg": {
+      "sha256": "c2e2f39977ff0dbdff282909444e5c88524eafeb97977fe986b1bc946f5f462f",
+      "size_bytes": 176905
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_napi/001.jpg": {
+      "sha256": "2aac431e4b34d0935e660e309cf34fa7fd78a096dbfc813670517dca0546d1ac",
+      "size_bytes": 65339
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_napi/002.jpg": {
+      "sha256": "43068e12b5835a94365d36f272c775b0bd0ac62774e706171d03b9ae7429a412",
+      "size_bytes": 160790
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_napi/003.jpg": {
+      "sha256": "6615844143651800820b29f8675ab22bfd776c87bc4b6d859a5c4f29d9fd8d89",
+      "size_bytes": 126932
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_napi/004.jpg": {
+      "sha256": "53c1c73afb5f047a6b89096179871b7ca511fee5d3010e2591d5788de2deb7f0",
+      "size_bytes": 62881
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_napi/005.jpg": {
+      "sha256": "3b70adc39b95552ba5bbe499c7bc425ffc94b8594a61287db14d833fc0073657",
+      "size_bytes": 78058
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_napi/006.jpg": {
+      "sha256": "fb9faa5b2434ec57e143febb649b8230b951f1789dd05c4d2c9b281fd03e9ae8",
+      "size_bytes": 150533
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_napi/007.jpg": {
+      "sha256": "c2ca3784056348caa788674d72a2d1422d5fc76ae4b6f6296b1fccd469fe3f9a",
+      "size_bytes": 75275
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_napi/008.jpg": {
+      "sha256": "977c0841442f3f99bf8af86dd0ba10a64fa0ada1f41a6d8a941de317d435317b",
+      "size_bytes": 64873
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_napi/009.jpg": {
+      "sha256": "3b01b1632b2dd7ec2958ffe071c71d7ac14361ceecbe1f6a7de70b383e821c1c",
+      "size_bytes": 52469
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_napi/010.jpg": {
+      "sha256": "efec07583c820da65b0c3a810565beb325d60c33b325cf0e76feca3d0e8f068a",
+      "size_bytes": 44873
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_napi/011.jpg": {
+      "sha256": "4f2ee5047b7622d95424436a8a78be106096234d6db00ed57040f4ba91d67c4e",
+      "size_bytes": 37843
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_rapae/000.jpg": {
+      "sha256": "9476819659b196b5ecf8b0dacfa40844d5109999971aa4fc04105ec38b923354",
+      "size_bytes": 285971
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_rapae/001.jpg": {
+      "sha256": "da95f8b08684debef3f9ef2b26b1c2a9ebf1a87dae0dea1b2c9f6ffdbbf99085",
+      "size_bytes": 58132
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_rapae/002.jpg": {
+      "sha256": "a70f1490ee81b6871dffc4e854eaf1f408c35621d5c83c2f410000b9085aa516",
+      "size_bytes": 54359
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_rapae/003.jpg": {
+      "sha256": "3b4f764f51ac3b8e629cbd6098032ea26f97f7e89a7d05a7f4af48e964024e12",
+      "size_bytes": 48178
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_rapae/004.jpg": {
+      "sha256": "c9b887ce157593e70a4891ce67c928fc6f52c2b3decd87a86332a4b5e79662c8",
+      "size_bytes": 30542
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_rapae/005.jpg": {
+      "sha256": "e78961a08d9b72391dffbf483eea865c3a9a504d942376e21a54f8cd1677718b",
+      "size_bytes": 238805
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_rapae/006.jpg": {
+      "sha256": "c839610a023b3778f0e94cd0eac4a218648830f1b1c88a7bc4d324af2d35aa42",
+      "size_bytes": 41925
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_rapae/007.jpg": {
+      "sha256": "0bacd27ee6adcbcc19ef3827fbef702478903786f821cb4cf03325dc3fa6b115",
+      "size_bytes": 39245
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_rapae/008.jpg": {
+      "sha256": "3a0736a180d2734a4008bb2fa7e96c4f595e1c944b17fc99a1f8c406b4abe96c",
+      "size_bytes": 25511
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_rapae/009.jpg": {
+      "sha256": "680ff17c8940dff40579bb5bdfb05f8221d56d85d5942bb07d601a7b1b975350",
+      "size_bytes": 35960
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_rapae/010.jpg": {
+      "sha256": "efcc4f47dc4514ba6aa6d0c8901f197631ab191cc9de1c9b274a1b42a5ead14f",
+      "size_bytes": 236468
+    },
+    "data/raw/inaturalist/pilot_v1/images/Pieris_rapae/011.jpg": {
+      "sha256": "56db7be8e4094b574f5408071abe2457c1e815087002f141b53d0c86be9c99c0",
+      "size_bytes": 58527
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_montanus/000.jpg": {
+      "sha256": "d227ff2ea7cac3f79348cac1cbbd836cefb31f7585d553fd35134f810e117d05",
+      "size_bytes": 64428
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_montanus/001.jpg": {
+      "sha256": "641d610051836232c5f83c493ede78be90c44c56d828eb7a246cac8c54804f64",
+      "size_bytes": 191266
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_montanus/002.jpg": {
+      "sha256": "d6028890952c413c094af1870b032fda6359a3017bb211c6d356e78c091ed0bf",
+      "size_bytes": 40421
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_montanus/003.jpg": {
+      "sha256": "59a9d8474f324320d6faf56e5f5fc5c4fb7fa8b97d9ed847942115fc4d665099",
+      "size_bytes": 220983
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_montanus/004.jpg": {
+      "sha256": "c89472f5cfe01f146e0a439749c61d4d6c860c364766658f240c2724c97f7bde",
+      "size_bytes": 47528
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_montanus/005.jpg": {
+      "sha256": "addc9ecab7c2c2b81cd8d94a255108a436d1c901dc72c792bbc001dbca4b060c",
+      "size_bytes": 147562
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_montanus/006.jpg": {
+      "sha256": "8af8f8151bf446aae48ddd4c9cbe146a6dcc591cc80c9752e9fb3f86fae6dc96",
+      "size_bytes": 82161
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_montanus/007.jpg": {
+      "sha256": "22db3724730120cd556770868eb5050941dba7f248d3188929f7d0e4b19d1a03",
+      "size_bytes": 41426
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_montanus/008.jpg": {
+      "sha256": "f86105d8d722f446fb992719bc3d8b616fbb71d358edee12f94d95106e3ae4fd",
+      "size_bytes": 83148
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_montanus/009.jpg": {
+      "sha256": "a85423837773e4203356bccdbf27e5c6fbf2fd4f741080905c5f8d7cbd4e1923",
+      "size_bytes": 80000
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_montanus/010.jpg": {
+      "sha256": "943cff2dee9a6e8e86cbc384ed00fdb0ee405e5623a863f2909a99be98b068d7",
+      "size_bytes": 163254
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_montanus/011.jpg": {
+      "sha256": "2fa2e2a2c314f14b460e2f75bb748840c8137a3b7e473c8a4ed1a7c903fcdf10",
+      "size_bytes": 98408
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_palustris/000.jpg": {
+      "sha256": "8a2c49824f03b95cd72953b6f7f54435a2d8f90251d66cd44566724190f765c0",
+      "size_bytes": 35396
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_palustris/001.jpg": {
+      "sha256": "84914b0b8e5b8df87a2d6ebb456a3f096251875b4a983b099f5921fdb16972d4",
+      "size_bytes": 40234
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_palustris/002.jpg": {
+      "sha256": "03852f03257e8dd763171bd4c9e981857532d0fdfd6b336fffd32e5f9fcfe9d1",
+      "size_bytes": 88930
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_palustris/003.jpg": {
+      "sha256": "63e9a865de73b031c360056b3a6becebc2278742417446a80dba4389889b0274",
+      "size_bytes": 27830
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_palustris/004.jpg": {
+      "sha256": "64ef9533a8dfa08728accb2245fc7d82a34a39e4c3db3268026fc2761acf0ff0",
+      "size_bytes": 115852
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_palustris/005.jpg": {
+      "sha256": "8e1293f1e216f6a602bde087bb75d80d7ba148c61bc0faa6c9df8272358392fa",
+      "size_bytes": 31170
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_palustris/006.jpg": {
+      "sha256": "f24f76255b9f6238ff449239a2532098903e9a95332e8e0f13eb9d38bf15c0fd",
+      "size_bytes": 38541
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_palustris/007.jpg": {
+      "sha256": "547127c853d4c7a300c157b60399b5aaeb408f007727f10639111dad3875b2cf",
+      "size_bytes": 13240
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_palustris/008.jpg": {
+      "sha256": "25793bfdde5c0e365f0a88be4bc3f54891ff83cb4c06a241596ef473b484fd44",
+      "size_bytes": 69223
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_palustris/009.jpg": {
+      "sha256": "b287758ba155781a9f862d566f4dddb20bc99418b7fcd25790148551b8163fdf",
+      "size_bytes": 79728
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_palustris/010.jpg": {
+      "sha256": "c51bd326a7c3c1d217cf91aaa6334ff1cc01102b7808c4fbf6620a1ff55d73cc",
+      "size_bytes": 108876
+    },
+    "data/raw/inaturalist/pilot_v1/images/Poecile_palustris/011.jpg": {
+      "sha256": "90a27e1ee31f5788ccd48977313d0e3ded97093ff8ca29a5324d5a078dbf915c",
+      "size_bytes": 98701
+    },
+    "data/raw/inaturalist/pilot_v1/images/Sturnus_vulgaris/000.jpg": {
+      "sha256": "5d00dee510975e1e5ace4a7343f0400bea8816f5246b8dc48d75e1addcea3b3d",
+      "size_bytes": 32132
+    },
+    "data/raw/inaturalist/pilot_v1/images/Sturnus_vulgaris/001.jpg": {
+      "sha256": "21edf8e7b65fdeb8d918232d1ba7a62297b189744d49923cebf1ec3ed4543234",
+      "size_bytes": 93981
+    },
+    "data/raw/inaturalist/pilot_v1/images/Sturnus_vulgaris/002.jpg": {
+      "sha256": "b47e8b521c32b04962a622b1ec20afae47bd6d263beb5d627402ffb6d3b95c34",
+      "size_bytes": 42104
+    },
+    "data/raw/inaturalist/pilot_v1/images/Sturnus_vulgaris/003.jpg": {
+      "sha256": "3f621e1a5f384440d70f258dfd8d43cad65069aa9e3c1d0ddbc046af50e040a2",
+      "size_bytes": 114482
+    },
+    "data/raw/inaturalist/pilot_v1/images/Sturnus_vulgaris/004.jpg": {
+      "sha256": "0bc4c7d029f038169ce734300bde0f20b055f33f8275d9628e01b6556a644b65",
+      "size_bytes": 76925
+    },
+    "data/raw/inaturalist/pilot_v1/images/Sturnus_vulgaris/005.jpg": {
+      "sha256": "7239520f61ffe77688bd7c6a8452935dde51e28beb9c607b657423d1ea07d145",
+      "size_bytes": 60631
+    },
+    "data/raw/inaturalist/pilot_v1/images/Sturnus_vulgaris/006.jpg": {
+      "sha256": "d864b1f4d5b8c2abf8b92fdaabdab666147a5b3e06be4563ad235cedd22546ce",
+      "size_bytes": 45013
+    },
+    "data/raw/inaturalist/pilot_v1/images/Sturnus_vulgaris/007.jpg": {
+      "sha256": "cdb18babd8fe55af26dd027c6d4bc162ed9e93b6517e1b3e20fe2cb1710d5046",
+      "size_bytes": 72481
+    },
+    "data/raw/inaturalist/pilot_v1/images/Sturnus_vulgaris/008.jpg": {
+      "sha256": "46678126eaab1d27eb88337da2937f9be5a2bcdd277deaa34d521933068ae5c1",
+      "size_bytes": 141872
+    },
+    "data/raw/inaturalist/pilot_v1/images/Sturnus_vulgaris/009.jpg": {
+      "sha256": "568cfe0323b0bdf7ca034c9adb1d1598fb64bd0d248e622d3118905c51c4ee4a",
+      "size_bytes": 67835
+    },
+    "data/raw/inaturalist/pilot_v1/images/Sturnus_vulgaris/010.jpg": {
+      "sha256": "905eed7a0308106c378a1069fc465463f7da2eaffc44b4f9c77fcaadfb83f348",
+      "size_bytes": 69087
+    },
+    "data/raw/inaturalist/pilot_v1/images/Sturnus_vulgaris/011.jpg": {
+      "sha256": "4d0999c98498bc795ff748bc4e39f68bac683f204d2bd87090d5d41b44e4dbef",
+      "size_bytes": 81057
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_merula/000.jpg": {
+      "sha256": "e4e41cffef37bb706e75c9c94e4ca04ece8af6e43cb3b1ad7989eedd58da0629",
+      "size_bytes": 16810
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_merula/001.jpg": {
+      "sha256": "f1d32fd4dd17333aa62a4e0ed26521cd7c9014b4d359577749e9b6ba9492cf99",
+      "size_bytes": 74185
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_merula/002.jpg": {
+      "sha256": "c586867048a732ec5d56d786af23aea64607d0c25e102539b14936e6dbd5245c",
+      "size_bytes": 81979
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_merula/003.jpg": {
+      "sha256": "594e8eac82d30fdb63992d12f6a8870fc4ad37f38bb41d8d861ea8a1b652bc5e",
+      "size_bytes": 66375
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_merula/004.jpg": {
+      "sha256": "82d13dd17e1f68a84f773fc935743604a5a7d0f3d112f6bc612453c6f2efce03",
+      "size_bytes": 230314
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_merula/005.jpg": {
+      "sha256": "51c57cb9fb96c7288710de2a64125a62bccd8dfbd373d19feec28371f41ff617",
+      "size_bytes": 137350
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_merula/006.jpg": {
+      "sha256": "0762c12cb8affcc532e5893c6726dbd0635ff526f33ffaaffe631389c67ee495",
+      "size_bytes": 89185
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_merula/007.jpg": {
+      "sha256": "d74f0e4ec6088e811787bfb7b3a4e29bd1249cb331f618e1fa98a114552146d2",
+      "size_bytes": 93677
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_merula/008.jpg": {
+      "sha256": "ba2882ab975918af941ffe3643d2dfa7b3183b3811aded418efa50bb06df6968",
+      "size_bytes": 273315
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_merula/009.jpg": {
+      "sha256": "96ef083e5797ca0dbb6e22e73dc9db525739acf3d142a2a73ce7b272811684cc",
+      "size_bytes": 121238
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_merula/010.jpg": {
+      "sha256": "0714070ca15ac83bafd95bdb08cd3230521dc1805fb8b6630f140d117616bda2",
+      "size_bytes": 297937
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_merula/011.jpg": {
+      "sha256": "0a1f3edabf1762e996f5f49371e0ecd32f01618e4cdf067a281e741daec7f03e",
+      "size_bytes": 22790
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_philomelos/000.jpg": {
+      "sha256": "f398c5ac0cbfac37bc7a20fea83b69a754ba7ccf01e92b2caaffb0aa5e5c40c1",
+      "size_bytes": 102076
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_philomelos/001.jpg": {
+      "sha256": "698f73885807c0393f98a2e10263f7846f54351bf579c35f912d2c9ef9c495ac",
+      "size_bytes": 76434
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_philomelos/002.jpg": {
+      "sha256": "93bab59971867afa7156290da1c8acc16267cf35689fe5f7ae5f6e6d73d11e20",
+      "size_bytes": 241015
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_philomelos/003.jpg": {
+      "sha256": "f4fa6060dfad2c55fd968f43d625d39a246b4eec013081d94e9fd9a70bbb2ebc",
+      "size_bytes": 89060
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_philomelos/004.jpg": {
+      "sha256": "0f306594729e4ed6b9ca2dd606f6048c0393849f47d9bf5af81d3d3c5334cca3",
+      "size_bytes": 50001
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_philomelos/005.jpg": {
+      "sha256": "434ff2876e2dc3945a9c0f13cda0d152005b1b5af7fd63fda0c182276e560de5",
+      "size_bytes": 66288
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_philomelos/006.jpg": {
+      "sha256": "80dfc0685c7bb39565321462d4600ea153a20e06b0f010354f01eb0ce99f7de4",
+      "size_bytes": 104974
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_philomelos/007.jpg": {
+      "sha256": "184188ff727df1ec4dc6a30a6c6b9d29b0447abfcc52390bcd4c3050da3b5024",
+      "size_bytes": 89737
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_philomelos/008.jpg": {
+      "sha256": "b7aef805bbf7cadbcaf7398a1f61009c292f0f3069fe83b8111f067f9a482662",
+      "size_bytes": 244856
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_philomelos/009.jpg": {
+      "sha256": "4307e175f9df316d6fa83d4e8daecfa27b9b4e79d2e012eb529a03b784f7a055",
+      "size_bytes": 147836
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_philomelos/010.jpg": {
+      "sha256": "4ebbfb34b1848cb99590c09f6418869c25000e2cf536602f8a2e8b9f75ef851f",
+      "size_bytes": 43871
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_philomelos/011.jpg": {
+      "sha256": "dacb181e497ec29d52adffd7015c4d61a7bd1986a1b580c8338be62aac1e0e97",
+      "size_bytes": 189125
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_pilaris/000.jpg": {
+      "sha256": "03dae298b73eef9d15fe4e00e77d466329184868b2064b7b5e7ec42ab0b9cef4",
+      "size_bytes": 22356
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_pilaris/001.jpg": {
+      "sha256": "87503bc574b06278ebc22998242cd27a526b6671e8937b2eca292f7248f7355f",
+      "size_bytes": 66848
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_pilaris/002.jpg": {
+      "sha256": "2c2f79c7f4cc99c8c3cd9f4ac1a7e0ddddb78a59b5ac8148454e654c2562c5f7",
+      "size_bytes": 10841
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_pilaris/003.jpg": {
+      "sha256": "0ae6a50ae2a0096386ed71f97bb5dffb64724c588241b3fed0df7c192231637a",
+      "size_bytes": 131367
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_pilaris/004.jpg": {
+      "sha256": "8eb0e246a36ac70a95fd32c749a16d8dbece301a4d482f837cf6cb597afbc1e7",
+      "size_bytes": 23838
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_pilaris/005.jpg": {
+      "sha256": "3288cb91197a5687b3088371d2f275fe2842587071d13aad79050b3116b6450a",
+      "size_bytes": 57068
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_pilaris/006.jpg": {
+      "sha256": "d06377a202b118cb0c6c7ee14edeb8715d24e9d98936198f233a4436b9ad0f03",
+      "size_bytes": 89193
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_pilaris/007.jpg": {
+      "sha256": "7a3fb6c0ffa2055c54600c14eee2bb248e878a186ae296b04876648b86923e0f",
+      "size_bytes": 74403
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_pilaris/008.jpg": {
+      "sha256": "4c436577d7fbb97c588ed5865ecde827ae96b6a9574c07273e3a630500c68cb6",
+      "size_bytes": 141028
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_pilaris/009.jpg": {
+      "sha256": "45aeb478f2a659a413fd889a4dac53cdb4dad1ca62497345749a0ed2a15e8217",
+      "size_bytes": 54930
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_pilaris/010.jpg": {
+      "sha256": "7e5cc08f34574262e633f5af4241a19dd06681d0c801c55c8f4e6b6149e2460e",
+      "size_bytes": 154962
+    },
+    "data/raw/inaturalist/pilot_v1/images/Turdus_pilaris/011.jpg": {
+      "sha256": "a273dfc29f6d87a034c25c8737c66720b60968b4cd369e446f28adca97a19bde",
+      "size_bytes": 126190
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_atalanta/000.jpg": {
+      "sha256": "7a9251d60bac906ade52c8aca68377debd206cdf716a852093d112e61a19b112",
+      "size_bytes": 91525
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_atalanta/001.jpg": {
+      "sha256": "fa50451f2cb18728b7c0b482ea843f7a14907fb67e09f61c5b91b178d9590ccf",
+      "size_bytes": 49706
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_atalanta/002.jpg": {
+      "sha256": "0fa91315da12117a9614f37c004789ef9f26a28ea4fe905f5297ccffb18abbb2",
+      "size_bytes": 39162
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_atalanta/003.jpg": {
+      "sha256": "ba1b1d31598ca2b37f62f0d3c7073b3b32eb03ab3f8ebf0f8b7f9950dadcea45",
+      "size_bytes": 294694
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_atalanta/004.jpg": {
+      "sha256": "0aa76b2893eca5e2a0ea246ee90a72ce492c9b3b7d87d63e0c01e730b4d6deae",
+      "size_bytes": 104951
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_atalanta/005.jpg": {
+      "sha256": "dd0b3cd423ec02a72a4810e0357d2b9a0d7692cdd13d1c2376f9f3070db0bdb6",
+      "size_bytes": 158296
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_atalanta/006.jpg": {
+      "sha256": "ccf9ad559a7cadd8fd9fb91eee362e9502de1e23b62bb342c18757505d687749",
+      "size_bytes": 250213
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_atalanta/007.jpg": {
+      "sha256": "4a5a28b6ed7315acc283e97ac126776d1601b3922dc17af2705a7701586903df",
+      "size_bytes": 43938
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_atalanta/008.jpg": {
+      "sha256": "44dbfa9f416a48b4eacdc233dc84939c40bb0d4287201056750888b26840196a",
+      "size_bytes": 140602
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_atalanta/009.jpg": {
+      "sha256": "2ee92b85c5d81963981384dbbbcb8a31e7a3c1152845491e1b070ce271d49463",
+      "size_bytes": 44845
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_atalanta/010.jpg": {
+      "sha256": "72855b88466dfa3831026e1ee85148a0b956a34ac662e95faf8590e4ed72bc41",
+      "size_bytes": 24217
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_atalanta/011.jpg": {
+      "sha256": "576fb37473072d39bcf743ed0625dab879d141e42bc18b4da02144ce998dfa01",
+      "size_bytes": 12915
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_cardui/000.jpg": {
+      "sha256": "ea0613a6d905ffe29c03ba2b7ed109c0d0534aae24c81718367ddedc54810b58",
+      "size_bytes": 27305
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_cardui/001.jpg": {
+      "sha256": "06cbcca70c1b42748baa7be2a9533fc6dada4f94a2acaf0b10eba9f73ecab275",
+      "size_bytes": 130765
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_cardui/002.jpg": {
+      "sha256": "b735625a5ad371e9fc444693201568f6d8bc0220e6b6b78005b9bf05d017f6b0",
+      "size_bytes": 62674
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_cardui/003.jpg": {
+      "sha256": "196b5ef8cbf5aa43a458044562ba3d41683b0e4bd78d9d607708835078d6a9f1",
+      "size_bytes": 90392
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_cardui/004.jpg": {
+      "sha256": "f88d6bc15a662ea0805cf4731db2073c522be347fa62374acb40af7217eab21b",
+      "size_bytes": 77782
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_cardui/005.jpg": {
+      "sha256": "d2282e87bbf193c50086a150ce6172728d24c6bfb6b58ae4f27cd31007fb87ce",
+      "size_bytes": 107567
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_cardui/006.jpg": {
+      "sha256": "988f4e5d89f21768645fedec189180e1452f5200c533a16096bc48648af0927a",
+      "size_bytes": 48457
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_cardui/007.jpg": {
+      "sha256": "f5b0609476b1b4c2bca111517aaa401938b5396c6c7efe6db75a73f2482ff631",
+      "size_bytes": 137268
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_cardui/008.jpg": {
+      "sha256": "b5e111c491253d8910341c0d0fecb86192c66f6281aea065194455a74adc02da",
+      "size_bytes": 113428
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_cardui/009.jpg": {
+      "sha256": "edb9f6b1f2fb70572efba9b1eeeec819028b8aa9950899baa3fac22ac0c7464e",
+      "size_bytes": 243521
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_cardui/010.jpg": {
+      "sha256": "8c5af9338df479514930daca63f3ea58c86bf6780557fc465b3f4a86fe3311dd",
+      "size_bytes": 165243
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vanessa_cardui/011.jpg": {
+      "sha256": "79e146da49bd5004a5399debd74742f4ff5b967bc2f619d8fc7618e591637671",
+      "size_bytes": 38301
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vulpes_vulpes/000.jpg": {
+      "sha256": "f74b8101f5cd8990c0286b327a180889ab5b86c89b8b20d33c7423fde9dc5dc9",
+      "size_bytes": 311698
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vulpes_vulpes/001.jpg": {
+      "sha256": "f40fb1a81297417329404ead8c4c75aef6d3969a8e782580dda3e2f629dec6e0",
+      "size_bytes": 76219
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vulpes_vulpes/002.jpg": {
+      "sha256": "a6b3e9657512521ae43e41757c20b68ca47171e682792721ddab6490d34ef2c0",
+      "size_bytes": 357199
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vulpes_vulpes/003.jpg": {
+      "sha256": "9f8e97c94170bc99fb7fa7ea6320aa8722e21e7772fb9f60f6c2fd2daa888c02",
+      "size_bytes": 89599
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vulpes_vulpes/004.jpg": {
+      "sha256": "79ad620bbd9e8f24a01f086fe8056b479d3998dcc6aa32e56647642464ddbcd9",
+      "size_bytes": 55406
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vulpes_vulpes/005.jpg": {
+      "sha256": "10a3dfe852df274d6f3cfad6c363b321d274655f8a9cfa8ad1e7299e87ca737a",
+      "size_bytes": 29677
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vulpes_vulpes/006.jpg": {
+      "sha256": "08184e4c30c88ff10670496d011e019eca6ea03d1bad99aec1992e29b8d7ffbc",
+      "size_bytes": 94881
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vulpes_vulpes/007.jpg": {
+      "sha256": "f7e307221b17e174fba657e766c8d9626b658330446fababbf082acefb287ab8",
+      "size_bytes": 248604
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vulpes_vulpes/008.jpg": {
+      "sha256": "5bd43997a2c7dd8235c7f3021c417847168efe2319b091b941a5560749da8552",
+      "size_bytes": 162597
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vulpes_vulpes/009.jpg": {
+      "sha256": "8f409fcee48992454c44bdc74e6a1209078a11502719bf62527471439c63db7e",
+      "size_bytes": 151901
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vulpes_vulpes/010.jpg": {
+      "sha256": "2203ea5afd5be15b30dd3d0eda895f41e182d4e5f99e3ca30242a174d3d09d49",
+      "size_bytes": 41364
+    },
+    "data/raw/inaturalist/pilot_v1/images/Vulpes_vulpes/011.jpg": {
+      "sha256": "b13c25ad60652a25c5dd00b9b40a230804f451f3fb7c9d7ffff08de51cdc025e",
+      "size_bytes": 113889
+    }
+  },
+  "manifest_sha256": "99d930ca74e428d2286d164e961b37571b73106641d8cc3dccb539c9a5aefe34",
+  "num_images": 496,
+  "unresolved_paths": []
+}

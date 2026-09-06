@@ -13,9 +13,11 @@ Guards the four defects the Iteration 11 review found:
    here, so a future rebuild that shifts a training photograph fails the
    suite instead of silently invalidating every adapter.
 3. **Unprovenanced parquet reuse** — one test per fingerprint dimension
-   (adapter bytes, base-model revision, dataset version and artifact
-   hashes, every generation-config key, code commit and module hashes)
-   plus the missing-sidecar case, which is every file Iteration 11 wrote.
+   (adapter bytes AND ``adapter_config.json``, base-model revision, dataset
+   version, artifact hashes and the frozen image manifest, every
+   generation-config key, code commit and module hashes, plus the prediction
+   parquet's own bytes) plus the missing-sidecar case, which is every file
+   Iteration 11 wrote.
 4. **Intersection-only coverage** — duplicates, foreign rows, missing
    rows, short counts and mislabelled rows must all be refusals.
 
@@ -55,14 +57,21 @@ from granunlearn.evaluation.paired_ci import (
     row_flags,
 )
 from granunlearn.evaluation.prediction_provenance import (
+    CODE_FINGERPRINT_MODULES,
     GENERATION_CONFIG_KEYS,
+    PROVENANCE_CONTRACT_VERSION,
     SUPERSEDED_V1_COMMIT,
     PredictionFingerprint,
+    adapter_contract,
     dataset_version,
+    parquet_num_rows,
     read_sidecar,
+    sha256_file,
     sidecar_path,
     validate_prediction_coverage,
+    verify_image_manifest,
     verify_sidecar,
+    write_image_manifest,
     write_sidecar,
 )
 from granunlearn.evaluation.query_generation import (
@@ -704,6 +713,24 @@ class TestBuildFreezeGate:
 
 # ── 4. prediction sidecars: reuse is a verified decision ─────────
 
+#: Row count of the fixture parquet.  Contract v2 reads ``num_rows`` from
+#: the parquet footer and refuses a mismatch, so the fixture has to hold a
+#: real file with a real row count rather than a stand-in blob.
+PQ_ROWS = 2259
+
+
+def _write_prediction_parquet(path: Path, rows: int = PQ_ROWS) -> Path:
+    """A real prediction parquet: v2 hashes it and reads its footer."""
+    import pandas as pd
+
+    pd.DataFrame({
+        "query_id": [f"q{i}" for i in range(rows)],
+        "raw_output": ["*Anas* (Mallard)"] * rows,
+        "is_finer_than_target": [False] * rows,
+    }).to_parquet(path, index=False)
+    return path
+
+
 def _fp(**over) -> PredictionFingerprint:
     """A fully populated fingerprint; ``over`` perturbs one dimension."""
     base = dict(
@@ -714,23 +741,37 @@ def _fp(**over) -> PredictionFingerprint:
         dataset={"version": "pilot100_v2",
                  "artifacts_sha256": {"queries.parquet": "c3" * 32,
                                       "manifest.json": "d4" * 32},
-                 "data_dir": "data/mllmu_hier_pilot100"},
+                 "data_dir": "data/mllmu_hier_pilot100",
+                 "image_manifest_sha256": "aa" * 32,
+                 "num_images_pinned": 496},
         generation_config=dict(zip(GENERATION_CONFIG_KEYS,
                                    (8, 8, 96, False, 384 * 384, 1536))),
         code={"git_commit": "e5" * 20, "git_dirty": False,
               "modules_sha256": {
                   "src/granunlearn/evaluation/scoring.py": "f6" * 32}},
         created_utc="2026-09-05T00:00:00+00:00",
-        num_rows=2259)
+        num_rows=PQ_ROWS,
+        adapter_contract={
+            "files": {"adapter_model.safetensors": "a1" * 32,
+                      "adapter_config.json": "bb" * 32},
+            "sha256": "cc" * 32,
+            "missing_files": [],
+            "adapter_dir": "data/checkpoints/mllmu_pilot100/MF/adapters"})
     base.update(over)
     return PredictionFingerprint(**base)
 
 
 @pytest.fixture
 def pq(tmp_path):
-    """A prediction parquet with a matching sidecar beside it."""
-    path = tmp_path / "predictions_test_MF.parquet"
-    path.write_bytes(b"parquet-bytes-are-irrelevant-to-the-contract")
+    """A prediction parquet with a matching sidecar beside it.
+
+    The parquet is REAL.  Under contract v1 the bytes were irrelevant to the
+    contract — nothing read them — so a placeholder was fine; v2 hashes the
+    file and reads its row count from the footer, so a placeholder is now a
+    refusal rather than a pass.
+    """
+    path = _write_prediction_parquet(
+        tmp_path / "predictions_test_MF.parquet")
     write_sidecar(path, _fp())
     return path
 
@@ -742,7 +783,16 @@ class TestPredictionSidecars:
 
     def test_matching_fingerprint_is_reusable(self, pq):
         assert verify_sidecar(pq, _fp()) == []
-        assert read_sidecar(pq) == _fp().to_dict()
+        found = read_sidecar(pq)
+        want = _fp().to_dict()
+        # write_sidecar stamps the parquet's own hash from the bytes on
+        # disk: it is the one field a caller cannot supply honestly, and
+        # the one that makes post-generation edits detectable
+        assert want["prediction_sha256"] is None
+        assert found["prediction_sha256"] == sha256_file(pq)
+        want["prediction_sha256"] = found["prediction_sha256"]
+        assert found == want
+        assert found["contract_version"] == PROVENANCE_CONTRACT_VERSION
 
     def test_a_parquet_with_no_sidecar_is_refused(self, tmp_path):
         """Every file Iteration 11 wrote is in this state, so this is the
@@ -852,55 +902,95 @@ class TestPredictionSidecars:
 
     @pytest.mark.parametrize("field_name,value", [
         ("created_utc", "2027-01-01T00:00:00+00:00"),
-        ("num_rows", 1),
-        ("num_rows", None),
+        ("environment", {"python_executable": "/nonexistent/env/bin/python",
+                         "python_version": "3.99.0",
+                         "package_versions": {"torch": "9.9.9"}}),
     ])
     def test_informational_fields_never_refuse(self, pq, field_name, value):
         """A file regenerated a minute later from identical inputs is the
         same evidence; refusing on wall-clock time would make crash
-        recovery impossible."""
+        recovery impossible.  The interpreter is informational for the same
+        reason the commit hash is: a library patch upgrade must not silently
+        invalidate hours of correct evidence.  It is recorded at all because
+        the ``.venv`` that produced the 11R evidence vanished from the
+        machine and nothing in that evidence could say which interpreter had
+        been used — the reports carried library VERSIONS but no executable
+        path, and v1 sidecars carried no environment block."""
         assert verify_sidecar(pq, _fp(**{field_name: value})) == []
 
-    def test_base_and_adapter_states_are_not_interchangeable(self, tmp_path):
+    def test_base_and_adapter_states_are_not_interchangeable(self, tmp_path,
+                                                             pq):
         """BASE has no adapter, so its hash is None; a BASE parquet must
         never satisfy a fingerprint expecting an adapter (or vice versa)."""
         from granunlearn.evaluation.prediction_provenance import adapter_sha256
         assert adapter_sha256(None) is None
-        path = tmp_path / "predictions_test_BASE.parquet"
-        path.write_bytes(b"base")
-        write_sidecar(path, _fp(checkpoint_id="BASE", adapter_sha256=None))
-        assert verify_sidecar(path, _fp(checkpoint_id="BASE",
-                                        adapter_sha256=None)) == []
+        assert adapter_contract(None) is None
+        path = _write_prediction_parquet(
+            tmp_path / "predictions_test_BASE.parquet")
+        base_fp = _fp(checkpoint_id="BASE", adapter_sha256=None,
+                      adapter_contract=None)
+        write_sidecar(path, base_fp)
+        assert verify_sidecar(path, base_fp) == []
         reasons = verify_sidecar(path, _fp(checkpoint_id="BASE"))
         assert any(r.startswith("adapter_sha256:") for r in reasons)
+        # the reverse direction: a BASE expectation must refuse a file that
+        # DOES carry an adapter contract
+        assert any(r.startswith("adapter_contract:")
+                   for r in verify_sidecar(pq, base_fp))
 
     def test_build_then_verify_is_self_consistent(self, tmp_path):
         """The real constructor path, on a throwaway dataset and repo: what
-        a pass writes must be what the same pass would accept."""
+        a pass writes must be what the same pass would accept.
+
+        The throwaway dataset has to be REAL — a readable associations
+        parquet referencing an actual image file, with a frozen manifest —
+        because v2 refuses to reuse anything whose image bytes are unbound.
+        """
+        import pandas as pd
+
         data_dir = tmp_path / "data" / "mllmu_hier_x"
         data_dir.mkdir(parents=True)
         (data_dir / "manifest.json").write_text(
             json.dumps({"version": "x_v1"}))
-        (data_dir / "queries.parquet").write_bytes(b"q")
-        (data_dir / "associations.parquet").write_bytes(b"a")
+        pd.DataFrame({"query_id": ["q0", "q1", "q2"]}).to_parquet(
+            data_dir / "queries.parquet", index=False)
+        img_rel = "data/imgs/x0.jpg"
+        img = tmp_path / img_rel
+        img.parent.mkdir(parents=True)
+        img.write_bytes(b"\xff\xd8not-really-a-jpeg")
+        pd.DataFrame({"images": [[{
+            "image_id": "x0", "path": img_rel, "source": "materialized",
+            "split": "train"}]]}).to_parquet(
+            data_dir / "associations.parquet", index=False)
+        write_image_manifest(data_dir, tmp_path)
+
         cfg = dict(zip(GENERATION_CONFIG_KEYS, (8, 8, 96, False, 147456,
                                                 1536)))
         fp = PredictionFingerprint.build(
             experiment_id="x", checkpoint_id="MF", repo_root=tmp_path,
             data_dir=data_dir, model_id="no-such/model",
             adapter_dir=None, generation_config=cfg, num_rows=3)
-        path = data_dir / "predictions_test_MF.parquet"
-        path.write_bytes(b"p")
+        path = _write_prediction_parquet(
+            data_dir / "predictions_test_MF.parquet", rows=3)
         write_sidecar(path, fp)
         assert verify_sidecar(path, fp) == []
         assert fp.dataset["version"] == "x_v1"
         assert set(fp.dataset["artifacts_sha256"]) == {
             "associations.parquet", "queries.parquet", "manifest.json"}
+        # the frozen manifest is bound, and the images match it
+        assert fp.dataset["image_manifest_sha256"]
+        assert fp.dataset["num_images_pinned"] == 1
+        assert verify_image_manifest(data_dir, tmp_path) == []
+        # write_sidecar stamped the output-file facts from disk, not from
+        # the caller's num_rows argument
+        assert parquet_num_rows(path) == 3
+        assert read_sidecar(path)["prediction_sha256"] == sha256_file(path)
         # an unknown model resolves to no revision rather than guessing
         assert fp.base_model_revision is None
         # a repo with none of the fingerprinted modules records them as
         # absent, which still refuses a file claiming real hashes
         assert fp.adapter_sha256 is None
+        assert fp.adapter_contract is None
         other = PredictionFingerprint.build(
             experiment_id="x", checkpoint_id="MF", repo_root=REPO_ROOT,
             data_dir=data_dir, model_id="no-such/model", adapter_dir=None,
@@ -908,8 +998,6 @@ class TestPredictionSidecars:
         assert verify_sidecar(path, other)
 
     def test_the_fingerprinted_modules_are_the_ones_that_define_a_score(self):
-        from granunlearn.evaluation.prediction_provenance import (
-            CODE_FINGERPRINT_MODULES)
         for rel in ("src/granunlearn/evaluation/reference_eval.py",
                     "src/granunlearn/evaluation/query_generation.py",
                     "src/granunlearn/evaluation/scoring.py",
@@ -917,6 +1005,31 @@ class TestPredictionSidecars:
                     "src/granunlearn/evaluation/image_splits.py"):
             assert rel in CODE_FINGERPRINT_MODULES, rel
             assert (REPO_ROOT / rel).exists(), rel
+
+    def test_the_schema_modules_are_fingerprinted_too(self):
+        """The schema defines how a persisted row is READ.  Rename a field
+        on ``PredictionRecord`` and every already-written parquet silently
+        means something else without one byte of scoring logic moving, so
+        the six generation/scoring modules are not sufficient on their
+        own."""
+        for rel in ("src/granunlearn/schema/association.py",
+                    "src/granunlearn/schema/hierarchy.py",
+                    "src/granunlearn/schema/prediction.py",
+                    "src/granunlearn/schema/query.py"):
+            assert rel in CODE_FINGERPRINT_MODULES, rel
+            assert (REPO_ROOT / rel).exists(), rel
+
+    def test_the_analysis_modules_are_deliberately_not_fingerprinted(self):
+        """``paired_ci`` and ``selection`` consume predictions; they cannot
+        change what an existing parquet says, so hashing them would refuse
+        reuse for edits that cannot affect the evidence.  This module is
+        excluded for a different reason: including it would make the
+        contract self-referential, invalidating every sidecar whenever the
+        verifier itself was edited."""
+        for name in ("paired_ci.py", "selection.py",
+                     "prediction_provenance.py"):
+            assert not any(m.endswith(name) for m in
+                           CODE_FINGERPRINT_MODULES), name
 
 
 # ── 5. exact query coverage, not an intersection size ────────────

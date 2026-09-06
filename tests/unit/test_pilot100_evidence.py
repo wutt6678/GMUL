@@ -669,25 +669,40 @@ class TestIteration11REvidence:
 
     def test_no_state_is_declared_equivalent_to_the_oracle(self):
         """No comparison concludes equivalence, and the report must say WHY
-        per state, because the reason differs: three intervals are at least
-        as wide as the margin, so those designs could not have concluded
-        equivalence even at a true difference of exactly zero, while the
-        other five are narrower than the margin but still reach beyond it,
-        i.e. a real difference WAS detected."""
+        per state.  The reason is decided by SIGNIFICANCE first: seven
+        intervals exclude zero, so a real difference WAS detected against
+        the oracle, and only B3's straddles zero.  Achieved power is a
+        separate second axis: three intervals (B0, M_F, B3) are at least as
+        wide as the margin, so those designs could not have concluded
+        equivalence even at a true difference of exactly zero.  For B0 and
+        M_F that qualifies the ABSENT equivalence claim and must not be
+        allowed to weaken the difference they did detect — which is exactly
+        what the 11R wording got wrong."""
         states = _load("mllmu_pilot100_final_evaluation")[
             "equivalence_vs_MG"]["states"]
-        underpowered = powered = 0
+        significant = straddling = wide = 0
         for state, b in states.items():
             assert b["equivalence_concluded"] is False, state
-            if b["ci_half_width"] >= EQUIVALENCE_MARGIN:
-                underpowered += 1
-                assert "INDETERMINATE" in b["power_note"], state
-                assert "could not conclude" in b["power_note"], state
+            note = b["power_note"]
+            lo, hi = b["ci"]
+            if lo > 0.0 or hi < 0.0:
+                significant += 1
+                assert note.startswith("DIFFERENT FROM MG"), (state, note)
+                assert "no significant difference" not in note.lower(), state
+                assert "IS detected" in note, state
             else:
-                powered += 1
-                assert "not concluded" in b["power_note"], state
-        # as measured on the committed v2 evidence
-        assert (underpowered, powered) == (3, 5), (underpowered, powered)
+                straddling += 1
+                assert "INDETERMINATE" in note, state
+                assert "straddles zero" in note, state
+            if b["ci_half_width"] >= EQUIVALENCE_MARGIN:
+                wide += 1
+                assert "could not conclude equivalence" in note, state
+            else:
+                assert "not excluded" in note, state
+        # as measured on the committed v2 evidence: seven intervals exclude
+        # zero, one straddles it, three are at least as wide as the margin
+        assert (significant, straddling, wide) == (7, 1, 3), \
+            (significant, straddling, wide)
 
     def test_the_one_interval_crossing_zero_says_indeterminate(self):
         """B3 is the only state whose TGA interval against M_G crosses zero.
