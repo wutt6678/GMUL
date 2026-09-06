@@ -1,0 +1,3442 @@
+{
+  "analysis": "iteration_11c_confirmation_power",
+  "batch_layout_noise_floor": {
+    "available": true,
+    "max_abs_retain_delta": 0.0556,
+    "max_abs_target_delta": 0.0041,
+    "meaning": "same checkpoint weights under two batch layouts, so this is decoding noise rather than a model difference",
+    "retain_metrics": [
+      "retain_same",
+      "retain_other"
+    ],
+    "source": "data/reports/mllmu_pilot100_final_evaluation.json",
+    "target_metrics": [
+      "filr",
+      "tga",
+      "wrong_branch"
+    ]
+  },
+  "dataset_version": "pilot100_v2",
+  "design": {
+    "alpha_one_sided": 0.025,
+    "alpha_two_sided_equivalent": 0.05,
+    "equivalence_margin": 0.05,
+    "multiplicity": "Holm over the declared primary family. The worst case for any single claim is the smallest p, which Holm tests at alpha/k; the n_for_* columns below are computed at the UNADJUSTED alpha, so a k-claim family needs the alpha/k column, recomputed in the holm block.",
+    "power_targets": [
+      0.8,
+      0.9
+    ],
+    "resampling_unit": "entity (species or person) for pooled claims; species for the nested image strata"
+  },
+  "entity_clustered_claims": {
+    "B3_minus_B0:filr": {
+      "achieved_half_width_at_11r_size": 0.040045,
+      "claim_kind": "superiority",
+      "comparison": "B3_minus_B0:filr",
+      "mean_diff": -0.244204,
+      "min_margin_concludeable_at_72_clusters_equivalence": {
+        "power80": 0.3014,
+        "power90": 0.3104
+      },
+      "min_margin_concludeable_at_72_clusters_non_inferiority": {
+        "power80": 0.3014,
+        "power90": 0.3104
+      },
+      "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_superiority_power80": 4,
+      "n_for_superiority_power90": 6,
+      "num_clusters": 72,
+      "num_paired_rows": 1215,
+      "row_micro_a": 0.209053,
+      "row_micro_b": 0.446914,
+      "sd_ci95": [
+        0.148945,
+        0.207452
+      ],
+      "sd_of_cluster_diffs": 0.173366,
+      "standardized_effect_dz": -1.4086
+    },
+    "B3_minus_B0:over_forgetting": {
+      "achieved_half_width_at_11r_size": 0.011078,
+      "claim_kind": "descriptive",
+      "comparison": "B3_minus_B0:over_forgetting",
+      "mean_diff": 0.019909,
+      "min_margin_concludeable_at_72_clusters_equivalence": {
+        "power80": 0.0357,
+        "power90": 0.0382
+      },
+      "min_margin_concludeable_at_72_clusters_non_inferiority": {
+        "power80": -0.0041,
+        "power90": -0.0016
+      },
+      "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_superiority_power80": "n/a: not this claim's question",
+      "n_for_superiority_power90": "n/a: not this claim's question",
+      "num_clusters": 72,
+      "num_paired_rows": 1215,
+      "row_micro_a": 0.02963,
+      "row_micro_b": 0.009877,
+      "sd_ci95": [
+        0.041203,
+        0.057388
+      ],
+      "sd_of_cluster_diffs": 0.047959,
+      "standardized_effect_dz": 0.4151
+    },
+    "B3_minus_B0:retain_other": {
+      "achieved_half_width_at_11r_size": 0.081443,
+      "claim_kind": "descriptive",
+      "comparison": "B3_minus_B0:retain_other",
+      "mean_diff": 0.021296,
+      "min_margin_concludeable_at_45_clusters_equivalence": {
+        "power80": 0.1377,
+        "power90": 0.156
+      },
+      "min_margin_concludeable_at_45_clusters_non_inferiority": {
+        "power80": 0.0951,
+        "power90": 0.1134
+      },
+      "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_superiority_power80": "n/a: not this claim's question",
+      "n_for_superiority_power90": "n/a: not this claim's question",
+      "num_clusters": 45,
+      "num_paired_rows": 180,
+      "row_micro_a": 0.511111,
+      "row_micro_b": 0.494444,
+      "sd_ci95": [
+        0.230758,
+        0.352176
+      ],
+      "sd_of_cluster_diffs": 0.278748,
+      "standardized_effect_dz": 0.0764
+    },
+    "B3_minus_B0:retain_same": {
+      "achieved_half_width_at_11r_size": 0.047573,
+      "claim_kind": "descriptive",
+      "comparison": "B3_minus_B0:retain_same",
+      "mean_diff": -0.016395,
+      "min_margin_concludeable_at_70_clusters_equivalence": {
+        "power80": 0.0844,
+        "power90": 0.0951
+      },
+      "min_margin_concludeable_at_70_clusters_non_inferiority": {
+        "power80": 0.0844,
+        "power90": 0.0951
+      },
+      "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_superiority_power80": "n/a: not this claim's question",
+      "n_for_superiority_power90": "n/a: not this claim's question",
+      "num_clusters": 70,
+      "num_paired_rows": 774,
+      "row_micro_a": 0.554264,
+      "row_micro_b": 0.543928,
+      "sd_ci95": [
+        0.17412,
+        0.243693
+      ],
+      "sd_of_cluster_diffs": 0.203078,
+      "standardized_effect_dz": -0.0807
+    },
+    "B3_minus_B0:tga": {
+      "achieved_half_width_at_11r_size": 0.036412,
+      "claim_kind": "superiority",
+      "comparison": "B3_minus_B0:tga",
+      "mean_diff": 0.198172,
+      "min_margin_concludeable_at_72_clusters_equivalence": {
+        "power80": 0.2502,
+        "power90": 0.2584
+      },
+      "min_margin_concludeable_at_72_clusters_non_inferiority": {
+        "power80": -0.1461,
+        "power90": -0.138
+      },
+      "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_superiority_power80": 5,
+      "n_for_superiority_power90": 7,
+      "num_clusters": 72,
+      "num_paired_rows": 1215,
+      "row_micro_a": 0.390947,
+      "row_micro_b": 0.2107,
+      "sd_ci95": [
+        0.135434,
+        0.188634
+      ],
+      "sd_of_cluster_diffs": 0.15764,
+      "standardized_effect_dz": 1.2571
+    },
+    "B3_minus_B0:wrong_branch": {
+      "achieved_half_width_at_11r_size": 0.030103,
+      "claim_kind": "descriptive",
+      "comparison": "B3_minus_B0:wrong_branch",
+      "mean_diff": 0.003266,
+      "min_margin_concludeable_at_72_clusters_equivalence": {
+        "power80": 0.0463,
+        "power90": 0.0531
+      },
+      "min_margin_concludeable_at_72_clusters_non_inferiority": {
+        "power80": 0.0398,
+        "power90": 0.0465
+      },
+      "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_superiority_power80": "n/a: not this claim's question",
+      "n_for_superiority_power90": "n/a: not this claim's question",
+      "num_clusters": 72,
+      "num_paired_rows": 1215,
+      "row_micro_a": 0.222222,
+      "row_micro_b": 0.216461,
+      "sd_ci95": [
+        0.111967,
+        0.155949
+      ],
+      "sd_of_cluster_diffs": 0.130325,
+      "standardized_effect_dz": 0.0251
+    },
+    "B3_minus_MG:filr": {
+      "achieved_half_width_at_11r_size": 0.055473,
+      "claim_kind": "descriptive",
+      "comparison": "B3_minus_MG:filr",
+      "mean_diff": 0.037054,
+      "min_margin_concludeable_at_72_clusters_equivalence": {
+        "power80": 0.1163,
+        "power90": 0.1288
+      },
+      "min_margin_concludeable_at_72_clusters_non_inferiority": {
+        "power80": 0.0422,
+        "power90": 0.0547
+      },
+      "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_superiority_power80": "n/a: not this claim's question",
+      "n_for_superiority_power90": "n/a: not this claim's question",
+      "num_clusters": 72,
+      "num_paired_rows": 1215,
+      "row_micro_a": 0.209053,
+      "row_micro_b": 0.140741,
+      "sd_ci95": [
+        0.206328,
+        0.287377
+      ],
+      "sd_of_cluster_diffs": 0.240158,
+      "standardized_effect_dz": 0.1543
+    },
+    "B3_minus_MG:over_forgetting": {
+      "achieved_half_width_at_11r_size": 0.008419,
+      "claim_kind": "descriptive",
+      "comparison": "B3_minus_MG:over_forgetting",
+      "mean_diff": 0.002443,
+      "min_margin_concludeable_at_72_clusters_equivalence": {
+        "power80": 0.0145,
+        "power90": 0.0164
+      },
+      "min_margin_concludeable_at_72_clusters_non_inferiority": {
+        "power80": 0.0096,
+        "power90": 0.0115
+      },
+      "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_superiority_power80": "n/a: not this claim's question",
+      "n_for_superiority_power90": "n/a: not this claim's question",
+      "num_clusters": 72,
+      "num_paired_rows": 1215,
+      "row_micro_a": 0.02963,
+      "row_micro_b": 0.027984,
+      "sd_ci95": [
+        0.031313,
+        0.043613
+      ],
+      "sd_of_cluster_diffs": 0.036447,
+      "standardized_effect_dz": 0.067
+    },
+    "B3_minus_MG:retain_other": {
+      "achieved_half_width_at_11r_size": 0.113549,
+      "claim_kind": "descriptive",
+      "comparison": "B3_minus_MG:retain_other",
+      "mean_diff": 0.118519,
+      "min_margin_concludeable_at_45_clusters_equivalence": {
+        "power80": 0.2808,
+        "power90": 0.3063
+      },
+      "min_margin_concludeable_at_45_clusters_non_inferiority": {
+        "power80": 0.0438,
+        "power90": 0.0693
+      },
+      "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_superiority_power80": "n/a: not this claim's question",
+      "n_for_superiority_power90": "n/a: not this claim's question",
+      "num_clusters": 45,
+      "num_paired_rows": 180,
+      "row_micro_a": 0.511111,
+      "row_micro_b": 0.511111,
+      "sd_ci95": [
+        0.321727,
+        0.491011
+      ],
+      "sd_of_cluster_diffs": 0.388636,
+      "standardized_effect_dz": 0.305
+    },
+    "B3_minus_MG:retain_same": {
+      "achieved_half_width_at_11r_size": 0.060391,
+      "claim_kind": "descriptive",
+      "comparison": "B3_minus_MG:retain_same",
+      "mean_diff": 0.014473,
+      "min_margin_concludeable_at_70_clusters_equivalence": {
+        "power80": 0.1008,
+        "power90": 0.1144
+      },
+      "min_margin_concludeable_at_70_clusters_non_inferiority": {
+        "power80": 0.0719,
+        "power90": 0.0854
+      },
+      "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_superiority_power80": "n/a: not this claim's question",
+      "n_for_superiority_power90": "n/a: not this claim's question",
+      "num_clusters": 70,
+      "num_paired_rows": 774,
+      "row_micro_a": 0.554264,
+      "row_micro_b": 0.51292,
+      "sd_ci95": [
+        0.221034,
+        0.309353
+      ],
+      "sd_of_cluster_diffs": 0.257795,
+      "standardized_effect_dz": 0.0561
+    },
+    "B3_minus_MG:tga": {
+      "achieved_half_width_at_11r_size": 0.049827,
+      "claim_kind": "descriptive",
+      "comparison": "B3_minus_MG:tga",
+      "mean_diff": -0.024444,
+      "min_margin_concludeable_at_72_clusters_equivalence": {
+        "power80": 0.0957,
+        "power90": 0.1069
+      },
+      "min_margin_concludeable_at_72_clusters_non_inferiority": {
+        "power80": 0.0957,
+        "power90": 0.1069
+      },
+      "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_superiority_power80": "n/a: not this claim's question",
+      "n_for_superiority_power90": "n/a: not this claim's question",
+      "num_clusters": 72,
+      "num_paired_rows": 1215,
+      "row_micro_a": 0.390947,
+      "row_micro_b": 0.439506,
+      "sd_ci95": [
+        0.18533,
+        0.258131
+      ],
+      "sd_of_cluster_diffs": 0.215718,
+      "standardized_effect_dz": -0.1133
+    },
+    "B3_minus_MG:wrong_branch": {
+      "achieved_half_width_at_11r_size": 0.043478,
+      "claim_kind": "descriptive",
+      "comparison": "B3_minus_MG:wrong_branch",
+      "mean_diff": -0.0148,
+      "min_margin_concludeable_at_72_clusters_equivalence": {
+        "power80": 0.0769,
+        "power90": 0.0867
+      },
+      "min_margin_concludeable_at_72_clusters_non_inferiority": {
+        "power80": 0.0769,
+        "power90": 0.0867
+      },
+      "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+      "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+      "n_for_superiority_power80": "n/a: not this claim's question",
+      "n_for_superiority_power90": "n/a: not this claim's question",
+      "num_clusters": 72,
+      "num_paired_rows": 1215,
+      "row_micro_a": 0.222222,
+      "row_micro_b": 0.23786,
+      "sd_ci95": [
+        0.161715,
+        0.225239
+      ],
+      "sd_of_cluster_diffs": 0.188231,
+      "standardized_effect_dz": -0.0786
+    }
+  },
+  "feasibility": {
+    "ceilings": {
+      "entities_by_source": {
+        "inaturalist": 36,
+        "mllmu_hier": 64
+      },
+      "entities_total": 100,
+      "entity_clusters_available_for_pooled_claims": 72,
+      "photos_per_inaturalist_species": [
+        12
+      ],
+      "photos_per_mllmu_person": [
+        1
+      ],
+      "what_is_a_free_parameter": "probes per entity: new wording variants for the MLLMU persons, and new photographs for the iNaturalist species, bounded by new_photograph_supply",
+      "why_the_entity_ceiling_is_hard": "The confirmation phase preserves the SELECTED checkpoints, and those adapters unlearned a target set drawn from exactly these 100 entities. Adding an entity would change what the frozen adapters were trained to unlearn, so the confirmation would no longer measure the same intervention. A required cluster count above 100 is therefore not 'collect more data' but 'this claim cannot be made on these checkpoints at this margin'. Only the PROBES per entity are a free parameter, and for a claim whose variance is dominated by the between-entity component (ICC 0.2666 on the wording stratum) extra probes buy quickly diminishing precision."
+    },
+    "claims": {
+      "B3_minus_B0:filr": {
+        "clusters_available": 100,
+        "min_margin_concludeable_at_11r_size": {
+          "min_margin_concludeable_at_72_clusters_equivalence": {
+            "power80": 0.3014,
+            "power90": 0.3104
+          },
+          "min_margin_concludeable_at_72_clusters_non_inferiority": {
+            "power80": 0.3014,
+            "power90": 0.3104
+          }
+        },
+        "n_for_equivalence_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_non_inferiority_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_superiority_power80": {
+          "feasible_on_this_dataset": true,
+          "required": 4
+        }
+      },
+      "B3_minus_B0:over_forgetting": {
+        "clusters_available": 100,
+        "min_margin_concludeable_at_11r_size": {
+          "min_margin_concludeable_at_72_clusters_equivalence": {
+            "power80": 0.0357,
+            "power90": 0.0382
+          },
+          "min_margin_concludeable_at_72_clusters_non_inferiority": {
+            "power80": -0.0041,
+            "power90": -0.0016
+          }
+        },
+        "n_for_equivalence_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_non_inferiority_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_superiority_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        }
+      },
+      "B3_minus_B0:retain_other": {
+        "clusters_available": 100,
+        "min_margin_concludeable_at_11r_size": {
+          "min_margin_concludeable_at_45_clusters_equivalence": {
+            "power80": 0.1377,
+            "power90": 0.156
+          },
+          "min_margin_concludeable_at_45_clusters_non_inferiority": {
+            "power80": 0.0951,
+            "power90": 0.1134
+          }
+        },
+        "n_for_equivalence_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_non_inferiority_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_superiority_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        }
+      },
+      "B3_minus_B0:retain_same": {
+        "clusters_available": 100,
+        "min_margin_concludeable_at_11r_size": {
+          "min_margin_concludeable_at_70_clusters_equivalence": {
+            "power80": 0.0844,
+            "power90": 0.0951
+          },
+          "min_margin_concludeable_at_70_clusters_non_inferiority": {
+            "power80": 0.0844,
+            "power90": 0.0951
+          }
+        },
+        "n_for_equivalence_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_non_inferiority_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_superiority_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        }
+      },
+      "B3_minus_B0:tga": {
+        "clusters_available": 100,
+        "min_margin_concludeable_at_11r_size": {
+          "min_margin_concludeable_at_72_clusters_equivalence": {
+            "power80": 0.2502,
+            "power90": 0.2584
+          },
+          "min_margin_concludeable_at_72_clusters_non_inferiority": {
+            "power80": -0.1461,
+            "power90": -0.138
+          }
+        },
+        "n_for_equivalence_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_non_inferiority_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_superiority_power80": {
+          "feasible_on_this_dataset": true,
+          "required": 5
+        }
+      },
+      "B3_minus_B0:wrong_branch": {
+        "clusters_available": 100,
+        "min_margin_concludeable_at_11r_size": {
+          "min_margin_concludeable_at_72_clusters_equivalence": {
+            "power80": 0.0463,
+            "power90": 0.0531
+          },
+          "min_margin_concludeable_at_72_clusters_non_inferiority": {
+            "power80": 0.0398,
+            "power90": 0.0465
+          }
+        },
+        "n_for_equivalence_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_non_inferiority_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_superiority_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        }
+      },
+      "B3_minus_MG:filr": {
+        "clusters_available": 100,
+        "min_margin_concludeable_at_11r_size": {
+          "min_margin_concludeable_at_72_clusters_equivalence": {
+            "power80": 0.1163,
+            "power90": 0.1288
+          },
+          "min_margin_concludeable_at_72_clusters_non_inferiority": {
+            "power80": 0.0422,
+            "power90": 0.0547
+          }
+        },
+        "n_for_equivalence_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_non_inferiority_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_superiority_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        }
+      },
+      "B3_minus_MG:over_forgetting": {
+        "clusters_available": 100,
+        "min_margin_concludeable_at_11r_size": {
+          "min_margin_concludeable_at_72_clusters_equivalence": {
+            "power80": 0.0145,
+            "power90": 0.0164
+          },
+          "min_margin_concludeable_at_72_clusters_non_inferiority": {
+            "power80": 0.0096,
+            "power90": 0.0115
+          }
+        },
+        "n_for_equivalence_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_non_inferiority_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_superiority_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        }
+      },
+      "B3_minus_MG:retain_other": {
+        "clusters_available": 100,
+        "min_margin_concludeable_at_11r_size": {
+          "min_margin_concludeable_at_45_clusters_equivalence": {
+            "power80": 0.2808,
+            "power90": 0.3063
+          },
+          "min_margin_concludeable_at_45_clusters_non_inferiority": {
+            "power80": 0.0438,
+            "power90": 0.0693
+          }
+        },
+        "n_for_equivalence_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_non_inferiority_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_superiority_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        }
+      },
+      "B3_minus_MG:retain_same": {
+        "clusters_available": 100,
+        "min_margin_concludeable_at_11r_size": {
+          "min_margin_concludeable_at_70_clusters_equivalence": {
+            "power80": 0.1008,
+            "power90": 0.1144
+          },
+          "min_margin_concludeable_at_70_clusters_non_inferiority": {
+            "power80": 0.0719,
+            "power90": 0.0854
+          }
+        },
+        "n_for_equivalence_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_non_inferiority_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_superiority_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        }
+      },
+      "B3_minus_MG:tga": {
+        "clusters_available": 100,
+        "min_margin_concludeable_at_11r_size": {
+          "min_margin_concludeable_at_72_clusters_equivalence": {
+            "power80": 0.0957,
+            "power90": 0.1069
+          },
+          "min_margin_concludeable_at_72_clusters_non_inferiority": {
+            "power80": 0.0957,
+            "power90": 0.1069
+          }
+        },
+        "n_for_equivalence_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_non_inferiority_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_superiority_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        }
+      },
+      "B3_minus_MG:wrong_branch": {
+        "clusters_available": 100,
+        "min_margin_concludeable_at_11r_size": {
+          "min_margin_concludeable_at_72_clusters_equivalence": {
+            "power80": 0.0769,
+            "power90": 0.0867
+          },
+          "min_margin_concludeable_at_72_clusters_non_inferiority": {
+            "power80": 0.0769,
+            "power90": 0.0867
+          }
+        },
+        "n_for_equivalence_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_non_inferiority_delta0.05_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        },
+        "n_for_superiority_power80": {
+          "feasible_on_this_dataset": null,
+          "required": "n/a: not this claim's question"
+        }
+      }
+    }
+  },
+  "generated_utc": "2026-09-06T20:33:33+00:00",
+  "holm_primary_family": {
+    "holm_thresholds": [
+      0.025,
+      0.05
+    ],
+    "k": 2,
+    "per_claim": {
+      "B3_minus_B0:filr": {
+        "claim_kind": "superiority",
+        "n_at_holm_worst_case_alpha_power80": 5,
+        "n_at_holm_worst_case_alpha_power90": 7
+      },
+      "B3_minus_B0:tga": {
+        "claim_kind": "superiority",
+        "n_at_holm_worst_case_alpha_power80": 7,
+        "n_at_holm_worst_case_alpha_power90": 8
+      }
+    },
+    "primary_family": [
+      "B3_minus_B0:tga",
+      "B3_minus_B0:filr"
+    ],
+    "worst_case_alpha_for_a_single_claim": 0.025
+  },
+  "image_strata": {
+    "held_out_photo": {
+      "max_reachable_probes_per_entity": 12,
+      "metrics": {
+        "B3_minus_B0:filr": {
+          "nested_sizing": {
+            "achieved_at_species_ceiling": [
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.0199,
+                "half_width_at_36_species_point_icc": 0.0199,
+                "mde_at_36_species_conservative_icc_upper": 0.0284,
+                "mde_at_36_species_point_icc": 0.0284,
+                "power_at_36_species_conservative_icc_upper": 0.194,
+                "power_at_36_species_point_icc": 0.194,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": false,
+                "power_ge_80_point_icc": false,
+                "probes_per_entity": 3
+              },
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.0141,
+                "half_width_at_36_species_point_icc": 0.0141,
+                "mde_at_36_species_conservative_icc_upper": 0.0201,
+                "mde_at_36_species_point_icc": 0.0201,
+                "power_at_36_species_conservative_icc_upper": 0.341,
+                "power_at_36_species_point_icc": 0.341,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": false,
+                "power_ge_80_point_icc": false,
+                "probes_per_entity": 6
+              },
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.0115,
+                "half_width_at_36_species_point_icc": 0.0115,
+                "mde_at_36_species_conservative_icc_upper": 0.0164,
+                "mde_at_36_species_point_icc": 0.0164,
+                "power_at_36_species_conservative_icc_upper": 0.475,
+                "power_at_36_species_point_icc": 0.475,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": false,
+                "power_ge_80_point_icc": false,
+                "probes_per_entity": 9
+              },
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.0099,
+                "half_width_at_36_species_point_icc": 0.0099,
+                "mde_at_36_species_conservative_icc_upper": 0.0142,
+                "mde_at_36_species_point_icc": 0.0142,
+                "power_at_36_species_conservative_icc_upper": 0.591,
+                "power_at_36_species_point_icc": 0.591,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": false,
+                "power_ge_80_point_icc": false,
+                "probes_per_entity": 12
+              },
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.007,
+                "half_width_at_36_species_point_icc": 0.007,
+                "mde_at_36_species_conservative_icc_upper": 0.01,
+                "mde_at_36_species_point_icc": 0.01,
+                "power_at_36_species_conservative_icc_upper": 0.873,
+                "power_at_36_species_point_icc": 0.873,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": true,
+                "power_ge_80_point_icc": true,
+                "probes_per_entity": 24
+              }
+            ],
+            "alpha_one_sided": 0.025,
+            "asymptotic_species_floor_infinite_probes": 0,
+            "claim_answerable": true,
+            "claim_kind": "superiority",
+            "conservative_grid_at_icc_upper_bound": [
+              {
+                "probes_per_entity": 3,
+                "species_required": 236,
+                "total_probes_at_that_species_count": 708
+              },
+              {
+                "probes_per_entity": 6,
+                "species_required": 118,
+                "total_probes_at_that_species_count": 708
+              },
+              {
+                "probes_per_entity": 9,
+                "species_required": 79,
+                "total_probes_at_that_species_count": 711
+              },
+              {
+                "probes_per_entity": 12,
+                "species_required": 59,
+                "total_probes_at_that_species_count": 708
+              },
+              {
+                "probes_per_entity": 24,
+                "species_required": 30,
+                "total_probes_at_that_species_count": 720
+              }
+            ],
+            "conservative_species_floor_infinite_probes": 0,
+            "estimable": true,
+            "grid": [
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 3,
+                "species_required": 236,
+                "species_variance_at_this_m": 0.003704,
+                "total_probes_at_that_species_count": 708
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 6,
+                "species_required": 118,
+                "species_variance_at_this_m": 0.001852,
+                "total_probes_at_that_species_count": 708
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 9,
+                "species_required": 79,
+                "species_variance_at_this_m": 0.001235,
+                "total_probes_at_that_species_count": 711
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 12,
+                "species_required": 59,
+                "species_variance_at_this_m": 0.000926,
+                "total_probes_at_that_species_count": 708
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 24,
+                "species_required": 30,
+                "species_variance_at_this_m": 0.000463,
+                "total_probes_at_that_species_count": 720
+              }
+            ],
+            "icc_planning_value_used_for_conservative_grid": 0.0,
+            "icc_sensitivity_at_12_probes": [
+              {
+                "assumed_icc": 0.0,
+                "probes_per_entity": 12,
+                "species_required": 59
+              },
+              {
+                "assumed_icc": 0.1,
+                "probes_per_entity": 12,
+                "species_required": 124
+              },
+              {
+                "assumed_icc": 0.2,
+                "probes_per_entity": 12,
+                "species_required": 189
+              },
+              {
+                "assumed_icc": 0.3,
+                "probes_per_entity": 12,
+                "species_required": 254
+              },
+              {
+                "assumed_icc": 0.5,
+                "probes_per_entity": 12,
+                "species_required": 383
+              }
+            ],
+            "interpretation": "species_required stops falling as probes_per_entity grows because only the within-species component is divided by m; the asymptotic floor is what the between-species component alone demands and no number of photographs per species can go below it. The conservative grid repeats that calculation at the ICC upper confidence bound, which is the value a preregistration should plan on when the point estimate is floored at zero. Both grids divide by the claim's usable distance, not by the raw margin, so species_required is not comparable across rows of different claim_kind.",
+            "margin": 0.05,
+            "not_answerable_reason": null,
+            "power": 0.8,
+            "species_ceiling": 36,
+            "theta_used": -0.011111,
+            "usable_distance": 0.011111
+          },
+          "nested_sizing_at_offline_new_photo_ceiling": {
+            "achieved_at_species_ceiling": [
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.0267,
+                "half_width_at_20_species_point_icc": 0.0267,
+                "mde_at_20_species_conservative_icc_upper": 0.0381,
+                "mde_at_20_species_point_icc": 0.0381,
+                "power_at_20_species_conservative_icc_upper": 0.126,
+                "power_at_20_species_point_icc": 0.126,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": false,
+                "power_ge_80_point_icc": false,
+                "probes_per_entity": 3
+              },
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.0189,
+                "half_width_at_20_species_point_icc": 0.0189,
+                "mde_at_20_species_conservative_icc_upper": 0.027,
+                "mde_at_20_species_point_icc": 0.027,
+                "power_at_20_species_conservative_icc_upper": 0.21,
+                "power_at_20_species_point_icc": 0.21,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": false,
+                "power_ge_80_point_icc": false,
+                "probes_per_entity": 6
+              },
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.0154,
+                "half_width_at_20_species_point_icc": 0.0154,
+                "mde_at_20_species_conservative_icc_upper": 0.022,
+                "mde_at_20_species_point_icc": 0.022,
+                "power_at_20_species_conservative_icc_upper": 0.293,
+                "power_at_20_species_point_icc": 0.293,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": false,
+                "power_ge_80_point_icc": false,
+                "probes_per_entity": 9
+              },
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.0133,
+                "half_width_at_20_species_point_icc": 0.0133,
+                "mde_at_20_species_conservative_icc_upper": 0.0191,
+                "mde_at_20_species_point_icc": 0.0191,
+                "power_at_20_species_conservative_icc_upper": 0.372,
+                "power_at_20_species_point_icc": 0.372,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": false,
+                "power_ge_80_point_icc": false,
+                "probes_per_entity": 12
+              },
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.0094,
+                "half_width_at_20_species_point_icc": 0.0094,
+                "mde_at_20_species_conservative_icc_upper": 0.0135,
+                "mde_at_20_species_point_icc": 0.0135,
+                "power_at_20_species_conservative_icc_upper": 0.637,
+                "power_at_20_species_point_icc": 0.637,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": false,
+                "power_ge_80_point_icc": false,
+                "probes_per_entity": 24
+              }
+            ],
+            "alpha_one_sided": 0.025,
+            "asymptotic_species_floor_infinite_probes": 0,
+            "claim_answerable": true,
+            "claim_kind": "superiority",
+            "conservative_grid_at_icc_upper_bound": [
+              {
+                "probes_per_entity": 3,
+                "species_required": 236,
+                "total_probes_at_that_species_count": 708
+              },
+              {
+                "probes_per_entity": 6,
+                "species_required": 118,
+                "total_probes_at_that_species_count": 708
+              },
+              {
+                "probes_per_entity": 9,
+                "species_required": 79,
+                "total_probes_at_that_species_count": 711
+              },
+              {
+                "probes_per_entity": 12,
+                "species_required": 59,
+                "total_probes_at_that_species_count": 708
+              },
+              {
+                "probes_per_entity": 24,
+                "species_required": 30,
+                "total_probes_at_that_species_count": 720
+              }
+            ],
+            "conservative_species_floor_infinite_probes": 0,
+            "estimable": true,
+            "grid": [
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 3,
+                "species_required": 236,
+                "species_variance_at_this_m": 0.003704,
+                "total_probes_at_that_species_count": 708
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 6,
+                "species_required": 118,
+                "species_variance_at_this_m": 0.001852,
+                "total_probes_at_that_species_count": 708
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 9,
+                "species_required": 79,
+                "species_variance_at_this_m": 0.001235,
+                "total_probes_at_that_species_count": 711
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 12,
+                "species_required": 59,
+                "species_variance_at_this_m": 0.000926,
+                "total_probes_at_that_species_count": 708
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 24,
+                "species_required": 30,
+                "species_variance_at_this_m": 0.000463,
+                "total_probes_at_that_species_count": 720
+              }
+            ],
+            "icc_planning_value_used_for_conservative_grid": 0.0,
+            "icc_sensitivity_at_12_probes": [],
+            "interpretation": "species_required stops falling as probes_per_entity grows because only the within-species component is divided by m; the asymptotic floor is what the between-species component alone demands and no number of photographs per species can go below it. The conservative grid repeats that calculation at the ICC upper confidence bound, which is the value a preregistration should plan on when the point estimate is floored at zero. Both grids divide by the claim's usable distance, not by the raw margin, so species_required is not comparable across rows of different claim_kind.",
+            "margin": 0.05,
+            "not_answerable_reason": null,
+            "power": 0.8,
+            "species_ceiling": 20,
+            "theta_used": -0.011111,
+            "usable_distance": 0.011111
+          },
+          "paired": {
+            "achieved_half_width_at_11r_size": 0.021777,
+            "claim_kind": "superiority",
+            "comparison": "B3_minus_B0:filr",
+            "mean_diff": -0.011111,
+            "min_margin_concludeable_at_30_clusters_equivalence": {
+              "power80": 0.0422,
+              "power90": 0.0471
+            },
+            "min_margin_concludeable_at_30_clusters_non_inferiority": {
+              "power80": 0.0422,
+              "power90": 0.0471
+            },
+            "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+            "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+            "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+            "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+            "n_for_superiority_power80": 236,
+            "n_for_superiority_power90": 316,
+            "num_clusters": 30,
+            "sd_ci95": [
+              0.048466,
+              0.081844
+            ],
+            "sd_of_cluster_diffs": 0.060858,
+            "standardized_effect_dz": -0.1826
+          },
+          "variance_components": {
+            "estimable": true,
+            "grand_mean": -0.011111,
+            "icc_bootstrap_degenerate_fraction": 0.3625,
+            "icc_ci95": [
+              0.0,
+              0.0
+            ],
+            "icc_planning_value_upper_bound": 0.0,
+            "icc_point_estimate": 0.0,
+            "ms_between": 0.011111,
+            "ms_within": 0.011111,
+            "num_probes": 90,
+            "num_species": 30,
+            "probes_per_species_harmonic_mean": 3.0,
+            "probes_per_species_max": 3,
+            "probes_per_species_min": 3,
+            "sigma2_between": 0.0,
+            "sigma2_between_floored_at_zero": true,
+            "sigma2_between_raw": -0.0,
+            "sigma2_within": 0.011111
+          }
+        },
+        "B3_minus_B0:tga": {
+          "nested_sizing": {
+            "achieved_at_species_ceiling": [
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.035,
+                "half_width_at_36_species_point_icc": 0.0348,
+                "mde_at_36_species_conservative_icc_upper": 0.05,
+                "mde_at_36_species_point_icc": 0.0498,
+                "power_at_36_species_conservative_icc_upper": 0.091,
+                "power_at_36_species_point_icc": 0.091,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": false,
+                "power_ge_80_point_icc": false,
+                "probes_per_entity": 3
+              },
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.0251,
+                "half_width_at_36_species_point_icc": 0.0249,
+                "mde_at_36_species_conservative_icc_upper": 0.0359,
+                "mde_at_36_species_point_icc": 0.0356,
+                "power_at_36_species_conservative_icc_upper": 0.137,
+                "power_at_36_species_point_icc": 0.139,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": false,
+                "power_ge_80_point_icc": false,
+                "probes_per_entity": 6
+              },
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.0208,
+                "half_width_at_36_species_point_icc": 0.0206,
+                "mde_at_36_species_conservative_icc_upper": 0.0298,
+                "mde_at_36_species_point_icc": 0.0294,
+                "power_at_36_species_conservative_icc_upper": 0.18,
+                "power_at_36_species_point_icc": 0.184,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": false,
+                "power_ge_80_point_icc": false,
+                "probes_per_entity": 9
+              },
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.0183,
+                "half_width_at_36_species_point_icc": 0.018,
+                "mde_at_36_species_conservative_icc_upper": 0.0262,
+                "mde_at_36_species_point_icc": 0.0257,
+                "power_at_36_species_conservative_icc_upper": 0.22,
+                "power_at_36_species_point_icc": 0.227,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": false,
+                "power_ge_80_point_icc": false,
+                "probes_per_entity": 12
+              },
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.0137,
+                "half_width_at_36_species_point_icc": 0.0132,
+                "mde_at_36_species_conservative_icc_upper": 0.0196,
+                "mde_at_36_species_point_icc": 0.0189,
+                "power_at_36_species_conservative_icc_upper": 0.354,
+                "power_at_36_species_point_icc": 0.376,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": false,
+                "power_ge_80_point_icc": false,
+                "probes_per_entity": 24
+              }
+            ],
+            "alpha_one_sided": 0.025,
+            "asymptotic_species_floor_infinite_probes": 17,
+            "claim_answerable": true,
+            "claim_kind": "superiority",
+            "conservative_grid_at_icc_upper_bound": [
+              {
+                "probes_per_entity": 3,
+                "species_required": 729,
+                "total_probes_at_that_species_count": 2187
+              },
+              {
+                "probes_per_entity": 6,
+                "species_required": 377,
+                "total_probes_at_that_species_count": 2262
+              },
+              {
+                "probes_per_entity": 9,
+                "species_required": 259,
+                "total_probes_at_that_species_count": 2331
+              },
+              {
+                "probes_per_entity": 12,
+                "species_required": 201,
+                "total_probes_at_that_species_count": 2412
+              },
+              {
+                "probes_per_entity": 24,
+                "species_required": 113,
+                "total_probes_at_that_species_count": 2712
+              }
+            ],
+            "conservative_species_floor_infinite_probes": 25,
+            "estimable": true,
+            "grid": [
+              {
+                "design_effect_vs_independent_probes": 1.015,
+                "probes_per_entity": 3,
+                "species_required": 723,
+                "species_variance_at_this_m": 0.011366,
+                "total_probes_at_that_species_count": 2169
+              },
+              {
+                "design_effect_vs_independent_probes": 1.038,
+                "probes_per_entity": 6,
+                "species_required": 370,
+                "species_variance_at_this_m": 0.005811,
+                "total_probes_at_that_species_count": 2220
+              },
+              {
+                "design_effect_vs_independent_probes": 1.061,
+                "probes_per_entity": 9,
+                "species_required": 252,
+                "species_variance_at_this_m": 0.003959,
+                "total_probes_at_that_species_count": 2268
+              },
+              {
+                "design_effect_vs_independent_probes": 1.084,
+                "probes_per_entity": 12,
+                "species_required": 193,
+                "species_variance_at_this_m": 0.003033,
+                "total_probes_at_that_species_count": 2316
+              },
+              {
+                "design_effect_vs_independent_probes": 1.175,
+                "probes_per_entity": 24,
+                "species_required": 105,
+                "species_variance_at_this_m": 0.001644,
+                "total_probes_at_that_species_count": 2520
+              }
+            ],
+            "icc_planning_value_used_for_conservative_grid": 0.0114,
+            "icc_sensitivity_at_12_probes": [
+              {
+                "assumed_icc": 0.0,
+                "probes_per_entity": 12,
+                "species_required": 178
+              },
+              {
+                "assumed_icc": 0.1,
+                "probes_per_entity": 12,
+                "species_required": 374
+              },
+              {
+                "assumed_icc": 0.2,
+                "probes_per_entity": 12,
+                "species_required": 570
+              },
+              {
+                "assumed_icc": 0.3,
+                "probes_per_entity": 12,
+                "species_required": 766
+              },
+              {
+                "assumed_icc": 0.5,
+                "probes_per_entity": 12,
+                "species_required": 1157
+              }
+            ],
+            "interpretation": "species_required stops falling as probes_per_entity grows because only the within-species component is divided by m; the asymptotic floor is what the between-species component alone demands and no number of photographs per species can go below it. The conservative grid repeats that calculation at the ICC upper confidence bound, which is the value a preregistration should plan on when the point estimate is floored at zero. Both grids divide by the claim's usable distance, not by the raw margin, so species_required is not comparable across rows of different claim_kind.",
+            "margin": 0.05,
+            "not_answerable_reason": null,
+            "power": 0.8,
+            "species_ceiling": 36,
+            "theta_used": -0.011111,
+            "usable_distance": 0.011111
+          },
+          "nested_sizing_at_offline_new_photo_ceiling": {
+            "achieved_at_species_ceiling": [
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.0469,
+                "half_width_at_20_species_point_icc": 0.0467,
+                "mde_at_20_species_conservative_icc_upper": 0.067,
+                "mde_at_20_species_point_icc": 0.0668,
+                "power_at_20_species_conservative_icc_upper": 0.067,
+                "power_at_20_species_point_icc": 0.068,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": false,
+                "power_ge_80_point_icc": false,
+                "probes_per_entity": 3
+              },
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.0337,
+                "half_width_at_20_species_point_icc": 0.0334,
+                "mde_at_20_species_conservative_icc_upper": 0.0482,
+                "mde_at_20_species_point_icc": 0.0478,
+                "power_at_20_species_conservative_icc_upper": 0.094,
+                "power_at_20_species_point_icc": 0.095,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": false,
+                "power_ge_80_point_icc": false,
+                "probes_per_entity": 6
+              },
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.028,
+                "half_width_at_20_species_point_icc": 0.0276,
+                "mde_at_20_species_conservative_icc_upper": 0.04,
+                "mde_at_20_species_point_icc": 0.0394,
+                "power_at_20_species_conservative_icc_upper": 0.119,
+                "power_at_20_species_point_icc": 0.121,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": false,
+                "power_ge_80_point_icc": false,
+                "probes_per_entity": 9
+              },
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.0246,
+                "half_width_at_20_species_point_icc": 0.0241,
+                "mde_at_20_species_conservative_icc_upper": 0.0352,
+                "mde_at_20_species_point_icc": 0.0345,
+                "power_at_20_species_conservative_icc_upper": 0.141,
+                "power_at_20_species_point_icc": 0.145,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": false,
+                "power_ge_80_point_icc": false,
+                "probes_per_entity": 12
+              },
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.0184,
+                "half_width_at_20_species_point_icc": 0.0178,
+                "mde_at_20_species_conservative_icc_upper": 0.0263,
+                "mde_at_20_species_point_icc": 0.0254,
+                "power_at_20_species_conservative_icc_upper": 0.218,
+                "power_at_20_species_point_icc": 0.231,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": false,
+                "power_ge_80_point_icc": false,
+                "probes_per_entity": 24
+              }
+            ],
+            "alpha_one_sided": 0.025,
+            "asymptotic_species_floor_infinite_probes": 17,
+            "claim_answerable": true,
+            "claim_kind": "superiority",
+            "conservative_grid_at_icc_upper_bound": [
+              {
+                "probes_per_entity": 3,
+                "species_required": 729,
+                "total_probes_at_that_species_count": 2187
+              },
+              {
+                "probes_per_entity": 6,
+                "species_required": 377,
+                "total_probes_at_that_species_count": 2262
+              },
+              {
+                "probes_per_entity": 9,
+                "species_required": 259,
+                "total_probes_at_that_species_count": 2331
+              },
+              {
+                "probes_per_entity": 12,
+                "species_required": 201,
+                "total_probes_at_that_species_count": 2412
+              },
+              {
+                "probes_per_entity": 24,
+                "species_required": 113,
+                "total_probes_at_that_species_count": 2712
+              }
+            ],
+            "conservative_species_floor_infinite_probes": 25,
+            "estimable": true,
+            "grid": [
+              {
+                "design_effect_vs_independent_probes": 1.015,
+                "probes_per_entity": 3,
+                "species_required": 723,
+                "species_variance_at_this_m": 0.011366,
+                "total_probes_at_that_species_count": 2169
+              },
+              {
+                "design_effect_vs_independent_probes": 1.038,
+                "probes_per_entity": 6,
+                "species_required": 370,
+                "species_variance_at_this_m": 0.005811,
+                "total_probes_at_that_species_count": 2220
+              },
+              {
+                "design_effect_vs_independent_probes": 1.061,
+                "probes_per_entity": 9,
+                "species_required": 252,
+                "species_variance_at_this_m": 0.003959,
+                "total_probes_at_that_species_count": 2268
+              },
+              {
+                "design_effect_vs_independent_probes": 1.084,
+                "probes_per_entity": 12,
+                "species_required": 193,
+                "species_variance_at_this_m": 0.003033,
+                "total_probes_at_that_species_count": 2316
+              },
+              {
+                "design_effect_vs_independent_probes": 1.175,
+                "probes_per_entity": 24,
+                "species_required": 105,
+                "species_variance_at_this_m": 0.001644,
+                "total_probes_at_that_species_count": 2520
+              }
+            ],
+            "icc_planning_value_used_for_conservative_grid": 0.0114,
+            "icc_sensitivity_at_12_probes": [],
+            "interpretation": "species_required stops falling as probes_per_entity grows because only the within-species component is divided by m; the asymptotic floor is what the between-species component alone demands and no number of photographs per species can go below it. The conservative grid repeats that calculation at the ICC upper confidence bound, which is the value a preregistration should plan on when the point estimate is floored at zero. Both grids divide by the claim's usable distance, not by the raw margin, so species_required is not comparable across rows of different claim_kind.",
+            "margin": 0.05,
+            "not_answerable_reason": null,
+            "power": 0.8,
+            "species_ceiling": 20,
+            "theta_used": -0.011111,
+            "usable_distance": 0.011111
+          },
+          "paired": {
+            "achieved_half_width_at_11r_size": 0.038151,
+            "claim_kind": "superiority",
+            "comparison": "B3_minus_B0:tga",
+            "mean_diff": -0.011111,
+            "min_margin_concludeable_at_30_clusters_equivalence": {
+              "power80": 0.0656,
+              "power90": 0.0742
+            },
+            "min_margin_concludeable_at_30_clusters_non_inferiority": {
+              "power80": 0.0656,
+              "power90": 0.0742
+            },
+            "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+            "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+            "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+            "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+            "n_for_superiority_power80": 723,
+            "n_for_superiority_power90": 968,
+            "num_clusters": 30,
+            "sd_ci95": [
+              0.084906,
+              0.143379
+            ],
+            "sd_of_cluster_diffs": 0.106614,
+            "standardized_effect_dz": -0.1042
+          },
+          "variance_components": {
+            "estimable": true,
+            "grand_mean": -0.011111,
+            "icc_bootstrap_degenerate_fraction": 0.046,
+            "icc_ci95": [
+              0.0,
+              0.0114
+            ],
+            "icc_planning_value_upper_bound": 0.0114,
+            "icc_point_estimate": 0.0076,
+            "ms_between": 0.0341,
+            "ms_within": 0.033333,
+            "num_probes": 90,
+            "num_species": 30,
+            "probes_per_species_harmonic_mean": 3.0,
+            "probes_per_species_max": 3,
+            "probes_per_species_min": 3,
+            "sigma2_between": 0.000255,
+            "sigma2_between_floored_at_zero": false,
+            "sigma2_between_raw": 0.000255,
+            "sigma2_within": 0.033333
+          }
+        },
+        "B3_minus_MG:filr": {
+          "nested_sizing": {
+            "achieved_at_species_ceiling": [
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.0402,
+                "half_width_at_36_species_point_icc": 0.0398,
+                "mde_at_36_species_conservative_icc_upper": null,
+                "mde_at_36_species_point_icc": null,
+                "power_at_36_species_conservative_icc_upper": null,
+                "power_at_36_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 3
+              },
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.0289,
+                "half_width_at_36_species_point_icc": 0.0281,
+                "mde_at_36_species_conservative_icc_upper": null,
+                "mde_at_36_species_point_icc": null,
+                "power_at_36_species_conservative_icc_upper": null,
+                "power_at_36_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 6
+              },
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.024,
+                "half_width_at_36_species_point_icc": 0.023,
+                "mde_at_36_species_conservative_icc_upper": null,
+                "mde_at_36_species_point_icc": null,
+                "power_at_36_species_conservative_icc_upper": null,
+                "power_at_36_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 9
+              },
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.0211,
+                "half_width_at_36_species_point_icc": 0.0199,
+                "mde_at_36_species_conservative_icc_upper": null,
+                "mde_at_36_species_point_icc": null,
+                "power_at_36_species_conservative_icc_upper": null,
+                "power_at_36_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 12
+              },
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.0158,
+                "half_width_at_36_species_point_icc": 0.0141,
+                "mde_at_36_species_conservative_icc_upper": null,
+                "mde_at_36_species_point_icc": null,
+                "power_at_36_species_conservative_icc_upper": null,
+                "power_at_36_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 24
+              }
+            ],
+            "alpha_one_sided": 0.025,
+            "asymptotic_species_floor_infinite_probes": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+            "claim_answerable": false,
+            "claim_kind": "descriptive",
+            "conservative_grid_at_icc_upper_bound": [
+              {
+                "probes_per_entity": 3,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 6,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 9,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 24,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              }
+            ],
+            "conservative_species_floor_infinite_probes": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+            "estimable": true,
+            "grid": [
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 3,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.014815,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 6,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.007407,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 9,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.004938,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.003704,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 24,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.001852,
+                "total_probes_at_that_species_count": null
+              }
+            ],
+            "icc_planning_value_used_for_conservative_grid": 0.0114,
+            "icc_sensitivity_at_12_probes": [
+              {
+                "assumed_icc": 0.0,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              },
+              {
+                "assumed_icc": 0.1,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              },
+              {
+                "assumed_icc": 0.2,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              },
+              {
+                "assumed_icc": 0.3,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              },
+              {
+                "assumed_icc": 0.5,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              }
+            ],
+            "interpretation": "species_required stops falling as probes_per_entity grows because only the within-species component is divided by m; the asymptotic floor is what the between-species component alone demands and no number of photographs per species can go below it. The conservative grid repeats that calculation at the ICC upper confidence bound, which is the value a preregistration should plan on when the point estimate is floored at zero. Both grids divide by the claim's usable distance, not by the raw margin, so species_required is not comparable across rows of different claim_kind.",
+            "margin": 0.05,
+            "not_answerable_reason": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+            "power": 0.8,
+            "species_ceiling": 36,
+            "theta_used": -0.022222,
+            "usable_distance": null
+          },
+          "nested_sizing_at_offline_new_photo_ceiling": {
+            "achieved_at_species_ceiling": [
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.0539,
+                "half_width_at_20_species_point_icc": 0.0533,
+                "mde_at_20_species_conservative_icc_upper": null,
+                "mde_at_20_species_point_icc": null,
+                "power_at_20_species_conservative_icc_upper": null,
+                "power_at_20_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 3
+              },
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.0388,
+                "half_width_at_20_species_point_icc": 0.0377,
+                "mde_at_20_species_conservative_icc_upper": null,
+                "mde_at_20_species_point_icc": null,
+                "power_at_20_species_conservative_icc_upper": null,
+                "power_at_20_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 6
+              },
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.0322,
+                "half_width_at_20_species_point_icc": 0.0308,
+                "mde_at_20_species_conservative_icc_upper": null,
+                "mde_at_20_species_point_icc": null,
+                "power_at_20_species_conservative_icc_upper": null,
+                "power_at_20_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 9
+              },
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.0283,
+                "half_width_at_20_species_point_icc": 0.0267,
+                "mde_at_20_species_conservative_icc_upper": null,
+                "mde_at_20_species_point_icc": null,
+                "power_at_20_species_conservative_icc_upper": null,
+                "power_at_20_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 12
+              },
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.0212,
+                "half_width_at_20_species_point_icc": 0.0189,
+                "mde_at_20_species_conservative_icc_upper": null,
+                "mde_at_20_species_point_icc": null,
+                "power_at_20_species_conservative_icc_upper": null,
+                "power_at_20_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 24
+              }
+            ],
+            "alpha_one_sided": 0.025,
+            "asymptotic_species_floor_infinite_probes": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+            "claim_answerable": false,
+            "claim_kind": "descriptive",
+            "conservative_grid_at_icc_upper_bound": [
+              {
+                "probes_per_entity": 3,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 6,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 9,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 24,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              }
+            ],
+            "conservative_species_floor_infinite_probes": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+            "estimable": true,
+            "grid": [
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 3,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.014815,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 6,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.007407,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 9,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.004938,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.003704,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 24,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.001852,
+                "total_probes_at_that_species_count": null
+              }
+            ],
+            "icc_planning_value_used_for_conservative_grid": 0.0114,
+            "icc_sensitivity_at_12_probes": [],
+            "interpretation": "species_required stops falling as probes_per_entity grows because only the within-species component is divided by m; the asymptotic floor is what the between-species component alone demands and no number of photographs per species can go below it. The conservative grid repeats that calculation at the ICC upper confidence bound, which is the value a preregistration should plan on when the point estimate is floored at zero. Both grids divide by the claim's usable distance, not by the raw margin, so species_required is not comparable across rows of different claim_kind.",
+            "margin": 0.05,
+            "not_answerable_reason": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+            "power": 0.8,
+            "species_ceiling": 20,
+            "theta_used": -0.022222,
+            "usable_distance": null
+          },
+          "paired": {
+            "achieved_half_width_at_11r_size": 0.043555,
+            "claim_kind": "descriptive",
+            "comparison": "B3_minus_MG:filr",
+            "mean_diff": -0.022222,
+            "min_margin_concludeable_at_30_clusters_equivalence": {
+              "power80": 0.0845,
+              "power90": 0.0943
+            },
+            "min_margin_concludeable_at_30_clusters_non_inferiority": {
+              "power80": 0.0845,
+              "power90": 0.0943
+            },
+            "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+            "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+            "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+            "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+            "n_for_superiority_power80": "n/a: not this claim's question",
+            "n_for_superiority_power90": "n/a: not this claim's question",
+            "num_clusters": 30,
+            "sd_ci95": [
+              0.096933,
+              0.163689
+            ],
+            "sd_of_cluster_diffs": 0.121716,
+            "standardized_effect_dz": -0.1826
+          },
+          "variance_components": {
+            "estimable": true,
+            "grand_mean": -0.022222,
+            "icc_bootstrap_degenerate_fraction": 0.0175,
+            "icc_ci95": [
+              0.0,
+              0.0114
+            ],
+            "icc_planning_value_upper_bound": 0.0114,
+            "icc_point_estimate": 0.0,
+            "ms_between": 0.044444,
+            "ms_within": 0.044444,
+            "num_probes": 90,
+            "num_species": 30,
+            "probes_per_species_harmonic_mean": 3.0,
+            "probes_per_species_max": 3,
+            "probes_per_species_min": 3,
+            "sigma2_between": 0.0,
+            "sigma2_between_floored_at_zero": false,
+            "sigma2_between_raw": 0.0,
+            "sigma2_within": 0.044444
+          }
+        },
+        "B3_minus_MG:tga": {
+          "nested_sizing": {
+            "achieved_at_species_ceiling": [
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.0659,
+                "half_width_at_36_species_point_icc": 0.0659,
+                "mde_at_36_species_conservative_icc_upper": null,
+                "mde_at_36_species_point_icc": null,
+                "power_at_36_species_conservative_icc_upper": null,
+                "power_at_36_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 3
+              },
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.0466,
+                "half_width_at_36_species_point_icc": 0.0466,
+                "mde_at_36_species_conservative_icc_upper": null,
+                "mde_at_36_species_point_icc": null,
+                "power_at_36_species_conservative_icc_upper": null,
+                "power_at_36_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 6
+              },
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.0381,
+                "half_width_at_36_species_point_icc": 0.0381,
+                "mde_at_36_species_conservative_icc_upper": null,
+                "mde_at_36_species_point_icc": null,
+                "power_at_36_species_conservative_icc_upper": null,
+                "power_at_36_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 9
+              },
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.033,
+                "half_width_at_36_species_point_icc": 0.033,
+                "mde_at_36_species_conservative_icc_upper": null,
+                "mde_at_36_species_point_icc": null,
+                "power_at_36_species_conservative_icc_upper": null,
+                "power_at_36_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 12
+              },
+              {
+                "half_width_at_36_species_conservative_icc_upper": 0.0233,
+                "half_width_at_36_species_point_icc": 0.0233,
+                "mde_at_36_species_conservative_icc_upper": null,
+                "mde_at_36_species_point_icc": null,
+                "power_at_36_species_conservative_icc_upper": null,
+                "power_at_36_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 24
+              }
+            ],
+            "alpha_one_sided": 0.025,
+            "asymptotic_species_floor_infinite_probes": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+            "claim_answerable": false,
+            "claim_kind": "descriptive",
+            "conservative_grid_at_icc_upper_bound": [
+              {
+                "probes_per_entity": 3,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 6,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 9,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 24,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              }
+            ],
+            "conservative_species_floor_infinite_probes": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+            "estimable": true,
+            "grid": [
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 3,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.040741,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 6,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.02037,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 9,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.01358,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.010185,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 24,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.005093,
+                "total_probes_at_that_species_count": null
+              }
+            ],
+            "icc_planning_value_used_for_conservative_grid": 0.0,
+            "icc_sensitivity_at_12_probes": [
+              {
+                "assumed_icc": 0.0,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              },
+              {
+                "assumed_icc": 0.1,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              },
+              {
+                "assumed_icc": 0.2,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              },
+              {
+                "assumed_icc": 0.3,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              },
+              {
+                "assumed_icc": 0.5,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              }
+            ],
+            "interpretation": "species_required stops falling as probes_per_entity grows because only the within-species component is divided by m; the asymptotic floor is what the between-species component alone demands and no number of photographs per species can go below it. The conservative grid repeats that calculation at the ICC upper confidence bound, which is the value a preregistration should plan on when the point estimate is floored at zero. Both grids divide by the claim's usable distance, not by the raw margin, so species_required is not comparable across rows of different claim_kind.",
+            "margin": 0.05,
+            "not_answerable_reason": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+            "power": 0.8,
+            "species_ceiling": 36,
+            "theta_used": -0.1,
+            "usable_distance": null
+          },
+          "nested_sizing_at_offline_new_photo_ceiling": {
+            "achieved_at_species_ceiling": [
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.0885,
+                "half_width_at_20_species_point_icc": 0.0885,
+                "mde_at_20_species_conservative_icc_upper": null,
+                "mde_at_20_species_point_icc": null,
+                "power_at_20_species_conservative_icc_upper": null,
+                "power_at_20_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 3
+              },
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.0626,
+                "half_width_at_20_species_point_icc": 0.0626,
+                "mde_at_20_species_conservative_icc_upper": null,
+                "mde_at_20_species_point_icc": null,
+                "power_at_20_species_conservative_icc_upper": null,
+                "power_at_20_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 6
+              },
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.0511,
+                "half_width_at_20_species_point_icc": 0.0511,
+                "mde_at_20_species_conservative_icc_upper": null,
+                "mde_at_20_species_point_icc": null,
+                "power_at_20_species_conservative_icc_upper": null,
+                "power_at_20_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 9
+              },
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.0442,
+                "half_width_at_20_species_point_icc": 0.0442,
+                "mde_at_20_species_conservative_icc_upper": null,
+                "mde_at_20_species_point_icc": null,
+                "power_at_20_species_conservative_icc_upper": null,
+                "power_at_20_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 12
+              },
+              {
+                "half_width_at_20_species_conservative_icc_upper": 0.0313,
+                "half_width_at_20_species_point_icc": 0.0313,
+                "mde_at_20_species_conservative_icc_upper": null,
+                "mde_at_20_species_point_icc": null,
+                "power_at_20_species_conservative_icc_upper": null,
+                "power_at_20_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 24
+              }
+            ],
+            "alpha_one_sided": 0.025,
+            "asymptotic_species_floor_infinite_probes": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+            "claim_answerable": false,
+            "claim_kind": "descriptive",
+            "conservative_grid_at_icc_upper_bound": [
+              {
+                "probes_per_entity": 3,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 6,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 9,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 24,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              }
+            ],
+            "conservative_species_floor_infinite_probes": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+            "estimable": true,
+            "grid": [
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 3,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.040741,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 6,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.02037,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 9,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.01358,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.010185,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 1.0,
+                "probes_per_entity": 24,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.005093,
+                "total_probes_at_that_species_count": null
+              }
+            ],
+            "icc_planning_value_used_for_conservative_grid": 0.0,
+            "icc_sensitivity_at_12_probes": [],
+            "interpretation": "species_required stops falling as probes_per_entity grows because only the within-species component is divided by m; the asymptotic floor is what the between-species component alone demands and no number of photographs per species can go below it. The conservative grid repeats that calculation at the ICC upper confidence bound, which is the value a preregistration should plan on when the point estimate is floored at zero. Both grids divide by the claim's usable distance, not by the raw margin, so species_required is not comparable across rows of different claim_kind.",
+            "margin": 0.05,
+            "not_answerable_reason": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+            "power": 0.8,
+            "species_ceiling": 20,
+            "theta_used": -0.1,
+            "usable_distance": null
+          },
+          "paired": {
+            "achieved_half_width_at_11r_size": 0.063813,
+            "claim_kind": "descriptive",
+            "comparison": "B3_minus_MG:tga",
+            "mean_diff": -0.1,
+            "min_margin_concludeable_at_30_clusters_equivalence": {
+              "power80": 0.1912,
+              "power90": 0.2055
+            },
+            "min_margin_concludeable_at_30_clusters_non_inferiority": {
+              "power80": 0.1912,
+              "power90": 0.2055
+            },
+            "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+            "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+            "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+            "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+            "n_for_superiority_power80": "n/a: not this claim's question",
+            "n_for_superiority_power90": "n/a: not this claim's question",
+            "num_clusters": 30,
+            "sd_ci95": [
+              0.142017,
+              0.239822
+            ],
+            "sd_of_cluster_diffs": 0.178328,
+            "standardized_effect_dz": -0.5608
+          },
+          "variance_components": {
+            "estimable": true,
+            "grand_mean": -0.1,
+            "icc_bootstrap_degenerate_fraction": 0.0,
+            "icc_ci95": [
+              0.0,
+              0.0
+            ],
+            "icc_planning_value_upper_bound": 0.0,
+            "icc_point_estimate": 0.0,
+            "ms_between": 0.095402,
+            "ms_within": 0.122222,
+            "num_probes": 90,
+            "num_species": 30,
+            "probes_per_species_harmonic_mean": 3.0,
+            "probes_per_species_max": 3,
+            "probes_per_species_min": 3,
+            "sigma2_between": 0.0,
+            "sigma2_between_floored_at_zero": true,
+            "sigma2_between_raw": -0.00894,
+            "sigma2_within": 0.122222
+          }
+        }
+      },
+      "nesting_cluster_is": "iNaturalist species",
+      "num_probes": 90,
+      "num_species": 30,
+      "photos_per_entity_in_pilot100_v2": [
+        12
+      ],
+      "probe_options_beyond_the_reachable_max": [
+        24
+      ],
+      "probes_per_entity_axis_is": "new PHOTOGRAPHS per species, one probe per photograph. Every one of the 12 photographs pilot100_v2 holds per species is already allocated, so a confirmation probe needs a photograph sourced from outside it.",
+      "source_datasets": [
+        "inaturalist"
+      ]
+    },
+    "seen_photo_unseen_wording": {
+      "max_reachable_probes_per_entity": null,
+      "metrics": {
+        "B3_minus_B0:filr": {
+          "nested_sizing": {
+            "achieved_at_species_ceiling": [
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.0975,
+                "half_width_at_64_species_point_icc": 0.0893,
+                "mde_at_64_species_conservative_icc_upper": 0.1394,
+                "mde_at_64_species_point_icc": 0.1276,
+                "power_at_64_species_conservative_icc_upper": 0.999,
+                "power_at_64_species_point_icc": 1.0,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": true,
+                "power_ge_80_point_icc": true,
+                "probes_per_entity": 3
+              },
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.0898,
+                "half_width_at_64_species_point_icc": 0.0783,
+                "mde_at_64_species_conservative_icc_upper": 0.1283,
+                "mde_at_64_species_point_icc": 0.112,
+                "power_at_64_species_conservative_icc_upper": 1.0,
+                "power_at_64_species_point_icc": 1.0,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": true,
+                "power_ge_80_point_icc": true,
+                "probes_per_entity": 6
+              },
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.087,
+                "half_width_at_64_species_point_icc": 0.0743,
+                "mde_at_64_species_conservative_icc_upper": 0.1244,
+                "mde_at_64_species_point_icc": 0.1063,
+                "power_at_64_species_conservative_icc_upper": 1.0,
+                "power_at_64_species_point_icc": 1.0,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": true,
+                "power_ge_80_point_icc": true,
+                "probes_per_entity": 9
+              },
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.0856,
+                "half_width_at_64_species_point_icc": 0.0723,
+                "mde_at_64_species_conservative_icc_upper": 0.1224,
+                "mde_at_64_species_point_icc": 0.1033,
+                "power_at_64_species_conservative_icc_upper": 1.0,
+                "power_at_64_species_point_icc": 1.0,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": true,
+                "power_ge_80_point_icc": true,
+                "probes_per_entity": 12
+              },
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.0835,
+                "half_width_at_64_species_point_icc": 0.069,
+                "mde_at_64_species_conservative_icc_upper": 0.1193,
+                "mde_at_64_species_point_icc": 0.0986,
+                "power_at_64_species_conservative_icc_upper": 1.0,
+                "power_at_64_species_point_icc": 1.0,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": true,
+                "power_ge_80_point_icc": true,
+                "probes_per_entity": 24
+              }
+            ],
+            "alpha_one_sided": 0.025,
+            "asymptotic_species_floor_infinite_probes": 9,
+            "claim_answerable": true,
+            "claim_kind": "superiority",
+            "conservative_grid_at_icc_upper_bound": [
+              {
+                "probes_per_entity": 3,
+                "species_required": 20,
+                "total_probes_at_that_species_count": 60
+              },
+              {
+                "probes_per_entity": 6,
+                "species_required": 17,
+                "total_probes_at_that_species_count": 102
+              },
+              {
+                "probes_per_entity": 9,
+                "species_required": 16,
+                "total_probes_at_that_species_count": 144
+              },
+              {
+                "probes_per_entity": 12,
+                "species_required": 16,
+                "total_probes_at_that_species_count": 192
+              },
+              {
+                "probes_per_entity": 24,
+                "species_required": 15,
+                "total_probes_at_that_species_count": 360
+              }
+            ],
+            "conservative_species_floor_infinite_probes": 14,
+            "estimable": true,
+            "grid": [
+              {
+                "design_effect_vs_independent_probes": 1.562,
+                "probes_per_entity": 3,
+                "species_required": 17,
+                "species_variance_at_this_m": 0.132865,
+                "total_probes_at_that_species_count": 51
+              },
+              {
+                "design_effect_vs_independent_probes": 2.404,
+                "probes_per_entity": 6,
+                "species_required": 13,
+                "species_variance_at_this_m": 0.102269,
+                "total_probes_at_that_species_count": 78
+              },
+              {
+                "design_effect_vs_independent_probes": 3.246,
+                "probes_per_entity": 9,
+                "species_required": 12,
+                "species_variance_at_this_m": 0.09207,
+                "total_probes_at_that_species_count": 108
+              },
+              {
+                "design_effect_vs_independent_probes": 4.089,
+                "probes_per_entity": 12,
+                "species_required": 11,
+                "species_variance_at_this_m": 0.086971,
+                "total_probes_at_that_species_count": 132
+              },
+              {
+                "design_effect_vs_independent_probes": 7.458,
+                "probes_per_entity": 24,
+                "species_required": 10,
+                "species_variance_at_this_m": 0.079322,
+                "total_probes_at_that_species_count": 240
+              }
+            ],
+            "icc_planning_value_used_for_conservative_grid": 0.4311,
+            "icc_sensitivity_at_12_probes": [
+              {
+                "assumed_icc": 0.0,
+                "probes_per_entity": 12,
+                "species_required": 3
+              },
+              {
+                "assumed_icc": 0.1,
+                "probes_per_entity": 12,
+                "species_required": 6
+              },
+              {
+                "assumed_icc": 0.2,
+                "probes_per_entity": 12,
+                "species_required": 9
+              },
+              {
+                "assumed_icc": 0.3,
+                "probes_per_entity": 12,
+                "species_required": 12
+              },
+              {
+                "assumed_icc": 0.5,
+                "probes_per_entity": 12,
+                "species_required": 18
+              }
+            ],
+            "interpretation": "species_required stops falling as probes_per_entity grows because only the within-species component is divided by m; the asymptotic floor is what the between-species component alone demands and no number of photographs per species can go below it. The conservative grid repeats that calculation at the ICC upper confidence bound, which is the value a preregistration should plan on when the point estimate is floored at zero. Both grids divide by the claim's usable distance, not by the raw margin, so species_required is not comparable across rows of different claim_kind.",
+            "margin": 0.05,
+            "not_answerable_reason": null,
+            "power": 0.8,
+            "species_ceiling": 64,
+            "theta_used": -0.251323,
+            "usable_distance": 0.251323
+          },
+          "paired": {
+            "achieved_half_width_at_11r_size": 0.108077,
+            "claim_kind": "superiority",
+            "comparison": "B3_minus_B0:filr",
+            "mean_diff": -0.251323,
+            "min_margin_concludeable_at_42_clusters_equivalence": {
+              "power80": 0.4058,
+              "power90": 0.4301
+            },
+            "min_margin_concludeable_at_42_clusters_non_inferiority": {
+              "power80": 0.4058,
+              "power90": 0.4301
+            },
+            "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+            "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+            "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+            "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+            "n_for_superiority_power80": 16,
+            "n_for_superiority_power90": 22,
+            "num_clusters": 42,
+            "sd_ci95": [
+              0.294033,
+              0.455787
+            ],
+            "sd_of_cluster_diffs": 0.357363,
+            "standardized_effect_dz": -0.7033
+          },
+          "variance_components": {
+            "estimable": true,
+            "grand_mean": -0.25,
+            "icc_bootstrap_degenerate_fraction": 0.0,
+            "icc_ci95": [
+              0.1123,
+              0.4311
+            ],
+            "icc_planning_value_upper_bound": 0.4311,
+            "icc_point_estimate": 0.2808,
+            "ms_between": 0.449187,
+            "ms_within": 0.183575,
+            "num_probes": 180,
+            "num_species": 42,
+            "probes_per_species_harmonic_mean": 3.706,
+            "probes_per_species_max": 9,
+            "probes_per_species_min": 3,
+            "sigma2_between": 0.071673,
+            "sigma2_between_floored_at_zero": false,
+            "sigma2_between_raw": 0.071673,
+            "sigma2_within": 0.183575
+          }
+        },
+        "B3_minus_B0:tga": {
+          "nested_sizing": {
+            "achieved_at_species_ceiling": [
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.0942,
+                "half_width_at_64_species_point_icc": 0.0869,
+                "mde_at_64_species_conservative_icc_upper": 0.1346,
+                "mde_at_64_species_point_icc": 0.1241,
+                "power_at_64_species_conservative_icc_upper": 1.0,
+                "power_at_64_species_point_icc": 1.0,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": true,
+                "power_ge_80_point_icc": true,
+                "probes_per_entity": 3
+              },
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.086,
+                "half_width_at_64_species_point_icc": 0.0758,
+                "mde_at_64_species_conservative_icc_upper": 0.1229,
+                "mde_at_64_species_point_icc": 0.1083,
+                "power_at_64_species_conservative_icc_upper": 1.0,
+                "power_at_64_species_point_icc": 1.0,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": true,
+                "power_ge_80_point_icc": true,
+                "probes_per_entity": 6
+              },
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.0831,
+                "half_width_at_64_species_point_icc": 0.0717,
+                "mde_at_64_species_conservative_icc_upper": 0.1188,
+                "mde_at_64_species_point_icc": 0.1025,
+                "power_at_64_species_conservative_icc_upper": 1.0,
+                "power_at_64_species_point_icc": 1.0,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": true,
+                "power_ge_80_point_icc": true,
+                "probes_per_entity": 9
+              },
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.0816,
+                "half_width_at_64_species_point_icc": 0.0696,
+                "mde_at_64_species_conservative_icc_upper": 0.1166,
+                "mde_at_64_species_point_icc": 0.0994,
+                "power_at_64_species_conservative_icc_upper": 1.0,
+                "power_at_64_species_point_icc": 1.0,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": true,
+                "power_ge_80_point_icc": true,
+                "probes_per_entity": 12
+              },
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.0793,
+                "half_width_at_64_species_point_icc": 0.0662,
+                "mde_at_64_species_conservative_icc_upper": 0.1134,
+                "mde_at_64_species_point_icc": 0.0947,
+                "power_at_64_species_conservative_icc_upper": 1.0,
+                "power_at_64_species_point_icc": 1.0,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": true,
+                "power_ge_80_point_icc": true,
+                "probes_per_entity": 24
+              }
+            ],
+            "alpha_one_sided": 0.025,
+            "asymptotic_species_floor_infinite_probes": 7,
+            "claim_answerable": true,
+            "claim_kind": "superiority",
+            "conservative_grid_at_icc_upper_bound": [
+              {
+                "probes_per_entity": 3,
+                "species_required": 16,
+                "total_probes_at_that_species_count": 48
+              },
+              {
+                "probes_per_entity": 6,
+                "species_required": 13,
+                "total_probes_at_that_species_count": 78
+              },
+              {
+                "probes_per_entity": 9,
+                "species_required": 12,
+                "total_probes_at_that_species_count": 108
+              },
+              {
+                "probes_per_entity": 12,
+                "species_required": 12,
+                "total_probes_at_that_species_count": 144
+              },
+              {
+                "probes_per_entity": 24,
+                "species_required": 11,
+                "total_probes_at_that_species_count": 264
+              }
+            ],
+            "conservative_species_floor_infinite_probes": 11,
+            "estimable": true,
+            "grid": [
+              {
+                "design_effect_vs_independent_probes": 1.533,
+                "probes_per_entity": 3,
+                "species_required": 14,
+                "species_variance_at_this_m": 0.125676,
+                "total_probes_at_that_species_count": 42
+              },
+              {
+                "design_effect_vs_independent_probes": 2.333,
+                "probes_per_entity": 6,
+                "species_required": 10,
+                "species_variance_at_this_m": 0.095617,
+                "total_probes_at_that_species_count": 60
+              },
+              {
+                "design_effect_vs_independent_probes": 3.133,
+                "probes_per_entity": 9,
+                "species_required": 9,
+                "species_variance_at_this_m": 0.085597,
+                "total_probes_at_that_species_count": 81
+              },
+              {
+                "design_effect_vs_independent_probes": 3.933,
+                "probes_per_entity": 12,
+                "species_required": 9,
+                "species_variance_at_this_m": 0.080588,
+                "total_probes_at_that_species_count": 108
+              },
+              {
+                "design_effect_vs_independent_probes": 7.132,
+                "probes_per_entity": 24,
+                "species_required": 8,
+                "species_variance_at_this_m": 0.073073,
+                "total_probes_at_that_species_count": 192
+              }
+            ],
+            "icc_planning_value_used_for_conservative_grid": 0.4013,
+            "icc_sensitivity_at_12_probes": [
+              {
+                "assumed_icc": 0.0,
+                "probes_per_entity": 12,
+                "species_required": 3
+              },
+              {
+                "assumed_icc": 0.1,
+                "probes_per_entity": 12,
+                "species_required": 5
+              },
+              {
+                "assumed_icc": 0.2,
+                "probes_per_entity": 12,
+                "species_required": 7
+              },
+              {
+                "assumed_icc": 0.3,
+                "probes_per_entity": 12,
+                "species_required": 10
+              },
+              {
+                "assumed_icc": 0.5,
+                "probes_per_entity": 12,
+                "species_required": 14
+              }
+            ],
+            "interpretation": "species_required stops falling as probes_per_entity grows because only the within-species component is divided by m; the asymptotic floor is what the between-species component alone demands and no number of photographs per species can go below it. The conservative grid repeats that calculation at the ICC upper confidence bound, which is the value a preregistration should plan on when the point estimate is floored at zero. Both grids divide by the claim's usable distance, not by the raw margin, so species_required is not comparable across rows of different claim_kind.",
+            "margin": 0.05,
+            "not_answerable_reason": null,
+            "power": 0.8,
+            "species_ceiling": 64,
+            "theta_used": 0.275132,
+            "usable_distance": 0.275132
+          },
+          "paired": {
+            "achieved_half_width_at_11r_size": 0.102634,
+            "claim_kind": "superiority",
+            "comparison": "B3_minus_B0:tga",
+            "mean_diff": 0.275132,
+            "min_margin_concludeable_at_42_clusters_equivalence": {
+              "power80": 0.4218,
+              "power90": 0.4449
+            },
+            "min_margin_concludeable_at_42_clusters_non_inferiority": {
+              "power80": -0.1284,
+              "power90": -0.1054
+            },
+            "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+            "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+            "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+            "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+            "n_for_superiority_power80": 12,
+            "n_for_superiority_power90": 16,
+            "num_clusters": 42,
+            "sd_ci95": [
+              0.279225,
+              0.432833
+            ],
+            "sd_of_cluster_diffs": 0.339366,
+            "standardized_effect_dz": 0.8107
+          },
+          "variance_components": {
+            "estimable": true,
+            "grand_mean": 0.255556,
+            "icc_bootstrap_degenerate_fraction": 0.0,
+            "icc_ci95": [
+              0.1122,
+              0.4013
+            ],
+            "icc_planning_value_upper_bound": 0.4013,
+            "icc_point_estimate": 0.2666,
+            "ms_between": 0.423306,
+            "ms_within": 0.180354,
+            "num_probes": 180,
+            "num_species": 42,
+            "probes_per_species_harmonic_mean": 3.706,
+            "probes_per_species_max": 9,
+            "probes_per_species_min": 3,
+            "sigma2_between": 0.065558,
+            "sigma2_between_floored_at_zero": false,
+            "sigma2_between_raw": 0.065558,
+            "sigma2_within": 0.180354
+          }
+        },
+        "B3_minus_MG:filr": {
+          "nested_sizing": {
+            "achieved_at_species_ceiling": [
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.0758,
+                "half_width_at_64_species_point_icc": 0.0678,
+                "mde_at_64_species_conservative_icc_upper": null,
+                "mde_at_64_species_point_icc": null,
+                "power_at_64_species_conservative_icc_upper": null,
+                "power_at_64_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 3
+              },
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.0666,
+                "half_width_at_64_species_point_icc": 0.0547,
+                "mde_at_64_species_conservative_icc_upper": null,
+                "mde_at_64_species_point_icc": null,
+                "power_at_64_species_conservative_icc_upper": null,
+                "power_at_64_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 6
+              },
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.0633,
+                "half_width_at_64_species_point_icc": 0.0496,
+                "mde_at_64_species_conservative_icc_upper": null,
+                "mde_at_64_species_point_icc": null,
+                "power_at_64_species_conservative_icc_upper": null,
+                "power_at_64_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 9
+              },
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.0615,
+                "half_width_at_64_species_point_icc": 0.0468,
+                "mde_at_64_species_conservative_icc_upper": null,
+                "mde_at_64_species_point_icc": null,
+                "power_at_64_species_conservative_icc_upper": null,
+                "power_at_64_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 12
+              },
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.0588,
+                "half_width_at_64_species_point_icc": 0.0423,
+                "mde_at_64_species_conservative_icc_upper": null,
+                "mde_at_64_species_point_icc": null,
+                "power_at_64_species_conservative_icc_upper": null,
+                "power_at_64_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 24
+              }
+            ],
+            "alpha_one_sided": 0.025,
+            "asymptotic_species_floor_infinite_probes": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+            "claim_answerable": false,
+            "claim_kind": "descriptive",
+            "conservative_grid_at_icc_upper_bound": [
+              {
+                "probes_per_entity": 3,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 6,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 9,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 24,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              }
+            ],
+            "conservative_species_floor_infinite_probes": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+            "estimable": true,
+            "grid": [
+              {
+                "design_effect_vs_independent_probes": 1.252,
+                "probes_per_entity": 3,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.076536,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 1.631,
+                "probes_per_entity": 6,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.049832,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 2.009,
+                "probes_per_entity": 9,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.040931,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 2.388,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.03648,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 3.901,
+                "probes_per_entity": 24,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.029804,
+                "total_probes_at_that_species_count": null
+              }
+            ],
+            "icc_planning_value_used_for_conservative_grid": 0.2841,
+            "icc_sensitivity_at_12_probes": [
+              {
+                "assumed_icc": 0.0,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              },
+              {
+                "assumed_icc": 0.1,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              },
+              {
+                "assumed_icc": 0.2,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              },
+              {
+                "assumed_icc": 0.3,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              },
+              {
+                "assumed_icc": 0.5,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              }
+            ],
+            "interpretation": "species_required stops falling as probes_per_entity grows because only the within-species component is divided by m; the asymptotic floor is what the between-species component alone demands and no number of photographs per species can go below it. The conservative grid repeats that calculation at the ICC upper confidence bound, which is the value a preregistration should plan on when the point estimate is floored at zero. Both grids divide by the claim's usable distance, not by the raw margin, so species_required is not comparable across rows of different claim_kind.",
+            "margin": 0.05,
+            "not_answerable_reason": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+            "power": 0.8,
+            "species_ceiling": 64,
+            "theta_used": 0.185185,
+            "usable_distance": null
+          },
+          "paired": {
+            "achieved_half_width_at_11r_size": 0.076201,
+            "claim_kind": "descriptive",
+            "comparison": "B3_minus_MG:filr",
+            "mean_diff": 0.185185,
+            "min_margin_concludeable_at_42_clusters_equivalence": {
+              "power80": 0.2941,
+              "power90": 0.3112
+            },
+            "min_margin_concludeable_at_42_clusters_non_inferiority": {
+              "power80": -0.0763,
+              "power90": -0.0592
+            },
+            "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+            "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+            "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+            "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+            "n_for_superiority_power80": "n/a: not this claim's question",
+            "n_for_superiority_power90": "n/a: not this claim's question",
+            "num_clusters": 42,
+            "sd_ci95": [
+              0.207311,
+              0.321357
+            ],
+            "sd_of_cluster_diffs": 0.251962,
+            "standardized_effect_dz": 0.735
+          },
+          "variance_components": {
+            "estimable": true,
+            "grand_mean": 0.194444,
+            "icc_bootstrap_degenerate_fraction": 0.0,
+            "icc_ci95": [
+              0.0,
+              0.2841
+            ],
+            "icc_planning_value_upper_bound": 0.2841,
+            "icc_point_estimate": 0.1261,
+            "ms_between": 0.245935,
+            "ms_within": 0.160225,
+            "num_probes": 180,
+            "num_species": 42,
+            "probes_per_species_harmonic_mean": 3.706,
+            "probes_per_species_max": 9,
+            "probes_per_species_min": 3,
+            "sigma2_between": 0.023128,
+            "sigma2_between_floored_at_zero": false,
+            "sigma2_between_raw": 0.023128,
+            "sigma2_within": 0.160225
+          }
+        },
+        "B3_minus_MG:tga": {
+          "nested_sizing": {
+            "achieved_at_species_ceiling": [
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.1105,
+                "half_width_at_64_species_point_icc": 0.0989,
+                "mde_at_64_species_conservative_icc_upper": null,
+                "mde_at_64_species_point_icc": null,
+                "power_at_64_species_conservative_icc_upper": null,
+                "power_at_64_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 3
+              },
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.1015,
+                "half_width_at_64_species_point_icc": 0.0853,
+                "mde_at_64_species_conservative_icc_upper": null,
+                "mde_at_64_species_point_icc": null,
+                "power_at_64_species_conservative_icc_upper": null,
+                "power_at_64_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 6
+              },
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.0983,
+                "half_width_at_64_species_point_icc": 0.0802,
+                "mde_at_64_species_conservative_icc_upper": null,
+                "mde_at_64_species_point_icc": null,
+                "power_at_64_species_conservative_icc_upper": null,
+                "power_at_64_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 9
+              },
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.0967,
+                "half_width_at_64_species_point_icc": 0.0776,
+                "mde_at_64_species_conservative_icc_upper": null,
+                "mde_at_64_species_point_icc": null,
+                "power_at_64_species_conservative_icc_upper": null,
+                "power_at_64_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 12
+              },
+              {
+                "half_width_at_64_species_conservative_icc_upper": 0.0942,
+                "half_width_at_64_species_point_icc": 0.0734,
+                "mde_at_64_species_conservative_icc_upper": null,
+                "mde_at_64_species_point_icc": null,
+                "power_at_64_species_conservative_icc_upper": null,
+                "power_at_64_species_point_icc": null,
+                "power_at_true_difference_zero_conservative_icc_upper": null,
+                "power_at_true_difference_zero_point_icc": null,
+                "power_ge_80_conservative_icc_upper": null,
+                "power_ge_80_point_icc": null,
+                "probes_per_entity": 24
+              }
+            ],
+            "alpha_one_sided": 0.025,
+            "asymptotic_species_floor_infinite_probes": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+            "claim_answerable": false,
+            "claim_kind": "descriptive",
+            "conservative_grid_at_icc_upper_bound": [
+              {
+                "probes_per_entity": 3,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 6,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 9,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "probes_per_entity": 24,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "total_probes_at_that_species_count": null
+              }
+            ],
+            "conservative_species_floor_infinite_probes": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+            "estimable": true,
+            "grid": [
+              {
+                "design_effect_vs_independent_probes": 1.481,
+                "probes_per_entity": 3,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.162948,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 2.202,
+                "probes_per_entity": 6,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.121147,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 2.923,
+                "probes_per_entity": 9,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.107213,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 3.644,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.100246,
+                "total_probes_at_that_species_count": null
+              },
+              {
+                "design_effect_vs_independent_probes": 6.528,
+                "probes_per_entity": 24,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+                "species_variance_at_this_m": 0.089796,
+                "total_probes_at_that_species_count": null
+              }
+            ],
+            "icc_planning_value_used_for_conservative_grid": 0.4241,
+            "icc_sensitivity_at_12_probes": [
+              {
+                "assumed_icc": 0.0,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              },
+              {
+                "assumed_icc": 0.1,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              },
+              {
+                "assumed_icc": 0.2,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              },
+              {
+                "assumed_icc": 0.3,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              },
+              {
+                "assumed_icc": 0.5,
+                "probes_per_entity": 12,
+                "species_required": "NOT ANSWERABLE: a descriptive metric carries no claim."
+              }
+            ],
+            "interpretation": "species_required stops falling as probes_per_entity grows because only the within-species component is divided by m; the asymptotic floor is what the between-species component alone demands and no number of photographs per species can go below it. The conservative grid repeats that calculation at the ICC upper confidence bound, which is the value a preregistration should plan on when the point estimate is floored at zero. Both grids divide by the claim's usable distance, not by the raw margin, so species_required is not comparable across rows of different claim_kind.",
+            "margin": 0.05,
+            "not_answerable_reason": "NOT ANSWERABLE: a descriptive metric carries no claim.",
+            "power": 0.8,
+            "species_ceiling": 64,
+            "theta_used": -0.138889,
+            "usable_distance": null
+          },
+          "paired": {
+            "achieved_half_width_at_11r_size": 0.12348,
+            "claim_kind": "descriptive",
+            "comparison": "B3_minus_MG:tga",
+            "mean_diff": -0.138889,
+            "min_margin_concludeable_at_42_clusters_equivalence": {
+              "power80": 0.3154,
+              "power90": 0.3431
+            },
+            "min_margin_concludeable_at_42_clusters_non_inferiority": {
+              "power80": 0.3154,
+              "power90": 0.3431
+            },
+            "n_for_equivalence_delta0.05_power80": "n/a: not this claim's question",
+            "n_for_equivalence_delta0.05_power90": "n/a: not this claim's question",
+            "n_for_non_inferiority_delta0.05_power80": "n/a: not this claim's question",
+            "n_for_non_inferiority_delta0.05_power90": "n/a: not this claim's question",
+            "n_for_superiority_power80": "n/a: not this claim's question",
+            "n_for_superiority_power90": "n/a: not this claim's question",
+            "num_clusters": 42,
+            "sd_ci95": [
+              0.335938,
+              0.520746
+            ],
+            "sd_of_cluster_diffs": 0.408294,
+            "standardized_effect_dz": -0.3402
+          },
+          "variance_components": {
+            "estimable": true,
+            "grand_mean": -0.15,
+            "icc_bootstrap_degenerate_fraction": 0.0,
+            "icc_ci95": [
+              0.0201,
+              0.4241
+            ],
+            "icc_planning_value_upper_bound": 0.4241,
+            "icc_point_estimate": 0.2403,
+            "ms_between": 0.544851,
+            "ms_within": 0.250805,
+            "num_probes": 180,
+            "num_species": 42,
+            "probes_per_species_harmonic_mean": 3.706,
+            "probes_per_species_max": 9,
+            "probes_per_species_min": 3,
+            "sigma2_between": 0.079346,
+            "sigma2_between_floored_at_zero": false,
+            "sigma2_between_raw": 0.079346,
+            "sigma2_within": 0.250805
+          }
+        }
+      },
+      "nesting_cluster_is": "MLLMU person",
+      "num_probes": 180,
+      "num_species": 42,
+      "photos_per_entity_in_pilot100_v2": [
+        1
+      ],
+      "probe_options_beyond_the_reachable_max": [],
+      "probes_per_entity_axis_is": "new WORDING variants per person. The portrait is fixed: an MLLMU person has exactly one photograph, so this stratum can never become a held-out-photograph stratum and no number of probes changes that.",
+      "source_datasets": [
+        "mllmu_hier"
+      ]
+    }
+  },
+  "mg_equivalence_decision": {
+    "decision": "secondary_descriptive_only",
+    "equivalence_test_run": false,
+    "in_the_holm_family": false,
+    "per_claim": {
+      "B3_minus_MG:filr": {
+        "achieved_half_width_at_11r_size": 0.055473,
+        "claim_kind_now": "descriptive",
+        "clusters_available": 100,
+        "clusters_needed_at_delta0.05_power80_had_it_been_tested": 2702,
+        "feasible_at_delta0.05": false,
+        "observed_effect": 0.037054,
+        "smallest_concludeable_margin_power80": 0.1163
+      },
+      "B3_minus_MG:tga": {
+        "achieved_half_width_at_11r_size": 0.049827,
+        "claim_kind_now": "descriptive",
+        "clusters_available": 100,
+        "clusters_needed_at_delta0.05_power80_had_it_been_tested": 560,
+        "feasible_at_delta0.05": false,
+        "observed_effect": -0.024444,
+        "smallest_concludeable_margin_power80": 0.0957
+      }
+    },
+    "reason": "at delta = 0.05 the required cluster count is several times the hard entity ceiling of 100, so a TOST could only ever return NOT CONCLUDED. Preregistering a test that cannot succeed spends Holm budget and weakens the thresholds for the claims that can.",
+    "what_is_still_reported": "the paired interval against M_G with its half-width and both averaging units, plus an explicit statement that equivalence is NOT concluded"
+  },
+  "new_photograph_supply": {
+    "achievable_ceilings_for_the_held_out_stratum": {
+      "max_new_photos_per_species_offline": 12,
+      "species_offline_any_provenance": 20,
+      "species_offline_with_auditable_provenance": 0,
+      "species_via_seeded_refetch": 36
+    },
+    "frozen_pool_contributes_new_photos": 0,
+    "frozen_pool_reason": "all 432 of 432 pilot_v1 photographs are referenced by pilot100_v2: index 0 is reserved for training and the remainder are cut into disjoint val/test pools, so the existing 12 per species are fully allocated",
+    "offline_pool": {
+      "has_license_and_attribution": false,
+      "max_new_photos_per_species": 12,
+      "missing_provenance_fields": [
+        "license_code",
+        "attribution",
+        "source_url",
+        "observation_id",
+        "photo_id"
+      ],
+      "num_new_photos": 240,
+      "num_species_covered": 20,
+      "reason": "content hashes are disjoint from every photograph pilot100_v2 uses, so these are genuinely new; but the pool is gitignored and records no license, attribution, observation id or source URL, so neither the bytes nor the CC licensing can be verified from the commit",
+      "reproducible_from_the_commit": false,
+      "species_left_with_no_new_photo": 16,
+      "tracked_by_git": false,
+      "usable_for_a_confirmatory_claim": false
+    },
+    "pools": {
+      "local_v1": {
+        "carries_license_provenance": false,
+        "num_photos": 240,
+        "num_photos_disjoint_from_pilot100_v2": 240,
+        "num_photos_referenced_by_pilot100_v2": 0,
+        "num_species": 20,
+        "photos_per_species": [
+          12
+        ],
+        "present": true,
+        "reproducible_from_the_commit": false,
+        "root": "data/raw/inaturalist/local_v1/images",
+        "species_with_a_disjoint_photo": 20,
+        "tracked_by_git": false
+      },
+      "pilot_v1": {
+        "carries_license_provenance": true,
+        "num_photos": 432,
+        "num_photos_disjoint_from_pilot100_v2": 0,
+        "num_photos_referenced_by_pilot100_v2": 432,
+        "num_species": 36,
+        "photos_per_species": [
+          12
+        ],
+        "present": true,
+        "reproducible_from_the_commit": true,
+        "root": "data/raw/inaturalist/pilot_v1/images",
+        "species_with_a_disjoint_photo": 0,
+        "tracked_by_git": false
+      }
+    },
+    "seeded_refetch": {
+      "disjointness_mechanism": "re-fetch at the SAME seed 42 with a larger --images-per-species: the seeded shuffle over the pool is then identical, so the first 12 of the longer draw are the already-allocated photographs and the remainder are new BY CONSTRUCTION. This must still be verified by content hash after the fetch, because the resolution gate replaces a rejected candidate with the next one in the seeded order and that path depends on what S3 serves.",
+      "network_required": true,
+      "photo_pool_queried_per_species": "up to 3 pages x 200 observations, filtered to licensed research-grade photos with a full size ladder",
+      "records_license_and_attribution": true,
+      "script": "scripts/fetch_inat_species.py",
+      "species_covered": 36
+    }
+  },
+  "notes": [
+    "TGA superiority of B3 over B0 is carried by seen_photo_unseen_wording. On held-out photographs the same comparison measured -0.0111 over 30 species with a 95% interval of [-0.0493, +0.0270], which does not exclude zero, so no probe count the photograph supply permits powers it there. New photographs buy precision on a secondary and possibly null held-out measurement; the mde columns, not the power columns, are the honest basis for choosing how many.",
+    "FILR reduction of B3 over B0 is carried by seen_photo_unseen_wording. On held-out photographs the same comparison measured -0.0111 over 30 species with a 95% interval of [-0.0329, +0.0107], which does not exclude zero, so no probe count the photograph supply permits powers it there. New photographs buy precision on a secondary and possibly null held-out measurement; the mde columns, not the power columns, are the honest basis for choosing how many.",
+    "Retention is DESCRIPTIVE, with no declared margin. Had it stayed a primary non-inferiority claim, delta = 0.05 would be infeasible for both retention claims: the cluster counts above exceed every entity this dataset contains, and the entity ceiling is hard because the preserved adapters unlearned a target set drawn from exactly these entities; the smallest margin this design could conclude is 0.0951 and the batch-layout noise floor on retain metrics is 0.0556, so the narrowest margin satisfying both would have been 0.0951. Widening the margin to fit the design was rejected; the intervals are published instead, with no non-inferiority test and no Holm entry.",
+    "B3_minus_MG:tga: DESCRIPTIVE only, no equivalence test. Equivalence to M_G at delta = 0.05 would need 560 entity clusters against a hard ceiling of 100, and the smallest margin concludeable at 11R's 72 clusters is 0.0957. This is the power analysis the preregistration asked for before treating the claim as anything but secondary; the interval and its half-width are published and equivalence is stated as NOT concluded.",
+    "B3_minus_MG:filr: DESCRIPTIVE only, no equivalence test. Equivalence to M_G at delta = 0.05 would need 2702 entity clusters against a hard ceiling of 100, and the smallest margin concludeable at 11R's 72 clusters is 0.1163. This is the power analysis the preregistration asked for before treating the claim as anything but secondary; the interval and its half-width are published and equivalence is stated as NOT concluded.",
+    "Primary family is B3_minus_B0:tga, B3_minus_B0:filr under Holm with k = 2. Both are carried by the seen_photo_unseen_wording stratum, whose probes are new WORDING variants over the same persons, so the primary claims require no new photographs and no new entities.",
+    "This report is committed; the photographs it measures in new_photograph_supply mostly are not. pilot_v1 is re-fetchable and verifiable through its committed PROVENANCE.json, while the local_v1 pool is gitignored with no license record, so its 240 hash-disjoint photographs are reproducible only on the machine that generated this file. See each pool's reproducible_from_the_commit."
+  ],
+  "preregistration_decisions": {
+    "decisions": [
+      {
+        "chosen": "demote retention to descriptive; declare no margin",
+        "evidence": "retention_claim_decision",
+        "id": "retention_margin",
+        "question": "what margin for retention non-inferiority",
+        "rejected": [
+          "declare delta = 0.1",
+          "keep delta = 0.05 and report both claims as underpowered"
+        ]
+      },
+      {
+        "chosen": "secondary and descriptive only: publish the interval and its half-width, run no equivalence test, state that equivalence is NOT concluded",
+        "evidence": "mg_equivalence_decision",
+        "id": "b3_vs_mg",
+        "question": "is B3-M_G equivalence primary, secondary, or absent",
+        "rejected": [
+          "secondary at a wider delta",
+          "keep primary at delta = 0.05"
+        ]
+      },
+      {
+        "chosen": "seeded superset re-fetch: same seed with a larger --images-per-species, taking the photographs beyond the already-allocated ones, so the new set carries full license and attribution provenance and covers every species",
+        "held_out_mde_at_the_chosen_ceiling": {
+          "3": 0.05,
+          "6": 0.0359,
+          "9": 0.0298,
+          "12": 0.0262,
+          "24": 0.0196
+        },
+        "id": "new_photograph_supply",
+        "question": "which route and budget for held-out photographs",
+        "rejected": [
+          "the offline local_v1 pool (240 disjoint photographs, no license record)",
+          "a minimal offline allocation",
+          "no new photographs"
+        ],
+        "route": {
+          "disjointness_mechanism": "re-fetch at the SAME seed 42 with a larger --images-per-species: the seeded shuffle over the pool is then identical, so the first 12 of the longer draw are the already-allocated photographs and the remainder are new BY CONSTRUCTION. This must still be verified by content hash after the fetch, because the resolution gate replaces a rejected candidate with the next one in the seeded order and that path depends on what S3 serves.",
+          "network_required": true,
+          "photo_pool_queried_per_species": "up to 3 pages x 200 observations, filtered to licensed research-grade photos with a full size ladder",
+          "records_license_and_attribution": true,
+          "script": "scripts/fetch_inat_species.py",
+          "species_covered": 36
+        },
+        "species_covered": 36,
+        "verification_required_before_freeze": "the frozen 432 photographs must be a subset of the re-fetched set by SHA-256, and the remainder must be disjoint from them; the seeded-superset argument is defeated if the API's pool has grown or the resolution gate rejected differently",
+        "what_the_photographs_are_for": "precision on a SECONDARY held-out measurement, not a primary claim: neither B3-vs-B0 claim is carried by this stratum, so the budget is set by the minimum detectable effect worth reporting"
+      }
+    ],
+    "multiplicity": "Holm over k = 2",
+    "primary_claim_kinds": {
+      "B3_minus_B0:filr": "superiority",
+      "B3_minus_B0:tga": "superiority"
+    },
+    "primary_family": [
+      "B3_minus_B0:tga",
+      "B3_minus_B0:filr"
+    ]
+  },
+  "retention_claim_decision": {
+    "decision": "demoted_to_descriptive",
+    "declared_margin": null,
+    "delta0.05_verdict": "infeasible for both retention claims: the cluster counts above exceed every entity this dataset contains, and the entity ceiling is hard because the preserved adapters unlearned a target set drawn from exactly these entities",
+    "lower_bound_from_batch_layout_noise": 0.0556,
+    "lower_bound_from_precision_at_available_clusters": 0.0951,
+    "margin_that_would_have_been_declared": 0.1,
+    "per_claim": {
+      "B3_minus_B0:retain_other": {
+        "batch_layout_floor_on_retain_metrics": 0.0556,
+        "claim_kind_now": "descriptive",
+        "clusters_available": 100,
+        "clusters_needed_at_delta0.05_power80_had_it_stayed_primary": 120,
+        "feasible_at_delta0.05": false,
+        "smallest_concludeable_margin_power80": 0.0951
+      },
+      "B3_minus_B0:retain_same": {
+        "batch_layout_floor_on_retain_metrics": 0.0556,
+        "claim_kind_now": "descriptive",
+        "clusters_available": 100,
+        "clusters_needed_at_delta0.05_power80_had_it_stayed_primary": 287,
+        "feasible_at_delta0.05": false,
+        "smallest_concludeable_margin_power80": 0.0844
+      }
+    },
+    "rejected_alternative": "declaring delta = 0.1 would have kept both claims primary and concludeable, but a margin chosen after seeing that 0.05 cannot be reached is a margin widened to fit the design, and a retention claim at that width does not support 'no collateral damage'",
+    "smallest_margin_that_would_have_satisfied_both": 0.0951,
+    "what_is_still_reported": "paired entity-clustered intervals for retain_same and retain_other with both averaging units, and their half-widths; no non-inferiority test and no entry in the Holm family"
+  },
+  "source_predictions": {
+    "B0": "data/mllmu_hier_pilot100/predictions/predictions_test_B0.parquet",
+    "B3": "data/mllmu_hier_pilot100/predictions/predictions_test_B3_lam0.5_lr2e-05_ep5.parquet",
+    "MG": "data/mllmu_hier_pilot100/predictions/predictions_test_MG.parquet"
+  },
+  "stratum_heterogeneity": {
+    "B3_minus_B0:filr": {
+      "claim": "FILR reduction of B3 below B0",
+      "per_stratum": {
+        "held_out_photo": {
+          "ci95": [
+            -0.0329,
+            0.0107
+          ],
+          "ci_excludes_zero": false,
+          "claim_answerable_at_this_effect": true,
+          "effect_direction_matches_the_claim": true,
+          "mean_diff": -0.011111,
+          "num_species": 30,
+          "species_ceiling": 36
+        },
+        "seen_photo_unseen_wording": {
+          "ci95": [
+            -0.3594,
+            -0.1432
+          ],
+          "ci_excludes_zero": true,
+          "claim_answerable_at_this_effect": true,
+          "effect_direction_matches_the_claim": true,
+          "mean_diff": -0.251323,
+          "num_species": 42,
+          "species_ceiling": 64
+        }
+      },
+      "pooled_mean_diff": -0.244204,
+      "pooled_num_clusters": 72,
+      "strata_that_carry_the_claim": [
+        "seen_photo_unseen_wording"
+      ],
+      "strata_that_do_not": [
+        "held_out_photo"
+      ]
+    },
+    "B3_minus_B0:tga": {
+      "claim": "TGA superiority of B3 over B0",
+      "per_stratum": {
+        "held_out_photo": {
+          "ci95": [
+            -0.0493,
+            0.027
+          ],
+          "ci_excludes_zero": false,
+          "claim_answerable_at_this_effect": true,
+          "effect_direction_matches_the_claim": false,
+          "mean_diff": -0.011111,
+          "num_species": 30,
+          "species_ceiling": 36
+        },
+        "seen_photo_unseen_wording": {
+          "ci95": [
+            0.1725,
+            0.3778
+          ],
+          "ci_excludes_zero": true,
+          "claim_answerable_at_this_effect": true,
+          "effect_direction_matches_the_claim": true,
+          "mean_diff": 0.275132,
+          "num_species": 42,
+          "species_ceiling": 64
+        }
+      },
+      "pooled_mean_diff": 0.198172,
+      "pooled_num_clusters": 72,
+      "strata_that_carry_the_claim": [
+        "seen_photo_unseen_wording"
+      ],
+      "strata_that_do_not": [
+        "held_out_photo"
+      ]
+    }
+  },
+  "tag": "pilot100"
+}

@@ -63,6 +63,12 @@ jobs:
               # dataset pins image paths but not photographs.
               "data/mllmu_hier_pilot100/image_manifest.json",
               "data/raw/inaturalist/pilot_v1/PROVENANCE.json",
+              # 11C preregistration evidence: the power analysis that sizes
+              # the confirmation split and derives the retention margin.  It
+              # reads the gitignored prediction parquets and photographs, so
+              # the committed JSON is the only reproducible record of the
+              # sizing decision.
+              "data/reports/mllmu_pilot100_confirmation_power.json",
           ]
           missing = [p for p in required if not Path(p).exists()]
           if missing:
