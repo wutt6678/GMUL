@@ -64,6 +64,57 @@ MIN_IMAGE_EDGE = 200
 #: Only this exact suffix implies the full size ladder exists.
 MODERN_SQUARE_SUFFIX = "square.jpg"
 
+
+def refuse_if_frozen_pool(out: Path, force: bool) -> list[str]:
+    """Refuse to fetch into a pool the frozen dataset is bound to.
+
+    ``--out`` defaults to ``data/raw/inaturalist/pilot_v1``, and 432 of the
+    496 photographs pinned by ``data/mllmu_hier_pilot100/image_manifest.json``
+    live under it.  That manifest's roll-up is part of the dataset fingerprint
+    inside every prediction sidecar, so re-fetching into the default would
+    replace bytes the committed evidence certifies — and the sidecars would
+    keep verifying against a manifest that no longer describes anything on
+    disk, which is worse than failing loudly.
+
+    A confirmation fetch goes to a NEW directory, so this never fires in
+    normal use.  It exists because the default is one omitted flag away from
+    destroying frozen evidence.  Returns the bound paths so a caller can
+    report them.
+    """
+    bound: list[str] = []
+    unreadable: list[str] = []
+    for mp in sorted(REPO_ROOT.glob("data/mllmu_hier_*/image_manifest.json")):
+        try:
+            images = json.loads(mp.read_text()).get("images") or {}
+        except (OSError, ValueError) as exc:
+            unreadable.append(f"{mp.name}: {exc}")
+            continue
+        for rel in images:
+            p = REPO_ROOT / rel
+            if p == out or out in p.parents:
+                bound.append(f"{mp.name} -> {rel}")
+    # Fail CLOSED.  The guard's job is to show that the target is unbound,
+    # and a manifest that cannot be read cannot show anything; treating it as
+    # "nothing pinned" would let a corrupt manifest quietly authorise exactly
+    # the overwrite it exists to prevent.
+    if unreadable and not force:
+        raise SystemExit(
+            f"REFUSED: {len(unreadable)} frozen image manifest(s) could not "
+            f"be read ({'; '.join(unreadable)}), so it cannot be shown that "
+            f"{out} is unbound. An unreadable manifest is not evidence that "
+            f"nothing is pinned. Repair or remove it, or pass "
+            f"--allow-overwrite-frozen.")
+    if bound and not force:
+        shown = ", ".join(bound[:3]) + (" ..." if len(bound) > 3 else "")
+        raise SystemExit(
+            f"REFUSED: {out} holds {len(bound)} photograph(s) pinned by a "
+            f"frozen image manifest ({shown}). Re-fetching would replace "
+            f"bytes the committed evidence certifies. Pass an --out that "
+            f"does not contain them, or --allow-overwrite-frozen if you "
+            f"intend to re-freeze the manifest and every sidecar bound to "
+            f"it.")
+    return bound
+
 # Committed pilot-100 taxonomic stratum: 36 species, 24 genera,
 # 14 families, 4 orders.  Multi-species genera give sibling/wrong-
 # branch probes; multi-genus families give ancestor levels.  Names
@@ -256,10 +307,16 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--limit-species", type=int, default=None)
     ap.add_argument("--skip-download", action="store_true")
+    ap.add_argument(
+        "--allow-overwrite-frozen", action="store_true",
+        help="permit writing into a pool whose photographs a frozen image "
+             "manifest pins; refused by default because that replaces bytes "
+             "the committed evidence certifies")
     args = ap.parse_args()
 
     out = (REPO_ROOT / args.out) if not Path(args.out).is_absolute() \
         else Path(args.out)
+    refuse_if_frozen_pool(out, args.allow_overwrite_frozen)
     species = SPECIES_LIST[:args.limit_species] \
         if args.limit_species else SPECIES_LIST
     rng = random.Random(args.seed)
