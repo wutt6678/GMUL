@@ -297,7 +297,11 @@ def main() -> None:
 
     provenance = {
         "experiment_id": EXPERIMENT_IDS[args.tag],
-        "iteration": 11 if args.tag == "pilot100" else 7,
+        # "11R" is a string, not 11: this record certifies the reports that
+        # carry iteration "11R" and dataset_version pilot100_v2, so saying
+        # 11 here would contradict the artifacts it binds. The v1 record is
+        # the one that said 11, and it is preserved at its own commit.
+        "iteration": "11R" if args.tag == "pilot100" else 7,
         "tag": args.tag,
         "dataset": DATASET_NOTES[args.tag],
         "dataset_version": version,

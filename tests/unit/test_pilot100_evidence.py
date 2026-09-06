@@ -14,14 +14,22 @@ What they enforce:
    the gradient-ascent divergence found by the sweep is recorded rather
    than silently dropped;
 3. the final evaluation is one-shot, uniformly batched, coverage-complete,
-   carries paired CIs for all four headline metrics against MF/MG/B0, and
+   carries paired CIs for all six headline metrics against MF/MG/B0, and
    the B0 == MF no-op invariant holds;
 4. provenance pins one recipe for all states, the base-model revision,
-   every adapter hash and the photo resolution gate.
+   every adapter hash and the photo resolution gate;
+5. Iteration 11R: every report is bound to pilot100_v2 and names the v1
+   commit it supersedes, the test split's ACTUAL exposure is stated rather
+   than implied by the phrase "one-shot", equivalence against M_G is
+   judged against a prespecified margin instead of inferred from a CI that
+   happens to cross zero, the paired point estimates reproduce the
+   published rates in their own unit, and the image-provenance strata are
+   reported together with the confound they carry.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import datetime
 from pathlib import Path
@@ -35,7 +43,16 @@ INAT_PROV = (REPO_ROOT / "data" / "raw" / "inaturalist" / "pilot_v1"
 
 EXPECTED_STATES = {"BASE", "MF", "MG", "MN"}
 EXPECTED_METHODS = {"B0", "B1", "B2", "B2R", "B3"}
-PAIRED_METRICS = ("tga", "wrong_branch", "retain_same", "retain_other")
+#: Report order, asserted exactly: adding a metric to PAIRED_METRICS in
+#: paired_ci.py without it reaching the report is a silent gap, and so is
+#: the reverse.  filr and over_forgetting were added by Iteration 11R --
+#: E2 had reported a paired CI for TGA while omitting the one for the
+#: metric the paper's leakage claim actually rests on.
+PAIRED_METRICS = ("filr", "tga", "wrong_branch", "over_forgetting",
+                  "retain_same", "retain_other")
+DATASET_VERSION = "pilot100_v2"
+SUPERSEDED_COMMIT = "3850461"
+EQUIVALENCE_MARGIN = 0.05
 NUM_QUERIES = 6777
 NUM_TEST_QUERIES = 2259
 
@@ -211,7 +228,7 @@ class TestFinalEvaluationEvidence:
     def test_one_shot_protocol_and_scope(self):
         rep = _load("mllmu_pilot100_final_evaluation")
         assert rep["experiment_id"] == "mllmu_pilot100_iter11"
-        assert rep["iteration"] == 11
+        assert rep["iteration"] == "11R"
         one = rep["one_shot"]
         assert one["num_test_queries"] == NUM_TEST_QUERIES
         assert one["num_queries_total"] == NUM_QUERIES
@@ -357,7 +374,11 @@ class TestFinalEvaluationEvidence:
         rep = _load("mllmu_pilot100_final_evaluation")
         one = rep["one_shot"]
         assert isinstance(one["assembled_without_generation"], bool)
-        assert "COMPLETE pass" in one["reuse_semantics"]
+        # reuse is defined by PROVENANCE, not by a filename: the sidecar
+        # must match adapter, revision, dataset, config and scoring code,
+        # and the rows must be exactly the frozen test probe set.
+        assert "provenance sidecar" in one["reuse_semantics"]
+        assert "refused and regenerated" in one["reuse_semantics"]
         assert "never a second look" in one["reuse_semantics"]
         reused = set(one["reused_existing_test_predictions"])
         assert reused <= set(rep["states"])
@@ -372,7 +393,9 @@ class TestProvenanceEvidence:
     def test_identity_and_iteration(self):
         rep = _load("mllmu_pilot100_reference_provenance")
         assert rep["experiment_id"] == "mllmu_pilot100_iter11"
-        assert rep["iteration"] == 11
+        # a string, not 11: this record certifies reports that say "11R" on
+        # pilot100_v2, so an integer 11 here would contradict them
+        assert rep["iteration"] == "11R"
         assert rep["tag"] == "pilot100"
         assert "100 entities" in rep["dataset"]
 
@@ -529,3 +552,281 @@ class TestProvenanceEvidence:
         assert "RTX 6000 Ada" in env["gpu"]
         assert any("diagnostics" in n and "not part of the contract" in n
                    for n in rep["notes"])
+
+
+# ── 5. Iteration 11R: repaired visual split, honest evidence ────────
+
+class TestIteration11REvidence:
+    """The repairs this iteration exists for.
+
+    Each test is named for the defect it closes rather than for the field
+    it reads: v1's wording survived review precisely because nothing in the
+    suite forbade it.
+    """
+
+    V2_REPORTS = ("mllmu_pilot100_reference_eval",
+                  "mllmu_pilot100_unlearning_selection",
+                  "mllmu_pilot100_final_evaluation",
+                  "mllmu_pilot100_reference_provenance")
+    #: the six JSONLs the reference states and every candidate were fitted
+    #: on. Byte-identity here is the entire no-retraining claim.
+    TRAINING_JSONLS = (
+        "data/mllmu_hier_pilot100/training/MF.jsonl",
+        "data/mllmu_hier_pilot100/training/MG.jsonl",
+        "data/mllmu_hier_pilot100/training/MN.jsonl",
+        "data/mllmu_hier_pilot100/unlearning/fine_target.jsonl",
+        "data/mllmu_hier_pilot100/unlearning/target_level.jsonl",
+        "data/mllmu_hier_pilot100/unlearning/retain.jsonl")
+
+    @pytest.mark.parametrize("name", V2_REPORTS)
+    def test_every_report_is_bound_to_the_repaired_dataset(self, name):
+        rep = _load(name)
+        assert rep["dataset_version"] == DATASET_VERSION, name
+
+    @pytest.mark.parametrize("name", V2_REPORTS[:3])
+    def test_each_report_names_what_it_supersedes(self, name):
+        """A regenerated report that does not name the one it replaces
+        leaves both in the tree looking current."""
+        sup = _load(name)["supersedes"]
+        assert sup["commit"] == SUPERSEDED_COMMIT, name
+        assert sup["iteration"] == 11
+        assert sup["dataset_version"] == "pilot100_v1"
+        assert "images[0]" in sup["reason"], name
+        assert "git show" in sup["v1_numbers_preserved_in"]
+
+    def test_provenance_pins_the_final_report_bytes(self):
+        prov = _load("mllmu_pilot100_reference_provenance")
+        fe = prov["final_evaluation"]
+        on_disk = hashlib.sha256(
+            (REPORTS / "mllmu_pilot100_final_evaluation.json")
+            .read_bytes()).hexdigest()
+        assert fe["report_sha256"] == on_disk
+        assert fe["superseded"] is False
+        assert fe["dataset_version"] == DATASET_VERSION
+        assert prov["selection"]["superseded"] is False
+
+    def test_no_retraining_was_needed_and_the_record_proves_it(self):
+        tr = _load("mllmu_pilot100_reference_provenance")["dataset_transition"]
+        assert (tr["from"], tr["to"]) == ("pilot100_v1", DATASET_VERSION)
+        assert tr["training_jsonls_byte_identical"] is True
+        assert tr["retraining_required"] is False
+        assert tr["v1_source_commit"] == SUPERSEDED_COMMIT
+        assert set(self.TRAINING_JSONLS) <= set(tr["artifacts_unchanged"])
+        assert not (set(self.TRAINING_JSONLS) & set(tr["artifacts_changed"]))
+        # something DID move, so this is a real transition, not a no-op
+        assert tr["artifacts_changed"]
+        assert len(tr["v1_artifact_sha256"]) == 14
+
+    def test_the_test_split_is_not_claimed_to_be_untouched(self):
+        """Iteration 11 called this a one-shot, untouched test split. The
+        gate scores all 2,259 test queries for BASE/MF/MG/MN and applies a
+        test-split separation criterion BEFORE any candidate is selected,
+        so the honest statement is narrower."""
+        t = _load("mllmu_pilot100_final_evaluation")["test_split_exposure"]
+        assert t["test_split_untouched"] is False
+        assert t["candidates_selected_without_test_predictions"] is True
+        assert t["candidate_selection_scope"] == ["train", "val"]
+        assert set(t["reference_states_scored_on_test_before_selection"]) \
+            == EXPECTED_STATES
+        assert set(t["num_test_queries_scored_by_the_gate"]) \
+            == EXPECTED_STATES
+        for state, n in t["num_test_queries_scored_by_the_gate"].items():
+            assert n == NUM_TEST_QUERIES, state
+        assert t["gate_applies_a_test_split_separation_criterion"] is True
+        assert "one-shot, untouched test split" in t["exposure"]
+        assert t["what_this_does_not_licence"]
+        assert "CONFIRMATION" in t["what_would_be_needed"]
+
+    def test_equivalence_is_judged_against_a_prespecified_margin(self):
+        """A CI crossing zero means 'no significant difference detected',
+        not equivalence. Equivalence needs a margin fixed before looking,
+        and an interval narrow enough to fit inside it."""
+        eq = _load("mllmu_pilot100_final_evaluation")["equivalence_vs_MG"]
+        assert eq["margin"] == EQUIVALENCE_MARGIN
+        assert eq["metric"] == "tga"
+        assert eq["reference"] == "MG"
+        # every state except M_G itself: an oracle-versus-oracle interval
+        # would be degenerate, not a test
+        assert set(eq["states"]) == \
+            (EXPECTED_STATES | EXPECTED_METHODS) - {"MG"}
+        assert eq["margin_rationale"]
+        for state, b in eq["states"].items():
+            lo, hi = b["ci"]
+            assert lo <= b["diff"] <= hi, state
+            # ci_half_width is computed from the UNROUNDED percentiles, so
+            # recomputing it from the 4dp interval in the report can differ
+            # in the last place; a tolerance, not equality
+            assert abs(b["ci_half_width"] - (hi - lo) / 2) < 1e-4, state
+            assert b["num_entity_clusters"] > 1, state
+            assert b["num_rows"] > 0, state
+            assert b["power_note"], state
+            assert b["row_point_estimates"], state
+            # equivalence only when the WHOLE interval is inside the margin
+            assert b["equivalence_concluded"] == (
+                lo > -EQUIVALENCE_MARGIN and hi < EQUIVALENCE_MARGIN), state
+            assert b["significant_difference"] == (lo > 0.0 or hi < 0.0), \
+                state
+
+    def test_no_state_is_declared_equivalent_to_the_oracle(self):
+        """No comparison concludes equivalence, and the report must say WHY
+        per state, because the reason differs: three intervals are at least
+        as wide as the margin, so those designs could not have concluded
+        equivalence even at a true difference of exactly zero, while the
+        other five are narrower than the margin but still reach beyond it,
+        i.e. a real difference WAS detected."""
+        states = _load("mllmu_pilot100_final_evaluation")[
+            "equivalence_vs_MG"]["states"]
+        underpowered = powered = 0
+        for state, b in states.items():
+            assert b["equivalence_concluded"] is False, state
+            if b["ci_half_width"] >= EQUIVALENCE_MARGIN:
+                underpowered += 1
+                assert "INDETERMINATE" in b["power_note"], state
+                assert "could not conclude" in b["power_note"], state
+            else:
+                powered += 1
+                assert "not concluded" in b["power_note"], state
+        # as measured on the committed v2 evidence
+        assert (underpowered, powered) == (3, 5), (underpowered, powered)
+
+    def test_the_one_interval_crossing_zero_says_indeterminate(self):
+        """B3 is the only state whose TGA interval against M_G crosses zero.
+        It must not be reported as equivalent, and the note must say the
+        design could not have concluded equivalence either way."""
+        b = _load("mllmu_pilot100_final_evaluation")[
+            "equivalence_vs_MG"]["states"]["B3"]
+        lo, hi = b["ci"]
+        assert lo < 0.0 < hi, b
+        assert b["significant_difference"] is False
+        assert b["equivalence_concluded"] is False
+        assert "INDETERMINATE" in b["power_note"]
+        assert "not equivalent" in b["power_note"]
+        # every other state IS significantly below the oracle
+        others = _load("mllmu_pilot100_final_evaluation")[
+            "equivalence_vs_MG"]["states"]
+        for state, ob in others.items():
+            if state != "B3":
+                assert ob["significant_difference"] is True, state
+
+    def test_paired_point_estimates_reproduce_the_published_rates(self):
+        """The bootstrap resamples ENTITY clusters, so its centre is an
+        entity-macro mean, while hierarchy_metrics publishes row-micro
+        rates. Subtracting two published rates therefore yields row_diff,
+        NOT diff. Both are reported, and the row ones must equal the
+        published numbers exactly or the two views silently diverge."""
+        rep = _load("mllmu_pilot100_final_evaluation")
+        hm, pc = rep["hierarchy_metrics_test"], rep["paired_cis_test"]
+
+        def published(state, metric):
+            b = hm[state]
+            return {
+                "filr": b["filr"],
+                "tga": b["tga"],
+                "wrong_branch": b["failure_rates"]["wrong_branch"],
+                "over_forgetting": b["failure_rates"]["over_forgetting"],
+                "retain_same": b["retain_same_entity_all_routes"][
+                    "baseline_accuracy"],
+                "retain_other": b["retain_other_entity_all_routes"][
+                    "baseline_accuracy"]}[metric]
+
+        checked = 0
+        for state, refs in pc["comparisons"].items():
+            for key, block in refs.items():
+                ref = key[len("vs_"):]
+                for metric in PAIRED_METRICS:
+                    pe = block[metric]["point_estimates"]
+                    assert pe["row_a"] == round(published(state, metric), 4), \
+                        (state, key, metric)
+                    assert pe["row_b"] == round(published(ref, metric), 4), \
+                        (state, key, metric)
+                    # row_diff is computed from the UNROUNDED means, so it
+                    # can differ from the difference of the two rounded
+                    # values: three 4dp roundings of 5e-5 each bound it at
+                    # 1.5e-4 (measured max on this evidence: 1.0e-4, in 30
+                    # of 144 comparisons)
+                    assert abs(pe["row_diff"]
+                               - (pe["row_a"] - pe["row_b"])) <= 1.5e-4, \
+                        (state, key, metric)
+                    checked += 1
+        # 24 comparisons present x 6 metrics, as measured on the committed
+        # v2 evidence: a silently dropped comparison would drop this count
+        assert checked == 144, checked
+        units = pc["statistical_metadata"]["point_estimate_units"]
+        assert "row_diff" in units and "diff" in units
+
+    def test_filr_gets_its_own_paired_ci(self):
+        """The defect: E2 reported a paired CI for TGA while omitting the
+        one for FILR, the metric the leakage claim rests on."""
+        pc = _load("mllmu_pilot100_final_evaluation")["paired_cis_test"]
+        assert pc["metrics"][0] == "filr"
+        for state, refs in pc["comparisons"].items():
+            for key, block in refs.items():
+                assert "filr" in block, (state, key)
+                assert "over_forgetting" in block, (state, key)
+
+    def test_the_two_units_genuinely_differ_on_this_evidence(self):
+        """Not a hypothetical: B3's entity-macro FILR interval against M_G
+        crosses zero while its row-level difference is plainly positive.
+        Publishing only one of the two would let a reader subtract the
+        headline rates and get a number no interval covers."""
+        b = _load("mllmu_pilot100_final_evaluation")[
+            "paired_cis_test"]["comparisons"]["B3"]["vs_MG"]["filr"]
+        lo, hi = b["ci"]
+        pe = b["point_estimates"]
+        assert lo < 0.0 < hi, b
+        assert pe["row_diff"] > 0.0, b
+        assert pe["row_a"] > pe["row_b"]
+
+    def test_image_strata_are_populated_and_cover_only_image_probes(self):
+        rep = _load("mllmu_pilot100_final_evaluation")
+        for state, block in rep["hierarchy_metrics_test"].items():
+            ip = block["by_image_provenance"]
+            ho, sp = ip["held_out_photo"], ip["seen_photo_unseen_wording"]
+            assert ho["num_queries"] == 90, (state, ho)
+            assert sp["num_queries"] == 180, (state, sp)
+            routes = block["by_route"]
+            assert ho["num_queries"] + sp["num_queries"] == \
+                routes["image_to_text"]["num_queries"] + \
+                routes["image_text_to_text"]["num_queries"], state
+            # NOT a partition of all target probes: the 945 text_to_text
+            # probes are in neither stratum
+            assert ho["num_queries"] + sp["num_queries"] < \
+                block["num_target_probes"], state
+            assert "never in training" in ip["_note"], state
+
+    def test_the_strata_are_reported_with_their_confound(self):
+        """held_out_photo is 90 probes and image_text_to_text is also 90,
+        so counts alone could pass this off as the route split relabelled.
+        At query level both routes contain both strata; but the flag does
+        correspond 1:1 with the source dataset, which caps what a stratum
+        CONTRAST can show. Both facts must be stated."""
+        s = _load("mllmu_pilot100_final_evaluation")["image_provenance_strata"]
+        assert s["derived_from"].startswith(
+            "QueryRecord.image_seen_in_training")
+        assert "NOT the input-route split" in s["not_the_route_split"]
+        assert "the two partitions cross" in s["not_the_route_split"]
+        assert "1:1" in s["confound"]
+        assert "iNaturalist" in s["confound"] and "MLLMU" in s["confound"]
+        assert "cannot be attributed to photograph novelty alone" \
+            in s["confound"]
+
+    def test_fine_leakage_is_attributed_to_filr_not_wrong_branch(self):
+        """v1 claimed wrong-branch stability showed 'nothing leaks a finer
+        branch'. Leaking a finer level IS the under_forgetting category
+        FILR counts, so wrong-branch stability cannot show it."""
+        notes = _load("mllmu_pilot100_final_evaluation")["notes"]
+        assert any("FILR — not wrong-branch stability —" in n for n in notes)
+        assert any("nothing leaks a finer branch" in n for n in notes)
+        # the units note is what stops a reader subtracting two published
+        # rates and treating the result as the quantity the CI covers
+        assert any("entity-macro" in n.lower() and "row-micro" in n.lower()
+                   for n in notes), notes
+
+    def test_the_noop_invariant_holds_on_all_six_metrics(self):
+        """B0 is the MF adapter copied unchanged, so under one uniform batch
+        layout it must reproduce MF exactly -- now including the two metrics
+        11R added."""
+        inv = _load("mllmu_pilot100_final_evaluation")[
+            "b0_equals_mf_invariant"]
+        assert set(inv["paired_diffs_vs_MF"]) == set(PAIRED_METRICS)
+        assert inv["num_raw_output_mismatches"] == 0

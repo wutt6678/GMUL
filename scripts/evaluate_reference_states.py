@@ -13,9 +13,11 @@ paraphrase split separately.
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
 from granunlearn.config import _find_repo_root
+from granunlearn.evaluation.prediction_provenance import SUPERSEDED_V1_COMMIT
 from granunlearn.evaluation.reference_eval import (
     DEFAULT_MAX_NEW_TOKENS,
     run_reference_evaluation,
@@ -83,6 +85,35 @@ def main() -> None:
         experiment_id=experiment_id,
     )
     gate = report["separation_gate"]
+
+    # Stamp the run identity onto the gate report HERE rather than in
+    # reference_eval.run_reference_evaluation, which writes it. That module
+    # is one of the six whose hashes every prediction sidecar binds, so
+    # editing it would refuse all thirty parquets this iteration produced
+    # and force a full regeneration for two metadata labels. The script is
+    # not fingerprinted and is where the tag -> iteration mapping already
+    # lives, so the same keys land in the same file at no GPU cost.
+    if args.tag == "pilot100":
+        report["iteration"] = "11R"
+        report["supersedes"] = {
+            "commit": SUPERSEDED_V1_COMMIT,
+            "iteration": 11,
+            "dataset_version": "pilot100_v1",
+            "reason": (
+                "Iteration 11 served assoc.images[0] -- the photograph the "
+                "reference states were TRAINED on -- to every image query "
+                "in all three splits, so this gate's image route measured "
+                "unseen wording over a seen photograph. Regenerated on "
+                "pilot100_v2, where images[0] is reserved for training and "
+                "val/test draw from disjoint photograph pools. The "
+                "separation criterion itself is unchanged."),
+            "v1_numbers_preserved_in": f"git show {SUPERSEDED_V1_COMMIT}",
+        }
+        report_path = repo_root / "data" / "reports" / \
+            f"mllmu_{args.tag}_reference_eval.json"
+        with open(report_path, "w") as f:
+            json.dump(report, f, indent=2, ensure_ascii=False)
+
     log.info("GATE %s | reasons: %s",
              "PASSED" if gate["passed"] else "FAILED", gate["reasons"])
     # Frozen Iteration 8 headline metrics, TEST split primary

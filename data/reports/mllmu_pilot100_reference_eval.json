@@ -8,30 +8,34 @@
     "MN"
   ],
   "num_queries": 6777,
+  "dataset_version": "pilot100_v2",
   "generation_config": {
     "batch_size": 8,
     "image_batch_size": 8,
     "max_new_tokens": 96,
     "do_sample": false,
+    "max_image_pixels": 147456,
+    "max_length": 1536,
     "note": "identical for every state in this report"
   },
+  "test_split_exposure": "This gate generates every query in every split, TEST included, and reports a separation gate on the test split as well as pooled. It runs BEFORE candidate selection, so the test split informs a go/no-go decision here and is not an untouched hold-out. Candidates are still never ranked on their own test predictions — selection is train+val only.",
   "metrics_split_semantics": "metrics_by_state pools train/val/test; metrics_by_split reports each paraphrase split separately — the TEST numbers measure generalization to unseen wording and are the authoritative held-out view.",
   "metrics_by_state": {
     "BASE": {
       "num_queries": 6777,
       "all_core": {
         "num_queries": 6507,
-        "baseline_accuracy": 0.1532,
-        "post_unlearning_accuracy": 0.0894,
-        "leakage_rate": 0.1521,
-        "unmatched_rate": 0.6725
+        "baseline_accuracy": 0.15,
+        "post_unlearning_accuracy": 0.0881,
+        "leakage_rate": 0.1501,
+        "unmatched_rate": 0.6742
       },
       "target_core": {
         "num_queries": 3645,
-        "baseline_accuracy": 0.2211,
-        "post_unlearning_accuracy": 0.1073,
-        "leakage_rate": 0.2716,
-        "unmatched_rate": 0.5833
+        "baseline_accuracy": 0.2187,
+        "post_unlearning_accuracy": 0.1081,
+        "leakage_rate": 0.268,
+        "unmatched_rate": 0.586
       },
       "fine_recovery": {
         "num_queries": 1620,
@@ -59,14 +63,14 @@
         "baseline_accuracy": 0.0667,
         "post_unlearning_accuracy": 0.0667,
         "leakage_rate": 0.3704,
-        "unmatched_rate": 0.5185
+        "unmatched_rate": 0.5148
       },
       "image_route": {
         "num_queries": 540,
-        "baseline_accuracy": 0.1722,
-        "post_unlearning_accuracy": 0.1426,
-        "leakage_rate": 0.1667,
-        "unmatched_rate": 0.6537
+        "baseline_accuracy": 0.1556,
+        "post_unlearning_accuracy": 0.1481,
+        "leakage_rate": 0.1426,
+        "unmatched_rate": 0.6741
       },
       "retain_same_entity": {
         "num_queries": 1161,
@@ -84,15 +88,15 @@
       },
       "retain_same_entity_image": {
         "num_queries": 1161,
-        "baseline_accuracy": 0.0121,
-        "post_unlearning_accuracy": 0.0121,
+        "baseline_accuracy": 0.0086,
+        "post_unlearning_accuracy": 0.0086,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.8295
+        "unmatched_rate": 0.8303
       },
       "retain_other_entity_image": {
         "num_queries": 270,
-        "baseline_accuracy": 0.2074,
-        "post_unlearning_accuracy": 0.2074,
+        "baseline_accuracy": 0.1778,
+        "post_unlearning_accuracy": 0.1778,
         "leakage_rate": 0.0,
         "unmatched_rate": 0.6963
       },
@@ -103,23 +107,23 @@
         "leakage_rate": 0.8704,
         "unmatched_rate": 0.0259
       },
-      "generation_seconds": 8108.7
+      "reused_predictions": true
     },
     "MF": {
       "num_queries": 6777,
       "all_core": {
         "num_queries": 6507,
-        "baseline_accuracy": 0.5085,
-        "post_unlearning_accuracy": 0.3481,
-        "leakage_rate": 0.251,
-        "unmatched_rate": 0.3581
+        "baseline_accuracy": 0.5061,
+        "post_unlearning_accuracy": 0.345,
+        "leakage_rate": 0.2507,
+        "unmatched_rate": 0.3615
       },
       "target_core": {
         "num_queries": 3645,
-        "baseline_accuracy": 0.4883,
-        "post_unlearning_accuracy": 0.2019,
-        "leakage_rate": 0.448,
-        "unmatched_rate": 0.3388
+        "baseline_accuracy": 0.4867,
+        "post_unlearning_accuracy": 0.1992,
+        "leakage_rate": 0.4475,
+        "unmatched_rate": 0.3421
       },
       "fine_recovery": {
         "num_queries": 1620,
@@ -151,10 +155,10 @@
       },
       "image_route": {
         "num_queries": 540,
-        "baseline_accuracy": 0.4,
-        "post_unlearning_accuracy": 0.2185,
-        "leakage_rate": 0.3556,
-        "unmatched_rate": 0.4241
+        "baseline_accuracy": 0.3889,
+        "post_unlearning_accuracy": 0.2,
+        "leakage_rate": 0.3519,
+        "unmatched_rate": 0.4463
       },
       "retain_same_entity": {
         "num_queries": 1161,
@@ -172,17 +176,17 @@
       },
       "retain_same_entity_image": {
         "num_queries": 1161,
-        "baseline_accuracy": 0.509,
-        "post_unlearning_accuracy": 0.509,
+        "baseline_accuracy": 0.5073,
+        "post_unlearning_accuracy": 0.5073,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.3678
+        "unmatched_rate": 0.3695
       },
       "retain_other_entity_image": {
         "num_queries": 270,
-        "baseline_accuracy": 0.4778,
-        "post_unlearning_accuracy": 0.4778,
+        "baseline_accuracy": 0.4481,
+        "post_unlearning_accuracy": 0.4481,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.4778
+        "unmatched_rate": 0.5074
       },
       "adversarial_only": {
         "num_queries": 270,
@@ -191,23 +195,23 @@
         "leakage_rate": 0.3,
         "unmatched_rate": 0.3333
       },
-      "generation_seconds": 2578.9
+      "reused_predictions": true
     },
     "MG": {
       "num_queries": 6777,
       "all_core": {
         "num_queries": 6507,
-        "baseline_accuracy": 0.4163,
-        "post_unlearning_accuracy": 0.4743,
-        "leakage_rate": 0.081,
-        "unmatched_rate": 0.381
+        "baseline_accuracy": 0.4108,
+        "post_unlearning_accuracy": 0.4715,
+        "leakage_rate": 0.079,
+        "unmatched_rate": 0.3857
       },
       "target_core": {
         "num_queries": 3645,
-        "baseline_accuracy": 0.3289,
-        "post_unlearning_accuracy": 0.4324,
-        "leakage_rate": 0.1446,
-        "unmatched_rate": 0.392
+        "baseline_accuracy": 0.3246,
+        "post_unlearning_accuracy": 0.4329,
+        "leakage_rate": 0.141,
+        "unmatched_rate": 0.3951
       },
       "fine_recovery": {
         "num_queries": 1620,
@@ -239,10 +243,10 @@
       },
       "image_route": {
         "num_queries": 540,
-        "baseline_accuracy": 0.3056,
-        "post_unlearning_accuracy": 0.4426,
-        "leakage_rate": 0.1,
-        "unmatched_rate": 0.4426
+        "baseline_accuracy": 0.2759,
+        "post_unlearning_accuracy": 0.4463,
+        "leakage_rate": 0.0759,
+        "unmatched_rate": 0.463
       },
       "retain_same_entity": {
         "num_queries": 1161,
@@ -260,17 +264,17 @@
       },
       "retain_same_entity_image": {
         "num_queries": 1161,
-        "baseline_accuracy": 0.5039,
-        "post_unlearning_accuracy": 0.5039,
+        "baseline_accuracy": 0.4987,
+        "post_unlearning_accuracy": 0.4987,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.3411
+        "unmatched_rate": 0.3463
       },
       "retain_other_entity_image": {
         "num_queries": 270,
-        "baseline_accuracy": 0.5556,
-        "post_unlearning_accuracy": 0.5556,
+        "baseline_accuracy": 0.5037,
+        "post_unlearning_accuracy": 0.5037,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.3667
+        "unmatched_rate": 0.4185
       },
       "adversarial_only": {
         "num_queries": 270,
@@ -279,23 +283,23 @@
         "leakage_rate": 0.2926,
         "unmatched_rate": 0.2593
       },
-      "generation_seconds": 2705.7
+      "reused_predictions": true
     },
     "MN": {
       "num_queries": 6777,
       "all_core": {
         "num_queries": 6507,
-        "baseline_accuracy": 0.4134,
-        "post_unlearning_accuracy": 0.3509,
-        "leakage_rate": 0.1498,
-        "unmatched_rate": 0.4592
+        "baseline_accuracy": 0.4094,
+        "post_unlearning_accuracy": 0.3472,
+        "leakage_rate": 0.1488,
+        "unmatched_rate": 0.4626
       },
       "target_core": {
         "num_queries": 3645,
-        "baseline_accuracy": 0.2864,
-        "post_unlearning_accuracy": 0.1748,
-        "leakage_rate": 0.2675,
-        "unmatched_rate": 0.5385
+        "baseline_accuracy": 0.285,
+        "post_unlearning_accuracy": 0.1739,
+        "leakage_rate": 0.2656,
+        "unmatched_rate": 0.5413
       },
       "fine_recovery": {
         "num_queries": 1620,
@@ -327,10 +331,10 @@
       },
       "image_route": {
         "num_queries": 540,
-        "baseline_accuracy": 0.2389,
-        "post_unlearning_accuracy": 0.1759,
-        "leakage_rate": 0.1778,
-        "unmatched_rate": 0.6444
+        "baseline_accuracy": 0.2296,
+        "post_unlearning_accuracy": 0.1704,
+        "leakage_rate": 0.1648,
+        "unmatched_rate": 0.663
       },
       "retain_same_entity": {
         "num_queries": 1161,
@@ -348,17 +352,17 @@
       },
       "retain_same_entity_image": {
         "num_queries": 1161,
-        "baseline_accuracy": 0.5082,
-        "post_unlearning_accuracy": 0.5082,
+        "baseline_accuracy": 0.5022,
+        "post_unlearning_accuracy": 0.5022,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.4005
+        "unmatched_rate": 0.404
       },
       "retain_other_entity_image": {
         "num_queries": 270,
-        "baseline_accuracy": 0.5741,
-        "post_unlearning_accuracy": 0.5741,
+        "baseline_accuracy": 0.5222,
+        "post_unlearning_accuracy": 0.5222,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.3963
+        "unmatched_rate": 0.4259
       },
       "adversarial_only": {
         "num_queries": 270,
@@ -367,7 +371,7 @@
         "leakage_rate": 0.3333,
         "unmatched_rate": 0.3037
       },
-      "generation_seconds": 2828.7
+      "reused_predictions": true
     }
   },
   "metrics_by_split": {
@@ -376,17 +380,17 @@
         "num_queries": 2259,
         "all_core": {
           "num_queries": 2169,
-          "baseline_accuracy": 0.1512,
-          "post_unlearning_accuracy": 0.0876,
-          "leakage_rate": 0.154,
-          "unmatched_rate": 0.6745
+          "baseline_accuracy": 0.1521,
+          "post_unlearning_accuracy": 0.0894,
+          "leakage_rate": 0.1535,
+          "unmatched_rate": 0.6736
         },
         "target_core": {
           "num_queries": 1215,
-          "baseline_accuracy": 0.2148,
-          "post_unlearning_accuracy": 0.1012,
-          "leakage_rate": 0.2749,
-          "unmatched_rate": 0.5877
+          "baseline_accuracy": 0.214,
+          "post_unlearning_accuracy": 0.1021,
+          "leakage_rate": 0.2741,
+          "unmatched_rate": 0.5885
         },
         "fine_recovery": {
           "num_queries": 540,
@@ -418,10 +422,10 @@
         },
         "image_route": {
           "num_queries": 180,
-          "baseline_accuracy": 0.1833,
-          "post_unlearning_accuracy": 0.1389,
-          "leakage_rate": 0.1889,
-          "unmatched_rate": 0.6333
+          "baseline_accuracy": 0.1778,
+          "post_unlearning_accuracy": 0.1444,
+          "leakage_rate": 0.1833,
+          "unmatched_rate": 0.6389
         },
         "retain_same_entity": {
           "num_queries": 387,
@@ -446,10 +450,10 @@
         },
         "retain_other_entity_image": {
           "num_queries": 90,
-          "baseline_accuracy": 0.2333,
-          "post_unlearning_accuracy": 0.2333,
+          "baseline_accuracy": 0.2667,
+          "post_unlearning_accuracy": 0.2667,
           "leakage_rate": 0.0,
-          "unmatched_rate": 0.6556
+          "unmatched_rate": 0.6222
         },
         "adversarial_only": {
           "num_queries": 90,
@@ -463,16 +467,16 @@
         "num_queries": 2259,
         "all_core": {
           "num_queries": 2169,
-          "baseline_accuracy": 0.5048,
-          "post_unlearning_accuracy": 0.343,
-          "leakage_rate": 0.2559,
+          "baseline_accuracy": 0.5053,
+          "post_unlearning_accuracy": 0.3426,
+          "leakage_rate": 0.2563,
           "unmatched_rate": 0.3564
         },
         "target_core": {
           "num_queries": 1215,
-          "baseline_accuracy": 0.4823,
-          "post_unlearning_accuracy": 0.1934,
-          "leakage_rate": 0.4568,
+          "baseline_accuracy": 0.4831,
+          "post_unlearning_accuracy": 0.1926,
+          "leakage_rate": 0.4576,
           "unmatched_rate": 0.335
         },
         "fine_recovery": {
@@ -505,9 +509,9 @@
         },
         "image_route": {
           "num_queries": 180,
-          "baseline_accuracy": 0.3944,
-          "post_unlearning_accuracy": 0.2167,
-          "leakage_rate": 0.3444,
+          "baseline_accuracy": 0.4,
+          "post_unlearning_accuracy": 0.2111,
+          "leakage_rate": 0.35,
           "unmatched_rate": 0.4333
         },
         "retain_same_entity": {
@@ -550,16 +554,16 @@
         "num_queries": 2259,
         "all_core": {
           "num_queries": 2169,
-          "baseline_accuracy": 0.4191,
-          "post_unlearning_accuracy": 0.4735,
-          "leakage_rate": 0.0858,
+          "baseline_accuracy": 0.4186,
+          "post_unlearning_accuracy": 0.474,
+          "leakage_rate": 0.0853,
           "unmatched_rate": 0.3748
         },
         "target_core": {
           "num_queries": 1215,
-          "baseline_accuracy": 0.3276,
-          "post_unlearning_accuracy": 0.4247,
-          "leakage_rate": 0.1531,
+          "baseline_accuracy": 0.3267,
+          "post_unlearning_accuracy": 0.4255,
+          "leakage_rate": 0.1523,
           "unmatched_rate": 0.3885
         },
         "fine_recovery": {
@@ -592,9 +596,9 @@
         },
         "image_route": {
           "num_queries": 180,
-          "baseline_accuracy": 0.3056,
-          "post_unlearning_accuracy": 0.4444,
-          "leakage_rate": 0.0944,
+          "baseline_accuracy": 0.3,
+          "post_unlearning_accuracy": 0.45,
+          "leakage_rate": 0.0889,
           "unmatched_rate": 0.45
         },
         "retain_same_entity": {
@@ -637,14 +641,14 @@
         "num_queries": 2259,
         "all_core": {
           "num_queries": 2169,
-          "baseline_accuracy": 0.4112,
+          "baseline_accuracy": 0.4117,
           "post_unlearning_accuracy": 0.3555,
           "leakage_rate": 0.1503,
           "unmatched_rate": 0.455
         },
         "target_core": {
           "num_queries": 1215,
-          "baseline_accuracy": 0.2749,
+          "baseline_accuracy": 0.2757,
           "post_unlearning_accuracy": 0.1753,
           "leakage_rate": 0.2683,
           "unmatched_rate": 0.535
@@ -679,7 +683,7 @@
         },
         "image_route": {
           "num_queries": 180,
-          "baseline_accuracy": 0.2278,
+          "baseline_accuracy": 0.2333,
           "post_unlearning_accuracy": 0.1722,
           "leakage_rate": 0.1722,
           "unmatched_rate": 0.6556
@@ -726,17 +730,17 @@
         "num_queries": 2259,
         "all_core": {
           "num_queries": 2169,
-          "baseline_accuracy": 0.1485,
-          "post_unlearning_accuracy": 0.0862,
-          "leakage_rate": 0.1517,
-          "unmatched_rate": 0.674
+          "baseline_accuracy": 0.1457,
+          "post_unlearning_accuracy": 0.0834,
+          "leakage_rate": 0.148,
+          "unmatched_rate": 0.6782
         },
         "target_core": {
           "num_queries": 1215,
-          "baseline_accuracy": 0.2214,
-          "post_unlearning_accuracy": 0.1103,
-          "leakage_rate": 0.2708,
-          "unmatched_rate": 0.5786
+          "baseline_accuracy": 0.2206,
+          "post_unlearning_accuracy": 0.1095,
+          "leakage_rate": 0.2642,
+          "unmatched_rate": 0.586
         },
         "fine_recovery": {
           "num_queries": 540,
@@ -761,17 +765,17 @@
         },
         "multimodal": {
           "num_queries": 90,
-          "baseline_accuracy": 0.0667,
-          "post_unlearning_accuracy": 0.0667,
-          "leakage_rate": 0.3778,
+          "baseline_accuracy": 0.0778,
+          "post_unlearning_accuracy": 0.0778,
+          "leakage_rate": 0.3667,
           "unmatched_rate": 0.5
         },
         "image_route": {
           "num_queries": 180,
-          "baseline_accuracy": 0.1611,
-          "post_unlearning_accuracy": 0.15,
-          "leakage_rate": 0.1611,
-          "unmatched_rate": 0.65
+          "baseline_accuracy": 0.15,
+          "post_unlearning_accuracy": 0.1389,
+          "leakage_rate": 0.1222,
+          "unmatched_rate": 0.7
         },
         "retain_same_entity": {
           "num_queries": 387,
@@ -789,15 +793,15 @@
         },
         "retain_same_entity_image": {
           "num_queries": 387,
-          "baseline_accuracy": 0.0103,
-          "post_unlearning_accuracy": 0.0103,
+          "baseline_accuracy": 0.0052,
+          "post_unlearning_accuracy": 0.0052,
           "leakage_rate": 0.0,
           "unmatched_rate": 0.8346
         },
         "retain_other_entity_image": {
           "num_queries": 90,
-          "baseline_accuracy": 0.1,
-          "post_unlearning_accuracy": 0.1,
+          "baseline_accuracy": 0.0667,
+          "post_unlearning_accuracy": 0.0667,
           "leakage_rate": 0.0,
           "unmatched_rate": 0.8
         },
@@ -813,17 +817,17 @@
         "num_queries": 2259,
         "all_core": {
           "num_queries": 2169,
-          "baseline_accuracy": 0.5099,
-          "post_unlearning_accuracy": 0.3476,
+          "baseline_accuracy": 0.5053,
+          "post_unlearning_accuracy": 0.3416,
           "leakage_rate": 0.2467,
-          "unmatched_rate": 0.3675
+          "unmatched_rate": 0.3734
         },
         "target_core": {
           "num_queries": 1215,
-          "baseline_accuracy": 0.4905,
-          "post_unlearning_accuracy": 0.2008,
+          "baseline_accuracy": 0.4872,
+          "post_unlearning_accuracy": 0.1951,
           "leakage_rate": 0.4403,
-          "unmatched_rate": 0.3506
+          "unmatched_rate": 0.3564
         },
         "fine_recovery": {
           "num_queries": 540,
@@ -855,10 +859,10 @@
         },
         "image_route": {
           "num_queries": 180,
-          "baseline_accuracy": 0.4056,
-          "post_unlearning_accuracy": 0.2222,
+          "baseline_accuracy": 0.3833,
+          "post_unlearning_accuracy": 0.1833,
           "leakage_rate": 0.3556,
-          "unmatched_rate": 0.4222
+          "unmatched_rate": 0.4611
         },
         "retain_same_entity": {
           "num_queries": 387,
@@ -876,17 +880,17 @@
         },
         "retain_same_entity_image": {
           "num_queries": 387,
-          "baseline_accuracy": 0.509,
-          "post_unlearning_accuracy": 0.509,
+          "baseline_accuracy": 0.5065,
+          "post_unlearning_accuracy": 0.5065,
           "leakage_rate": 0.0,
-          "unmatched_rate": 0.3695
+          "unmatched_rate": 0.3721
         },
         "retain_other_entity_image": {
           "num_queries": 90,
-          "baseline_accuracy": 0.4778,
-          "post_unlearning_accuracy": 0.4778,
+          "baseline_accuracy": 0.4222,
+          "post_unlearning_accuracy": 0.4222,
           "leakage_rate": 0.0,
-          "unmatched_rate": 0.4778
+          "unmatched_rate": 0.5333
         },
         "adversarial_only": {
           "num_queries": 90,
@@ -900,17 +904,17 @@
         "num_queries": 2259,
         "all_core": {
           "num_queries": 2169,
-          "baseline_accuracy": 0.4103,
-          "post_unlearning_accuracy": 0.474,
-          "leakage_rate": 0.0761,
-          "unmatched_rate": 0.385
+          "baseline_accuracy": 0.4002,
+          "post_unlearning_accuracy": 0.4666,
+          "leakage_rate": 0.0733,
+          "unmatched_rate": 0.3951
         },
         "target_core": {
           "num_queries": 1215,
-          "baseline_accuracy": 0.3259,
-          "post_unlearning_accuracy": 0.4395,
-          "leakage_rate": 0.1358,
-          "unmatched_rate": 0.3934
+          "baseline_accuracy": 0.3177,
+          "post_unlearning_accuracy": 0.4362,
+          "leakage_rate": 0.1309,
+          "unmatched_rate": 0.4016
         },
         "fine_recovery": {
           "num_queries": 540,
@@ -942,10 +946,10 @@
         },
         "image_route": {
           "num_queries": 180,
-          "baseline_accuracy": 0.2944,
-          "post_unlearning_accuracy": 0.4389,
-          "leakage_rate": 0.1,
-          "unmatched_rate": 0.4444
+          "baseline_accuracy": 0.2389,
+          "post_unlearning_accuracy": 0.4167,
+          "leakage_rate": 0.0667,
+          "unmatched_rate": 0.5
         },
         "retain_same_entity": {
           "num_queries": 387,
@@ -963,17 +967,17 @@
         },
         "retain_same_entity_image": {
           "num_queries": 387,
-          "baseline_accuracy": 0.5039,
-          "post_unlearning_accuracy": 0.5039,
+          "baseline_accuracy": 0.4961,
+          "post_unlearning_accuracy": 0.4961,
           "leakage_rate": 0.0,
-          "unmatched_rate": 0.3437
+          "unmatched_rate": 0.3514
         },
         "retain_other_entity_image": {
           "num_queries": 90,
-          "baseline_accuracy": 0.5556,
-          "post_unlearning_accuracy": 0.5556,
+          "baseline_accuracy": 0.4556,
+          "post_unlearning_accuracy": 0.4556,
           "leakage_rate": 0.0,
-          "unmatched_rate": 0.3778
+          "unmatched_rate": 0.4778
         },
         "adversarial_only": {
           "num_queries": 90,
@@ -987,17 +991,17 @@
         "num_queries": 2259,
         "all_core": {
           "num_queries": 2169,
-          "baseline_accuracy": 0.4108,
-          "post_unlearning_accuracy": 0.3458,
-          "leakage_rate": 0.1517,
-          "unmatched_rate": 0.461
+          "baseline_accuracy": 0.4048,
+          "post_unlearning_accuracy": 0.3398,
+          "leakage_rate": 0.1498,
+          "unmatched_rate": 0.468
         },
         "target_core": {
           "num_queries": 1215,
-          "baseline_accuracy": 0.2881,
-          "post_unlearning_accuracy": 0.172,
-          "leakage_rate": 0.2708,
-          "unmatched_rate": 0.5391
+          "baseline_accuracy": 0.284,
+          "post_unlearning_accuracy": 0.1679,
+          "leakage_rate": 0.2675,
+          "unmatched_rate": 0.5465
         },
         "fine_recovery": {
           "num_queries": 540,
@@ -1022,17 +1026,17 @@
         },
         "multimodal": {
           "num_queries": 90,
-          "baseline_accuracy": 0.3889,
-          "post_unlearning_accuracy": 0.3889,
+          "baseline_accuracy": 0.3778,
+          "post_unlearning_accuracy": 0.3778,
           "leakage_rate": 0.0778,
-          "unmatched_rate": 0.5333
+          "unmatched_rate": 0.5444
         },
         "image_route": {
           "num_queries": 180,
-          "baseline_accuracy": 0.2389,
-          "post_unlearning_accuracy": 0.1833,
-          "leakage_rate": 0.1778,
-          "unmatched_rate": 0.6389
+          "baseline_accuracy": 0.2167,
+          "post_unlearning_accuracy": 0.1611,
+          "leakage_rate": 0.1556,
+          "unmatched_rate": 0.6833
         },
         "retain_same_entity": {
           "num_queries": 387,
@@ -1050,17 +1054,17 @@
         },
         "retain_same_entity_image": {
           "num_queries": 387,
-          "baseline_accuracy": 0.509,
-          "post_unlearning_accuracy": 0.509,
+          "baseline_accuracy": 0.5039,
+          "post_unlearning_accuracy": 0.5039,
           "leakage_rate": 0.0,
-          "unmatched_rate": 0.3979
+          "unmatched_rate": 0.4005
         },
         "retain_other_entity_image": {
           "num_queries": 90,
-          "baseline_accuracy": 0.5778,
-          "post_unlearning_accuracy": 0.5778,
+          "baseline_accuracy": 0.5111,
+          "post_unlearning_accuracy": 0.5111,
           "leakage_rate": 0.0,
-          "unmatched_rate": 0.3889
+          "unmatched_rate": 0.4444
         },
         "adversarial_only": {
           "num_queries": 90,
@@ -1076,16 +1080,16 @@
         "num_queries": 2259,
         "all_core": {
           "num_queries": 2169,
-          "baseline_accuracy": 0.16,
-          "post_unlearning_accuracy": 0.0945,
-          "leakage_rate": 0.1508,
-          "unmatched_rate": 0.669
+          "baseline_accuracy": 0.1521,
+          "post_unlearning_accuracy": 0.0913,
+          "leakage_rate": 0.1489,
+          "unmatched_rate": 0.6708
         },
         "target_core": {
           "num_queries": 1215,
-          "baseline_accuracy": 0.2272,
-          "post_unlearning_accuracy": 0.1103,
-          "leakage_rate": 0.2691,
+          "baseline_accuracy": 0.2214,
+          "post_unlearning_accuracy": 0.1128,
+          "leakage_rate": 0.2658,
           "unmatched_rate": 0.5835
         },
         "fine_recovery": {
@@ -1111,17 +1115,17 @@
         },
         "multimodal": {
           "num_queries": 90,
-          "baseline_accuracy": 0.0778,
-          "post_unlearning_accuracy": 0.0778,
-          "leakage_rate": 0.3556,
-          "unmatched_rate": 0.5333
+          "baseline_accuracy": 0.0667,
+          "post_unlearning_accuracy": 0.0667,
+          "leakage_rate": 0.3667,
+          "unmatched_rate": 0.5222
         },
         "image_route": {
           "num_queries": 180,
-          "baseline_accuracy": 0.1722,
-          "post_unlearning_accuracy": 0.1389,
-          "leakage_rate": 0.15,
-          "unmatched_rate": 0.6778
+          "baseline_accuracy": 0.1389,
+          "post_unlearning_accuracy": 0.1611,
+          "leakage_rate": 0.1222,
+          "unmatched_rate": 0.6833
         },
         "retain_same_entity": {
           "num_queries": 387,
@@ -1139,17 +1143,17 @@
         },
         "retain_same_entity_image": {
           "num_queries": 387,
-          "baseline_accuracy": 0.0129,
-          "post_unlearning_accuracy": 0.0129,
+          "baseline_accuracy": 0.0078,
+          "post_unlearning_accuracy": 0.0078,
           "leakage_rate": 0.0,
-          "unmatched_rate": 0.8295
+          "unmatched_rate": 0.832
         },
         "retain_other_entity_image": {
           "num_queries": 90,
-          "baseline_accuracy": 0.2889,
-          "post_unlearning_accuracy": 0.2889,
+          "baseline_accuracy": 0.2,
+          "post_unlearning_accuracy": 0.2,
           "leakage_rate": 0.0,
-          "unmatched_rate": 0.6333
+          "unmatched_rate": 0.6667
         },
         "adversarial_only": {
           "num_queries": 90,
@@ -1163,17 +1167,17 @@
         "num_queries": 2259,
         "all_core": {
           "num_queries": 2169,
-          "baseline_accuracy": 0.5108,
-          "post_unlearning_accuracy": 0.3536,
-          "leakage_rate": 0.2503,
-          "unmatched_rate": 0.3504
+          "baseline_accuracy": 0.5076,
+          "post_unlearning_accuracy": 0.3509,
+          "leakage_rate": 0.249,
+          "unmatched_rate": 0.3545
         },
         "target_core": {
           "num_queries": 1215,
-          "baseline_accuracy": 0.4922,
-          "post_unlearning_accuracy": 0.2115,
-          "leakage_rate": 0.4469,
-          "unmatched_rate": 0.3309
+          "baseline_accuracy": 0.4897,
+          "post_unlearning_accuracy": 0.2099,
+          "leakage_rate": 0.4444,
+          "unmatched_rate": 0.335
         },
         "fine_recovery": {
           "num_queries": 540,
@@ -1205,10 +1209,10 @@
         },
         "image_route": {
           "num_queries": 180,
-          "baseline_accuracy": 0.4,
-          "post_unlearning_accuracy": 0.2167,
-          "leakage_rate": 0.3667,
-          "unmatched_rate": 0.4167
+          "baseline_accuracy": 0.3833,
+          "post_unlearning_accuracy": 0.2056,
+          "leakage_rate": 0.35,
+          "unmatched_rate": 0.4444
         },
         "retain_same_entity": {
           "num_queries": 387,
@@ -1226,17 +1230,17 @@
         },
         "retain_same_entity_image": {
           "num_queries": 387,
-          "baseline_accuracy": 0.509,
-          "post_unlearning_accuracy": 0.509,
+          "baseline_accuracy": 0.5065,
+          "post_unlearning_accuracy": 0.5065,
           "leakage_rate": 0.0,
-          "unmatched_rate": 0.3669
+          "unmatched_rate": 0.3695
         },
         "retain_other_entity_image": {
           "num_queries": 90,
-          "baseline_accuracy": 0.4778,
-          "post_unlearning_accuracy": 0.4778,
+          "baseline_accuracy": 0.4444,
+          "post_unlearning_accuracy": 0.4444,
           "leakage_rate": 0.0,
-          "unmatched_rate": 0.4778
+          "unmatched_rate": 0.5111
         },
         "adversarial_only": {
           "num_queries": 90,
@@ -1250,17 +1254,17 @@
         "num_queries": 2259,
         "all_core": {
           "num_queries": 2169,
-          "baseline_accuracy": 0.4195,
-          "post_unlearning_accuracy": 0.4753,
-          "leakage_rate": 0.0811,
-          "unmatched_rate": 0.3831
+          "baseline_accuracy": 0.4136,
+          "post_unlearning_accuracy": 0.474,
+          "leakage_rate": 0.0784,
+          "unmatched_rate": 0.3873
         },
         "target_core": {
           "num_queries": 1215,
-          "baseline_accuracy": 0.3333,
-          "post_unlearning_accuracy": 0.4329,
-          "leakage_rate": 0.1449,
-          "unmatched_rate": 0.3942
+          "baseline_accuracy": 0.3292,
+          "post_unlearning_accuracy": 0.437,
+          "leakage_rate": 0.1399,
+          "unmatched_rate": 0.3951
         },
         "fine_recovery": {
           "num_queries": 540,
@@ -1292,10 +1296,10 @@
         },
         "image_route": {
           "num_queries": 180,
-          "baseline_accuracy": 0.3167,
-          "post_unlearning_accuracy": 0.4444,
-          "leakage_rate": 0.1056,
-          "unmatched_rate": 0.4333
+          "baseline_accuracy": 0.2889,
+          "post_unlearning_accuracy": 0.4722,
+          "leakage_rate": 0.0722,
+          "unmatched_rate": 0.4389
         },
         "retain_same_entity": {
           "num_queries": 387,
@@ -1313,17 +1317,17 @@
         },
         "retain_same_entity_image": {
           "num_queries": 387,
-          "baseline_accuracy": 0.4987,
-          "post_unlearning_accuracy": 0.4987,
+          "baseline_accuracy": 0.491,
+          "post_unlearning_accuracy": 0.491,
           "leakage_rate": 0.0,
-          "unmatched_rate": 0.3437
+          "unmatched_rate": 0.3514
         },
         "retain_other_entity_image": {
           "num_queries": 90,
-          "baseline_accuracy": 0.5444,
-          "post_unlearning_accuracy": 0.5444,
+          "baseline_accuracy": 0.4889,
+          "post_unlearning_accuracy": 0.4889,
           "leakage_rate": 0.0,
-          "unmatched_rate": 0.3778
+          "unmatched_rate": 0.4333
         },
         "adversarial_only": {
           "num_queries": 90,
@@ -1337,17 +1341,17 @@
         "num_queries": 2259,
         "all_core": {
           "num_queries": 2169,
-          "baseline_accuracy": 0.4182,
-          "post_unlearning_accuracy": 0.3513,
-          "leakage_rate": 0.1475,
-          "unmatched_rate": 0.4615
+          "baseline_accuracy": 0.4117,
+          "post_unlearning_accuracy": 0.3462,
+          "leakage_rate": 0.1462,
+          "unmatched_rate": 0.4647
         },
         "target_core": {
           "num_queries": 1215,
-          "baseline_accuracy": 0.2963,
-          "post_unlearning_accuracy": 0.177,
-          "leakage_rate": 0.2634,
-          "unmatched_rate": 0.5416
+          "baseline_accuracy": 0.2955,
+          "post_unlearning_accuracy": 0.1786,
+          "leakage_rate": 0.2609,
+          "unmatched_rate": 0.5424
         },
         "fine_recovery": {
           "num_queries": 540,
@@ -1372,17 +1376,17 @@
         },
         "multimodal": {
           "num_queries": 90,
-          "baseline_accuracy": 0.3889,
-          "post_unlearning_accuracy": 0.3889,
+          "baseline_accuracy": 0.4,
+          "post_unlearning_accuracy": 0.4,
           "leakage_rate": 0.0667,
-          "unmatched_rate": 0.5444
+          "unmatched_rate": 0.5333
         },
         "image_route": {
           "num_queries": 180,
-          "baseline_accuracy": 0.25,
-          "post_unlearning_accuracy": 0.1722,
-          "leakage_rate": 0.1833,
-          "unmatched_rate": 0.6389
+          "baseline_accuracy": 0.2389,
+          "post_unlearning_accuracy": 0.1778,
+          "leakage_rate": 0.1667,
+          "unmatched_rate": 0.65
         },
         "retain_same_entity": {
           "num_queries": 387,
@@ -1400,17 +1404,17 @@
         },
         "retain_same_entity_image": {
           "num_queries": 387,
-          "baseline_accuracy": 0.5065,
-          "post_unlearning_accuracy": 0.5065,
+          "baseline_accuracy": 0.4935,
+          "post_unlearning_accuracy": 0.4935,
           "leakage_rate": 0.0,
-          "unmatched_rate": 0.4005
+          "unmatched_rate": 0.4083
         },
         "retain_other_entity_image": {
           "num_queries": 90,
-          "baseline_accuracy": 0.5667,
-          "post_unlearning_accuracy": 0.5667,
+          "baseline_accuracy": 0.4778,
+          "post_unlearning_accuracy": 0.4778,
           "leakage_rate": 0.0,
-          "unmatched_rate": 0.4111
+          "unmatched_rate": 0.4444
         },
         "adversarial_only": {
           "num_queries": 90,
@@ -1427,22 +1431,22 @@
       "BASE": {
         "split": "test",
         "num_target_probes": 1215,
-        "filr": 0.2691,
-        "tga": 0.1103,
+        "filr": 0.2658,
+        "tga": 0.1128,
         "failure_taxonomy": {
-          "correct_at_target": 134,
-          "under_forgetting": 327,
-          "over_forgetting": 45,
-          "wrong_branch": 398,
-          "refusal": 123,
-          "hallucination": 188
+          "correct_at_target": 137,
+          "under_forgetting": 323,
+          "over_forgetting": 46,
+          "wrong_branch": 392,
+          "refusal": 124,
+          "hallucination": 193
         },
         "failure_rates": {
-          "under_forgetting": 0.2691,
-          "over_forgetting": 0.037,
-          "wrong_branch": 0.3276,
-          "refusal": 0.1012,
-          "hallucination": 0.1547
+          "under_forgetting": 0.2658,
+          "over_forgetting": 0.0379,
+          "wrong_branch": 0.3226,
+          "refusal": 0.1021,
+          "hallucination": 0.1588
         },
         "ancestor_retention": {
           "num_queries": 135,
@@ -1461,23 +1465,23 @@
         },
         "retain_same_entity_image": {
           "num_queries": 387,
-          "baseline_accuracy": 0.0129,
-          "unmatched_rate": 0.8295
+          "baseline_accuracy": 0.0078,
+          "unmatched_rate": 0.832
         },
         "retain_other_entity_image": {
           "num_queries": 90,
-          "baseline_accuracy": 0.2889,
-          "unmatched_rate": 0.6333
+          "baseline_accuracy": 0.2,
+          "unmatched_rate": 0.6667
         },
         "retain_same_entity_all_routes": {
           "num_queries": 774,
-          "baseline_accuracy": 0.0181,
-          "unmatched_rate": 0.8152
+          "baseline_accuracy": 0.0155,
+          "unmatched_rate": 0.8165
         },
         "retain_other_entity_all_routes": {
           "num_queries": 180,
-          "baseline_accuracy": 0.3167,
-          "unmatched_rate": 0.6167
+          "baseline_accuracy": 0.2722,
+          "unmatched_rate": 0.6333
         },
         "by_route": {
           "text_to_text": {
@@ -1495,26 +1499,26 @@
           },
           "image_to_text": {
             "num_queries": 180,
-            "filr": 0.15,
-            "tga": 0.1389,
+            "filr": 0.1222,
+            "tga": 0.1611,
             "failure_categories": {
-              "correct_at_target": 25,
-              "under_forgetting": 27,
+              "correct_at_target": 29,
+              "under_forgetting": 22,
               "over_forgetting": 6,
-              "wrong_branch": 100,
-              "refusal": 0,
-              "hallucination": 22
+              "wrong_branch": 95,
+              "refusal": 1,
+              "hallucination": 27
             }
           },
           "image_text_to_text": {
             "num_queries": 90,
-            "filr": 0.3556,
-            "tga": 0.0778,
+            "filr": 0.3667,
+            "tga": 0.0667,
             "failure_categories": {
-              "correct_at_target": 7,
-              "under_forgetting": 32,
-              "over_forgetting": 3,
-              "wrong_branch": 21,
+              "correct_at_target": 6,
+              "under_forgetting": 33,
+              "over_forgetting": 4,
+              "wrong_branch": 20,
               "refusal": 4,
               "hallucination": 23
             }
@@ -1549,30 +1553,30 @@
           },
           "taxonomic": {
             "num_queries": 420,
-            "filr": 0.6786,
-            "tga": 0.1929,
+            "filr": 0.669,
+            "tga": 0.2,
             "failure_categories": {
-              "correct_at_target": 81,
-              "under_forgetting": 285,
-              "over_forgetting": 10,
-              "wrong_branch": 23,
-              "refusal": 0,
-              "hallucination": 21
+              "correct_at_target": 84,
+              "under_forgetting": 281,
+              "over_forgetting": 11,
+              "wrong_branch": 17,
+              "refusal": 1,
+              "hallucination": 26
             }
           }
         },
         "by_target_depth": {
           "1": {
             "num_queries": 1014,
-            "filr": 0.289,
-            "tga": 0.0986,
+            "filr": 0.285,
+            "tga": 0.1016,
             "failure_categories": {
-              "correct_at_target": 100,
-              "under_forgetting": 293,
-              "over_forgetting": 32,
-              "wrong_branch": 328,
-              "refusal": 108,
-              "hallucination": 153
+              "correct_at_target": 103,
+              "under_forgetting": 289,
+              "over_forgetting": 33,
+              "wrong_branch": 322,
+              "refusal": 109,
+              "hallucination": 158
             }
           },
           "2": {
@@ -1602,6 +1606,35 @@
             }
           }
         },
+        "by_image_provenance": {
+          "held_out_photo": {
+            "num_queries": 90,
+            "filr": 0.4778,
+            "tga": 0.2222,
+            "failure_categories": {
+              "correct_at_target": 20,
+              "under_forgetting": 43,
+              "over_forgetting": 1,
+              "wrong_branch": 7,
+              "refusal": 1,
+              "hallucination": 18
+            }
+          },
+          "seen_photo_unseen_wording": {
+            "num_queries": 180,
+            "filr": 0.0667,
+            "tga": 0.0833,
+            "failure_categories": {
+              "correct_at_target": 15,
+              "under_forgetting": 12,
+              "over_forgetting": 9,
+              "wrong_branch": 108,
+              "refusal": 4,
+              "hallucination": 32
+            }
+          },
+          "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+        },
         "definitions": {
           "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
           "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -1615,22 +1648,22 @@
       "MF": {
         "split": "test",
         "num_target_probes": 1215,
-        "filr": 0.4469,
-        "tga": 0.2115,
+        "filr": 0.4444,
+        "tga": 0.2099,
         "failure_taxonomy": {
-          "correct_at_target": 257,
-          "under_forgetting": 543,
+          "correct_at_target": 255,
+          "under_forgetting": 540,
           "over_forgetting": 13,
           "wrong_branch": 263,
           "refusal": 0,
-          "hallucination": 139
+          "hallucination": 144
         },
         "failure_rates": {
-          "under_forgetting": 0.4469,
+          "under_forgetting": 0.4444,
           "over_forgetting": 0.0107,
           "wrong_branch": 0.2165,
           "refusal": 0.0,
-          "hallucination": 0.1144
+          "hallucination": 0.1185
         },
         "ancestor_retention": {
           "num_queries": 135,
@@ -1649,23 +1682,23 @@
         },
         "retain_same_entity_image": {
           "num_queries": 387,
-          "baseline_accuracy": 0.509,
-          "unmatched_rate": 0.3669
+          "baseline_accuracy": 0.5065,
+          "unmatched_rate": 0.3695
         },
         "retain_other_entity_image": {
           "num_queries": 90,
-          "baseline_accuracy": 0.4778,
-          "unmatched_rate": 0.4778
+          "baseline_accuracy": 0.4444,
+          "unmatched_rate": 0.5111
         },
         "retain_same_entity_all_routes": {
           "num_queries": 774,
-          "baseline_accuracy": 0.5413,
-          "unmatched_rate": 0.3721
+          "baseline_accuracy": 0.5401,
+          "unmatched_rate": 0.3734
         },
         "retain_other_entity_all_routes": {
           "num_queries": 180,
-          "baseline_accuracy": 0.5056,
-          "unmatched_rate": 0.3889
+          "baseline_accuracy": 0.4889,
+          "unmatched_rate": 0.4056
         },
         "by_route": {
           "text_to_text": {
@@ -1683,15 +1716,15 @@
           },
           "image_to_text": {
             "num_queries": 180,
-            "filr": 0.3667,
-            "tga": 0.2167,
+            "filr": 0.35,
+            "tga": 0.2056,
             "failure_categories": {
-              "correct_at_target": 39,
-              "under_forgetting": 66,
+              "correct_at_target": 37,
+              "under_forgetting": 63,
               "over_forgetting": 0,
               "wrong_branch": 36,
               "refusal": 0,
-              "hallucination": 39
+              "hallucination": 44
             }
           },
           "image_text_to_text": {
@@ -1737,30 +1770,30 @@
           },
           "taxonomic": {
             "num_queries": 420,
-            "filr": 0.5119,
-            "tga": 0.3619,
+            "filr": 0.5048,
+            "tga": 0.3571,
             "failure_categories": {
-              "correct_at_target": 152,
-              "under_forgetting": 215,
+              "correct_at_target": 150,
+              "under_forgetting": 212,
               "over_forgetting": 12,
               "wrong_branch": 10,
               "refusal": 0,
-              "hallucination": 31
+              "hallucination": 36
             }
           }
         },
         "by_target_depth": {
           "1": {
             "num_queries": 1014,
-            "filr": 0.4448,
-            "tga": 0.2258,
+            "filr": 0.4418,
+            "tga": 0.2239,
             "failure_categories": {
-              "correct_at_target": 229,
-              "under_forgetting": 451,
+              "correct_at_target": 227,
+              "under_forgetting": 448,
               "over_forgetting": 13,
               "wrong_branch": 203,
               "refusal": 0,
-              "hallucination": 118
+              "hallucination": 123
             }
           },
           "2": {
@@ -1790,6 +1823,35 @@
             }
           }
         },
+        "by_image_provenance": {
+          "held_out_photo": {
+            "num_queries": 90,
+            "filr": 0.0667,
+            "tga": 0.5889,
+            "failure_categories": {
+              "correct_at_target": 53,
+              "under_forgetting": 6,
+              "over_forgetting": 0,
+              "wrong_branch": 6,
+              "refusal": 0,
+              "hallucination": 25
+            }
+          },
+          "seen_photo_unseen_wording": {
+            "num_queries": 180,
+            "filr": 0.4833,
+            "tga": 0.1778,
+            "failure_categories": {
+              "correct_at_target": 32,
+              "under_forgetting": 87,
+              "over_forgetting": 0,
+              "wrong_branch": 37,
+              "refusal": 0,
+              "hallucination": 24
+            }
+          },
+          "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+        },
         "definitions": {
           "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
           "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -1803,22 +1865,22 @@
       "MG": {
         "split": "test",
         "num_target_probes": 1215,
-        "filr": 0.1449,
-        "tga": 0.4329,
+        "filr": 0.1399,
+        "tga": 0.437,
         "failure_taxonomy": {
-          "correct_at_target": 526,
-          "under_forgetting": 176,
+          "correct_at_target": 531,
+          "under_forgetting": 170,
           "over_forgetting": 34,
-          "wrong_branch": 292,
+          "wrong_branch": 291,
           "refusal": 0,
-          "hallucination": 187
+          "hallucination": 189
         },
         "failure_rates": {
-          "under_forgetting": 0.1449,
+          "under_forgetting": 0.1399,
           "over_forgetting": 0.028,
-          "wrong_branch": 0.2403,
+          "wrong_branch": 0.2395,
           "refusal": 0.0,
-          "hallucination": 0.1539
+          "hallucination": 0.1556
         },
         "ancestor_retention": {
           "num_queries": 135,
@@ -1837,23 +1899,23 @@
         },
         "retain_same_entity_image": {
           "num_queries": 387,
-          "baseline_accuracy": 0.4987,
-          "unmatched_rate": 0.3437
+          "baseline_accuracy": 0.491,
+          "unmatched_rate": 0.3514
         },
         "retain_other_entity_image": {
           "num_queries": 90,
-          "baseline_accuracy": 0.5444,
-          "unmatched_rate": 0.3778
+          "baseline_accuracy": 0.4889,
+          "unmatched_rate": 0.4333
         },
         "retain_same_entity_all_routes": {
           "num_queries": 774,
-          "baseline_accuracy": 0.5142,
-          "unmatched_rate": 0.3721
+          "baseline_accuracy": 0.5103,
+          "unmatched_rate": 0.376
         },
         "retain_other_entity_all_routes": {
           "num_queries": 180,
-          "baseline_accuracy": 0.5944,
-          "unmatched_rate": 0.3556
+          "baseline_accuracy": 0.5667,
+          "unmatched_rate": 0.3833
         },
         "by_route": {
           "text_to_text": {
@@ -1871,15 +1933,15 @@
           },
           "image_to_text": {
             "num_queries": 180,
-            "filr": 0.1056,
-            "tga": 0.4444,
+            "filr": 0.0722,
+            "tga": 0.4722,
             "failure_categories": {
-              "correct_at_target": 80,
-              "under_forgetting": 19,
+              "correct_at_target": 85,
+              "under_forgetting": 13,
               "over_forgetting": 3,
-              "wrong_branch": 40,
+              "wrong_branch": 39,
               "refusal": 0,
-              "hallucination": 38
+              "hallucination": 40
             }
           },
           "image_text_to_text": {
@@ -1925,30 +1987,30 @@
           },
           "taxonomic": {
             "num_queries": 420,
-            "filr": 0.3071,
-            "tga": 0.5619,
+            "filr": 0.2929,
+            "tga": 0.5738,
             "failure_categories": {
-              "correct_at_target": 236,
-              "under_forgetting": 129,
+              "correct_at_target": 241,
+              "under_forgetting": 123,
               "over_forgetting": 18,
-              "wrong_branch": 10,
+              "wrong_branch": 9,
               "refusal": 0,
-              "hallucination": 27
+              "hallucination": 29
             }
           }
         },
         "by_target_depth": {
           "1": {
             "num_queries": 1014,
-            "filr": 0.1509,
-            "tga": 0.4586,
+            "filr": 0.145,
+            "tga": 0.4635,
             "failure_categories": {
-              "correct_at_target": 465,
-              "under_forgetting": 153,
+              "correct_at_target": 470,
+              "under_forgetting": 147,
               "over_forgetting": 27,
-              "wrong_branch": 211,
+              "wrong_branch": 210,
               "refusal": 0,
-              "hallucination": 158
+              "hallucination": 160
             }
           },
           "2": {
@@ -1978,6 +2040,35 @@
             }
           }
         },
+        "by_image_provenance": {
+          "held_out_photo": {
+            "num_queries": 90,
+            "filr": 0.0556,
+            "tga": 0.7,
+            "failure_categories": {
+              "correct_at_target": 63,
+              "under_forgetting": 5,
+              "over_forgetting": 0,
+              "wrong_branch": 5,
+              "refusal": 0,
+              "hallucination": 17
+            }
+          },
+          "seen_photo_unseen_wording": {
+            "num_queries": 180,
+            "filr": 0.0444,
+            "tga": 0.5556,
+            "failure_categories": {
+              "correct_at_target": 100,
+              "under_forgetting": 8,
+              "over_forgetting": 3,
+              "wrong_branch": 41,
+              "refusal": 0,
+              "hallucination": 28
+            }
+          },
+          "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+        },
         "definitions": {
           "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
           "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -1991,22 +2082,22 @@
       "MN": {
         "split": "test",
         "num_target_probes": 1215,
-        "filr": 0.2634,
-        "tga": 0.177,
+        "filr": 0.2609,
+        "tga": 0.1786,
         "failure_taxonomy": {
-          "correct_at_target": 215,
-          "under_forgetting": 320,
+          "correct_at_target": 217,
+          "under_forgetting": 317,
           "over_forgetting": 22,
           "wrong_branch": 469,
           "refusal": 0,
-          "hallucination": 189
+          "hallucination": 190
         },
         "failure_rates": {
-          "under_forgetting": 0.2634,
+          "under_forgetting": 0.2609,
           "over_forgetting": 0.0181,
           "wrong_branch": 0.386,
           "refusal": 0.0,
-          "hallucination": 0.1556
+          "hallucination": 0.1564
         },
         "ancestor_retention": {
           "num_queries": 135,
@@ -2025,23 +2116,23 @@
         },
         "retain_same_entity_image": {
           "num_queries": 387,
-          "baseline_accuracy": 0.5065,
-          "unmatched_rate": 0.4005
+          "baseline_accuracy": 0.4935,
+          "unmatched_rate": 0.4083
         },
         "retain_other_entity_image": {
           "num_queries": 90,
-          "baseline_accuracy": 0.5667,
-          "unmatched_rate": 0.4111
+          "baseline_accuracy": 0.4778,
+          "unmatched_rate": 0.4444
         },
         "retain_same_entity_all_routes": {
           "num_queries": 774,
-          "baseline_accuracy": 0.5685,
-          "unmatched_rate": 0.3605
+          "baseline_accuracy": 0.562,
+          "unmatched_rate": 0.3643
         },
         "retain_other_entity_all_routes": {
           "num_queries": 180,
-          "baseline_accuracy": 0.5944,
-          "unmatched_rate": 0.3556
+          "baseline_accuracy": 0.55,
+          "unmatched_rate": 0.3722
         },
         "by_route": {
           "text_to_text": {
@@ -2059,28 +2150,28 @@
           },
           "image_to_text": {
             "num_queries": 180,
-            "filr": 0.1833,
-            "tga": 0.1722,
+            "filr": 0.1667,
+            "tga": 0.1778,
             "failure_categories": {
-              "correct_at_target": 31,
-              "under_forgetting": 33,
+              "correct_at_target": 32,
+              "under_forgetting": 30,
               "over_forgetting": 1,
               "wrong_branch": 78,
               "refusal": 0,
-              "hallucination": 37
+              "hallucination": 39
             }
           },
           "image_text_to_text": {
             "num_queries": 90,
             "filr": 0.0667,
-            "tga": 0.3889,
+            "tga": 0.4,
             "failure_categories": {
-              "correct_at_target": 35,
+              "correct_at_target": 36,
               "under_forgetting": 6,
               "over_forgetting": 0,
               "wrong_branch": 32,
               "refusal": 0,
-              "hallucination": 17
+              "hallucination": 16
             }
           }
         },
@@ -2113,30 +2204,30 @@
           },
           "taxonomic": {
             "num_queries": 420,
-            "filr": 0.4857,
-            "tga": 0.3429,
+            "filr": 0.4786,
+            "tga": 0.3476,
             "failure_categories": {
-              "correct_at_target": 144,
-              "under_forgetting": 204,
+              "correct_at_target": 146,
+              "under_forgetting": 201,
               "over_forgetting": 14,
               "wrong_branch": 28,
               "refusal": 0,
-              "hallucination": 30
+              "hallucination": 31
             }
           }
         },
         "by_target_depth": {
           "1": {
             "num_queries": 1014,
-            "filr": 0.2771,
-            "tga": 0.1874,
+            "filr": 0.2742,
+            "tga": 0.1893,
             "failure_categories": {
-              "correct_at_target": 190,
-              "under_forgetting": 281,
+              "correct_at_target": 192,
+              "under_forgetting": 278,
               "over_forgetting": 17,
               "wrong_branch": 379,
               "refusal": 0,
-              "hallucination": 147
+              "hallucination": 148
             }
           },
           "2": {
@@ -2166,6 +2257,35 @@
             }
           }
         },
+        "by_image_provenance": {
+          "held_out_photo": {
+            "num_queries": 90,
+            "filr": 0.1,
+            "tga": 0.5889,
+            "failure_categories": {
+              "correct_at_target": 53,
+              "under_forgetting": 9,
+              "over_forgetting": 0,
+              "wrong_branch": 10,
+              "refusal": 0,
+              "hallucination": 18
+            }
+          },
+          "seen_photo_unseen_wording": {
+            "num_queries": 180,
+            "filr": 0.15,
+            "tga": 0.0833,
+            "failure_categories": {
+              "correct_at_target": 15,
+              "under_forgetting": 27,
+              "over_forgetting": 1,
+              "wrong_branch": 100,
+              "refusal": 0,
+              "hallucination": 37
+            }
+          },
+          "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+        },
         "definitions": {
           "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
           "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -2181,22 +2301,22 @@
       "BASE": {
         "split": "train",
         "num_target_probes": 1215,
-        "filr": 0.2749,
-        "tga": 0.1012,
+        "filr": 0.2741,
+        "tga": 0.1021,
         "failure_taxonomy": {
-          "correct_at_target": 123,
-          "under_forgetting": 334,
-          "over_forgetting": 44,
-          "wrong_branch": 423,
+          "correct_at_target": 124,
+          "under_forgetting": 333,
+          "over_forgetting": 43,
+          "wrong_branch": 427,
           "refusal": 118,
-          "hallucination": 173
+          "hallucination": 170
         },
         "failure_rates": {
-          "under_forgetting": 0.2749,
-          "over_forgetting": 0.0362,
-          "wrong_branch": 0.3481,
+          "under_forgetting": 0.2741,
+          "over_forgetting": 0.0354,
+          "wrong_branch": 0.3514,
           "refusal": 0.0971,
-          "hallucination": 0.1424
+          "hallucination": 0.1399
         },
         "ancestor_retention": {
           "num_queries": 135,
@@ -2220,8 +2340,8 @@
         },
         "retain_other_entity_image": {
           "num_queries": 90,
-          "baseline_accuracy": 0.2333,
-          "unmatched_rate": 0.6556
+          "baseline_accuracy": 0.2667,
+          "unmatched_rate": 0.6222
         },
         "retain_same_entity_all_routes": {
           "num_queries": 774,
@@ -2230,8 +2350,8 @@
         },
         "retain_other_entity_all_routes": {
           "num_queries": 180,
-          "baseline_accuracy": 0.2889,
-          "unmatched_rate": 0.6222
+          "baseline_accuracy": 0.3056,
+          "unmatched_rate": 0.6056
         },
         "by_route": {
           "text_to_text": {
@@ -2249,15 +2369,15 @@
           },
           "image_to_text": {
             "num_queries": 180,
-            "filr": 0.1889,
-            "tga": 0.1389,
+            "filr": 0.1833,
+            "tga": 0.1444,
             "failure_categories": {
-              "correct_at_target": 25,
-              "under_forgetting": 34,
-              "over_forgetting": 7,
-              "wrong_branch": 90,
+              "correct_at_target": 26,
+              "under_forgetting": 33,
+              "over_forgetting": 6,
+              "wrong_branch": 94,
               "refusal": 0,
-              "hallucination": 24
+              "hallucination": 21
             }
           },
           "image_text_to_text": {
@@ -2303,30 +2423,30 @@
           },
           "taxonomic": {
             "num_queries": 420,
-            "filr": 0.7,
-            "tga": 0.1595,
+            "filr": 0.6976,
+            "tga": 0.1619,
             "failure_categories": {
-              "correct_at_target": 67,
-              "under_forgetting": 294,
-              "over_forgetting": 11,
-              "wrong_branch": 26,
+              "correct_at_target": 68,
+              "under_forgetting": 293,
+              "over_forgetting": 10,
+              "wrong_branch": 30,
               "refusal": 0,
-              "hallucination": 22
+              "hallucination": 19
             }
           }
         },
         "by_target_depth": {
           "1": {
             "num_queries": 1014,
-            "filr": 0.2998,
-            "tga": 0.0927,
+            "filr": 0.2988,
+            "tga": 0.0937,
             "failure_categories": {
-              "correct_at_target": 94,
-              "under_forgetting": 304,
-              "over_forgetting": 23,
-              "wrong_branch": 348,
+              "correct_at_target": 95,
+              "under_forgetting": 303,
+              "over_forgetting": 22,
+              "wrong_branch": 352,
               "refusal": 98,
-              "hallucination": 147
+              "hallucination": 144
             }
           },
           "2": {
@@ -2356,6 +2476,25 @@
             }
           }
         },
+        "by_image_provenance": {
+          "held_out_photo": {
+            "num_queries": 0
+          },
+          "seen_photo_unseen_wording": {
+            "num_queries": 270,
+            "filr": 0.2481,
+            "tga": 0.1148,
+            "failure_categories": {
+              "correct_at_target": 31,
+              "under_forgetting": 67,
+              "over_forgetting": 10,
+              "wrong_branch": 114,
+              "refusal": 2,
+              "hallucination": 46
+            }
+          },
+          "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+        },
         "definitions": {
           "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
           "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -2369,18 +2508,18 @@
       "MF": {
         "split": "train",
         "num_target_probes": 1215,
-        "filr": 0.4568,
-        "tga": 0.1934,
+        "filr": 0.4576,
+        "tga": 0.1926,
         "failure_taxonomy": {
-          "correct_at_target": 235,
-          "under_forgetting": 555,
+          "correct_at_target": 234,
+          "under_forgetting": 556,
           "over_forgetting": 18,
           "wrong_branch": 265,
           "refusal": 0,
           "hallucination": 142
         },
         "failure_rates": {
-          "under_forgetting": 0.4568,
+          "under_forgetting": 0.4576,
           "over_forgetting": 0.0148,
           "wrong_branch": 0.2181,
           "refusal": 0.0,
@@ -2437,11 +2576,11 @@
           },
           "image_to_text": {
             "num_queries": 180,
-            "filr": 0.3444,
-            "tga": 0.2167,
+            "filr": 0.35,
+            "tga": 0.2111,
             "failure_categories": {
-              "correct_at_target": 39,
-              "under_forgetting": 62,
+              "correct_at_target": 38,
+              "under_forgetting": 63,
               "over_forgetting": 1,
               "wrong_branch": 36,
               "refusal": 0,
@@ -2491,11 +2630,11 @@
           },
           "taxonomic": {
             "num_queries": 420,
-            "filr": 0.5357,
-            "tga": 0.3238,
+            "filr": 0.5381,
+            "tga": 0.3214,
             "failure_categories": {
-              "correct_at_target": 136,
-              "under_forgetting": 225,
+              "correct_at_target": 135,
+              "under_forgetting": 226,
               "over_forgetting": 12,
               "wrong_branch": 8,
               "refusal": 0,
@@ -2506,11 +2645,11 @@
         "by_target_depth": {
           "1": {
             "num_queries": 1014,
-            "filr": 0.4576,
-            "tga": 0.2032,
+            "filr": 0.4586,
+            "tga": 0.2022,
             "failure_categories": {
-              "correct_at_target": 206,
-              "under_forgetting": 464,
+              "correct_at_target": 205,
+              "under_forgetting": 465,
               "over_forgetting": 14,
               "wrong_branch": 208,
               "refusal": 0,
@@ -2544,6 +2683,25 @@
             }
           }
         },
+        "by_image_provenance": {
+          "held_out_photo": {
+            "num_queries": 0
+          },
+          "seen_photo_unseen_wording": {
+            "num_queries": 270,
+            "filr": 0.3481,
+            "tga": 0.3185,
+            "failure_categories": {
+              "correct_at_target": 86,
+              "under_forgetting": 94,
+              "over_forgetting": 1,
+              "wrong_branch": 41,
+              "refusal": 0,
+              "hallucination": 48
+            }
+          },
+          "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+        },
         "definitions": {
           "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
           "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -2557,18 +2715,18 @@
       "MG": {
         "split": "train",
         "num_target_probes": 1215,
-        "filr": 0.1531,
-        "tga": 0.4247,
+        "filr": 0.1523,
+        "tga": 0.4255,
         "failure_taxonomy": {
-          "correct_at_target": 516,
-          "under_forgetting": 186,
+          "correct_at_target": 517,
+          "under_forgetting": 185,
           "over_forgetting": 41,
           "wrong_branch": 297,
           "refusal": 2,
           "hallucination": 173
         },
         "failure_rates": {
-          "under_forgetting": 0.1531,
+          "under_forgetting": 0.1523,
           "over_forgetting": 0.0337,
           "wrong_branch": 0.2444,
           "refusal": 0.0016,
@@ -2625,11 +2783,11 @@
           },
           "image_to_text": {
             "num_queries": 180,
-            "filr": 0.0944,
-            "tga": 0.4444,
+            "filr": 0.0889,
+            "tga": 0.45,
             "failure_categories": {
-              "correct_at_target": 80,
-              "under_forgetting": 17,
+              "correct_at_target": 81,
+              "under_forgetting": 16,
               "over_forgetting": 2,
               "wrong_branch": 43,
               "refusal": 0,
@@ -2679,11 +2837,11 @@
           },
           "taxonomic": {
             "num_queries": 420,
-            "filr": 0.3167,
-            "tga": 0.5381,
+            "filr": 0.3143,
+            "tga": 0.5405,
             "failure_categories": {
-              "correct_at_target": 226,
-              "under_forgetting": 133,
+              "correct_at_target": 227,
+              "under_forgetting": 132,
               "over_forgetting": 28,
               "wrong_branch": 8,
               "refusal": 0,
@@ -2694,11 +2852,11 @@
         "by_target_depth": {
           "1": {
             "num_queries": 1014,
-            "filr": 0.1489,
-            "tga": 0.4566,
+            "filr": 0.1479,
+            "tga": 0.4576,
             "failure_categories": {
-              "correct_at_target": 463,
-              "under_forgetting": 151,
+              "correct_at_target": 464,
+              "under_forgetting": 150,
               "over_forgetting": 36,
               "wrong_branch": 212,
               "refusal": 2,
@@ -2732,6 +2890,25 @@
             }
           }
         },
+        "by_image_provenance": {
+          "held_out_photo": {
+            "num_queries": 0
+          },
+          "seen_photo_unseen_wording": {
+            "num_queries": 270,
+            "filr": 0.063,
+            "tga": 0.5889,
+            "failure_categories": {
+              "correct_at_target": 159,
+              "under_forgetting": 17,
+              "over_forgetting": 2,
+              "wrong_branch": 49,
+              "refusal": 0,
+              "hallucination": 43
+            }
+          },
+          "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+        },
         "definitions": {
           "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
           "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -2751,16 +2928,16 @@
           "correct_at_target": 213,
           "under_forgetting": 326,
           "over_forgetting": 26,
-          "wrong_branch": 458,
+          "wrong_branch": 457,
           "refusal": 0,
-          "hallucination": 192
+          "hallucination": 193
         },
         "failure_rates": {
           "under_forgetting": 0.2683,
           "over_forgetting": 0.0214,
-          "wrong_branch": 0.377,
+          "wrong_branch": 0.3761,
           "refusal": 0.0,
-          "hallucination": 0.158
+          "hallucination": 0.1588
         },
         "ancestor_retention": {
           "num_queries": 135,
@@ -2819,9 +2996,9 @@
               "correct_at_target": 31,
               "under_forgetting": 31,
               "over_forgetting": 0,
-              "wrong_branch": 80,
+              "wrong_branch": 79,
               "refusal": 0,
-              "hallucination": 38
+              "hallucination": 39
             }
           },
           "image_text_to_text": {
@@ -2873,9 +3050,9 @@
               "correct_at_target": 143,
               "under_forgetting": 201,
               "over_forgetting": 18,
-              "wrong_branch": 25,
+              "wrong_branch": 24,
               "refusal": 0,
-              "hallucination": 33
+              "hallucination": 34
             }
           }
         },
@@ -2888,9 +3065,9 @@
               "correct_at_target": 187,
               "under_forgetting": 280,
               "over_forgetting": 22,
-              "wrong_branch": 373,
+              "wrong_branch": 372,
               "refusal": 0,
-              "hallucination": 152
+              "hallucination": 153
             }
           },
           "2": {
@@ -2920,6 +3097,25 @@
             }
           }
         },
+        "by_image_provenance": {
+          "held_out_photo": {
+            "num_queries": 0
+          },
+          "seen_photo_unseen_wording": {
+            "num_queries": 270,
+            "filr": 0.1407,
+            "tga": 0.2519,
+            "failure_categories": {
+              "correct_at_target": 68,
+              "under_forgetting": 38,
+              "over_forgetting": 0,
+              "wrong_branch": 109,
+              "refusal": 0,
+              "hallucination": 55
+            }
+          },
+          "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+        },
         "definitions": {
           "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
           "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -2935,22 +3131,22 @@
       "BASE": {
         "split": "val",
         "num_target_probes": 1215,
-        "filr": 0.2708,
-        "tga": 0.1103,
+        "filr": 0.2642,
+        "tga": 0.1095,
         "failure_taxonomy": {
-          "correct_at_target": 134,
-          "under_forgetting": 329,
+          "correct_at_target": 133,
+          "under_forgetting": 321,
           "over_forgetting": 49,
           "wrong_branch": 394,
           "refusal": 106,
-          "hallucination": 203
+          "hallucination": 212
         },
         "failure_rates": {
-          "under_forgetting": 0.2708,
+          "under_forgetting": 0.2642,
           "over_forgetting": 0.0403,
           "wrong_branch": 0.3243,
           "refusal": 0.0872,
-          "hallucination": 0.1671
+          "hallucination": 0.1745
         },
         "ancestor_retention": {
           "num_queries": 135,
@@ -2969,22 +3165,22 @@
         },
         "retain_same_entity_image": {
           "num_queries": 387,
-          "baseline_accuracy": 0.0103,
+          "baseline_accuracy": 0.0052,
           "unmatched_rate": 0.8346
         },
         "retain_other_entity_image": {
           "num_queries": 90,
-          "baseline_accuracy": 0.1,
+          "baseline_accuracy": 0.0667,
           "unmatched_rate": 0.8
         },
         "retain_same_entity_all_routes": {
           "num_queries": 774,
-          "baseline_accuracy": 0.0181,
+          "baseline_accuracy": 0.0155,
           "unmatched_rate": 0.8152
         },
         "retain_other_entity_all_routes": {
           "num_queries": 180,
-          "baseline_accuracy": 0.2167,
+          "baseline_accuracy": 0.2,
           "unmatched_rate": 0.7111
         },
         "by_route": {
@@ -3003,24 +3199,24 @@
           },
           "image_to_text": {
             "num_queries": 180,
-            "filr": 0.1611,
-            "tga": 0.15,
+            "filr": 0.1222,
+            "tga": 0.1389,
             "failure_categories": {
-              "correct_at_target": 27,
-              "under_forgetting": 29,
+              "correct_at_target": 25,
+              "under_forgetting": 22,
               "over_forgetting": 7,
               "wrong_branch": 96,
               "refusal": 0,
-              "hallucination": 21
+              "hallucination": 30
             }
           },
           "image_text_to_text": {
             "num_queries": 90,
-            "filr": 0.3778,
-            "tga": 0.0667,
+            "filr": 0.3667,
+            "tga": 0.0778,
             "failure_categories": {
-              "correct_at_target": 6,
-              "under_forgetting": 34,
+              "correct_at_target": 7,
+              "under_forgetting": 33,
               "over_forgetting": 5,
               "wrong_branch": 22,
               "refusal": 3,
@@ -3057,30 +3253,30 @@
           },
           "taxonomic": {
             "num_queries": 420,
-            "filr": 0.6881,
-            "tga": 0.181,
+            "filr": 0.669,
+            "tga": 0.1786,
             "failure_categories": {
-              "correct_at_target": 76,
-              "under_forgetting": 289,
+              "correct_at_target": 75,
+              "under_forgetting": 281,
               "over_forgetting": 13,
               "wrong_branch": 19,
               "refusal": 0,
-              "hallucination": 23
+              "hallucination": 32
             }
           }
         },
         "by_target_depth": {
           "1": {
             "num_queries": 1014,
-            "filr": 0.2959,
-            "tga": 0.0996,
+            "filr": 0.288,
+            "tga": 0.0986,
             "failure_categories": {
-              "correct_at_target": 101,
-              "under_forgetting": 300,
+              "correct_at_target": 100,
+              "under_forgetting": 292,
               "over_forgetting": 31,
               "wrong_branch": 322,
               "refusal": 92,
-              "hallucination": 168
+              "hallucination": 177
             }
           },
           "2": {
@@ -3110,6 +3306,35 @@
             }
           }
         },
+        "by_image_provenance": {
+          "held_out_photo": {
+            "num_queries": 90,
+            "filr": 0.4556,
+            "tga": 0.1778,
+            "failure_categories": {
+              "correct_at_target": 16,
+              "under_forgetting": 41,
+              "over_forgetting": 1,
+              "wrong_branch": 9,
+              "refusal": 0,
+              "hallucination": 23
+            }
+          },
+          "seen_photo_unseen_wording": {
+            "num_queries": 180,
+            "filr": 0.0778,
+            "tga": 0.0889,
+            "failure_categories": {
+              "correct_at_target": 16,
+              "under_forgetting": 14,
+              "over_forgetting": 11,
+              "wrong_branch": 109,
+              "refusal": 3,
+              "hallucination": 27
+            }
+          },
+          "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+        },
         "definitions": {
           "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
           "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -3124,21 +3349,21 @@
         "split": "val",
         "num_target_probes": 1215,
         "filr": 0.4403,
-        "tga": 0.2008,
+        "tga": 0.1951,
         "failure_taxonomy": {
-          "correct_at_target": 244,
+          "correct_at_target": 237,
           "under_forgetting": 535,
           "over_forgetting": 10,
-          "wrong_branch": 273,
+          "wrong_branch": 272,
           "refusal": 0,
-          "hallucination": 153
+          "hallucination": 161
         },
         "failure_rates": {
           "under_forgetting": 0.4403,
           "over_forgetting": 0.0082,
-          "wrong_branch": 0.2247,
+          "wrong_branch": 0.2239,
           "refusal": 0.0,
-          "hallucination": 0.1259
+          "hallucination": 0.1325
         },
         "ancestor_retention": {
           "num_queries": 135,
@@ -3157,23 +3382,23 @@
         },
         "retain_same_entity_image": {
           "num_queries": 387,
-          "baseline_accuracy": 0.509,
-          "unmatched_rate": 0.3695
+          "baseline_accuracy": 0.5065,
+          "unmatched_rate": 0.3721
         },
         "retain_other_entity_image": {
           "num_queries": 90,
-          "baseline_accuracy": 0.4778,
-          "unmatched_rate": 0.4778
+          "baseline_accuracy": 0.4222,
+          "unmatched_rate": 0.5333
         },
         "retain_same_entity_all_routes": {
           "num_queries": 774,
-          "baseline_accuracy": 0.5375,
-          "unmatched_rate": 0.376
+          "baseline_accuracy": 0.5362,
+          "unmatched_rate": 0.3773
         },
         "retain_other_entity_all_routes": {
           "num_queries": 180,
-          "baseline_accuracy": 0.5222,
-          "unmatched_rate": 0.4444
+          "baseline_accuracy": 0.4944,
+          "unmatched_rate": 0.4722
         },
         "by_route": {
           "text_to_text": {
@@ -3192,14 +3417,14 @@
           "image_to_text": {
             "num_queries": 180,
             "filr": 0.3556,
-            "tga": 0.2222,
+            "tga": 0.1833,
             "failure_categories": {
-              "correct_at_target": 40,
+              "correct_at_target": 33,
               "under_forgetting": 64,
               "over_forgetting": 0,
-              "wrong_branch": 35,
+              "wrong_branch": 34,
               "refusal": 0,
-              "hallucination": 41
+              "hallucination": 49
             }
           },
           "image_text_to_text": {
@@ -3246,14 +3471,14 @@
           "taxonomic": {
             "num_queries": 420,
             "filr": 0.5286,
-            "tga": 0.3405,
+            "tga": 0.3238,
             "failure_categories": {
-              "correct_at_target": 143,
+              "correct_at_target": 136,
               "under_forgetting": 222,
               "over_forgetting": 8,
-              "wrong_branch": 8,
+              "wrong_branch": 7,
               "refusal": 0,
-              "hallucination": 39
+              "hallucination": 47
             }
           }
         },
@@ -3261,14 +3486,14 @@
           "1": {
             "num_queries": 1014,
             "filr": 0.4418,
-            "tga": 0.213,
+            "tga": 0.2061,
             "failure_categories": {
-              "correct_at_target": 216,
+              "correct_at_target": 209,
               "under_forgetting": 448,
               "over_forgetting": 10,
-              "wrong_branch": 213,
+              "wrong_branch": 212,
               "refusal": 0,
-              "hallucination": 127
+              "hallucination": 135
             }
           },
           "2": {
@@ -3298,6 +3523,35 @@
             }
           }
         },
+        "by_image_provenance": {
+          "held_out_photo": {
+            "num_queries": 90,
+            "filr": 0.0889,
+            "tga": 0.5333,
+            "failure_categories": {
+              "correct_at_target": 48,
+              "under_forgetting": 8,
+              "over_forgetting": 0,
+              "wrong_branch": 5,
+              "refusal": 0,
+              "hallucination": 29
+            }
+          },
+          "seen_photo_unseen_wording": {
+            "num_queries": 180,
+            "filr": 0.4889,
+            "tga": 0.1833,
+            "failure_categories": {
+              "correct_at_target": 33,
+              "under_forgetting": 88,
+              "over_forgetting": 0,
+              "wrong_branch": 35,
+              "refusal": 0,
+              "hallucination": 24
+            }
+          },
+          "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+        },
         "definitions": {
           "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
           "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -3311,22 +3565,22 @@
       "MG": {
         "split": "val",
         "num_target_probes": 1215,
-        "filr": 0.1358,
-        "tga": 0.4395,
+        "filr": 0.1309,
+        "tga": 0.4362,
         "failure_taxonomy": {
-          "correct_at_target": 534,
-          "under_forgetting": 165,
+          "correct_at_target": 530,
+          "under_forgetting": 159,
           "over_forgetting": 38,
           "wrong_branch": 295,
           "refusal": 0,
-          "hallucination": 183
+          "hallucination": 193
         },
         "failure_rates": {
-          "under_forgetting": 0.1358,
+          "under_forgetting": 0.1309,
           "over_forgetting": 0.0313,
           "wrong_branch": 0.2428,
           "refusal": 0.0,
-          "hallucination": 0.1506
+          "hallucination": 0.1588
         },
         "ancestor_retention": {
           "num_queries": 135,
@@ -3345,23 +3599,23 @@
         },
         "retain_same_entity_image": {
           "num_queries": 387,
-          "baseline_accuracy": 0.5039,
-          "unmatched_rate": 0.3437
+          "baseline_accuracy": 0.4961,
+          "unmatched_rate": 0.3514
         },
         "retain_other_entity_image": {
           "num_queries": 90,
-          "baseline_accuracy": 0.5556,
-          "unmatched_rate": 0.3778
+          "baseline_accuracy": 0.4556,
+          "unmatched_rate": 0.4778
         },
         "retain_same_entity_all_routes": {
           "num_queries": 774,
-          "baseline_accuracy": 0.5129,
-          "unmatched_rate": 0.3682
+          "baseline_accuracy": 0.509,
+          "unmatched_rate": 0.3721
         },
         "retain_other_entity_all_routes": {
           "num_queries": 180,
-          "baseline_accuracy": 0.5389,
-          "unmatched_rate": 0.4
+          "baseline_accuracy": 0.4889,
+          "unmatched_rate": 0.45
         },
         "by_route": {
           "text_to_text": {
@@ -3379,15 +3633,15 @@
           },
           "image_to_text": {
             "num_queries": 180,
-            "filr": 0.1,
-            "tga": 0.4389,
+            "filr": 0.0667,
+            "tga": 0.4167,
             "failure_categories": {
-              "correct_at_target": 79,
-              "under_forgetting": 18,
+              "correct_at_target": 75,
+              "under_forgetting": 12,
               "over_forgetting": 3,
               "wrong_branch": 43,
               "refusal": 0,
-              "hallucination": 37
+              "hallucination": 47
             }
           },
           "image_text_to_text": {
@@ -3433,30 +3687,30 @@
           },
           "taxonomic": {
             "num_queries": 420,
-            "filr": 0.2905,
-            "tga": 0.5738,
+            "filr": 0.2762,
+            "tga": 0.5643,
             "failure_categories": {
-              "correct_at_target": 241,
-              "under_forgetting": 122,
+              "correct_at_target": 237,
+              "under_forgetting": 116,
               "over_forgetting": 23,
               "wrong_branch": 10,
               "refusal": 0,
-              "hallucination": 24
+              "hallucination": 34
             }
           }
         },
         "by_target_depth": {
           "1": {
             "num_queries": 1014,
-            "filr": 0.1371,
-            "tga": 0.4684,
+            "filr": 0.1312,
+            "tga": 0.4645,
             "failure_categories": {
-              "correct_at_target": 475,
-              "under_forgetting": 139,
+              "correct_at_target": 471,
+              "under_forgetting": 133,
               "over_forgetting": 32,
               "wrong_branch": 216,
               "refusal": 0,
-              "hallucination": 152
+              "hallucination": 162
             }
           },
           "2": {
@@ -3486,6 +3740,35 @@
             }
           }
         },
+        "by_image_provenance": {
+          "held_out_photo": {
+            "num_queries": 90,
+            "filr": 0.0333,
+            "tga": 0.6222,
+            "failure_categories": {
+              "correct_at_target": 56,
+              "under_forgetting": 3,
+              "over_forgetting": 0,
+              "wrong_branch": 7,
+              "refusal": 0,
+              "hallucination": 24
+            }
+          },
+          "seen_photo_unseen_wording": {
+            "num_queries": 180,
+            "filr": 0.0556,
+            "tga": 0.5333,
+            "failure_categories": {
+              "correct_at_target": 96,
+              "under_forgetting": 10,
+              "over_forgetting": 3,
+              "wrong_branch": 43,
+              "refusal": 0,
+              "hallucination": 28
+            }
+          },
+          "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+        },
         "definitions": {
           "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
           "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -3499,22 +3782,22 @@
       "MN": {
         "split": "val",
         "num_target_probes": 1215,
-        "filr": 0.2708,
-        "tga": 0.172,
+        "filr": 0.2675,
+        "tga": 0.1679,
         "failure_taxonomy": {
-          "correct_at_target": 209,
-          "under_forgetting": 329,
+          "correct_at_target": 204,
+          "under_forgetting": 325,
           "over_forgetting": 22,
-          "wrong_branch": 454,
+          "wrong_branch": 450,
           "refusal": 0,
-          "hallucination": 201
+          "hallucination": 214
         },
         "failure_rates": {
-          "under_forgetting": 0.2708,
+          "under_forgetting": 0.2675,
           "over_forgetting": 0.0181,
-          "wrong_branch": 0.3737,
+          "wrong_branch": 0.3704,
           "refusal": 0.0,
-          "hallucination": 0.1654
+          "hallucination": 0.1761
         },
         "ancestor_retention": {
           "num_queries": 135,
@@ -3533,23 +3816,23 @@
         },
         "retain_same_entity_image": {
           "num_queries": 387,
-          "baseline_accuracy": 0.509,
-          "unmatched_rate": 0.3979
+          "baseline_accuracy": 0.5039,
+          "unmatched_rate": 0.4005
         },
         "retain_other_entity_image": {
           "num_queries": 90,
-          "baseline_accuracy": 0.5778,
-          "unmatched_rate": 0.3889
+          "baseline_accuracy": 0.5111,
+          "unmatched_rate": 0.4444
         },
         "retain_same_entity_all_routes": {
           "num_queries": 774,
-          "baseline_accuracy": 0.5568,
-          "unmatched_rate": 0.3669
+          "baseline_accuracy": 0.5543,
+          "unmatched_rate": 0.3682
         },
         "retain_other_entity_all_routes": {
           "num_queries": 180,
-          "baseline_accuracy": 0.6111,
-          "unmatched_rate": 0.3389
+          "baseline_accuracy": 0.5778,
+          "unmatched_rate": 0.3667
         },
         "by_route": {
           "text_to_text": {
@@ -3567,26 +3850,26 @@
           },
           "image_to_text": {
             "num_queries": 180,
-            "filr": 0.1778,
-            "tga": 0.1833,
+            "filr": 0.1556,
+            "tga": 0.1611,
             "failure_categories": {
-              "correct_at_target": 33,
-              "under_forgetting": 32,
+              "correct_at_target": 29,
+              "under_forgetting": 28,
               "over_forgetting": 0,
-              "wrong_branch": 79,
+              "wrong_branch": 74,
               "refusal": 0,
-              "hallucination": 36
+              "hallucination": 49
             }
           },
           "image_text_to_text": {
             "num_queries": 90,
             "filr": 0.0778,
-            "tga": 0.3889,
+            "tga": 0.3778,
             "failure_categories": {
-              "correct_at_target": 35,
+              "correct_at_target": 34,
               "under_forgetting": 7,
               "over_forgetting": 0,
-              "wrong_branch": 30,
+              "wrong_branch": 31,
               "refusal": 0,
               "hallucination": 18
             }
@@ -3621,30 +3904,30 @@
           },
           "taxonomic": {
             "num_queries": 420,
-            "filr": 0.4929,
-            "tga": 0.331,
+            "filr": 0.4833,
+            "tga": 0.319,
             "failure_categories": {
-              "correct_at_target": 139,
-              "under_forgetting": 207,
+              "correct_at_target": 134,
+              "under_forgetting": 203,
               "over_forgetting": 15,
-              "wrong_branch": 26,
+              "wrong_branch": 22,
               "refusal": 0,
-              "hallucination": 33
+              "hallucination": 46
             }
           }
         },
         "by_target_depth": {
           "1": {
             "num_queries": 1014,
-            "filr": 0.284,
-            "tga": 0.1834,
+            "filr": 0.2801,
+            "tga": 0.1785,
             "failure_categories": {
-              "correct_at_target": 186,
-              "under_forgetting": 288,
+              "correct_at_target": 181,
+              "under_forgetting": 284,
               "over_forgetting": 16,
-              "wrong_branch": 365,
+              "wrong_branch": 361,
               "refusal": 0,
-              "hallucination": 159
+              "hallucination": 172
             }
           },
           "2": {
@@ -3674,6 +3957,35 @@
             }
           }
         },
+        "by_image_provenance": {
+          "held_out_photo": {
+            "num_queries": 90,
+            "filr": 0.0889,
+            "tga": 0.5222,
+            "failure_categories": {
+              "correct_at_target": 47,
+              "under_forgetting": 8,
+              "over_forgetting": 0,
+              "wrong_branch": 8,
+              "refusal": 0,
+              "hallucination": 27
+            }
+          },
+          "seen_photo_unseen_wording": {
+            "num_queries": 180,
+            "filr": 0.15,
+            "tga": 0.0889,
+            "failure_categories": {
+              "correct_at_target": 16,
+              "under_forgetting": 27,
+              "over_forgetting": 0,
+              "wrong_branch": 97,
+              "refusal": 0,
+              "hallucination": 40
+            }
+          },
+          "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+        },
         "definitions": {
           "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
           "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -3689,22 +4001,22 @@
       "BASE": {
         "split": "pooled",
         "num_target_probes": 3645,
-        "filr": 0.2716,
-        "tga": 0.1073,
+        "filr": 0.268,
+        "tga": 0.1081,
         "failure_taxonomy": {
-          "correct_at_target": 391,
-          "under_forgetting": 990,
+          "correct_at_target": 394,
+          "under_forgetting": 977,
           "over_forgetting": 138,
-          "wrong_branch": 1215,
-          "refusal": 347,
-          "hallucination": 564
+          "wrong_branch": 1213,
+          "refusal": 348,
+          "hallucination": 575
         },
         "failure_rates": {
-          "under_forgetting": 0.2716,
+          "under_forgetting": 0.268,
           "over_forgetting": 0.0379,
-          "wrong_branch": 0.3333,
-          "refusal": 0.0952,
-          "hallucination": 0.1547
+          "wrong_branch": 0.3328,
+          "refusal": 0.0955,
+          "hallucination": 0.1578
         },
         "ancestor_retention": {
           "num_queries": 405,
@@ -3723,22 +4035,22 @@
         },
         "retain_same_entity_image": {
           "num_queries": 1161,
-          "baseline_accuracy": 0.0121,
-          "unmatched_rate": 0.8295
+          "baseline_accuracy": 0.0086,
+          "unmatched_rate": 0.8303
         },
         "retain_other_entity_image": {
           "num_queries": 270,
-          "baseline_accuracy": 0.2074,
+          "baseline_accuracy": 0.1778,
           "unmatched_rate": 0.6963
         },
         "retain_same_entity_all_routes": {
           "num_queries": 2322,
-          "baseline_accuracy": 0.0185,
-          "unmatched_rate": 0.8178
+          "baseline_accuracy": 0.0168,
+          "unmatched_rate": 0.8183
         },
         "retain_other_entity_all_routes": {
           "num_queries": 540,
-          "baseline_accuracy": 0.2741,
+          "baseline_accuracy": 0.2593,
           "unmatched_rate": 0.65
         },
         "by_route": {
@@ -3757,15 +4069,15 @@
           },
           "image_to_text": {
             "num_queries": 540,
-            "filr": 0.1667,
-            "tga": 0.1426,
+            "filr": 0.1426,
+            "tga": 0.1481,
             "failure_categories": {
-              "correct_at_target": 77,
-              "under_forgetting": 90,
-              "over_forgetting": 20,
-              "wrong_branch": 286,
-              "refusal": 0,
-              "hallucination": 67
+              "correct_at_target": 80,
+              "under_forgetting": 77,
+              "over_forgetting": 19,
+              "wrong_branch": 285,
+              "refusal": 1,
+              "hallucination": 78
             }
           },
           "image_text_to_text": {
@@ -3775,8 +4087,8 @@
             "failure_categories": {
               "correct_at_target": 18,
               "under_forgetting": 100,
-              "over_forgetting": 12,
-              "wrong_branch": 63,
+              "over_forgetting": 13,
+              "wrong_branch": 62,
               "refusal": 9,
               "hallucination": 68
             }
@@ -3811,30 +4123,30 @@
           },
           "taxonomic": {
             "num_queries": 1260,
-            "filr": 0.6889,
-            "tga": 0.1778,
+            "filr": 0.6786,
+            "tga": 0.1802,
             "failure_categories": {
-              "correct_at_target": 224,
-              "under_forgetting": 868,
+              "correct_at_target": 227,
+              "under_forgetting": 855,
               "over_forgetting": 34,
-              "wrong_branch": 68,
-              "refusal": 0,
-              "hallucination": 66
+              "wrong_branch": 66,
+              "refusal": 1,
+              "hallucination": 77
             }
           }
         },
         "by_target_depth": {
           "1": {
             "num_queries": 3042,
-            "filr": 0.2949,
-            "tga": 0.097,
+            "filr": 0.2906,
+            "tga": 0.098,
             "failure_categories": {
-              "correct_at_target": 295,
-              "under_forgetting": 897,
+              "correct_at_target": 298,
+              "under_forgetting": 884,
               "over_forgetting": 86,
-              "wrong_branch": 998,
-              "refusal": 298,
-              "hallucination": 468
+              "wrong_branch": 996,
+              "refusal": 299,
+              "hallucination": 479
             }
           },
           "2": {
@@ -3864,6 +4176,35 @@
             }
           }
         },
+        "by_image_provenance": {
+          "held_out_photo": {
+            "num_queries": 180,
+            "filr": 0.4667,
+            "tga": 0.2,
+            "failure_categories": {
+              "correct_at_target": 36,
+              "under_forgetting": 84,
+              "over_forgetting": 2,
+              "wrong_branch": 16,
+              "refusal": 1,
+              "hallucination": 41
+            }
+          },
+          "seen_photo_unseen_wording": {
+            "num_queries": 630,
+            "filr": 0.1476,
+            "tga": 0.0984,
+            "failure_categories": {
+              "correct_at_target": 62,
+              "under_forgetting": 93,
+              "over_forgetting": 30,
+              "wrong_branch": 331,
+              "refusal": 9,
+              "hallucination": 105
+            }
+          },
+          "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+        },
         "definitions": {
           "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
           "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -3877,22 +4218,22 @@
       "MF": {
         "split": "pooled",
         "num_target_probes": 3645,
-        "filr": 0.448,
-        "tga": 0.2019,
+        "filr": 0.4475,
+        "tga": 0.1992,
         "failure_taxonomy": {
-          "correct_at_target": 736,
-          "under_forgetting": 1633,
+          "correct_at_target": 726,
+          "under_forgetting": 1631,
           "over_forgetting": 41,
-          "wrong_branch": 801,
+          "wrong_branch": 800,
           "refusal": 0,
-          "hallucination": 434
+          "hallucination": 447
         },
         "failure_rates": {
-          "under_forgetting": 0.448,
+          "under_forgetting": 0.4475,
           "over_forgetting": 0.0112,
-          "wrong_branch": 0.2198,
+          "wrong_branch": 0.2195,
           "refusal": 0.0,
-          "hallucination": 0.1191
+          "hallucination": 0.1226
         },
         "ancestor_retention": {
           "num_queries": 405,
@@ -3911,23 +4252,23 @@
         },
         "retain_same_entity_image": {
           "num_queries": 1161,
-          "baseline_accuracy": 0.509,
-          "unmatched_rate": 0.3678
+          "baseline_accuracy": 0.5073,
+          "unmatched_rate": 0.3695
         },
         "retain_other_entity_image": {
           "num_queries": 270,
-          "baseline_accuracy": 0.4778,
-          "unmatched_rate": 0.4778
+          "baseline_accuracy": 0.4481,
+          "unmatched_rate": 0.5074
         },
         "retain_same_entity_all_routes": {
           "num_queries": 2322,
-          "baseline_accuracy": 0.5353,
-          "unmatched_rate": 0.3773
+          "baseline_accuracy": 0.5345,
+          "unmatched_rate": 0.3781
         },
         "retain_other_entity_all_routes": {
           "num_queries": 540,
-          "baseline_accuracy": 0.5296,
-          "unmatched_rate": 0.4056
+          "baseline_accuracy": 0.5148,
+          "unmatched_rate": 0.4204
         },
         "by_route": {
           "text_to_text": {
@@ -3945,15 +4286,15 @@
           },
           "image_to_text": {
             "num_queries": 540,
-            "filr": 0.3556,
-            "tga": 0.2185,
+            "filr": 0.3519,
+            "tga": 0.2,
             "failure_categories": {
-              "correct_at_target": 118,
-              "under_forgetting": 192,
+              "correct_at_target": 108,
+              "under_forgetting": 190,
               "over_forgetting": 1,
-              "wrong_branch": 107,
+              "wrong_branch": 106,
               "refusal": 0,
-              "hallucination": 122
+              "hallucination": 135
             }
           },
           "image_text_to_text": {
@@ -3999,30 +4340,30 @@
           },
           "taxonomic": {
             "num_queries": 1260,
-            "filr": 0.5254,
-            "tga": 0.3421,
+            "filr": 0.5238,
+            "tga": 0.3341,
             "failure_categories": {
-              "correct_at_target": 431,
-              "under_forgetting": 662,
+              "correct_at_target": 421,
+              "under_forgetting": 660,
               "over_forgetting": 32,
-              "wrong_branch": 26,
+              "wrong_branch": 25,
               "refusal": 0,
-              "hallucination": 109
+              "hallucination": 122
             }
           }
         },
         "by_target_depth": {
           "1": {
             "num_queries": 3042,
-            "filr": 0.4481,
-            "tga": 0.214,
+            "filr": 0.4474,
+            "tga": 0.2107,
             "failure_categories": {
-              "correct_at_target": 651,
-              "under_forgetting": 1363,
+              "correct_at_target": 641,
+              "under_forgetting": 1361,
               "over_forgetting": 37,
-              "wrong_branch": 624,
+              "wrong_branch": 623,
               "refusal": 0,
-              "hallucination": 367
+              "hallucination": 380
             }
           },
           "2": {
@@ -4052,6 +4393,35 @@
             }
           }
         },
+        "by_image_provenance": {
+          "held_out_photo": {
+            "num_queries": 180,
+            "filr": 0.0778,
+            "tga": 0.5611,
+            "failure_categories": {
+              "correct_at_target": 101,
+              "under_forgetting": 14,
+              "over_forgetting": 0,
+              "wrong_branch": 11,
+              "refusal": 0,
+              "hallucination": 54
+            }
+          },
+          "seen_photo_unseen_wording": {
+            "num_queries": 630,
+            "filr": 0.427,
+            "tga": 0.2397,
+            "failure_categories": {
+              "correct_at_target": 151,
+              "under_forgetting": 269,
+              "over_forgetting": 1,
+              "wrong_branch": 113,
+              "refusal": 0,
+              "hallucination": 96
+            }
+          },
+          "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+        },
         "definitions": {
           "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
           "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -4065,22 +4435,22 @@
       "MG": {
         "split": "pooled",
         "num_target_probes": 3645,
-        "filr": 0.1446,
-        "tga": 0.4324,
+        "filr": 0.141,
+        "tga": 0.4329,
         "failure_taxonomy": {
-          "correct_at_target": 1576,
-          "under_forgetting": 527,
+          "correct_at_target": 1578,
+          "under_forgetting": 514,
           "over_forgetting": 113,
-          "wrong_branch": 884,
+          "wrong_branch": 883,
           "refusal": 2,
-          "hallucination": 543
+          "hallucination": 555
         },
         "failure_rates": {
-          "under_forgetting": 0.1446,
+          "under_forgetting": 0.141,
           "over_forgetting": 0.031,
-          "wrong_branch": 0.2425,
+          "wrong_branch": 0.2422,
           "refusal": 0.0005,
-          "hallucination": 0.149
+          "hallucination": 0.1523
         },
         "ancestor_retention": {
           "num_queries": 405,
@@ -4099,23 +4469,23 @@
         },
         "retain_same_entity_image": {
           "num_queries": 1161,
-          "baseline_accuracy": 0.5039,
-          "unmatched_rate": 0.3411
+          "baseline_accuracy": 0.4987,
+          "unmatched_rate": 0.3463
         },
         "retain_other_entity_image": {
           "num_queries": 270,
-          "baseline_accuracy": 0.5556,
-          "unmatched_rate": 0.3667
+          "baseline_accuracy": 0.5037,
+          "unmatched_rate": 0.4185
         },
         "retain_same_entity_all_routes": {
           "num_queries": 2322,
-          "baseline_accuracy": 0.5172,
-          "unmatched_rate": 0.3665
+          "baseline_accuracy": 0.5146,
+          "unmatched_rate": 0.3691
         },
         "retain_other_entity_all_routes": {
           "num_queries": 540,
-          "baseline_accuracy": 0.5722,
-          "unmatched_rate": 0.3685
+          "baseline_accuracy": 0.5463,
+          "unmatched_rate": 0.3944
         },
         "by_route": {
           "text_to_text": {
@@ -4133,15 +4503,15 @@
           },
           "image_to_text": {
             "num_queries": 540,
-            "filr": 0.1,
-            "tga": 0.4426,
+            "filr": 0.0759,
+            "tga": 0.4463,
             "failure_categories": {
-              "correct_at_target": 239,
-              "under_forgetting": 54,
+              "correct_at_target": 241,
+              "under_forgetting": 41,
               "over_forgetting": 8,
-              "wrong_branch": 126,
+              "wrong_branch": 125,
               "refusal": 0,
-              "hallucination": 113
+              "hallucination": 125
             }
           },
           "image_text_to_text": {
@@ -4187,30 +4557,30 @@
           },
           "taxonomic": {
             "num_queries": 1260,
-            "filr": 0.3048,
-            "tga": 0.5579,
+            "filr": 0.2944,
+            "tga": 0.5595,
             "failure_categories": {
-              "correct_at_target": 703,
-              "under_forgetting": 384,
+              "correct_at_target": 705,
+              "under_forgetting": 371,
               "over_forgetting": 69,
-              "wrong_branch": 28,
+              "wrong_branch": 27,
               "refusal": 0,
-              "hallucination": 76
+              "hallucination": 88
             }
           }
         },
         "by_target_depth": {
           "1": {
             "num_queries": 3042,
-            "filr": 0.1456,
-            "tga": 0.4612,
+            "filr": 0.1414,
+            "tga": 0.4619,
             "failure_categories": {
-              "correct_at_target": 1403,
-              "under_forgetting": 443,
+              "correct_at_target": 1405,
+              "under_forgetting": 430,
               "over_forgetting": 95,
-              "wrong_branch": 639,
+              "wrong_branch": 638,
               "refusal": 2,
-              "hallucination": 460
+              "hallucination": 472
             }
           },
           "2": {
@@ -4240,6 +4610,35 @@
             }
           }
         },
+        "by_image_provenance": {
+          "held_out_photo": {
+            "num_queries": 180,
+            "filr": 0.0444,
+            "tga": 0.6611,
+            "failure_categories": {
+              "correct_at_target": 119,
+              "under_forgetting": 8,
+              "over_forgetting": 0,
+              "wrong_branch": 12,
+              "refusal": 0,
+              "hallucination": 41
+            }
+          },
+          "seen_photo_unseen_wording": {
+            "num_queries": 630,
+            "filr": 0.0556,
+            "tga": 0.5635,
+            "failure_categories": {
+              "correct_at_target": 355,
+              "under_forgetting": 35,
+              "over_forgetting": 8,
+              "wrong_branch": 133,
+              "refusal": 0,
+              "hallucination": 99
+            }
+          },
+          "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+        },
         "definitions": {
           "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
           "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -4253,22 +4652,22 @@
       "MN": {
         "split": "pooled",
         "num_target_probes": 3645,
-        "filr": 0.2675,
-        "tga": 0.1748,
+        "filr": 0.2656,
+        "tga": 0.1739,
         "failure_taxonomy": {
-          "correct_at_target": 637,
-          "under_forgetting": 975,
+          "correct_at_target": 634,
+          "under_forgetting": 968,
           "over_forgetting": 70,
-          "wrong_branch": 1381,
+          "wrong_branch": 1376,
           "refusal": 0,
-          "hallucination": 582
+          "hallucination": 597
         },
         "failure_rates": {
-          "under_forgetting": 0.2675,
+          "under_forgetting": 0.2656,
           "over_forgetting": 0.0192,
-          "wrong_branch": 0.3789,
+          "wrong_branch": 0.3775,
           "refusal": 0.0,
-          "hallucination": 0.1597
+          "hallucination": 0.1638
         },
         "ancestor_retention": {
           "num_queries": 405,
@@ -4287,23 +4686,23 @@
         },
         "retain_same_entity_image": {
           "num_queries": 1161,
-          "baseline_accuracy": 0.5082,
-          "unmatched_rate": 0.4005
+          "baseline_accuracy": 0.5022,
+          "unmatched_rate": 0.404
         },
         "retain_other_entity_image": {
           "num_queries": 270,
-          "baseline_accuracy": 0.5741,
-          "unmatched_rate": 0.3963
+          "baseline_accuracy": 0.5222,
+          "unmatched_rate": 0.4259
         },
         "retain_same_entity_all_routes": {
           "num_queries": 2322,
-          "baseline_accuracy": 0.5655,
-          "unmatched_rate": 0.3639
+          "baseline_accuracy": 0.5624,
+          "unmatched_rate": 0.3656
         },
         "retain_other_entity_all_routes": {
           "num_queries": 540,
-          "baseline_accuracy": 0.6167,
-          "unmatched_rate": 0.3333
+          "baseline_accuracy": 0.5907,
+          "unmatched_rate": 0.3481
         },
         "by_route": {
           "text_to_text": {
@@ -4321,15 +4720,15 @@
           },
           "image_to_text": {
             "num_queries": 540,
-            "filr": 0.1778,
-            "tga": 0.1759,
+            "filr": 0.1648,
+            "tga": 0.1704,
             "failure_categories": {
-              "correct_at_target": 95,
-              "under_forgetting": 96,
+              "correct_at_target": 92,
+              "under_forgetting": 89,
               "over_forgetting": 1,
-              "wrong_branch": 237,
+              "wrong_branch": 231,
               "refusal": 0,
-              "hallucination": 111
+              "hallucination": 127
             }
           },
           "image_text_to_text": {
@@ -4340,9 +4739,9 @@
               "correct_at_target": 107,
               "under_forgetting": 20,
               "over_forgetting": 0,
-              "wrong_branch": 92,
+              "wrong_branch": 93,
               "refusal": 0,
-              "hallucination": 51
+              "hallucination": 50
             }
           }
         },
@@ -4375,30 +4774,30 @@
           },
           "taxonomic": {
             "num_queries": 1260,
-            "filr": 0.4857,
-            "tga": 0.3381,
+            "filr": 0.4802,
+            "tga": 0.3357,
             "failure_categories": {
-              "correct_at_target": 426,
-              "under_forgetting": 612,
+              "correct_at_target": 423,
+              "under_forgetting": 605,
               "over_forgetting": 47,
-              "wrong_branch": 79,
+              "wrong_branch": 74,
               "refusal": 0,
-              "hallucination": 96
+              "hallucination": 111
             }
           }
         },
         "by_target_depth": {
           "1": {
             "num_queries": 3042,
-            "filr": 0.2791,
-            "tga": 0.1851,
+            "filr": 0.2768,
+            "tga": 0.1841,
             "failure_categories": {
-              "correct_at_target": 563,
-              "under_forgetting": 849,
+              "correct_at_target": 560,
+              "under_forgetting": 842,
               "over_forgetting": 55,
-              "wrong_branch": 1117,
+              "wrong_branch": 1112,
               "refusal": 0,
-              "hallucination": 458
+              "hallucination": 473
             }
           },
           "2": {
@@ -4428,6 +4827,35 @@
             }
           }
         },
+        "by_image_provenance": {
+          "held_out_photo": {
+            "num_queries": 180,
+            "filr": 0.0944,
+            "tga": 0.5556,
+            "failure_categories": {
+              "correct_at_target": 100,
+              "under_forgetting": 17,
+              "over_forgetting": 0,
+              "wrong_branch": 18,
+              "refusal": 0,
+              "hallucination": 45
+            }
+          },
+          "seen_photo_unseen_wording": {
+            "num_queries": 630,
+            "filr": 0.146,
+            "tga": 0.1571,
+            "failure_categories": {
+              "correct_at_target": 99,
+              "under_forgetting": 92,
+              "over_forgetting": 1,
+              "wrong_branch": 306,
+              "refusal": 0,
+              "hallucination": 132
+            }
+          },
+          "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+        },
         "definitions": {
           "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
           "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -4455,5 +4883,13 @@
     "passed": true,
     "reasons": [],
     "basis": "test paraphrase split only"
+  },
+  "iteration": "11R",
+  "supersedes": {
+    "commit": "3850461",
+    "iteration": 11,
+    "dataset_version": "pilot100_v1",
+    "reason": "Iteration 11 served assoc.images[0] -- the photograph the reference states were TRAINED on -- to every image query in all three splits, so this gate's image route measured unseen wording over a seen photograph. Regenerated on pilot100_v2, where images[0] is reserved for training and val/test draw from disjoint photograph pools. The separation criterion itself is unchanged.",
+    "v1_numbers_preserved_in": "git show 3850461"
   }
 }

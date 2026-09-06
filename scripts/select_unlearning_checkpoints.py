@@ -356,6 +356,7 @@ def main() -> None:
         "a train+val layout would put decoding noise inside D_G itself.")
     report["supersedes"] = {
         "commit": SUPERSEDED_V1_COMMIT,
+        "iteration": 11,
         "dataset_version": "pilot100_v1",
         "reason": (
             "The v1 selection ranked candidates on train+val predictions "
@@ -365,6 +366,7 @@ def main() -> None:
             "photographs disjoint from training, which changes the val "
             "half of the selection basis, so the ranking is recomputed "
             "rather than inherited."),
+        "v1_numbers_preserved_in": f"git show {SUPERSEDED_V1_COMMIT}",
     }
 
     if not args.no_stage:

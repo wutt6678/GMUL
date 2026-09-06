@@ -1,10 +1,18 @@
 {
   "experiment_id": "mllmu_pilot100_iter11",
-  "iteration": 11,
+  "iteration": "11R",
   "dataset": "mllmu_hier_pilot100",
+  "dataset_version": "pilot100_v2",
   "model_id": "Qwen/Qwen3.5-9B",
+  "supersedes": {
+    "commit": "3850461",
+    "iteration": 11,
+    "dataset_version": "pilot100_v1",
+    "reason": "Iteration 11 served assoc.images[0] — the photograph the reference states and every candidate were TRAINED on — to every image query in all three splits, so its image route measured unseen wording over a seen photograph and could not support the held-out-photograph claim the iNaturalist adapter documents. This report is generated on pilot100_v2, where images[0] is reserved for training and val/test queries draw from disjoint photograph pools. It also adds the paired FILR and over-forgetting CIs, the prespecified equivalence margin, the image-provenance strata, and an honest test_split_exposure statement.",
+    "v1_numbers_preserved_in": "git show 3850461"
+  },
   "one_shot": {
-    "protocol": "TEST-split generation happens only here and only once per state: the candidates were selected on TRAIN+VAL (their selection-time parquets contain no test rows), and every state reported below — BASE/MF/MG/MN included — is generated over the SAME test-query list with the SAME batch sizes, so all cross-state comparisons and paired CIs share one batch layout. Nothing in this script feeds back into selection.",
+    "protocol": "TEST-split predictions for each reported state are generated here, over the SAME test-query list with the SAME batch sizes, so all cross-state comparisons and paired CIs share one batch layout. No CANDIDATE was ranked on its test predictions: selection used TRAIN+VAL only and the selection-time parquets contain no test rows. Nothing in this script feeds back into selection. This is NOT an untouched test split, however — the reference-state gate had already generated and gated on every test query; see test_split_exposure.",
     "selection_basis": "train+val probes only (test split held out)",
     "selection_scope": [
       "train",
@@ -24,26 +32,54 @@
       "B3"
     ],
     "assembled_without_generation": true,
-    "reuse_semantics": "A reused parquet was written by an earlier COMPLETE pass of this script over the same test-query list with the same batch sizes (a pass writes its file only after finishing), so reuse is crash recovery or a report re-assembly — never a second look at the test split. test_predictions_fingerprint pins the exact bytes and write time each state was read from.",
+    "reuse_semantics": "A reused parquet is one whose provenance sidecar matches this run's adapter bytes, base-model revision, dataset version and artifact hashes, generation configuration and code fingerprint, and whose rows are exactly the frozen test probe set. Anything else — including every parquet written before sidecars existed — is refused and regenerated, so reuse is crash recovery or a report re-assembly, never a second look at the test split. test_predictions_fingerprint pins the exact bytes and write time each state was read from.",
     "generation_config": {
       "batch_size": 8,
       "image_batch_size": 8,
       "max_new_tokens": 96,
-      "do_sample": false
+      "do_sample": false,
+      "max_image_pixels": 147456,
+      "max_length": 1536
     }
+  },
+  "test_split_exposure": {
+    "test_split_untouched": false,
+    "candidates_selected_without_test_predictions": true,
+    "candidate_selection_scope": [
+      "train",
+      "val"
+    ],
+    "candidate_selection_basis": "train+val probes only (test split held out)",
+    "reference_states_scored_on_test_before_selection": [
+      "BASE",
+      "MF",
+      "MG",
+      "MN"
+    ],
+    "num_test_queries_scored_by_the_gate": {
+      "BASE": 2259,
+      "MF": 2259,
+      "MG": 2259,
+      "MN": 2259
+    },
+    "gate_report": "data/reports/mllmu_pilot100_reference_eval.json",
+    "gate_applies_a_test_split_separation_criterion": true,
+    "exposure": "The reference-state gate (scripts/evaluate_reference_states.py) generated all 2259 test queries for BASE/MF/MG/MN and evaluates a separation gate on the test split as well as pooled. That gate precedes and enables candidate selection, so the test split informed a go/no-go decision. No candidate's test predictions existed at selection time, so no candidate was CHOSEN on test numbers — but 'one-shot, untouched test split' overstates what happened.",
+    "what_this_does_not_licence": "Any claim that the test split is a clean hold-out, and any p-value or interval interpreted as controlling a family-wise error rate over repeated test-split looks.",
+    "what_would_be_needed": "A separately frozen CONFIRMATION split, drawn and sealed before any evaluation runs, scored once at the end. Iteration 11R deliberately does not add one: the decision was to repair the visual split first and state this exposure honestly instead of implying a hold-out that does not exist."
   },
   "batch_composition_sensitivity": {
     "per_state": {
       "BASE": {
         "num_test_queries_compared": 2259,
-        "num_raw_output_mismatches": 969,
-        "raw_output_mismatch_rate": 0.429,
+        "num_raw_output_mismatches": 971,
+        "raw_output_mismatch_rate": 0.4298,
         "metric_deltas_uniform_minus_gate": {
-          "filr": -0.0057,
-          "tga": 0.0008,
-          "wrong_branch": 0.0024,
+          "filr": -0.0041,
+          "tga": -0.0009,
+          "wrong_branch": 0.0041,
           "retain_same": 0.0013,
-          "retain_other": -0.0278
+          "retain_other": -0.0222
         }
       },
       "MF": {
@@ -51,40 +87,40 @@
         "num_raw_output_mismatches": 122,
         "raw_output_mismatch_rate": 0.054,
         "metric_deltas_uniform_minus_gate": {
-          "filr": 0.0017,
-          "tga": 0.0,
+          "filr": 0.0025,
+          "tga": 0.0008,
           "wrong_branch": 0.0,
-          "retain_same": 0.0039,
+          "retain_same": 0.0038,
           "retain_other": 0.0055
         }
       },
       "MG": {
         "num_test_queries_compared": 2259,
-        "num_raw_output_mismatches": 152,
-        "raw_output_mismatch_rate": 0.0673,
+        "num_raw_output_mismatches": 159,
+        "raw_output_mismatch_rate": 0.0704,
         "metric_deltas_uniform_minus_gate": {
-          "filr": -0.0009,
-          "tga": 0.0033,
+          "filr": 0.0008,
+          "tga": 0.0025,
           "wrong_branch": -0.0016,
           "retain_same": 0.0026,
-          "retain_other": -0.05
+          "retain_other": -0.0556
         }
       },
       "MN": {
         "num_test_queries_compared": 2259,
-        "num_raw_output_mismatches": 147,
-        "raw_output_mismatch_rate": 0.0651,
+        "num_raw_output_mismatches": 146,
+        "raw_output_mismatch_rate": 0.0646,
         "metric_deltas_uniform_minus_gate": {
-          "filr": 0.0024,
-          "tga": -0.0009,
+          "filr": 0.0033,
+          "tga": -0.0008,
           "wrong_branch": 0.0,
-          "retain_same": 0.0013,
-          "retain_other": -0.0222
+          "retain_same": 0.0026,
+          "retain_other": 0.0
         }
       }
     },
-    "max_abs_metric_delta": 0.0057,
-    "max_abs_retain_delta": 0.05,
+    "max_abs_metric_delta": 0.0041,
+    "max_abs_retain_delta": 0.0556,
     "target_side_metrics": [
       "filr",
       "tga",
@@ -130,22 +166,30 @@
     "image_to_text": "entity NEVER named; identity must be recovered from the image alone",
     "image_text_to_text": "entity named alongside the image"
   },
+  "image_provenance_strata": {
+    "held_out_photo": "the served photograph was NEVER in training (taxonomic iNaturalist associations, whose val/test queries draw from pools disjoint from the reserved training photograph) — the only stratum whose photograph is genuinely unseen, so the only one that can carry a held-out-photograph claim at all",
+    "seen_photo_unseen_wording": "the served photograph IS the training photograph and only the wording is new (every MLLMU person has exactly one portrait, shared by its 6-7 associations, so no held-out photograph exists for them). Reporting this separately is the honest form of what Iteration 11 reported as the whole image route.",
+    "derived_from": "QueryRecord.image_seen_in_training, never the source dataset name",
+    "reported_in": "hierarchy_metrics_test[state].by_image_provenance",
+    "not_the_route_split": "These strata are NOT the input-route split relabelled. On the test split both routes contain both strata — of the 90 image_text_to_text target probes 30 are held_out_photo and 60 are seen_photo_unseen_wording, and of the 180 image_to_text probes 60 are held_out and 120 are seen — so the two partitions cross.",
+    "confound": "MEASURED, and it limits what a stratum CONTRAST can show: on the frozen test split the flag corresponds 1:1 with the source dataset. All 90 held_out_photo image target probes are iNaturalist species and all 180 seen_photo_unseen_wording probes are MLLMU persons, because a person has one portrait while a species has twelve photographs. A difference between the two strata is therefore also a difference between species and persons and between the taxonomic and semantic hierarchy types (compare by_hierarchy_type), and cannot be attributed to photograph novelty alone. What the split DOES licence is the per-stratum statement itself: within held_out_photo the photograph was never trained on, which Iteration 11 could not say of any image query. Breaking the confound would need multi-photograph entities whose wording and hierarchy type are held fixed, which this dataset does not contain."
+  },
   "metrics_by_state_test": {
     "BASE": {
       "num_queries": 2259,
       "all_core": {
         "num_queries": 2169,
-        "baseline_accuracy": 0.1586,
-        "post_unlearning_accuracy": 0.0931,
-        "leakage_rate": 0.1475,
-        "unmatched_rate": 0.6731
+        "baseline_accuracy": 0.1512,
+        "post_unlearning_accuracy": 0.0894,
+        "leakage_rate": 0.1466,
+        "unmatched_rate": 0.6754
       },
       "target_core": {
         "num_queries": 1215,
-        "baseline_accuracy": 0.228,
-        "post_unlearning_accuracy": 0.1111,
-        "leakage_rate": 0.2634,
-        "unmatched_rate": 0.5868
+        "baseline_accuracy": 0.2222,
+        "post_unlearning_accuracy": 0.1119,
+        "leakage_rate": 0.2617,
+        "unmatched_rate": 0.5877
       },
       "fine_recovery": {
         "num_queries": 540,
@@ -170,17 +214,17 @@
       },
       "multimodal": {
         "num_queries": 90,
-        "baseline_accuracy": 0.0778,
-        "post_unlearning_accuracy": 0.0778,
-        "leakage_rate": 0.3556,
+        "baseline_accuracy": 0.0667,
+        "post_unlearning_accuracy": 0.0667,
+        "leakage_rate": 0.3667,
         "unmatched_rate": 0.5444
       },
       "image_route": {
         "num_queries": 180,
-        "baseline_accuracy": 0.1667,
-        "post_unlearning_accuracy": 0.1389,
-        "leakage_rate": 0.1556,
-        "unmatched_rate": 0.6667
+        "baseline_accuracy": 0.1333,
+        "post_unlearning_accuracy": 0.15,
+        "leakage_rate": 0.1389,
+        "unmatched_rate": 0.6722
       },
       "retain_same_entity": {
         "num_queries": 387,
@@ -198,17 +242,17 @@
       },
       "retain_same_entity_image": {
         "num_queries": 387,
-        "baseline_accuracy": 0.0129,
-        "post_unlearning_accuracy": 0.0129,
+        "baseline_accuracy": 0.0078,
+        "post_unlearning_accuracy": 0.0078,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.8269
+        "unmatched_rate": 0.8295
       },
       "retain_other_entity_image": {
         "num_queries": 90,
-        "baseline_accuracy": 0.2889,
-        "post_unlearning_accuracy": 0.2889,
+        "baseline_accuracy": 0.2111,
+        "post_unlearning_accuracy": 0.2111,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.6333
+        "unmatched_rate": 0.6667
       },
       "adversarial_only": {
         "num_queries": 90,
@@ -222,17 +266,17 @@
       "num_queries": 2259,
       "all_core": {
         "num_queries": 2169,
-        "baseline_accuracy": 0.5122,
-        "post_unlearning_accuracy": 0.3555,
-        "leakage_rate": 0.2513,
-        "unmatched_rate": 0.349
+        "baseline_accuracy": 0.5095,
+        "post_unlearning_accuracy": 0.3532,
+        "leakage_rate": 0.2503,
+        "unmatched_rate": 0.3522
       },
       "target_core": {
         "num_queries": 1215,
-        "baseline_accuracy": 0.4914,
-        "post_unlearning_accuracy": 0.2115,
-        "leakage_rate": 0.4486,
-        "unmatched_rate": 0.33
+        "baseline_accuracy": 0.4897,
+        "post_unlearning_accuracy": 0.2107,
+        "leakage_rate": 0.4469,
+        "unmatched_rate": 0.3325
       },
       "fine_recovery": {
         "num_queries": 540,
@@ -264,10 +308,10 @@
       },
       "image_route": {
         "num_queries": 180,
-        "baseline_accuracy": 0.3944,
-        "post_unlearning_accuracy": 0.2167,
-        "leakage_rate": 0.3556,
-        "unmatched_rate": 0.4278
+        "baseline_accuracy": 0.3833,
+        "post_unlearning_accuracy": 0.2111,
+        "leakage_rate": 0.3444,
+        "unmatched_rate": 0.4444
       },
       "retain_same_entity": {
         "num_queries": 387,
@@ -285,17 +329,17 @@
       },
       "retain_same_entity_image": {
         "num_queries": 387,
-        "baseline_accuracy": 0.5142,
-        "post_unlearning_accuracy": 0.5142,
+        "baseline_accuracy": 0.5116,
+        "post_unlearning_accuracy": 0.5116,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.3669
+        "unmatched_rate": 0.3695
       },
       "retain_other_entity_image": {
         "num_queries": 90,
-        "baseline_accuracy": 0.4889,
-        "post_unlearning_accuracy": 0.4889,
+        "baseline_accuracy": 0.4556,
+        "post_unlearning_accuracy": 0.4556,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.4667
+        "unmatched_rate": 0.5
       },
       "adversarial_only": {
         "num_queries": 90,
@@ -309,16 +353,16 @@
       "num_queries": 2259,
       "all_core": {
         "num_queries": 2169,
-        "baseline_accuracy": 0.4172,
-        "post_unlearning_accuracy": 0.474,
-        "leakage_rate": 0.0807,
-        "unmatched_rate": 0.3799
+        "baseline_accuracy": 0.4117,
+        "post_unlearning_accuracy": 0.4716,
+        "leakage_rate": 0.0788,
+        "unmatched_rate": 0.384
       },
       "target_core": {
         "num_queries": 1215,
-        "baseline_accuracy": 0.335,
-        "post_unlearning_accuracy": 0.4362,
-        "leakage_rate": 0.144,
+        "baseline_accuracy": 0.3325,
+        "post_unlearning_accuracy": 0.4395,
+        "leakage_rate": 0.1407,
         "unmatched_rate": 0.3918
       },
       "fine_recovery": {
@@ -351,9 +395,9 @@
       },
       "image_route": {
         "num_queries": 180,
-        "baseline_accuracy": 0.3278,
-        "post_unlearning_accuracy": 0.4722,
-        "leakage_rate": 0.0944,
+        "baseline_accuracy": 0.3111,
+        "post_unlearning_accuracy": 0.4944,
+        "leakage_rate": 0.0722,
         "unmatched_rate": 0.4167
       },
       "retain_same_entity": {
@@ -372,17 +416,17 @@
       },
       "retain_same_entity_image": {
         "num_queries": 387,
-        "baseline_accuracy": 0.5039,
-        "post_unlearning_accuracy": 0.5039,
+        "baseline_accuracy": 0.4961,
+        "post_unlearning_accuracy": 0.4961,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.3411
+        "unmatched_rate": 0.3488
       },
       "retain_other_entity_image": {
         "num_queries": 90,
-        "baseline_accuracy": 0.5222,
-        "post_unlearning_accuracy": 0.5222,
+        "baseline_accuracy": 0.4556,
+        "post_unlearning_accuracy": 0.4556,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.4
+        "unmatched_rate": 0.4667
       },
       "adversarial_only": {
         "num_queries": 90,
@@ -396,16 +440,16 @@
       "num_queries": 2259,
       "all_core": {
         "num_queries": 2169,
-        "baseline_accuracy": 0.4149,
-        "post_unlearning_accuracy": 0.3495,
-        "leakage_rate": 0.1489,
-        "unmatched_rate": 0.4615
+        "baseline_accuracy": 0.4112,
+        "post_unlearning_accuracy": 0.3467,
+        "leakage_rate": 0.148,
+        "unmatched_rate": 0.462
       },
       "target_core": {
         "num_queries": 1215,
         "baseline_accuracy": 0.293,
-        "post_unlearning_accuracy": 0.1761,
-        "leakage_rate": 0.2658,
+        "post_unlearning_accuracy": 0.1778,
+        "leakage_rate": 0.2642,
         "unmatched_rate": 0.5391
       },
       "fine_recovery": {
@@ -431,17 +475,17 @@
       },
       "multimodal": {
         "num_queries": 90,
-        "baseline_accuracy": 0.3889,
-        "post_unlearning_accuracy": 0.3889,
+        "baseline_accuracy": 0.4,
+        "post_unlearning_accuracy": 0.4,
         "leakage_rate": 0.0667,
-        "unmatched_rate": 0.5444
+        "unmatched_rate": 0.5333
       },
       "image_route": {
         "num_queries": 180,
-        "baseline_accuracy": 0.2444,
-        "post_unlearning_accuracy": 0.1722,
-        "leakage_rate": 0.1833,
-        "unmatched_rate": 0.6389
+        "baseline_accuracy": 0.2389,
+        "post_unlearning_accuracy": 0.1778,
+        "leakage_rate": 0.1722,
+        "unmatched_rate": 0.6444
       },
       "retain_same_entity": {
         "num_queries": 387,
@@ -459,17 +503,17 @@
       },
       "retain_same_entity_image": {
         "num_queries": 387,
-        "baseline_accuracy": 0.509,
-        "post_unlearning_accuracy": 0.509,
+        "baseline_accuracy": 0.4987,
+        "post_unlearning_accuracy": 0.4987,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.4005
+        "unmatched_rate": 0.4057
       },
       "retain_other_entity_image": {
         "num_queries": 90,
-        "baseline_accuracy": 0.5222,
-        "post_unlearning_accuracy": 0.5222,
+        "baseline_accuracy": 0.4778,
+        "post_unlearning_accuracy": 0.4778,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.4556
+        "unmatched_rate": 0.4444
       },
       "adversarial_only": {
         "num_queries": 90,
@@ -483,17 +527,17 @@
       "num_queries": 2259,
       "all_core": {
         "num_queries": 2169,
-        "baseline_accuracy": 0.5122,
-        "post_unlearning_accuracy": 0.3555,
-        "leakage_rate": 0.2513,
-        "unmatched_rate": 0.349
+        "baseline_accuracy": 0.5095,
+        "post_unlearning_accuracy": 0.3532,
+        "leakage_rate": 0.2503,
+        "unmatched_rate": 0.3522
       },
       "target_core": {
         "num_queries": 1215,
-        "baseline_accuracy": 0.4914,
-        "post_unlearning_accuracy": 0.2115,
-        "leakage_rate": 0.4486,
-        "unmatched_rate": 0.33
+        "baseline_accuracy": 0.4897,
+        "post_unlearning_accuracy": 0.2107,
+        "leakage_rate": 0.4469,
+        "unmatched_rate": 0.3325
       },
       "fine_recovery": {
         "num_queries": 540,
@@ -525,10 +569,10 @@
       },
       "image_route": {
         "num_queries": 180,
-        "baseline_accuracy": 0.3944,
-        "post_unlearning_accuracy": 0.2167,
-        "leakage_rate": 0.3556,
-        "unmatched_rate": 0.4278
+        "baseline_accuracy": 0.3833,
+        "post_unlearning_accuracy": 0.2111,
+        "leakage_rate": 0.3444,
+        "unmatched_rate": 0.4444
       },
       "retain_same_entity": {
         "num_queries": 387,
@@ -546,17 +590,17 @@
       },
       "retain_same_entity_image": {
         "num_queries": 387,
-        "baseline_accuracy": 0.5142,
-        "post_unlearning_accuracy": 0.5142,
+        "baseline_accuracy": 0.5116,
+        "post_unlearning_accuracy": 0.5116,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.3669
+        "unmatched_rate": 0.3695
       },
       "retain_other_entity_image": {
         "num_queries": 90,
-        "baseline_accuracy": 0.4889,
-        "post_unlearning_accuracy": 0.4889,
+        "baseline_accuracy": 0.4556,
+        "post_unlearning_accuracy": 0.4556,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.4667
+        "unmatched_rate": 0.5
       },
       "adversarial_only": {
         "num_queries": 90,
@@ -570,17 +614,17 @@
       "num_queries": 2259,
       "all_core": {
         "num_queries": 2169,
-        "baseline_accuracy": 0.4112,
-        "post_unlearning_accuracy": 0.2974,
+        "baseline_accuracy": 0.4108,
+        "post_unlearning_accuracy": 0.296,
         "leakage_rate": 0.1964,
-        "unmatched_rate": 0.4449
+        "unmatched_rate": 0.4458
       },
       "target_core": {
         "num_queries": 1215,
-        "baseline_accuracy": 0.4214,
-        "post_unlearning_accuracy": 0.2181,
+        "baseline_accuracy": 0.4198,
+        "post_unlearning_accuracy": 0.2148,
         "leakage_rate": 0.3506,
-        "unmatched_rate": 0.4148
+        "unmatched_rate": 0.4181
       },
       "fine_recovery": {
         "num_queries": 540,
@@ -612,10 +656,10 @@
       },
       "image_route": {
         "num_queries": 180,
-        "baseline_accuracy": 0.3111,
-        "post_unlearning_accuracy": 0.2389,
+        "baseline_accuracy": 0.3,
+        "post_unlearning_accuracy": 0.2167,
         "leakage_rate": 0.2222,
-        "unmatched_rate": 0.5389
+        "unmatched_rate": 0.5611
       },
       "retain_same_entity": {
         "num_queries": 387,
@@ -636,14 +680,14 @@
         "baseline_accuracy": 0.2946,
         "post_unlearning_accuracy": 0.2946,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.5142
+        "unmatched_rate": 0.5116
       },
       "retain_other_entity_image": {
         "num_queries": 90,
-        "baseline_accuracy": 0.2444,
-        "post_unlearning_accuracy": 0.2444,
+        "baseline_accuracy": 0.2556,
+        "post_unlearning_accuracy": 0.2556,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.6333
+        "unmatched_rate": 0.6222
       },
       "adversarial_only": {
         "num_queries": 90,
@@ -657,17 +701,17 @@
       "num_queries": 2259,
       "all_core": {
         "num_queries": 2169,
-        "baseline_accuracy": 0.396,
-        "post_unlearning_accuracy": 0.3163,
-        "leakage_rate": 0.1743,
-        "unmatched_rate": 0.4131
+        "baseline_accuracy": 0.3923,
+        "post_unlearning_accuracy": 0.3121,
+        "leakage_rate": 0.1747,
+        "unmatched_rate": 0.4149
       },
       "target_core": {
         "num_queries": 1215,
-        "baseline_accuracy": 0.4321,
+        "baseline_accuracy": 0.4329,
         "post_unlearning_accuracy": 0.2897,
-        "leakage_rate": 0.3111,
-        "unmatched_rate": 0.3811
+        "leakage_rate": 0.3119,
+        "unmatched_rate": 0.3802
       },
       "fine_recovery": {
         "num_queries": 540,
@@ -699,10 +743,10 @@
       },
       "image_route": {
         "num_queries": 180,
-        "baseline_accuracy": 0.2722,
+        "baseline_accuracy": 0.2778,
         "post_unlearning_accuracy": 0.3389,
-        "leakage_rate": 0.15,
-        "unmatched_rate": 0.4889
+        "leakage_rate": 0.1556,
+        "unmatched_rate": 0.4833
       },
       "retain_same_entity": {
         "num_queries": 387,
@@ -720,17 +764,17 @@
       },
       "retain_same_entity_image": {
         "num_queries": 387,
-        "baseline_accuracy": 0.2661,
-        "post_unlearning_accuracy": 0.2661,
+        "baseline_accuracy": 0.261,
+        "post_unlearning_accuracy": 0.261,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.4444
+        "unmatched_rate": 0.447
       },
       "retain_other_entity_image": {
         "num_queries": 90,
-        "baseline_accuracy": 0.2222,
-        "post_unlearning_accuracy": 0.2222,
+        "baseline_accuracy": 0.1444,
+        "post_unlearning_accuracy": 0.1444,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.5778
+        "unmatched_rate": 0.6222
       },
       "adversarial_only": {
         "num_queries": 90,
@@ -744,16 +788,16 @@
       "num_queries": 2259,
       "all_core": {
         "num_queries": 2169,
-        "baseline_accuracy": 0.5025,
-        "post_unlearning_accuracy": 0.4251,
-        "leakage_rate": 0.1683,
-        "unmatched_rate": 0.361
+        "baseline_accuracy": 0.4998,
+        "post_unlearning_accuracy": 0.4214,
+        "leakage_rate": 0.1687,
+        "unmatched_rate": 0.3642
       },
       "target_core": {
         "num_queries": 1215,
-        "baseline_accuracy": 0.451,
-        "post_unlearning_accuracy": 0.3128,
-        "leakage_rate": 0.3004,
+        "baseline_accuracy": 0.4519,
+        "post_unlearning_accuracy": 0.3119,
+        "leakage_rate": 0.3012,
         "unmatched_rate": 0.3663
       },
       "fine_recovery": {
@@ -786,9 +830,9 @@
       },
       "image_route": {
         "num_queries": 180,
-        "baseline_accuracy": 0.35,
-        "post_unlearning_accuracy": 0.3056,
-        "leakage_rate": 0.2278,
+        "baseline_accuracy": 0.3556,
+        "post_unlearning_accuracy": 0.3,
+        "leakage_rate": 0.2333,
         "unmatched_rate": 0.4556
       },
       "retain_same_entity": {
@@ -807,17 +851,17 @@
       },
       "retain_same_entity_image": {
         "num_queries": 387,
-        "baseline_accuracy": 0.5323,
-        "post_unlearning_accuracy": 0.5323,
+        "baseline_accuracy": 0.5297,
+        "post_unlearning_accuracy": 0.5297,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.3385
+        "unmatched_rate": 0.3411
       },
       "retain_other_entity_image": {
         "num_queries": 90,
-        "baseline_accuracy": 0.4667,
-        "post_unlearning_accuracy": 0.4667,
+        "baseline_accuracy": 0.4,
+        "post_unlearning_accuracy": 0.4,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.4889
+        "unmatched_rate": 0.5556
       },
       "adversarial_only": {
         "num_queries": 90,
@@ -831,17 +875,17 @@
       "num_queries": 2259,
       "all_core": {
         "num_queries": 2169,
-        "baseline_accuracy": 0.4458,
-        "post_unlearning_accuracy": 0.4647,
-        "leakage_rate": 0.1166,
-        "unmatched_rate": 0.3605
+        "baseline_accuracy": 0.444,
+        "post_unlearning_accuracy": 0.4592,
+        "leakage_rate": 0.1171,
+        "unmatched_rate": 0.3651
       },
       "target_core": {
         "num_queries": 1215,
-        "baseline_accuracy": 0.3646,
-        "post_unlearning_accuracy": 0.3984,
-        "leakage_rate": 0.2082,
-        "unmatched_rate": 0.3638
+        "baseline_accuracy": 0.3638,
+        "post_unlearning_accuracy": 0.3909,
+        "leakage_rate": 0.2091,
+        "unmatched_rate": 0.3704
       },
       "fine_recovery": {
         "num_queries": 540,
@@ -873,10 +917,10 @@
       },
       "image_route": {
         "num_queries": 180,
-        "baseline_accuracy": 0.35,
-        "post_unlearning_accuracy": 0.3889,
-        "leakage_rate": 0.1944,
-        "unmatched_rate": 0.4056
+        "baseline_accuracy": 0.3444,
+        "post_unlearning_accuracy": 0.3389,
+        "leakage_rate": 0.2,
+        "unmatched_rate": 0.45
       },
       "retain_same_entity": {
         "num_queries": 387,
@@ -894,17 +938,17 @@
       },
       "retain_same_entity_image": {
         "num_queries": 387,
-        "baseline_accuracy": 0.4987,
-        "post_unlearning_accuracy": 0.4987,
+        "baseline_accuracy": 0.4961,
+        "post_unlearning_accuracy": 0.4961,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.3514
+        "unmatched_rate": 0.354
       },
       "retain_other_entity_image": {
         "num_queries": 90,
-        "baseline_accuracy": 0.4222,
-        "post_unlearning_accuracy": 0.4222,
+        "baseline_accuracy": 0.4,
+        "post_unlearning_accuracy": 0.4,
         "leakage_rate": 0.0,
-        "unmatched_rate": 0.5222
+        "unmatched_rate": 0.5333
       },
       "adversarial_only": {
         "num_queries": 90,
@@ -919,22 +963,22 @@
     "BASE": {
       "split": "test",
       "num_target_probes": 1215,
-      "filr": 0.2634,
-      "tga": 0.1111,
+      "filr": 0.2617,
+      "tga": 0.1119,
       "failure_taxonomy": {
-        "correct_at_target": 135,
-        "under_forgetting": 320,
+        "correct_at_target": 136,
+        "under_forgetting": 318,
         "over_forgetting": 47,
-        "wrong_branch": 401,
-        "refusal": 126,
-        "hallucination": 186
+        "wrong_branch": 397,
+        "refusal": 127,
+        "hallucination": 190
       },
       "failure_rates": {
-        "under_forgetting": 0.2634,
+        "under_forgetting": 0.2617,
         "over_forgetting": 0.0387,
-        "wrong_branch": 0.33,
-        "refusal": 0.1037,
-        "hallucination": 0.1531
+        "wrong_branch": 0.3267,
+        "refusal": 0.1045,
+        "hallucination": 0.1564
       },
       "ancestor_retention": {
         "num_queries": 135,
@@ -953,23 +997,23 @@
       },
       "retain_same_entity_image": {
         "num_queries": 387,
-        "baseline_accuracy": 0.0129,
-        "unmatched_rate": 0.8269
+        "baseline_accuracy": 0.0078,
+        "unmatched_rate": 0.8295
       },
       "retain_other_entity_image": {
         "num_queries": 90,
-        "baseline_accuracy": 0.2889,
-        "unmatched_rate": 0.6333
+        "baseline_accuracy": 0.2111,
+        "unmatched_rate": 0.6667
       },
       "retain_same_entity_all_routes": {
         "num_queries": 774,
-        "baseline_accuracy": 0.0194,
-        "unmatched_rate": 0.8204
+        "baseline_accuracy": 0.0168,
+        "unmatched_rate": 0.8217
       },
       "retain_other_entity_all_routes": {
         "num_queries": 180,
-        "baseline_accuracy": 0.2889,
-        "unmatched_rate": 0.6222
+        "baseline_accuracy": 0.25,
+        "unmatched_rate": 0.6389
       },
       "by_route": {
         "text_to_text": {
@@ -987,24 +1031,24 @@
         },
         "image_to_text": {
           "num_queries": 180,
-          "filr": 0.1556,
-          "tga": 0.1389,
+          "filr": 0.1389,
+          "tga": 0.15,
           "failure_categories": {
-            "correct_at_target": 25,
-            "under_forgetting": 28,
+            "correct_at_target": 27,
+            "under_forgetting": 25,
             "over_forgetting": 7,
-            "wrong_branch": 100,
-            "refusal": 0,
-            "hallucination": 20
+            "wrong_branch": 96,
+            "refusal": 1,
+            "hallucination": 24
           }
         },
         "image_text_to_text": {
           "num_queries": 90,
-          "filr": 0.3556,
-          "tga": 0.0778,
+          "filr": 0.3667,
+          "tga": 0.0667,
           "failure_categories": {
-            "correct_at_target": 7,
-            "under_forgetting": 32,
+            "correct_at_target": 6,
+            "under_forgetting": 33,
             "over_forgetting": 2,
             "wrong_branch": 22,
             "refusal": 4,
@@ -1041,30 +1085,30 @@
         },
         "taxonomic": {
           "num_queries": 420,
-          "filr": 0.6738,
-          "tga": 0.1905,
+          "filr": 0.669,
+          "tga": 0.1929,
           "failure_categories": {
-            "correct_at_target": 80,
-            "under_forgetting": 283,
+            "correct_at_target": 81,
+            "under_forgetting": 281,
             "over_forgetting": 11,
-            "wrong_branch": 24,
-            "refusal": 0,
-            "hallucination": 22
+            "wrong_branch": 20,
+            "refusal": 1,
+            "hallucination": 26
           }
         }
       },
       "by_target_depth": {
         "1": {
           "num_queries": 1014,
-          "filr": 0.285,
-          "tga": 0.0986,
+          "filr": 0.283,
+          "tga": 0.0996,
           "failure_categories": {
-            "correct_at_target": 100,
-            "under_forgetting": 289,
+            "correct_at_target": 101,
+            "under_forgetting": 287,
             "over_forgetting": 33,
-            "wrong_branch": 331,
-            "refusal": 109,
-            "hallucination": 152
+            "wrong_branch": 327,
+            "refusal": 110,
+            "hallucination": 156
           }
         },
         "2": {
@@ -1094,6 +1138,35 @@
           }
         }
       },
+      "by_image_provenance": {
+        "held_out_photo": {
+          "num_queries": 90,
+          "filr": 0.5,
+          "tga": 0.2,
+          "failure_categories": {
+            "correct_at_target": 18,
+            "under_forgetting": 45,
+            "over_forgetting": 0,
+            "wrong_branch": 9,
+            "refusal": 1,
+            "hallucination": 17
+          }
+        },
+        "seen_photo_unseen_wording": {
+          "num_queries": 180,
+          "filr": 0.0722,
+          "tga": 0.0833,
+          "failure_categories": {
+            "correct_at_target": 15,
+            "under_forgetting": 13,
+            "over_forgetting": 9,
+            "wrong_branch": 109,
+            "refusal": 4,
+            "hallucination": 30
+          }
+        },
+        "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+      },
       "definitions": {
         "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
         "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -1107,22 +1180,22 @@
     "MF": {
       "split": "test",
       "num_target_probes": 1215,
-      "filr": 0.4486,
-      "tga": 0.2115,
+      "filr": 0.4469,
+      "tga": 0.2107,
       "failure_taxonomy": {
-        "correct_at_target": 257,
-        "under_forgetting": 545,
+        "correct_at_target": 256,
+        "under_forgetting": 543,
         "over_forgetting": 12,
         "wrong_branch": 263,
         "refusal": 0,
-        "hallucination": 138
+        "hallucination": 141
       },
       "failure_rates": {
-        "under_forgetting": 0.4486,
+        "under_forgetting": 0.4469,
         "over_forgetting": 0.0099,
         "wrong_branch": 0.2165,
         "refusal": 0.0,
-        "hallucination": 0.1136
+        "hallucination": 0.116
       },
       "ancestor_retention": {
         "num_queries": 135,
@@ -1141,23 +1214,23 @@
       },
       "retain_same_entity_image": {
         "num_queries": 387,
-        "baseline_accuracy": 0.5142,
-        "unmatched_rate": 0.3669
+        "baseline_accuracy": 0.5116,
+        "unmatched_rate": 0.3695
       },
       "retain_other_entity_image": {
         "num_queries": 90,
-        "baseline_accuracy": 0.4889,
-        "unmatched_rate": 0.4667
+        "baseline_accuracy": 0.4556,
+        "unmatched_rate": 0.5
       },
       "retain_same_entity_all_routes": {
         "num_queries": 774,
-        "baseline_accuracy": 0.5452,
-        "unmatched_rate": 0.3708
+        "baseline_accuracy": 0.5439,
+        "unmatched_rate": 0.3721
       },
       "retain_other_entity_all_routes": {
         "num_queries": 180,
-        "baseline_accuracy": 0.5111,
-        "unmatched_rate": 0.3833
+        "baseline_accuracy": 0.4944,
+        "unmatched_rate": 0.4
       },
       "by_route": {
         "text_to_text": {
@@ -1175,15 +1248,15 @@
         },
         "image_to_text": {
           "num_queries": 180,
-          "filr": 0.3556,
-          "tga": 0.2167,
+          "filr": 0.3444,
+          "tga": 0.2111,
           "failure_categories": {
-            "correct_at_target": 39,
-            "under_forgetting": 64,
+            "correct_at_target": 38,
+            "under_forgetting": 62,
             "over_forgetting": 0,
             "wrong_branch": 37,
             "refusal": 0,
-            "hallucination": 40
+            "hallucination": 43
           }
         },
         "image_text_to_text": {
@@ -1229,30 +1302,30 @@
         },
         "taxonomic": {
           "num_queries": 420,
-          "filr": 0.5119,
-          "tga": 0.3619,
+          "filr": 0.5071,
+          "tga": 0.3595,
           "failure_categories": {
-            "correct_at_target": 152,
-            "under_forgetting": 215,
+            "correct_at_target": 151,
+            "under_forgetting": 213,
             "over_forgetting": 11,
             "wrong_branch": 10,
             "refusal": 0,
-            "hallucination": 32
+            "hallucination": 35
           }
         }
       },
       "by_target_depth": {
         "1": {
           "num_queries": 1014,
-          "filr": 0.4458,
-          "tga": 0.2249,
+          "filr": 0.4438,
+          "tga": 0.2239,
           "failure_categories": {
-            "correct_at_target": 228,
-            "under_forgetting": 452,
+            "correct_at_target": 227,
+            "under_forgetting": 450,
             "over_forgetting": 12,
             "wrong_branch": 205,
             "refusal": 0,
-            "hallucination": 117
+            "hallucination": 120
           }
         },
         "2": {
@@ -1282,6 +1355,35 @@
           }
         }
       },
+      "by_image_provenance": {
+        "held_out_photo": {
+          "num_queries": 90,
+          "filr": 0.0667,
+          "tga": 0.6,
+          "failure_categories": {
+            "correct_at_target": 54,
+            "under_forgetting": 6,
+            "over_forgetting": 0,
+            "wrong_branch": 6,
+            "refusal": 0,
+            "hallucination": 24
+          }
+        },
+        "seen_photo_unseen_wording": {
+          "num_queries": 180,
+          "filr": 0.4778,
+          "tga": 0.1778,
+          "failure_categories": {
+            "correct_at_target": 32,
+            "under_forgetting": 86,
+            "over_forgetting": 0,
+            "wrong_branch": 38,
+            "refusal": 0,
+            "hallucination": 24
+          }
+        },
+        "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+      },
       "definitions": {
         "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
         "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -1295,22 +1397,22 @@
     "MG": {
       "split": "test",
       "num_target_probes": 1215,
-      "filr": 0.144,
-      "tga": 0.4362,
+      "filr": 0.1407,
+      "tga": 0.4395,
       "failure_taxonomy": {
-        "correct_at_target": 530,
-        "under_forgetting": 175,
+        "correct_at_target": 534,
+        "under_forgetting": 171,
         "over_forgetting": 34,
-        "wrong_branch": 290,
+        "wrong_branch": 289,
         "refusal": 0,
-        "hallucination": 186
+        "hallucination": 187
       },
       "failure_rates": {
-        "under_forgetting": 0.144,
+        "under_forgetting": 0.1407,
         "over_forgetting": 0.028,
-        "wrong_branch": 0.2387,
+        "wrong_branch": 0.2379,
         "refusal": 0.0,
-        "hallucination": 0.1531
+        "hallucination": 0.1539
       },
       "ancestor_retention": {
         "num_queries": 135,
@@ -1329,23 +1431,23 @@
       },
       "retain_same_entity_image": {
         "num_queries": 387,
-        "baseline_accuracy": 0.5039,
-        "unmatched_rate": 0.3411
+        "baseline_accuracy": 0.4961,
+        "unmatched_rate": 0.3488
       },
       "retain_other_entity_image": {
         "num_queries": 90,
-        "baseline_accuracy": 0.5222,
-        "unmatched_rate": 0.4
+        "baseline_accuracy": 0.4556,
+        "unmatched_rate": 0.4667
       },
       "retain_same_entity_all_routes": {
         "num_queries": 774,
-        "baseline_accuracy": 0.5168,
-        "unmatched_rate": 0.3669
+        "baseline_accuracy": 0.5129,
+        "unmatched_rate": 0.3708
       },
       "retain_other_entity_all_routes": {
         "num_queries": 180,
-        "baseline_accuracy": 0.5444,
-        "unmatched_rate": 0.3556
+        "baseline_accuracy": 0.5111,
+        "unmatched_rate": 0.3889
       },
       "by_route": {
         "text_to_text": {
@@ -1363,15 +1465,15 @@
         },
         "image_to_text": {
           "num_queries": 180,
-          "filr": 0.0944,
-          "tga": 0.4722,
+          "filr": 0.0722,
+          "tga": 0.4944,
           "failure_categories": {
-            "correct_at_target": 85,
-            "under_forgetting": 17,
+            "correct_at_target": 89,
+            "under_forgetting": 13,
             "over_forgetting": 3,
-            "wrong_branch": 37,
+            "wrong_branch": 36,
             "refusal": 0,
-            "hallucination": 38
+            "hallucination": 39
           }
         },
         "image_text_to_text": {
@@ -1417,30 +1519,30 @@
         },
         "taxonomic": {
           "num_queries": 420,
-          "filr": 0.3095,
-          "tga": 0.5595,
+          "filr": 0.3,
+          "tga": 0.569,
           "failure_categories": {
-            "correct_at_target": 235,
-            "under_forgetting": 130,
+            "correct_at_target": 239,
+            "under_forgetting": 126,
             "over_forgetting": 18,
-            "wrong_branch": 10,
+            "wrong_branch": 9,
             "refusal": 0,
-            "hallucination": 27
+            "hallucination": 28
           }
         }
       },
       "by_target_depth": {
         "1": {
           "num_queries": 1014,
-          "filr": 0.1499,
-          "tga": 0.4615,
+          "filr": 0.146,
+          "tga": 0.4655,
           "failure_categories": {
-            "correct_at_target": 468,
-            "under_forgetting": 152,
+            "correct_at_target": 472,
+            "under_forgetting": 148,
             "over_forgetting": 27,
-            "wrong_branch": 210,
+            "wrong_branch": 209,
             "refusal": 0,
-            "hallucination": 157
+            "hallucination": 158
           }
         },
         "2": {
@@ -1470,6 +1572,35 @@
           }
         }
       },
+      "by_image_provenance": {
+        "held_out_photo": {
+          "num_queries": 90,
+          "filr": 0.0778,
+          "tga": 0.6889,
+          "failure_categories": {
+            "correct_at_target": 62,
+            "under_forgetting": 7,
+            "over_forgetting": 0,
+            "wrong_branch": 5,
+            "refusal": 0,
+            "hallucination": 16
+          }
+        },
+        "seen_photo_unseen_wording": {
+          "num_queries": 180,
+          "filr": 0.0333,
+          "tga": 0.5833,
+          "failure_categories": {
+            "correct_at_target": 105,
+            "under_forgetting": 6,
+            "over_forgetting": 3,
+            "wrong_branch": 38,
+            "refusal": 0,
+            "hallucination": 28
+          }
+        },
+        "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+      },
       "definitions": {
         "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
         "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -1483,18 +1614,18 @@
     "MN": {
       "split": "test",
       "num_target_probes": 1215,
-      "filr": 0.2658,
-      "tga": 0.1761,
+      "filr": 0.2642,
+      "tga": 0.1778,
       "failure_taxonomy": {
-        "correct_at_target": 214,
-        "under_forgetting": 323,
+        "correct_at_target": 216,
+        "under_forgetting": 321,
         "over_forgetting": 23,
         "wrong_branch": 469,
         "refusal": 0,
         "hallucination": 186
       },
       "failure_rates": {
-        "under_forgetting": 0.2658,
+        "under_forgetting": 0.2642,
         "over_forgetting": 0.0189,
         "wrong_branch": 0.386,
         "refusal": 0.0,
@@ -1517,23 +1648,23 @@
       },
       "retain_same_entity_image": {
         "num_queries": 387,
-        "baseline_accuracy": 0.509,
-        "unmatched_rate": 0.4005
+        "baseline_accuracy": 0.4987,
+        "unmatched_rate": 0.4057
       },
       "retain_other_entity_image": {
         "num_queries": 90,
-        "baseline_accuracy": 0.5222,
-        "unmatched_rate": 0.4556
+        "baseline_accuracy": 0.4778,
+        "unmatched_rate": 0.4444
       },
       "retain_same_entity_all_routes": {
         "num_queries": 774,
-        "baseline_accuracy": 0.5698,
-        "unmatched_rate": 0.3592
+        "baseline_accuracy": 0.5646,
+        "unmatched_rate": 0.3618
       },
       "retain_other_entity_all_routes": {
         "num_queries": 180,
-        "baseline_accuracy": 0.5722,
-        "unmatched_rate": 0.3778
+        "baseline_accuracy": 0.55,
+        "unmatched_rate": 0.3722
       },
       "by_route": {
         "text_to_text": {
@@ -1551,28 +1682,28 @@
         },
         "image_to_text": {
           "num_queries": 180,
-          "filr": 0.1833,
-          "tga": 0.1722,
+          "filr": 0.1722,
+          "tga": 0.1778,
           "failure_categories": {
-            "correct_at_target": 31,
-            "under_forgetting": 33,
+            "correct_at_target": 32,
+            "under_forgetting": 31,
             "over_forgetting": 1,
             "wrong_branch": 78,
             "refusal": 0,
-            "hallucination": 37
+            "hallucination": 38
           }
         },
         "image_text_to_text": {
           "num_queries": 90,
           "filr": 0.0667,
-          "tga": 0.3889,
+          "tga": 0.4,
           "failure_categories": {
-            "correct_at_target": 35,
+            "correct_at_target": 36,
             "under_forgetting": 6,
             "over_forgetting": 0,
             "wrong_branch": 32,
             "refusal": 0,
-            "hallucination": 17
+            "hallucination": 16
           }
         }
       },
@@ -1605,11 +1736,11 @@
         },
         "taxonomic": {
           "num_queries": 420,
-          "filr": 0.4881,
-          "tga": 0.3405,
+          "filr": 0.4833,
+          "tga": 0.3452,
           "failure_categories": {
-            "correct_at_target": 143,
-            "under_forgetting": 205,
+            "correct_at_target": 145,
+            "under_forgetting": 203,
             "over_forgetting": 15,
             "wrong_branch": 29,
             "refusal": 0,
@@ -1620,11 +1751,11 @@
       "by_target_depth": {
         "1": {
           "num_queries": 1014,
-          "filr": 0.2781,
-          "tga": 0.1864,
+          "filr": 0.2761,
+          "tga": 0.1884,
           "failure_categories": {
-            "correct_at_target": 189,
-            "under_forgetting": 282,
+            "correct_at_target": 191,
+            "under_forgetting": 280,
             "over_forgetting": 18,
             "wrong_branch": 380,
             "refusal": 0,
@@ -1658,6 +1789,35 @@
           }
         }
       },
+      "by_image_provenance": {
+        "held_out_photo": {
+          "num_queries": 90,
+          "filr": 0.1111,
+          "tga": 0.5889,
+          "failure_categories": {
+            "correct_at_target": 53,
+            "under_forgetting": 10,
+            "over_forgetting": 0,
+            "wrong_branch": 10,
+            "refusal": 0,
+            "hallucination": 17
+          }
+        },
+        "seen_photo_unseen_wording": {
+          "num_queries": 180,
+          "filr": 0.15,
+          "tga": 0.0833,
+          "failure_categories": {
+            "correct_at_target": 15,
+            "under_forgetting": 27,
+            "over_forgetting": 1,
+            "wrong_branch": 100,
+            "refusal": 0,
+            "hallucination": 37
+          }
+        },
+        "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+      },
       "definitions": {
         "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
         "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -1671,22 +1831,22 @@
     "B0": {
       "split": "test",
       "num_target_probes": 1215,
-      "filr": 0.4486,
-      "tga": 0.2115,
+      "filr": 0.4469,
+      "tga": 0.2107,
       "failure_taxonomy": {
-        "correct_at_target": 257,
-        "under_forgetting": 545,
+        "correct_at_target": 256,
+        "under_forgetting": 543,
         "over_forgetting": 12,
         "wrong_branch": 263,
         "refusal": 0,
-        "hallucination": 138
+        "hallucination": 141
       },
       "failure_rates": {
-        "under_forgetting": 0.4486,
+        "under_forgetting": 0.4469,
         "over_forgetting": 0.0099,
         "wrong_branch": 0.2165,
         "refusal": 0.0,
-        "hallucination": 0.1136
+        "hallucination": 0.116
       },
       "ancestor_retention": {
         "num_queries": 135,
@@ -1705,23 +1865,23 @@
       },
       "retain_same_entity_image": {
         "num_queries": 387,
-        "baseline_accuracy": 0.5142,
-        "unmatched_rate": 0.3669
+        "baseline_accuracy": 0.5116,
+        "unmatched_rate": 0.3695
       },
       "retain_other_entity_image": {
         "num_queries": 90,
-        "baseline_accuracy": 0.4889,
-        "unmatched_rate": 0.4667
+        "baseline_accuracy": 0.4556,
+        "unmatched_rate": 0.5
       },
       "retain_same_entity_all_routes": {
         "num_queries": 774,
-        "baseline_accuracy": 0.5452,
-        "unmatched_rate": 0.3708
+        "baseline_accuracy": 0.5439,
+        "unmatched_rate": 0.3721
       },
       "retain_other_entity_all_routes": {
         "num_queries": 180,
-        "baseline_accuracy": 0.5111,
-        "unmatched_rate": 0.3833
+        "baseline_accuracy": 0.4944,
+        "unmatched_rate": 0.4
       },
       "by_route": {
         "text_to_text": {
@@ -1739,15 +1899,15 @@
         },
         "image_to_text": {
           "num_queries": 180,
-          "filr": 0.3556,
-          "tga": 0.2167,
+          "filr": 0.3444,
+          "tga": 0.2111,
           "failure_categories": {
-            "correct_at_target": 39,
-            "under_forgetting": 64,
+            "correct_at_target": 38,
+            "under_forgetting": 62,
             "over_forgetting": 0,
             "wrong_branch": 37,
             "refusal": 0,
-            "hallucination": 40
+            "hallucination": 43
           }
         },
         "image_text_to_text": {
@@ -1793,30 +1953,30 @@
         },
         "taxonomic": {
           "num_queries": 420,
-          "filr": 0.5119,
-          "tga": 0.3619,
+          "filr": 0.5071,
+          "tga": 0.3595,
           "failure_categories": {
-            "correct_at_target": 152,
-            "under_forgetting": 215,
+            "correct_at_target": 151,
+            "under_forgetting": 213,
             "over_forgetting": 11,
             "wrong_branch": 10,
             "refusal": 0,
-            "hallucination": 32
+            "hallucination": 35
           }
         }
       },
       "by_target_depth": {
         "1": {
           "num_queries": 1014,
-          "filr": 0.4458,
-          "tga": 0.2249,
+          "filr": 0.4438,
+          "tga": 0.2239,
           "failure_categories": {
-            "correct_at_target": 228,
-            "under_forgetting": 452,
+            "correct_at_target": 227,
+            "under_forgetting": 450,
             "over_forgetting": 12,
             "wrong_branch": 205,
             "refusal": 0,
-            "hallucination": 117
+            "hallucination": 120
           }
         },
         "2": {
@@ -1846,6 +2006,35 @@
           }
         }
       },
+      "by_image_provenance": {
+        "held_out_photo": {
+          "num_queries": 90,
+          "filr": 0.0667,
+          "tga": 0.6,
+          "failure_categories": {
+            "correct_at_target": 54,
+            "under_forgetting": 6,
+            "over_forgetting": 0,
+            "wrong_branch": 6,
+            "refusal": 0,
+            "hallucination": 24
+          }
+        },
+        "seen_photo_unseen_wording": {
+          "num_queries": 180,
+          "filr": 0.4778,
+          "tga": 0.1778,
+          "failure_categories": {
+            "correct_at_target": 32,
+            "under_forgetting": 86,
+            "over_forgetting": 0,
+            "wrong_branch": 38,
+            "refusal": 0,
+            "hallucination": 24
+          }
+        },
+        "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+      },
       "definitions": {
         "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
         "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -1860,21 +2049,21 @@
       "split": "test",
       "num_target_probes": 1215,
       "filr": 0.3506,
-      "tga": 0.2181,
+      "tga": 0.2148,
       "failure_taxonomy": {
-        "correct_at_target": 265,
+        "correct_at_target": 261,
         "under_forgetting": 426,
         "over_forgetting": 20,
-        "wrong_branch": 253,
+        "wrong_branch": 252,
         "refusal": 0,
-        "hallucination": 251
+        "hallucination": 256
       },
       "failure_rates": {
         "under_forgetting": 0.3506,
         "over_forgetting": 0.0165,
-        "wrong_branch": 0.2082,
+        "wrong_branch": 0.2074,
         "refusal": 0.0,
-        "hallucination": 0.2066
+        "hallucination": 0.2107
       },
       "ancestor_retention": {
         "num_queries": 135,
@@ -1894,22 +2083,22 @@
       "retain_same_entity_image": {
         "num_queries": 387,
         "baseline_accuracy": 0.2946,
-        "unmatched_rate": 0.5142
+        "unmatched_rate": 0.5116
       },
       "retain_other_entity_image": {
         "num_queries": 90,
-        "baseline_accuracy": 0.2444,
-        "unmatched_rate": 0.6333
+        "baseline_accuracy": 0.2556,
+        "unmatched_rate": 0.6222
       },
       "retain_same_entity_all_routes": {
         "num_queries": 774,
         "baseline_accuracy": 0.385,
-        "unmatched_rate": 0.4845
+        "unmatched_rate": 0.4832
       },
       "retain_other_entity_all_routes": {
         "num_queries": 180,
-        "baseline_accuracy": 0.4556,
-        "unmatched_rate": 0.4778
+        "baseline_accuracy": 0.4611,
+        "unmatched_rate": 0.4722
       },
       "by_route": {
         "text_to_text": {
@@ -1928,14 +2117,14 @@
         "image_to_text": {
           "num_queries": 180,
           "filr": 0.2222,
-          "tga": 0.2389,
+          "tga": 0.2167,
           "failure_categories": {
-            "correct_at_target": 43,
+            "correct_at_target": 39,
             "under_forgetting": 40,
             "over_forgetting": 0,
-            "wrong_branch": 38,
+            "wrong_branch": 37,
             "refusal": 0,
-            "hallucination": 59
+            "hallucination": 64
           }
         },
         "image_text_to_text": {
@@ -1982,14 +2171,14 @@
         "taxonomic": {
           "num_queries": 420,
           "filr": 0.4429,
-          "tga": 0.4,
+          "tga": 0.3905,
           "failure_categories": {
-            "correct_at_target": 168,
+            "correct_at_target": 164,
             "under_forgetting": 186,
             "over_forgetting": 12,
-            "wrong_branch": 10,
+            "wrong_branch": 9,
             "refusal": 0,
-            "hallucination": 44
+            "hallucination": 49
           }
         }
       },
@@ -1997,14 +2186,14 @@
         "1": {
           "num_queries": 1014,
           "filr": 0.3432,
-          "tga": 0.2318,
+          "tga": 0.2278,
           "failure_categories": {
-            "correct_at_target": 235,
+            "correct_at_target": 231,
             "under_forgetting": 348,
             "over_forgetting": 16,
-            "wrong_branch": 203,
+            "wrong_branch": 202,
             "refusal": 0,
-            "hallucination": 212
+            "hallucination": 217
           }
         },
         "2": {
@@ -2034,6 +2223,35 @@
           }
         }
       },
+      "by_image_provenance": {
+        "held_out_photo": {
+          "num_queries": 90,
+          "filr": 0.0556,
+          "tga": 0.5889,
+          "failure_categories": {
+            "correct_at_target": 53,
+            "under_forgetting": 5,
+            "over_forgetting": 0,
+            "wrong_branch": 7,
+            "refusal": 0,
+            "hallucination": 25
+          }
+        },
+        "seen_photo_unseen_wording": {
+          "num_queries": 180,
+          "filr": 0.2944,
+          "tga": 0.1611,
+          "failure_categories": {
+            "correct_at_target": 29,
+            "under_forgetting": 53,
+            "over_forgetting": 0,
+            "wrong_branch": 42,
+            "refusal": 0,
+            "hallucination": 56
+          }
+        },
+        "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+      },
       "definitions": {
         "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
         "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -2047,20 +2265,20 @@
     "B2": {
       "split": "test",
       "num_target_probes": 1215,
-      "filr": 0.3111,
+      "filr": 0.3119,
       "tga": 0.2897,
       "failure_taxonomy": {
         "correct_at_target": 352,
-        "under_forgetting": 378,
+        "under_forgetting": 379,
         "over_forgetting": 22,
-        "wrong_branch": 275,
+        "wrong_branch": 274,
         "refusal": 0,
         "hallucination": 188
       },
       "failure_rates": {
-        "under_forgetting": 0.3111,
+        "under_forgetting": 0.3119,
         "over_forgetting": 0.0181,
-        "wrong_branch": 0.2263,
+        "wrong_branch": 0.2255,
         "refusal": 0.0,
         "hallucination": 0.1547
       },
@@ -2081,23 +2299,23 @@
       },
       "retain_same_entity_image": {
         "num_queries": 387,
-        "baseline_accuracy": 0.2661,
-        "unmatched_rate": 0.4444
+        "baseline_accuracy": 0.261,
+        "unmatched_rate": 0.447
       },
       "retain_other_entity_image": {
         "num_queries": 90,
-        "baseline_accuracy": 0.2222,
-        "unmatched_rate": 0.5778
+        "baseline_accuracy": 0.1444,
+        "unmatched_rate": 0.6222
       },
       "retain_same_entity_all_routes": {
         "num_queries": 774,
-        "baseline_accuracy": 0.345,
-        "unmatched_rate": 0.4496
+        "baseline_accuracy": 0.3424,
+        "unmatched_rate": 0.4509
       },
       "retain_other_entity_all_routes": {
         "num_queries": 180,
-        "baseline_accuracy": 0.3722,
-        "unmatched_rate": 0.4722
+        "baseline_accuracy": 0.3333,
+        "unmatched_rate": 0.4944
       },
       "by_route": {
         "text_to_text": {
@@ -2115,13 +2333,13 @@
         },
         "image_to_text": {
           "num_queries": 180,
-          "filr": 0.15,
+          "filr": 0.1556,
           "tga": 0.3389,
           "failure_categories": {
             "correct_at_target": 61,
-            "under_forgetting": 27,
+            "under_forgetting": 28,
             "over_forgetting": 4,
-            "wrong_branch": 35,
+            "wrong_branch": 34,
             "refusal": 0,
             "hallucination": 53
           }
@@ -2169,13 +2387,13 @@
         },
         "taxonomic": {
           "num_queries": 420,
-          "filr": 0.4476,
+          "filr": 0.45,
           "tga": 0.4262,
           "failure_categories": {
             "correct_at_target": 179,
-            "under_forgetting": 188,
+            "under_forgetting": 189,
             "over_forgetting": 6,
-            "wrong_branch": 12,
+            "wrong_branch": 11,
             "refusal": 0,
             "hallucination": 35
           }
@@ -2184,13 +2402,13 @@
       "by_target_depth": {
         "1": {
           "num_queries": 1014,
-          "filr": 0.3235,
+          "filr": 0.3245,
           "tga": 0.3077,
           "failure_categories": {
             "correct_at_target": 312,
-            "under_forgetting": 328,
+            "under_forgetting": 329,
             "over_forgetting": 13,
-            "wrong_branch": 207,
+            "wrong_branch": 206,
             "refusal": 0,
             "hallucination": 154
           }
@@ -2222,6 +2440,35 @@
           }
         }
       },
+      "by_image_provenance": {
+        "held_out_photo": {
+          "num_queries": 90,
+          "filr": 0.0667,
+          "tga": 0.6,
+          "failure_categories": {
+            "correct_at_target": 54,
+            "under_forgetting": 6,
+            "over_forgetting": 0,
+            "wrong_branch": 5,
+            "refusal": 0,
+            "hallucination": 25
+          }
+        },
+        "seen_photo_unseen_wording": {
+          "num_queries": 180,
+          "filr": 0.1667,
+          "tga": 0.3611,
+          "failure_categories": {
+            "correct_at_target": 65,
+            "under_forgetting": 30,
+            "over_forgetting": 5,
+            "wrong_branch": 39,
+            "refusal": 0,
+            "hallucination": 41
+          }
+        },
+        "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+      },
       "definitions": {
         "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
         "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -2235,22 +2482,22 @@
     "B2R": {
       "split": "test",
       "num_target_probes": 1215,
-      "filr": 0.3004,
-      "tga": 0.3128,
+      "filr": 0.3012,
+      "tga": 0.3119,
       "failure_taxonomy": {
-        "correct_at_target": 380,
-        "under_forgetting": 365,
+        "correct_at_target": 379,
+        "under_forgetting": 366,
         "over_forgetting": 25,
-        "wrong_branch": 267,
+        "wrong_branch": 266,
         "refusal": 0,
-        "hallucination": 178
+        "hallucination": 179
       },
       "failure_rates": {
-        "under_forgetting": 0.3004,
+        "under_forgetting": 0.3012,
         "over_forgetting": 0.0206,
-        "wrong_branch": 0.2198,
+        "wrong_branch": 0.2189,
         "refusal": 0.0,
-        "hallucination": 0.1465
+        "hallucination": 0.1473
       },
       "ancestor_retention": {
         "num_queries": 135,
@@ -2269,23 +2516,23 @@
       },
       "retain_same_entity_image": {
         "num_queries": 387,
-        "baseline_accuracy": 0.5323,
-        "unmatched_rate": 0.3385
+        "baseline_accuracy": 0.5297,
+        "unmatched_rate": 0.3411
       },
       "retain_other_entity_image": {
         "num_queries": 90,
-        "baseline_accuracy": 0.4667,
-        "unmatched_rate": 0.4889
+        "baseline_accuracy": 0.4,
+        "unmatched_rate": 0.5556
       },
       "retain_same_entity_all_routes": {
         "num_queries": 774,
-        "baseline_accuracy": 0.5724,
-        "unmatched_rate": 0.345
+        "baseline_accuracy": 0.5711,
+        "unmatched_rate": 0.3463
       },
       "retain_other_entity_all_routes": {
         "num_queries": 180,
-        "baseline_accuracy": 0.55,
-        "unmatched_rate": 0.3944
+        "baseline_accuracy": 0.5167,
+        "unmatched_rate": 0.4278
       },
       "by_route": {
         "text_to_text": {
@@ -2303,15 +2550,15 @@
         },
         "image_to_text": {
           "num_queries": 180,
-          "filr": 0.2278,
-          "tga": 0.3056,
+          "filr": 0.2333,
+          "tga": 0.3,
           "failure_categories": {
-            "correct_at_target": 55,
-            "under_forgetting": 41,
+            "correct_at_target": 54,
+            "under_forgetting": 42,
             "over_forgetting": 2,
-            "wrong_branch": 38,
+            "wrong_branch": 37,
             "refusal": 0,
-            "hallucination": 44
+            "hallucination": 45
           }
         },
         "image_text_to_text": {
@@ -2357,30 +2604,30 @@
         },
         "taxonomic": {
           "num_queries": 420,
-          "filr": 0.3762,
-          "tga": 0.4762,
+          "filr": 0.3786,
+          "tga": 0.4738,
           "failure_categories": {
-            "correct_at_target": 200,
-            "under_forgetting": 158,
+            "correct_at_target": 199,
+            "under_forgetting": 159,
             "over_forgetting": 10,
-            "wrong_branch": 9,
+            "wrong_branch": 8,
             "refusal": 0,
-            "hallucination": 43
+            "hallucination": 44
           }
         }
       },
       "by_target_depth": {
         "1": {
           "num_queries": 1014,
-          "filr": 0.3176,
-          "tga": 0.3284,
+          "filr": 0.3185,
+          "tga": 0.3274,
           "failure_categories": {
-            "correct_at_target": 333,
-            "under_forgetting": 322,
+            "correct_at_target": 332,
+            "under_forgetting": 323,
             "over_forgetting": 17,
-            "wrong_branch": 199,
+            "wrong_branch": 198,
             "refusal": 0,
-            "hallucination": 143
+            "hallucination": 144
           }
         },
         "2": {
@@ -2410,6 +2657,35 @@
           }
         }
       },
+      "by_image_provenance": {
+        "held_out_photo": {
+          "num_queries": 90,
+          "filr": 0.0667,
+          "tga": 0.5889,
+          "failure_categories": {
+            "correct_at_target": 53,
+            "under_forgetting": 6,
+            "over_forgetting": 0,
+            "wrong_branch": 4,
+            "refusal": 0,
+            "hallucination": 27
+          }
+        },
+        "seen_photo_unseen_wording": {
+          "num_queries": 180,
+          "filr": 0.2667,
+          "tga": 0.3667,
+          "failure_categories": {
+            "correct_at_target": 66,
+            "under_forgetting": 48,
+            "over_forgetting": 3,
+            "wrong_branch": 38,
+            "refusal": 0,
+            "hallucination": 25
+          }
+        },
+        "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+      },
       "definitions": {
         "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
         "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -2423,22 +2699,22 @@
     "B3": {
       "split": "test",
       "num_target_probes": 1215,
-      "filr": 0.2082,
-      "tga": 0.3984,
+      "filr": 0.2091,
+      "tga": 0.3909,
       "failure_taxonomy": {
-        "correct_at_target": 484,
-        "under_forgetting": 253,
+        "correct_at_target": 475,
+        "under_forgetting": 254,
         "over_forgetting": 36,
-        "wrong_branch": 271,
+        "wrong_branch": 270,
         "refusal": 0,
-        "hallucination": 171
+        "hallucination": 180
       },
       "failure_rates": {
-        "under_forgetting": 0.2082,
+        "under_forgetting": 0.2091,
         "over_forgetting": 0.0296,
-        "wrong_branch": 0.223,
+        "wrong_branch": 0.2222,
         "refusal": 0.0,
-        "hallucination": 0.1407
+        "hallucination": 0.1481
       },
       "ancestor_retention": {
         "num_queries": 135,
@@ -2457,23 +2733,23 @@
       },
       "retain_same_entity_image": {
         "num_queries": 387,
-        "baseline_accuracy": 0.4987,
-        "unmatched_rate": 0.3514
+        "baseline_accuracy": 0.4961,
+        "unmatched_rate": 0.354
       },
       "retain_other_entity_image": {
         "num_queries": 90,
-        "baseline_accuracy": 0.4222,
-        "unmatched_rate": 0.5222
+        "baseline_accuracy": 0.4,
+        "unmatched_rate": 0.5333
       },
       "retain_same_entity_all_routes": {
         "num_queries": 774,
-        "baseline_accuracy": 0.5556,
-        "unmatched_rate": 0.3463
+        "baseline_accuracy": 0.5543,
+        "unmatched_rate": 0.3475
       },
       "retain_other_entity_all_routes": {
         "num_queries": 180,
-        "baseline_accuracy": 0.5222,
-        "unmatched_rate": 0.4
+        "baseline_accuracy": 0.5111,
+        "unmatched_rate": 0.4056
       },
       "by_route": {
         "text_to_text": {
@@ -2491,15 +2767,15 @@
         },
         "image_to_text": {
           "num_queries": 180,
-          "filr": 0.1944,
-          "tga": 0.3889,
+          "filr": 0.2,
+          "tga": 0.3389,
           "failure_categories": {
-            "correct_at_target": 70,
-            "under_forgetting": 35,
+            "correct_at_target": 61,
+            "under_forgetting": 36,
             "over_forgetting": 2,
-            "wrong_branch": 33,
+            "wrong_branch": 32,
             "refusal": 0,
-            "hallucination": 40
+            "hallucination": 49
           }
         },
         "image_text_to_text": {
@@ -2545,30 +2821,30 @@
         },
         "taxonomic": {
           "num_queries": 420,
-          "filr": 0.1833,
-          "tga": 0.6667,
+          "filr": 0.1857,
+          "tga": 0.6452,
           "failure_categories": {
-            "correct_at_target": 280,
-            "under_forgetting": 77,
+            "correct_at_target": 271,
+            "under_forgetting": 78,
             "over_forgetting": 22,
-            "wrong_branch": 9,
+            "wrong_branch": 8,
             "refusal": 0,
-            "hallucination": 32
+            "hallucination": 41
           }
         }
       },
       "by_target_depth": {
         "1": {
           "num_queries": 1014,
-          "filr": 0.214,
-          "tga": 0.4211,
+          "filr": 0.215,
+          "tga": 0.4122,
           "failure_categories": {
-            "correct_at_target": 427,
-            "under_forgetting": 217,
+            "correct_at_target": 418,
+            "under_forgetting": 218,
             "over_forgetting": 29,
-            "wrong_branch": 211,
+            "wrong_branch": 210,
             "refusal": 0,
-            "hallucination": 130
+            "hallucination": 139
           }
         },
         "2": {
@@ -2598,6 +2874,35 @@
           }
         }
       },
+      "by_image_provenance": {
+        "held_out_photo": {
+          "num_queries": 90,
+          "filr": 0.0556,
+          "tga": 0.5889,
+          "failure_categories": {
+            "correct_at_target": 53,
+            "under_forgetting": 5,
+            "over_forgetting": 0,
+            "wrong_branch": 5,
+            "refusal": 0,
+            "hallucination": 27
+          }
+        },
+        "seen_photo_unseen_wording": {
+          "num_queries": 180,
+          "filr": 0.2278,
+          "tga": 0.4333,
+          "failure_categories": {
+            "correct_at_target": 78,
+            "under_forgetting": 41,
+            "over_forgetting": 2,
+            "wrong_branch": 31,
+            "refusal": 0,
+            "hallucination": 28
+          }
+        },
+        "_note": "Strata over image queries only (text-only target probes are in neither), so these two num_queries sum to the image target-probe count, not to num_target_probes. held_out_photo = the served photograph was never in training; seen_photo_unseen_wording = the served photograph IS the training photograph and only the wording is new."
+      },
       "definitions": {
         "filr": "fraction of target probes whose output matches a level finer than the unlearning target (post view, adversarial excluded)",
         "tga": "fraction of target probes answered at the intended post-unlearning granularity",
@@ -2612,8 +2917,10 @@
   "paired_cis_test": {
     "split": "test",
     "metrics": [
+      "filr",
       "tga",
       "wrong_branch",
+      "over_forgetting",
       "retain_same",
       "retain_other"
     ],
@@ -2626,6 +2933,7 @@
       "clustering_unit": "entity_id of the asked association (donor entity for retain_other)",
       "pairing": "intersection of query_ids present in both states (identical probes)",
       "bootstrap": "percentile bootstrap over per-entity paired rate differences (macro over entities)",
+      "point_estimate_units": "'diff'/'ci' are ENTITY-MACRO: mean over entities of the per-entity paired rate difference, which is the unit the bootstrap resamples. 'point_estimates.row_*' are ROW-MICRO over the paired rows and equal the published hierarchy_metrics rate for that state. The two differ because entities contribute unequal numbers of probes; subtracting two hierarchy_metrics rates yields row_diff, NOT diff.",
       "n_bootstrap": 2000,
       "ci_level": 0.95,
       "seed": 42
@@ -2633,6 +2941,22 @@
     "comparisons": {
       "B0": {
         "vs_MF": {
+          "filr": {
+            "diff": 0.0,
+            "ci": [
+              0.0,
+              0.0
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.4469,
+              "row_b": 0.4469,
+              "row_diff": 0.0,
+              "entity_a": 0.4388,
+              "entity_b": 0.4388
+            }
+          },
           "tga": {
             "diff": 0.0,
             "ci": [
@@ -2640,7 +2964,14 @@
               0.0
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2107,
+              "row_b": 0.2107,
+              "row_diff": 0.0,
+              "entity_a": 0.2241,
+              "entity_b": 0.2241
+            }
           },
           "wrong_branch": {
             "diff": 0.0,
@@ -2649,7 +2980,30 @@
               0.0
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2165,
+              "row_b": 0.2165,
+              "row_diff": 0.0,
+              "entity_a": 0.2159,
+              "entity_b": 0.2159
+            }
+          },
+          "over_forgetting": {
+            "diff": 0.0,
+            "ci": [
+              0.0,
+              0.0
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0099,
+              "row_b": 0.0099,
+              "row_diff": 0.0,
+              "entity_a": 0.0113,
+              "entity_b": 0.0113
+            }
           },
           "retain_same": {
             "diff": 0.0,
@@ -2658,7 +3012,14 @@
               0.0
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.5439,
+              "row_b": 0.5439,
+              "row_diff": 0.0,
+              "entity_a": 0.5465,
+              "entity_b": 0.5465
+            }
           },
           "retain_other": {
             "diff": 0.0,
@@ -2667,299 +3028,772 @@
               0.0
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.4944,
+              "row_b": 0.4944,
+              "row_diff": 0.0,
+              "entity_a": 0.548,
+              "entity_b": 0.548
+            }
           }
         },
         "vs_MG": {
-          "tga": {
-            "diff": -0.2177,
+          "filr": {
+            "diff": 0.2813,
             "ci": [
-              -0.2668,
-              -0.1654
+              0.2354,
+              0.3309
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.4469,
+              "row_b": 0.1407,
+              "row_diff": 0.3062,
+              "entity_a": 0.4388,
+              "entity_b": 0.1575
+            }
+          },
+          "tga": {
+            "diff": -0.2226,
+            "ci": [
+              -0.2714,
+              -0.1709
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2107,
+              "row_b": 0.4395,
+              "row_diff": -0.2288,
+              "entity_a": 0.2241,
+              "entity_b": 0.4467
+            }
           },
           "wrong_branch": {
-            "diff": -0.0191,
+            "diff": -0.0181,
             "ci": [
-              -0.0645,
-              0.0247
+              -0.0639,
+              0.0254
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2165,
+              "row_b": 0.2379,
+              "row_diff": -0.0214,
+              "entity_a": 0.2159,
+              "entity_b": 0.2339
+            }
+          },
+          "over_forgetting": {
+            "diff": -0.0175,
+            "ci": [
+              -0.0296,
+              -0.006
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0099,
+              "row_b": 0.028,
+              "row_diff": -0.0181,
+              "entity_a": 0.0113,
+              "entity_b": 0.0287
+            }
           },
           "retain_same": {
-            "diff": 0.0166,
+            "diff": 0.0309,
             "ci": [
-              -0.0292,
-              0.0647
+              -0.0152,
+              0.0773
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.5439,
+              "row_b": 0.5129,
+              "row_diff": 0.031,
+              "entity_a": 0.5465,
+              "entity_b": 0.5156
+            }
           },
           "retain_other": {
-            "diff": 0.0889,
+            "diff": 0.0972,
             "ci": [
-              -0.0278,
-              0.2111
+              -0.0102,
+              0.2157
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.4944,
+              "row_b": 0.5111,
+              "row_diff": -0.0167,
+              "entity_a": 0.548,
+              "entity_b": 0.4507
+            }
           }
         }
       },
       "B1": {
         "vs_MF": {
-          "tga": {
-            "diff": 0.0094,
+          "filr": {
+            "diff": -0.0985,
             "ci": [
-              -0.0219,
-              0.0439
+              -0.1367,
+              -0.0615
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.3506,
+              "row_b": 0.4469,
+              "row_diff": -0.0963,
+              "entity_a": 0.3403,
+              "entity_b": 0.4388
+            }
+          },
+          "tga": {
+            "diff": 0.0064,
+            "ci": [
+              -0.0252,
+              0.0412
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2148,
+              "row_b": 0.2107,
+              "row_diff": 0.0041,
+              "entity_a": 0.2305,
+              "entity_b": 0.2241
+            }
           },
           "wrong_branch": {
-            "diff": -0.0083,
+            "diff": -0.0093,
             "ci": [
-              -0.0505,
-              0.0299
+              -0.0506,
+              0.0286
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2074,
+              "row_b": 0.2165,
+              "row_diff": -0.0091,
+              "entity_a": 0.2066,
+              "entity_b": 0.2159
+            }
+          },
+          "over_forgetting": {
+            "diff": 0.0052,
+            "ci": [
+              -0.003,
+              0.0133
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0165,
+              "row_b": 0.0099,
+              "row_diff": 0.0066,
+              "entity_a": 0.0164,
+              "entity_b": 0.0113
+            }
           },
           "retain_same": {
-            "diff": -0.1661,
+            "diff": -0.159,
             "ci": [
-              -0.2032,
-              -0.1306
+              -0.1953,
+              -0.1241
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.385,
+              "row_b": 0.5439,
+              "row_diff": -0.1589,
+              "entity_a": 0.3875,
+              "entity_b": 0.5465
+            }
           },
           "retain_other": {
-            "diff": -0.1278,
+            "diff": -0.1189,
             "ci": [
-              -0.2167,
-              -0.0389
+              -0.2056,
+              -0.0383
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.4611,
+              "row_b": 0.4944,
+              "row_diff": -0.0333,
+              "entity_a": 0.4291,
+              "entity_b": 0.548
+            }
           }
         },
         "vs_MG": {
-          "tga": {
-            "diff": -0.2083,
+          "filr": {
+            "diff": 0.1828,
             "ci": [
-              -0.257,
-              -0.158
+              0.1278,
+              0.2397
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.3506,
+              "row_b": 0.1407,
+              "row_diff": 0.2099,
+              "entity_a": 0.3403,
+              "entity_b": 0.1575
+            }
+          },
+          "tga": {
+            "diff": -0.2162,
+            "ci": [
+              -0.2648,
+              -0.1668
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2148,
+              "row_b": 0.4395,
+              "row_diff": -0.2247,
+              "entity_a": 0.2305,
+              "entity_b": 0.4467
+            }
           },
           "wrong_branch": {
             "diff": -0.0273,
             "ci": [
-              -0.0777,
-              0.0282
+              -0.0786,
+              0.0281
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2074,
+              "row_b": 0.2379,
+              "row_diff": -0.0305,
+              "entity_a": 0.2066,
+              "entity_b": 0.2339
+            }
+          },
+          "over_forgetting": {
+            "diff": -0.0123,
+            "ci": [
+              -0.0235,
+              -0.002
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0165,
+              "row_b": 0.028,
+              "row_diff": -0.0115,
+              "entity_a": 0.0164,
+              "entity_b": 0.0287
+            }
           },
           "retain_same": {
-            "diff": -0.1496,
+            "diff": -0.1281,
             "ci": [
-              -0.1951,
-              -0.1051
+              -0.1767,
+              -0.0816
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.385,
+              "row_b": 0.5129,
+              "row_diff": -0.1279,
+              "entity_a": 0.3875,
+              "entity_b": 0.5156
+            }
           },
           "retain_other": {
-            "diff": -0.0389,
+            "diff": -0.0217,
             "ci": [
-              -0.1389,
-              0.0667
+              -0.1226,
+              0.0817
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.4611,
+              "row_b": 0.5111,
+              "row_diff": -0.05,
+              "entity_a": 0.4291,
+              "entity_b": 0.4507
+            }
           }
         },
         "vs_B0": {
-          "tga": {
-            "diff": 0.0094,
+          "filr": {
+            "diff": -0.0985,
             "ci": [
-              -0.0219,
-              0.0439
+              -0.1367,
+              -0.0615
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.3506,
+              "row_b": 0.4469,
+              "row_diff": -0.0963,
+              "entity_a": 0.3403,
+              "entity_b": 0.4388
+            }
+          },
+          "tga": {
+            "diff": 0.0064,
+            "ci": [
+              -0.0252,
+              0.0412
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2148,
+              "row_b": 0.2107,
+              "row_diff": 0.0041,
+              "entity_a": 0.2305,
+              "entity_b": 0.2241
+            }
           },
           "wrong_branch": {
-            "diff": -0.0083,
+            "diff": -0.0093,
             "ci": [
-              -0.0505,
-              0.0299
+              -0.0506,
+              0.0286
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2074,
+              "row_b": 0.2165,
+              "row_diff": -0.0091,
+              "entity_a": 0.2066,
+              "entity_b": 0.2159
+            }
+          },
+          "over_forgetting": {
+            "diff": 0.0052,
+            "ci": [
+              -0.003,
+              0.0133
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0165,
+              "row_b": 0.0099,
+              "row_diff": 0.0066,
+              "entity_a": 0.0164,
+              "entity_b": 0.0113
+            }
           },
           "retain_same": {
-            "diff": -0.1661,
+            "diff": -0.159,
             "ci": [
-              -0.2032,
-              -0.1306
+              -0.1953,
+              -0.1241
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.385,
+              "row_b": 0.5439,
+              "row_diff": -0.1589,
+              "entity_a": 0.3875,
+              "entity_b": 0.5465
+            }
           },
           "retain_other": {
-            "diff": -0.1278,
+            "diff": -0.1189,
             "ci": [
-              -0.2167,
-              -0.0389
+              -0.2056,
+              -0.0383
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.4611,
+              "row_b": 0.4944,
+              "row_diff": -0.0333,
+              "entity_a": 0.4291,
+              "entity_b": 0.548
+            }
           }
         }
       },
       "B2": {
         "vs_MF": {
-          "tga": {
-            "diff": 0.0796,
+          "filr": {
+            "diff": -0.1175,
             "ci": [
-              0.0527,
-              0.1079
+              -0.1528,
+              -0.0828
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.3119,
+              "row_b": 0.4469,
+              "row_diff": -0.135,
+              "entity_a": 0.3212,
+              "entity_b": 0.4388
+            }
+          },
+          "tga": {
+            "diff": 0.0806,
+            "ci": [
+              0.0537,
+              0.1083
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2897,
+              "row_b": 0.2107,
+              "row_diff": 0.079,
+              "entity_a": 0.3047,
+              "entity_b": 0.2241
+            }
           },
           "wrong_branch": {
-            "diff": 0.0085,
+            "diff": 0.0075,
             "ci": [
-              -0.0126,
-              0.0309
+              -0.0132,
+              0.0288
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2255,
+              "row_b": 0.2165,
+              "row_diff": 0.0091,
+              "entity_a": 0.2233,
+              "entity_b": 0.2159
+            }
+          },
+          "over_forgetting": {
+            "diff": 0.0062,
+            "ci": [
+              -0.0047,
+              0.0197
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0181,
+              "row_b": 0.0099,
+              "row_diff": 0.0082,
+              "entity_a": 0.0174,
+              "entity_b": 0.0113
+            }
           },
           "retain_same": {
-            "diff": -0.1996,
+            "diff": -0.2068,
             "ci": [
-              -0.2416,
-              -0.1589
+              -0.255,
+              -0.163
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.3424,
+              "row_b": 0.5439,
+              "row_diff": -0.2016,
+              "entity_a": 0.3397,
+              "entity_b": 0.5465
+            }
           },
           "retain_other": {
-            "diff": -0.188,
+            "diff": -0.1991,
             "ci": [
-              -0.2648,
-              -0.1111
+              -0.275,
+              -0.1222
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.3333,
+              "row_b": 0.4944,
+              "row_diff": -0.1611,
+              "entity_a": 0.3489,
+              "entity_b": 0.548
+            }
           }
         },
         "vs_MG": {
-          "tga": {
-            "diff": -0.138,
+          "filr": {
+            "diff": 0.1637,
             "ci": [
-              -0.1872,
-              -0.0901
+              0.1203,
+              0.208
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.3119,
+              "row_b": 0.1407,
+              "row_diff": 0.1712,
+              "entity_a": 0.3212,
+              "entity_b": 0.1575
+            }
+          },
+          "tga": {
+            "diff": -0.142,
+            "ci": [
+              -0.1908,
+              -0.0947
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2897,
+              "row_b": 0.4395,
+              "row_diff": -0.1498,
+              "entity_a": 0.3047,
+              "entity_b": 0.4467
+            }
           },
           "wrong_branch": {
             "diff": -0.0106,
             "ci": [
               -0.0548,
-              0.0333
+              0.0339
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2255,
+              "row_b": 0.2379,
+              "row_diff": -0.0123,
+              "entity_a": 0.2233,
+              "entity_b": 0.2339
+            }
+          },
+          "over_forgetting": {
+            "diff": -0.0113,
+            "ci": [
+              -0.0242,
+              0.0011
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0181,
+              "row_b": 0.028,
+              "row_diff": -0.0099,
+              "entity_a": 0.0174,
+              "entity_b": 0.0287
+            }
           },
           "retain_same": {
-            "diff": -0.1831,
+            "diff": -0.1759,
             "ci": [
-              -0.2436,
-              -0.1279
+              -0.2383,
+              -0.1173
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.3424,
+              "row_b": 0.5129,
+              "row_diff": -0.1705,
+              "entity_a": 0.3397,
+              "entity_b": 0.5156
+            }
           },
           "retain_other": {
-            "diff": -0.0991,
+            "diff": -0.1019,
             "ci": [
-              -0.2074,
-              0.0148
+              -0.2111,
+              0.0149
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.3333,
+              "row_b": 0.5111,
+              "row_diff": -0.1778,
+              "entity_a": 0.3489,
+              "entity_b": 0.4507
+            }
           }
         },
         "vs_B0": {
-          "tga": {
-            "diff": 0.0796,
+          "filr": {
+            "diff": -0.1175,
             "ci": [
-              0.0527,
-              0.1079
+              -0.1528,
+              -0.0828
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.3119,
+              "row_b": 0.4469,
+              "row_diff": -0.135,
+              "entity_a": 0.3212,
+              "entity_b": 0.4388
+            }
+          },
+          "tga": {
+            "diff": 0.0806,
+            "ci": [
+              0.0537,
+              0.1083
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2897,
+              "row_b": 0.2107,
+              "row_diff": 0.079,
+              "entity_a": 0.3047,
+              "entity_b": 0.2241
+            }
           },
           "wrong_branch": {
-            "diff": 0.0085,
+            "diff": 0.0075,
             "ci": [
-              -0.0126,
-              0.0309
+              -0.0132,
+              0.0288
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2255,
+              "row_b": 0.2165,
+              "row_diff": 0.0091,
+              "entity_a": 0.2233,
+              "entity_b": 0.2159
+            }
+          },
+          "over_forgetting": {
+            "diff": 0.0062,
+            "ci": [
+              -0.0047,
+              0.0197
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0181,
+              "row_b": 0.0099,
+              "row_diff": 0.0082,
+              "entity_a": 0.0174,
+              "entity_b": 0.0113
+            }
           },
           "retain_same": {
-            "diff": -0.1996,
+            "diff": -0.2068,
             "ci": [
-              -0.2416,
-              -0.1589
+              -0.255,
+              -0.163
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.3424,
+              "row_b": 0.5439,
+              "row_diff": -0.2016,
+              "entity_a": 0.3397,
+              "entity_b": 0.5465
+            }
           },
           "retain_other": {
-            "diff": -0.188,
+            "diff": -0.1991,
             "ci": [
-              -0.2648,
-              -0.1111
+              -0.275,
+              -0.1222
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.3333,
+              "row_b": 0.4944,
+              "row_diff": -0.1611,
+              "entity_a": 0.3489,
+              "entity_b": 0.548
+            }
           }
         }
       },
       "B2R": {
         "vs_MF": {
+          "filr": {
+            "diff": -0.1391,
+            "ci": [
+              -0.1793,
+              -0.1005
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.3012,
+              "row_b": 0.4469,
+              "row_diff": -0.1457,
+              "entity_a": 0.2997,
+              "entity_b": 0.4388
+            }
+          },
           "tga": {
             "diff": 0.1076,
             "ci": [
-              0.0781,
-              0.1367
+              0.0792,
+              0.1364
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.3119,
+              "row_b": 0.2107,
+              "row_diff": 0.1012,
+              "entity_a": 0.3317,
+              "entity_b": 0.2241
+            }
           },
           "wrong_branch": {
-            "diff": -0.003,
+            "diff": -0.004,
             "ci": [
-              -0.0323,
-              0.0245
+              -0.0326,
+              0.0235
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2189,
+              "row_b": 0.2165,
+              "row_diff": 0.0025,
+              "entity_a": 0.2118,
+              "entity_b": 0.2159
+            }
+          },
+          "over_forgetting": {
+            "diff": 0.0101,
+            "ci": [
+              -0.0003,
+              0.0222
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0206,
+              "row_b": 0.0099,
+              "row_diff": 0.0107,
+              "entity_a": 0.0214,
+              "entity_b": 0.0113
+            }
           },
           "retain_same": {
             "diff": 0.0125,
@@ -2968,74 +3802,194 @@
               0.0455
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.5711,
+              "row_b": 0.5439,
+              "row_diff": 0.0271,
+              "entity_a": 0.559,
+              "entity_b": 0.5465
+            }
           },
           "retain_other": {
-            "diff": 0.0,
+            "diff": -0.0083,
             "ci": [
-              -0.0611,
-              0.0611
+              -0.075,
+              0.0556
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.5167,
+              "row_b": 0.4944,
+              "row_diff": 0.0222,
+              "entity_a": 0.5396,
+              "entity_b": 0.548
+            }
           }
         },
         "vs_MG": {
-          "tga": {
-            "diff": -0.11,
+          "filr": {
+            "diff": 0.1422,
             "ci": [
-              -0.1576,
-              -0.0606
+              0.0917,
+              0.1914
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.3012,
+              "row_b": 0.1407,
+              "row_diff": 0.1605,
+              "entity_a": 0.2997,
+              "entity_b": 0.1575
+            }
+          },
+          "tga": {
+            "diff": -0.115,
+            "ci": [
+              -0.1615,
+              -0.0652
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.3119,
+              "row_b": 0.4395,
+              "row_diff": -0.1276,
+              "entity_a": 0.3317,
+              "entity_b": 0.4467
+            }
           },
           "wrong_branch": {
             "diff": -0.0221,
             "ci": [
-              -0.0667,
-              0.0246
+              -0.0663,
+              0.0241
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2189,
+              "row_b": 0.2379,
+              "row_diff": -0.0189,
+              "entity_a": 0.2118,
+              "entity_b": 0.2339
+            }
+          },
+          "over_forgetting": {
+            "diff": -0.0073,
+            "ci": [
+              -0.0177,
+              0.0016
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0206,
+              "row_b": 0.028,
+              "row_diff": -0.0074,
+              "entity_a": 0.0214,
+              "entity_b": 0.0287
+            }
           },
           "retain_same": {
-            "diff": 0.0291,
+            "diff": 0.0434,
             "ci": [
-              -0.0273,
-              0.0803
+              -0.0095,
+              0.0935
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.5711,
+              "row_b": 0.5129,
+              "row_diff": 0.0581,
+              "entity_a": 0.559,
+              "entity_b": 0.5156
+            }
           },
           "retain_other": {
             "diff": 0.0889,
             "ci": [
-              -0.0167,
+              -0.0149,
               0.1982
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.5167,
+              "row_b": 0.5111,
+              "row_diff": 0.0056,
+              "entity_a": 0.5396,
+              "entity_b": 0.4507
+            }
           }
         },
         "vs_B0": {
+          "filr": {
+            "diff": -0.1391,
+            "ci": [
+              -0.1793,
+              -0.1005
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.3012,
+              "row_b": 0.4469,
+              "row_diff": -0.1457,
+              "entity_a": 0.2997,
+              "entity_b": 0.4388
+            }
+          },
           "tga": {
             "diff": 0.1076,
             "ci": [
-              0.0781,
-              0.1367
+              0.0792,
+              0.1364
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.3119,
+              "row_b": 0.2107,
+              "row_diff": 0.1012,
+              "entity_a": 0.3317,
+              "entity_b": 0.2241
+            }
           },
           "wrong_branch": {
-            "diff": -0.003,
+            "diff": -0.004,
             "ci": [
-              -0.0323,
-              0.0245
+              -0.0326,
+              0.0235
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2189,
+              "row_b": 0.2165,
+              "row_diff": 0.0025,
+              "entity_a": 0.2118,
+              "entity_b": 0.2159
+            }
+          },
+          "over_forgetting": {
+            "diff": 0.0101,
+            "ci": [
+              -0.0003,
+              0.0222
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0206,
+              "row_b": 0.0099,
+              "row_diff": 0.0107,
+              "entity_a": 0.0214,
+              "entity_b": 0.0113
+            }
           },
           "retain_same": {
             "diff": 0.0125,
@@ -3044,38 +3998,98 @@
               0.0455
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.5711,
+              "row_b": 0.5439,
+              "row_diff": 0.0271,
+              "entity_a": 0.559,
+              "entity_b": 0.5465
+            }
           },
           "retain_other": {
-            "diff": 0.0,
+            "diff": -0.0083,
             "ci": [
-              -0.0611,
-              0.0611
+              -0.075,
+              0.0556
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.5167,
+              "row_b": 0.4944,
+              "row_diff": 0.0222,
+              "entity_a": 0.5396,
+              "entity_b": 0.548
+            }
           }
         }
       },
       "B3": {
         "vs_MF": {
-          "tga": {
-            "diff": 0.2061,
+          "filr": {
+            "diff": -0.2442,
             "ci": [
-              0.1673,
-              0.246
+              -0.287,
+              -0.2028
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2091,
+              "row_b": 0.4469,
+              "row_diff": -0.2379,
+              "entity_a": 0.1946,
+              "entity_b": 0.4388
+            }
+          },
+          "tga": {
+            "diff": 0.1982,
+            "ci": [
+              0.162,
+              0.2352
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.3909,
+              "row_b": 0.2107,
+              "row_diff": 0.1802,
+              "entity_a": 0.4222,
+              "entity_b": 0.2241
+            }
           },
           "wrong_branch": {
-            "diff": 0.0043,
+            "diff": 0.0033,
             "ci": [
-              -0.0259,
-              0.0341
+              -0.0268,
+              0.0326
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2222,
+              "row_b": 0.2165,
+              "row_diff": 0.0058,
+              "entity_a": 0.2191,
+              "entity_b": 0.2159
+            }
+          },
+          "over_forgetting": {
+            "diff": 0.0199,
+            "ci": [
+              0.0091,
+              0.031
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0296,
+              "row_b": 0.0099,
+              "row_diff": 0.0198,
+              "entity_a": 0.0312,
+              "entity_b": 0.0113
+            }
           },
           "retain_same": {
             "diff": -0.0164,
@@ -3084,74 +4098,194 @@
               0.0282
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.5543,
+              "row_b": 0.5439,
+              "row_diff": 0.0103,
+              "entity_a": 0.5301,
+              "entity_b": 0.5465
+            }
           },
           "retain_other": {
-            "diff": 0.0185,
+            "diff": 0.0213,
             "ci": [
-              -0.0593,
-              0.1019
+              -0.0602,
+              0.1056
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.5111,
+              "row_b": 0.4944,
+              "row_diff": 0.0167,
+              "entity_a": 0.5693,
+              "entity_b": 0.548
+            }
           }
         },
         "vs_MG": {
-          "tga": {
-            "diff": -0.0115,
+          "filr": {
+            "diff": 0.0371,
             "ci": [
-              -0.0633,
-              0.0411
+              -0.018,
+              0.0952
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2091,
+              "row_b": 0.1407,
+              "row_diff": 0.0683,
+              "entity_a": 0.1946,
+              "entity_b": 0.1575
+            }
+          },
+          "tga": {
+            "diff": -0.0244,
+            "ci": [
+              -0.0752,
+              0.0263
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.3909,
+              "row_b": 0.4395,
+              "row_diff": -0.0486,
+              "entity_a": 0.4222,
+              "entity_b": 0.4467
+            }
           },
           "wrong_branch": {
             "diff": -0.0148,
             "ci": [
-              -0.0574,
-              0.0293
+              -0.0569,
+              0.0294
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2222,
+              "row_b": 0.2379,
+              "row_diff": -0.0156,
+              "entity_a": 0.2191,
+              "entity_b": 0.2339
+            }
+          },
+          "over_forgetting": {
+            "diff": 0.0024,
+            "ci": [
+              -0.0056,
+              0.0105
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0296,
+              "row_b": 0.028,
+              "row_diff": 0.0016,
+              "entity_a": 0.0312,
+              "entity_b": 0.0287
+            }
           },
           "retain_same": {
-            "diff": 0.0002,
+            "diff": 0.0145,
             "ci": [
-              -0.0702,
-              0.0588
+              -0.0505,
+              0.0711
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.5543,
+              "row_b": 0.5129,
+              "row_diff": 0.0413,
+              "entity_a": 0.5301,
+              "entity_b": 0.5156
+            }
           },
           "retain_other": {
-            "diff": 0.1074,
+            "diff": 0.1185,
             "ci": [
-              -0.0112,
-              0.2241
+              0.0018,
+              0.2297
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.5111,
+              "row_b": 0.5111,
+              "row_diff": 0.0,
+              "entity_a": 0.5693,
+              "entity_b": 0.4507
+            }
           }
         },
         "vs_B0": {
-          "tga": {
-            "diff": 0.2061,
+          "filr": {
+            "diff": -0.2442,
             "ci": [
-              0.1673,
-              0.246
+              -0.287,
+              -0.2028
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2091,
+              "row_b": 0.4469,
+              "row_diff": -0.2379,
+              "entity_a": 0.1946,
+              "entity_b": 0.4388
+            }
+          },
+          "tga": {
+            "diff": 0.1982,
+            "ci": [
+              0.162,
+              0.2352
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.3909,
+              "row_b": 0.2107,
+              "row_diff": 0.1802,
+              "entity_a": 0.4222,
+              "entity_b": 0.2241
+            }
           },
           "wrong_branch": {
-            "diff": 0.0043,
+            "diff": 0.0033,
             "ci": [
-              -0.0259,
-              0.0341
+              -0.0268,
+              0.0326
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2222,
+              "row_b": 0.2165,
+              "row_diff": 0.0058,
+              "entity_a": 0.2191,
+              "entity_b": 0.2159
+            }
+          },
+          "over_forgetting": {
+            "diff": 0.0199,
+            "ci": [
+              0.0091,
+              0.031
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0296,
+              "row_b": 0.0099,
+              "row_diff": 0.0198,
+              "entity_a": 0.0312,
+              "entity_b": 0.0113
+            }
           },
           "retain_same": {
             "diff": -0.0164,
@@ -3160,175 +4294,445 @@
               0.0282
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.5543,
+              "row_b": 0.5439,
+              "row_diff": 0.0103,
+              "entity_a": 0.5301,
+              "entity_b": 0.5465
+            }
           },
           "retain_other": {
-            "diff": 0.0185,
+            "diff": 0.0213,
             "ci": [
-              -0.0593,
-              0.1019
+              -0.0602,
+              0.1056
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.5111,
+              "row_b": 0.4944,
+              "row_diff": 0.0167,
+              "entity_a": 0.5693,
+              "entity_b": 0.548
+            }
           }
         }
       },
       "BASE": {
         "vs_MF": {
-          "tga": {
-            "diff": -0.1125,
+          "filr": {
+            "diff": -0.1327,
             "ci": [
-              -0.1499,
-              -0.0784
+              -0.2025,
+              -0.0635
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2617,
+              "row_b": 0.4469,
+              "row_diff": -0.1852,
+              "entity_a": 0.306,
+              "entity_b": 0.4388
+            }
+          },
+          "tga": {
+            "diff": -0.1106,
+            "ci": [
+              -0.1492,
+              -0.075
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.1119,
+              "row_b": 0.2107,
+              "row_diff": -0.0988,
+              "entity_a": 0.1135,
+              "entity_b": 0.2241
+            }
           },
           "wrong_branch": {
-            "diff": 0.0975,
+            "diff": 0.0935,
             "ci": [
-              0.0421,
-              0.1549
+              0.0383,
+              0.151
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.3267,
+              "row_b": 0.2165,
+              "row_diff": 0.1103,
+              "entity_a": 0.3094,
+              "entity_b": 0.2159
+            }
+          },
+          "over_forgetting": {
+            "diff": 0.0227,
+            "ci": [
+              0.0015,
+              0.0488
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0387,
+              "row_b": 0.0099,
+              "row_diff": 0.0288,
+              "entity_a": 0.034,
+              "entity_b": 0.0113
+            }
           },
           "retain_same": {
-            "diff": -0.4766,
+            "diff": -0.4837,
             "ci": [
-              -0.5383,
-              -0.4166
+              -0.5426,
+              -0.4251
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.0168,
+              "row_b": 0.5439,
+              "row_diff": -0.5271,
+              "entity_a": 0.0628,
+              "entity_b": 0.5465
+            }
           },
           "retain_other": {
-            "diff": -0.4407,
+            "diff": -0.4488,
             "ci": [
-              -0.5722,
-              -0.3037
+              -0.5741,
+              -0.3185
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.25,
+              "row_b": 0.4944,
+              "row_diff": -0.2444,
+              "entity_a": 0.0992,
+              "entity_b": 0.548
+            }
           }
         },
         "vs_MG": {
-          "tga": {
-            "diff": -0.3302,
+          "filr": {
+            "diff": 0.1485,
             "ci": [
-              -0.379,
-              -0.2828
+              0.0927,
+              0.2061
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2617,
+              "row_b": 0.1407,
+              "row_diff": 0.121,
+              "entity_a": 0.306,
+              "entity_b": 0.1575
+            }
+          },
+          "tga": {
+            "diff": -0.3332,
+            "ci": [
+              -0.3818,
+              -0.2868
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.1119,
+              "row_b": 0.4395,
+              "row_diff": -0.3276,
+              "entity_a": 0.1135,
+              "entity_b": 0.4467
+            }
           },
           "wrong_branch": {
-            "diff": 0.0784,
+            "diff": 0.0755,
             "ci": [
-              0.0362,
-              0.1181
+              0.0347,
+              0.1145
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.3267,
+              "row_b": 0.2379,
+              "row_diff": 0.0889,
+              "entity_a": 0.3094,
+              "entity_b": 0.2339
+            }
+          },
+          "over_forgetting": {
+            "diff": 0.0053,
+            "ci": [
+              -0.0125,
+              0.0257
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0387,
+              "row_b": 0.028,
+              "row_diff": 0.0107,
+              "entity_a": 0.034,
+              "entity_b": 0.0287
+            }
           },
           "retain_same": {
-            "diff": -0.46,
+            "diff": -0.4529,
             "ci": [
-              -0.5134,
-              -0.4005
+              -0.5089,
+              -0.3912
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.0168,
+              "row_b": 0.5129,
+              "row_diff": -0.4961,
+              "entity_a": 0.0628,
+              "entity_b": 0.5156
+            }
           },
           "retain_other": {
-            "diff": -0.3519,
+            "diff": -0.3515,
             "ci": [
-              -0.4537,
-              -0.25
+              -0.4562,
+              -0.2466
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.25,
+              "row_b": 0.5111,
+              "row_diff": -0.2611,
+              "entity_a": 0.0992,
+              "entity_b": 0.4507
+            }
           }
         },
         "vs_B0": {
-          "tga": {
-            "diff": -0.1125,
+          "filr": {
+            "diff": -0.1327,
             "ci": [
-              -0.1499,
-              -0.0784
+              -0.2025,
+              -0.0635
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2617,
+              "row_b": 0.4469,
+              "row_diff": -0.1852,
+              "entity_a": 0.306,
+              "entity_b": 0.4388
+            }
+          },
+          "tga": {
+            "diff": -0.1106,
+            "ci": [
+              -0.1492,
+              -0.075
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.1119,
+              "row_b": 0.2107,
+              "row_diff": -0.0988,
+              "entity_a": 0.1135,
+              "entity_b": 0.2241
+            }
           },
           "wrong_branch": {
-            "diff": 0.0975,
+            "diff": 0.0935,
             "ci": [
-              0.0421,
-              0.1549
+              0.0383,
+              0.151
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.3267,
+              "row_b": 0.2165,
+              "row_diff": 0.1103,
+              "entity_a": 0.3094,
+              "entity_b": 0.2159
+            }
+          },
+          "over_forgetting": {
+            "diff": 0.0227,
+            "ci": [
+              0.0015,
+              0.0488
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0387,
+              "row_b": 0.0099,
+              "row_diff": 0.0288,
+              "entity_a": 0.034,
+              "entity_b": 0.0113
+            }
           },
           "retain_same": {
-            "diff": -0.4766,
+            "diff": -0.4837,
             "ci": [
-              -0.5383,
-              -0.4166
+              -0.5426,
+              -0.4251
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.0168,
+              "row_b": 0.5439,
+              "row_diff": -0.5271,
+              "entity_a": 0.0628,
+              "entity_b": 0.5465
+            }
           },
           "retain_other": {
-            "diff": -0.4407,
+            "diff": -0.4488,
             "ci": [
-              -0.5722,
-              -0.3037
+              -0.5741,
+              -0.3185
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.25,
+              "row_b": 0.4944,
+              "row_diff": -0.2444,
+              "entity_a": 0.0992,
+              "entity_b": 0.548
+            }
           }
         }
       },
       "MF": {
         "vs_MG": {
-          "tga": {
-            "diff": -0.2177,
+          "filr": {
+            "diff": 0.2813,
             "ci": [
-              -0.2668,
-              -0.1654
+              0.2354,
+              0.3309
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.4469,
+              "row_b": 0.1407,
+              "row_diff": 0.3062,
+              "entity_a": 0.4388,
+              "entity_b": 0.1575
+            }
+          },
+          "tga": {
+            "diff": -0.2226,
+            "ci": [
+              -0.2714,
+              -0.1709
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2107,
+              "row_b": 0.4395,
+              "row_diff": -0.2288,
+              "entity_a": 0.2241,
+              "entity_b": 0.4467
+            }
           },
           "wrong_branch": {
-            "diff": -0.0191,
+            "diff": -0.0181,
             "ci": [
-              -0.0645,
-              0.0247
+              -0.0639,
+              0.0254
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2165,
+              "row_b": 0.2379,
+              "row_diff": -0.0214,
+              "entity_a": 0.2159,
+              "entity_b": 0.2339
+            }
+          },
+          "over_forgetting": {
+            "diff": -0.0175,
+            "ci": [
+              -0.0296,
+              -0.006
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0099,
+              "row_b": 0.028,
+              "row_diff": -0.0181,
+              "entity_a": 0.0113,
+              "entity_b": 0.0287
+            }
           },
           "retain_same": {
-            "diff": 0.0166,
+            "diff": 0.0309,
             "ci": [
-              -0.0292,
-              0.0647
+              -0.0152,
+              0.0773
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.5439,
+              "row_b": 0.5129,
+              "row_diff": 0.031,
+              "entity_a": 0.5465,
+              "entity_b": 0.5156
+            }
           },
           "retain_other": {
-            "diff": 0.0889,
+            "diff": 0.0972,
             "ci": [
-              -0.0278,
-              0.2111
+              -0.0102,
+              0.2157
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.4944,
+              "row_b": 0.5111,
+              "row_diff": -0.0167,
+              "entity_a": 0.548,
+              "entity_b": 0.4507
+            }
           }
         },
         "vs_B0": {
+          "filr": {
+            "diff": 0.0,
+            "ci": [
+              0.0,
+              0.0
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.4469,
+              "row_b": 0.4469,
+              "row_diff": 0.0,
+              "entity_a": 0.4388,
+              "entity_b": 0.4388
+            }
+          },
           "tga": {
             "diff": 0.0,
             "ci": [
@@ -3336,7 +4740,14 @@
               0.0
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2107,
+              "row_b": 0.2107,
+              "row_diff": 0.0,
+              "entity_a": 0.2241,
+              "entity_b": 0.2241
+            }
           },
           "wrong_branch": {
             "diff": 0.0,
@@ -3345,7 +4756,30 @@
               0.0
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2165,
+              "row_b": 0.2165,
+              "row_diff": 0.0,
+              "entity_a": 0.2159,
+              "entity_b": 0.2159
+            }
+          },
+          "over_forgetting": {
+            "diff": 0.0,
+            "ci": [
+              0.0,
+              0.0
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0099,
+              "row_b": 0.0099,
+              "row_diff": 0.0,
+              "entity_a": 0.0113,
+              "entity_b": 0.0113
+            }
           },
           "retain_same": {
             "diff": 0.0,
@@ -3354,7 +4788,14 @@
               0.0
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.5439,
+              "row_b": 0.5439,
+              "row_diff": 0.0,
+              "entity_a": 0.5465,
+              "entity_b": 0.5465
+            }
           },
           "retain_other": {
             "diff": 0.0,
@@ -3363,203 +4804,712 @@
               0.0
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.4944,
+              "row_b": 0.4944,
+              "row_diff": 0.0,
+              "entity_a": 0.548,
+              "entity_b": 0.548
+            }
           }
         }
       },
       "MG": {
         "vs_MF": {
-          "tga": {
-            "diff": 0.2177,
+          "filr": {
+            "diff": -0.2813,
             "ci": [
-              0.1654,
-              0.2668
+              -0.3309,
+              -0.2354
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.1407,
+              "row_b": 0.4469,
+              "row_diff": -0.3062,
+              "entity_a": 0.1575,
+              "entity_b": 0.4388
+            }
+          },
+          "tga": {
+            "diff": 0.2226,
+            "ci": [
+              0.1709,
+              0.2714
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.4395,
+              "row_b": 0.2107,
+              "row_diff": 0.2288,
+              "entity_a": 0.4467,
+              "entity_b": 0.2241
+            }
           },
           "wrong_branch": {
-            "diff": 0.0191,
+            "diff": 0.0181,
             "ci": [
-              -0.0247,
-              0.0645
+              -0.0254,
+              0.0639
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2379,
+              "row_b": 0.2165,
+              "row_diff": 0.0214,
+              "entity_a": 0.2339,
+              "entity_b": 0.2159
+            }
+          },
+          "over_forgetting": {
+            "diff": 0.0175,
+            "ci": [
+              0.006,
+              0.0296
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.028,
+              "row_b": 0.0099,
+              "row_diff": 0.0181,
+              "entity_a": 0.0287,
+              "entity_b": 0.0113
+            }
           },
           "retain_same": {
-            "diff": -0.0166,
+            "diff": -0.0309,
             "ci": [
-              -0.0647,
-              0.0292
+              -0.0773,
+              0.0152
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.5129,
+              "row_b": 0.5439,
+              "row_diff": -0.031,
+              "entity_a": 0.5156,
+              "entity_b": 0.5465
+            }
           },
           "retain_other": {
-            "diff": -0.0889,
+            "diff": -0.0972,
             "ci": [
-              -0.2111,
-              0.0278
+              -0.2157,
+              0.0102
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.5111,
+              "row_b": 0.4944,
+              "row_diff": 0.0167,
+              "entity_a": 0.4507,
+              "entity_b": 0.548
+            }
           }
         },
         "vs_B0": {
-          "tga": {
-            "diff": 0.2177,
+          "filr": {
+            "diff": -0.2813,
             "ci": [
-              0.1654,
-              0.2668
+              -0.3309,
+              -0.2354
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.1407,
+              "row_b": 0.4469,
+              "row_diff": -0.3062,
+              "entity_a": 0.1575,
+              "entity_b": 0.4388
+            }
+          },
+          "tga": {
+            "diff": 0.2226,
+            "ci": [
+              0.1709,
+              0.2714
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.4395,
+              "row_b": 0.2107,
+              "row_diff": 0.2288,
+              "entity_a": 0.4467,
+              "entity_b": 0.2241
+            }
           },
           "wrong_branch": {
-            "diff": 0.0191,
+            "diff": 0.0181,
             "ci": [
-              -0.0247,
-              0.0645
+              -0.0254,
+              0.0639
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2379,
+              "row_b": 0.2165,
+              "row_diff": 0.0214,
+              "entity_a": 0.2339,
+              "entity_b": 0.2159
+            }
+          },
+          "over_forgetting": {
+            "diff": 0.0175,
+            "ci": [
+              0.006,
+              0.0296
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.028,
+              "row_b": 0.0099,
+              "row_diff": 0.0181,
+              "entity_a": 0.0287,
+              "entity_b": 0.0113
+            }
           },
           "retain_same": {
-            "diff": -0.0166,
+            "diff": -0.0309,
             "ci": [
-              -0.0647,
-              0.0292
+              -0.0773,
+              0.0152
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.5129,
+              "row_b": 0.5439,
+              "row_diff": -0.031,
+              "entity_a": 0.5156,
+              "entity_b": 0.5465
+            }
           },
           "retain_other": {
-            "diff": -0.0889,
+            "diff": -0.0972,
             "ci": [
-              -0.2111,
-              0.0278
+              -0.2157,
+              0.0102
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.5111,
+              "row_b": 0.4944,
+              "row_diff": 0.0167,
+              "entity_a": 0.4507,
+              "entity_b": 0.548
+            }
           }
         }
       },
       "MN": {
         "vs_MF": {
-          "tga": {
-            "diff": -0.0414,
+          "filr": {
+            "diff": -0.1631,
             "ci": [
-              -0.0756,
-              -0.0136
+              -0.2088,
+              -0.1166
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2642,
+              "row_b": 0.4469,
+              "row_diff": -0.1827,
+              "entity_a": 0.2757,
+              "entity_b": 0.4388
+            }
+          },
+          "tga": {
+            "diff": -0.0384,
+            "ci": [
+              -0.0709,
+              -0.0119
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.1778,
+              "row_b": 0.2107,
+              "row_diff": -0.0329,
+              "entity_a": 0.1856,
+              "entity_b": 0.2241
+            }
           },
           "wrong_branch": {
             "diff": 0.1695,
             "ci": [
-              0.1217,
-              0.2202
+              0.1226,
+              0.2188
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.386,
+              "row_b": 0.2165,
+              "row_diff": 0.1695,
+              "entity_a": 0.3854,
+              "entity_b": 0.2159
+            }
+          },
+          "over_forgetting": {
+            "diff": 0.0098,
+            "ci": [
+              -0.0015,
+              0.0222
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0189,
+              "row_b": 0.0099,
+              "row_diff": 0.0091,
+              "entity_a": 0.021,
+              "entity_b": 0.0113
+            }
           },
           "retain_same": {
-            "diff": 0.0185,
+            "diff": -0.0029,
             "ci": [
-              -0.0216,
-              0.0638
+              -0.0467,
+              0.0395
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.5646,
+              "row_b": 0.5439,
+              "row_diff": 0.0207,
+              "entity_a": 0.5436,
+              "entity_b": 0.5465
+            }
           },
           "retain_other": {
-            "diff": -0.0157,
+            "diff": -0.018,
             "ci": [
-              -0.1259,
-              0.0926
+              -0.1285,
+              0.0904
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.55,
+              "row_b": 0.4944,
+              "row_diff": 0.0556,
+              "entity_a": 0.53,
+              "entity_b": 0.548
+            }
           }
         },
         "vs_MG": {
-          "tga": {
-            "diff": -0.259,
+          "filr": {
+            "diff": 0.1181,
             "ci": [
-              -0.307,
-              -0.2118
+              0.0706,
+              0.1707
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2642,
+              "row_b": 0.1407,
+              "row_diff": 0.1235,
+              "entity_a": 0.2757,
+              "entity_b": 0.1575
+            }
+          },
+          "tga": {
+            "diff": -0.261,
+            "ci": [
+              -0.3071,
+              -0.2137
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.1778,
+              "row_b": 0.4395,
+              "row_diff": -0.2617,
+              "entity_a": 0.1856,
+              "entity_b": 0.4467
+            }
           },
           "wrong_branch": {
-            "diff": 0.1505,
+            "diff": 0.1515,
             "ci": [
-              0.1072,
-              0.1991
+              0.108,
+              0.1994
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.386,
+              "row_b": 0.2379,
+              "row_diff": 0.1481,
+              "entity_a": 0.3854,
+              "entity_b": 0.2339
+            }
+          },
+          "over_forgetting": {
+            "diff": -0.0077,
+            "ci": [
+              -0.0206,
+              0.0046
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0189,
+              "row_b": 0.028,
+              "row_diff": -0.0091,
+              "entity_a": 0.021,
+              "entity_b": 0.0287
+            }
           },
           "retain_same": {
-            "diff": 0.0351,
+            "diff": 0.0279,
             "ci": [
-              -0.0107,
-              0.0819
+              -0.0279,
+              0.0794
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.5646,
+              "row_b": 0.5129,
+              "row_diff": 0.0517,
+              "entity_a": 0.5436,
+              "entity_b": 0.5156
+            }
           },
           "retain_other": {
-            "diff": 0.0731,
+            "diff": 0.0793,
             "ci": [
-              -0.0315,
-              0.1824
+              -0.0261,
+              0.1839
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.55,
+              "row_b": 0.5111,
+              "row_diff": 0.0389,
+              "entity_a": 0.53,
+              "entity_b": 0.4507
+            }
           }
         },
         "vs_B0": {
-          "tga": {
-            "diff": -0.0414,
+          "filr": {
+            "diff": -0.1631,
             "ci": [
-              -0.0756,
-              -0.0136
+              -0.2088,
+              -0.1166
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.2642,
+              "row_b": 0.4469,
+              "row_diff": -0.1827,
+              "entity_a": 0.2757,
+              "entity_b": 0.4388
+            }
+          },
+          "tga": {
+            "diff": -0.0384,
+            "ci": [
+              -0.0709,
+              -0.0119
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.1778,
+              "row_b": 0.2107,
+              "row_diff": -0.0329,
+              "entity_a": 0.1856,
+              "entity_b": 0.2241
+            }
           },
           "wrong_branch": {
             "diff": 0.1695,
             "ci": [
-              0.1217,
-              0.2202
+              0.1226,
+              0.2188
             ],
             "num_units": 72,
-            "num_rows": 1215
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.386,
+              "row_b": 0.2165,
+              "row_diff": 0.1695,
+              "entity_a": 0.3854,
+              "entity_b": 0.2159
+            }
+          },
+          "over_forgetting": {
+            "diff": 0.0098,
+            "ci": [
+              -0.0015,
+              0.0222
+            ],
+            "num_units": 72,
+            "num_rows": 1215,
+            "point_estimates": {
+              "row_a": 0.0189,
+              "row_b": 0.0099,
+              "row_diff": 0.0091,
+              "entity_a": 0.021,
+              "entity_b": 0.0113
+            }
           },
           "retain_same": {
-            "diff": 0.0185,
+            "diff": -0.0029,
             "ci": [
-              -0.0216,
-              0.0638
+              -0.0467,
+              0.0395
             ],
             "num_units": 70,
-            "num_rows": 774
+            "num_rows": 774,
+            "point_estimates": {
+              "row_a": 0.5646,
+              "row_b": 0.5439,
+              "row_diff": 0.0207,
+              "entity_a": 0.5436,
+              "entity_b": 0.5465
+            }
           },
           "retain_other": {
-            "diff": -0.0157,
+            "diff": -0.018,
             "ci": [
-              -0.1259,
-              0.0926
+              -0.1285,
+              0.0904
             ],
             "num_units": 45,
-            "num_rows": 180
+            "num_rows": 180,
+            "point_estimates": {
+              "row_a": 0.55,
+              "row_b": 0.4944,
+              "row_diff": 0.0556,
+              "entity_a": 0.53,
+              "entity_b": 0.548
+            }
           }
         }
+      }
+    }
+  },
+  "equivalence_vs_MG": {
+    "metric": "tga",
+    "reference": "MG",
+    "margin": 0.05,
+    "margin_rationale": "prespecified: one third of the 0.15 separation the reference-state gate requires between MF/MG/MN",
+    "test": "TOST-style on the entity-clustered paired 95% CI: equivalence is concluded only if ci_low > -margin AND ci_high < +margin",
+    "ci_unit": "the CI covers the ENTITY-MACRO paired difference, which is what the bootstrap resamples; point_estimates.row_* is the row-micro rate published in hierarchy_metrics_test",
+    "states": {
+      "B0": {
+        "diff": -0.2226,
+        "ci": [
+          -0.2714,
+          -0.1709
+        ],
+        "ci_half_width": 0.0502,
+        "num_entity_clusters": 72,
+        "num_rows": 1215,
+        "row_point_estimates": {
+          "row_a": 0.2107,
+          "row_b": 0.4395,
+          "row_diff": -0.2288,
+          "entity_a": 0.2241,
+          "entity_b": 0.4467
+        },
+        "hierarchy_metrics_rates": {
+          "B0": 0.2107,
+          "MG": 0.4395
+        },
+        "significant_difference": true,
+        "equivalence_concluded": false,
+        "power_note": "INDETERMINATE, not equivalent: the achieved CI half-width 0.0502 over 72 entity clusters is >= the 0.05 margin, so this design could not conclude equivalence even if the true difference were exactly 0. 'No significant difference detected' is the most this interval supports."
+      },
+      "B1": {
+        "diff": -0.2162,
+        "ci": [
+          -0.2648,
+          -0.1668
+        ],
+        "ci_half_width": 0.049,
+        "num_entity_clusters": 72,
+        "num_rows": 1215,
+        "row_point_estimates": {
+          "row_a": 0.2148,
+          "row_b": 0.4395,
+          "row_diff": -0.2247,
+          "entity_a": 0.2305,
+          "entity_b": 0.4467
+        },
+        "hierarchy_metrics_rates": {
+          "B1": 0.2148,
+          "MG": 0.4395
+        },
+        "significant_difference": true,
+        "equivalence_concluded": false,
+        "power_note": "not concluded: the CI reaches beyond +/-0.05 (half-width 0.049), so a difference of that size is not excluded"
+      },
+      "B2": {
+        "diff": -0.142,
+        "ci": [
+          -0.1908,
+          -0.0947
+        ],
+        "ci_half_width": 0.048,
+        "num_entity_clusters": 72,
+        "num_rows": 1215,
+        "row_point_estimates": {
+          "row_a": 0.2897,
+          "row_b": 0.4395,
+          "row_diff": -0.1498,
+          "entity_a": 0.3047,
+          "entity_b": 0.4467
+        },
+        "hierarchy_metrics_rates": {
+          "B2": 0.2897,
+          "MG": 0.4395
+        },
+        "significant_difference": true,
+        "equivalence_concluded": false,
+        "power_note": "not concluded: the CI reaches beyond +/-0.05 (half-width 0.048), so a difference of that size is not excluded"
+      },
+      "B2R": {
+        "diff": -0.115,
+        "ci": [
+          -0.1615,
+          -0.0652
+        ],
+        "ci_half_width": 0.0482,
+        "num_entity_clusters": 72,
+        "num_rows": 1215,
+        "row_point_estimates": {
+          "row_a": 0.3119,
+          "row_b": 0.4395,
+          "row_diff": -0.1276,
+          "entity_a": 0.3317,
+          "entity_b": 0.4467
+        },
+        "hierarchy_metrics_rates": {
+          "B2R": 0.3119,
+          "MG": 0.4395
+        },
+        "significant_difference": true,
+        "equivalence_concluded": false,
+        "power_note": "not concluded: the CI reaches beyond +/-0.05 (half-width 0.0482), so a difference of that size is not excluded"
+      },
+      "B3": {
+        "diff": -0.0244,
+        "ci": [
+          -0.0752,
+          0.0263
+        ],
+        "ci_half_width": 0.0508,
+        "num_entity_clusters": 72,
+        "num_rows": 1215,
+        "row_point_estimates": {
+          "row_a": 0.3909,
+          "row_b": 0.4395,
+          "row_diff": -0.0486,
+          "entity_a": 0.4222,
+          "entity_b": 0.4467
+        },
+        "hierarchy_metrics_rates": {
+          "B3": 0.3909,
+          "MG": 0.4395
+        },
+        "significant_difference": false,
+        "equivalence_concluded": false,
+        "power_note": "INDETERMINATE, not equivalent: the achieved CI half-width 0.0508 over 72 entity clusters is >= the 0.05 margin, so this design could not conclude equivalence even if the true difference were exactly 0. 'No significant difference detected' is the most this interval supports."
+      },
+      "BASE": {
+        "diff": -0.3332,
+        "ci": [
+          -0.3818,
+          -0.2868
+        ],
+        "ci_half_width": 0.0475,
+        "num_entity_clusters": 72,
+        "num_rows": 1215,
+        "row_point_estimates": {
+          "row_a": 0.1119,
+          "row_b": 0.4395,
+          "row_diff": -0.3276,
+          "entity_a": 0.1135,
+          "entity_b": 0.4467
+        },
+        "hierarchy_metrics_rates": {
+          "BASE": 0.1119,
+          "MG": 0.4395
+        },
+        "significant_difference": true,
+        "equivalence_concluded": false,
+        "power_note": "not concluded: the CI reaches beyond +/-0.05 (half-width 0.0475), so a difference of that size is not excluded"
+      },
+      "MF": {
+        "diff": -0.2226,
+        "ci": [
+          -0.2714,
+          -0.1709
+        ],
+        "ci_half_width": 0.0502,
+        "num_entity_clusters": 72,
+        "num_rows": 1215,
+        "row_point_estimates": {
+          "row_a": 0.2107,
+          "row_b": 0.4395,
+          "row_diff": -0.2288,
+          "entity_a": 0.2241,
+          "entity_b": 0.4467
+        },
+        "hierarchy_metrics_rates": {
+          "MF": 0.2107,
+          "MG": 0.4395
+        },
+        "significant_difference": true,
+        "equivalence_concluded": false,
+        "power_note": "INDETERMINATE, not equivalent: the achieved CI half-width 0.0502 over 72 entity clusters is >= the 0.05 margin, so this design could not conclude equivalence even if the true difference were exactly 0. 'No significant difference detected' is the most this interval supports."
+      },
+      "MN": {
+        "diff": -0.261,
+        "ci": [
+          -0.3071,
+          -0.2137
+        ],
+        "ci_half_width": 0.0467,
+        "num_entity_clusters": 72,
+        "num_rows": 1215,
+        "row_point_estimates": {
+          "row_a": 0.1778,
+          "row_b": 0.4395,
+          "row_diff": -0.2617,
+          "entity_a": 0.1856,
+          "entity_b": 0.4467
+        },
+        "hierarchy_metrics_rates": {
+          "MN": 0.1778,
+          "MG": 0.4395
+        },
+        "significant_difference": true,
+        "equivalence_concluded": false,
+        "power_note": "not concluded: the CI reaches beyond +/-0.05 (half-width 0.0467), so a difference of that size is not excluded"
       }
     }
   },
@@ -3569,17 +5519,27 @@
     "num_raw_output_mismatches": 0,
     "mismatched_query_ids": [],
     "paired_diffs_vs_MF": {
+      "filr": 0.0,
       "tga": 0.0,
       "wrong_branch": 0.0,
+      "over_forgetting": 0.0,
       "retain_same": 0.0,
       "retain_other": 0.0
     },
     "paired_cis_vs_MF": {
+      "filr": [
+        0.0,
+        0.0
+      ],
       "tga": [
         0.0,
         0.0
       ],
       "wrong_branch": [
+        0.0,
+        0.0
+      ],
+      "over_forgetting": [
         0.0,
         0.0
       ],
@@ -3599,9 +5559,9 @@
       "kind": "reference_state",
       "test_predictions_file": "predictions_test_BASE.parquet",
       "test_predictions_fingerprint": {
-        "sha256": "4dc28504a2397a4027482ae9730a2c6faa812280cdd221d60dd8988c07f05485",
-        "bytes": 361973,
-        "written_utc": "2026-09-03T16:02:01+00:00"
+        "sha256": "0ca21c21741ae3f762d20d5c4d54c364cb4e2590c7de9fa340757582a1512c65",
+        "bytes": 366970,
+        "written_utc": "2026-09-06T06:36:18+00:00"
       },
       "generated_under_uniform_batch_layout": true,
       "reused_existing_predictions": true,
@@ -3613,9 +5573,9 @@
       "kind": "reference_state",
       "test_predictions_file": "predictions_test_MF.parquet",
       "test_predictions_fingerprint": {
-        "sha256": "1708946f2c6ad9343301de263aef56c6628658ca68d7dfad303c99e6c0819685",
-        "bytes": 78502,
-        "written_utc": "2026-09-03T16:23:16+00:00"
+        "sha256": "ebc0a46e8151fcb49552b4b636c1e938a49d78927b8cc6071f55f7ed0d2053fe",
+        "bytes": 78553,
+        "written_utc": "2026-09-06T06:47:54+00:00"
       },
       "generated_under_uniform_batch_layout": true,
       "reused_existing_predictions": true,
@@ -3627,9 +5587,9 @@
       "kind": "reference_state",
       "test_predictions_file": "predictions_test_MG.parquet",
       "test_predictions_fingerprint": {
-        "sha256": "792efdadf81909b2fb8b728b8d322db87b74ccfb205fd05ba45b189c68a1f64c",
-        "bytes": 83283,
-        "written_utc": "2026-09-03T16:45:29+00:00"
+        "sha256": "35bd3b90c4023063e5d1534522e0f3e7c961e94ae686860d8c53db72f55626a3",
+        "bytes": 83297,
+        "written_utc": "2026-09-06T05:35:31+00:00"
       },
       "generated_under_uniform_batch_layout": true,
       "reused_existing_predictions": true,
@@ -3641,9 +5601,9 @@
       "kind": "reference_state",
       "test_predictions_file": "predictions_test_MN.parquet",
       "test_predictions_fingerprint": {
-        "sha256": "d758014e015935d150e66b0e93fc51ef727c0256c752a5c33994fd3b4122b8fc",
-        "bytes": 88905,
-        "written_utc": "2026-09-03T17:08:28+00:00"
+        "sha256": "935bbab0629505db125577251cf9d016c9cd8be82a10c8bc2dcee0170943e551",
+        "bytes": 89213,
+        "written_utc": "2026-09-06T06:30:05+00:00"
       },
       "generated_under_uniform_batch_layout": true,
       "reused_existing_predictions": true,
@@ -3657,13 +5617,13 @@
       "adapter_dir": "data/checkpoints/mllmu_pilot100_unlearn/B0/adapters",
       "test_predictions_file": "predictions_test_B0.parquet",
       "test_predictions_fingerprint": {
-        "sha256": "a110095617783fe159442cc0d50ee07c0d39c020777fcf6828cbe743869b8e18",
-        "bytes": 78502,
-        "written_utc": "2026-09-03T12:50:05+00:00"
+        "sha256": "1142158eaa11f14391d92c7f82f51712e81270416a1d2a78361f03706d62ae3e",
+        "bytes": 78553,
+        "written_utc": "2026-09-06T06:10:30+00:00"
       },
       "reused_existing_predictions": true,
       "num_test_predictions": 2259,
-      "distance_to_mg_trainval": 0.100014
+      "distance_to_mg_trainval": 0.1021
     },
     "B1": {
       "kind": "selected_candidate",
@@ -3671,13 +5631,13 @@
       "adapter_dir": "data/checkpoints/mllmu_pilot100_unlearn/B1_lr1e-05_ep10/adapters",
       "test_predictions_file": "predictions_test_B1_lr1e-05_ep10.parquet",
       "test_predictions_fingerprint": {
-        "sha256": "b5bdcdc7c64189bac6c2450eac94dc6c5ae12ccfd096f14d1dc1be08d353ee32",
-        "bytes": 65977,
-        "written_utc": "2026-09-03T13:12:28+00:00"
+        "sha256": "709d51773a7235328330bc16da9127d54a8e2fd031d28d645046da503eff5844",
+        "bytes": 66147,
+        "written_utc": "2026-09-06T06:11:15+00:00"
       },
       "reused_existing_predictions": true,
       "num_test_predictions": 2259,
-      "distance_to_mg_trainval": 0.0792
+      "distance_to_mg_trainval": 0.082686
     },
     "B2": {
       "kind": "selected_candidate",
@@ -3685,13 +5645,13 @@
       "adapter_dir": "data/checkpoints/mllmu_pilot100_unlearn/B2_lr2e-05_ep5/adapters",
       "test_predictions_file": "predictions_test_B2_lr2e-05_ep5.parquet",
       "test_predictions_fingerprint": {
-        "sha256": "be053ac02b615babc9e36ddd7a903f92cd18057834fa65f9c6af9be4085bef36",
-        "bytes": 76326,
-        "written_utc": "2026-09-03T13:37:40+00:00"
+        "sha256": "9803bb5f858ab3c2ae1e1f2b527f88b351b990d64695c09bd8986467ca09c3e0",
+        "bytes": 76443,
+        "written_utc": "2026-09-06T05:52:51+00:00"
       },
       "reused_existing_predictions": true,
       "num_test_predictions": 2259,
-      "distance_to_mg_trainval": 0.078371
+      "distance_to_mg_trainval": 0.076914
     },
     "B2R": {
       "kind": "selected_candidate",
@@ -3699,13 +5659,13 @@
       "adapter_dir": "data/checkpoints/mllmu_pilot100_unlearn/B2R_lr2e-05_ep5/adapters",
       "test_predictions_file": "predictions_test_B2R_lr2e-05_ep5.parquet",
       "test_predictions_fingerprint": {
-        "sha256": "9b22da896d2f0038cc26626432af96b199e45202c38f8936be04dd54c0050ff9",
-        "bytes": 68085,
-        "written_utc": "2026-09-03T13:58:31+00:00"
+        "sha256": "7495124ca5a961efab723186f93af634053e89e5481903c6f8b2ba6f26849973",
+        "bytes": 68241,
+        "written_utc": "2026-09-06T07:04:42+00:00"
       },
       "reused_existing_predictions": true,
       "num_test_predictions": 2259,
-      "distance_to_mg_trainval": 0.074957
+      "distance_to_mg_trainval": 0.078214
     },
     "B3": {
       "kind": "selected_candidate",
@@ -3713,20 +5673,24 @@
       "adapter_dir": "data/checkpoints/mllmu_pilot100_unlearn/B3_lam0.5_lr2e-05_ep5/adapters",
       "test_predictions_file": "predictions_test_B3_lam0.5_lr2e-05_ep5.parquet",
       "test_predictions_fingerprint": {
-        "sha256": "281b789687d8765808b3a1d2cba9b4923ca2031f0e564645bb7f1f078c81ef05",
-        "bytes": 75139,
-        "written_utc": "2026-09-03T14:21:25+00:00"
+        "sha256": "eb50f32a6549bb12b77ba4e430b2fcc7c13177a75c058375c446621865ac5101",
+        "bytes": 75319,
+        "written_utc": "2026-09-06T05:55:20+00:00"
       },
       "reused_existing_predictions": true,
       "num_test_predictions": 2259,
-      "distance_to_mg_trainval": 0.042686
+      "distance_to_mg_trainval": 0.041043
     }
   },
   "notes": [
     "All numbers are the frozen TEST paraphrase split: identical target associations, unseen wording (template assignment is deterministic per (association, family, split)).",
+    "Image queries are additionally split by PHOTOGRAPH provenance (see image_provenance_strata and hierarchy_metrics_test[*].by_image_provenance). Only the held_out_photo stratum is a genuinely unseen photograph; pooling the two would let a trained-on portrait carry the held-out claim.",
     "Every state — reference states included — was generated over the same test-query list with the same batch sizes, so no comparison here contains a batch-layout artifact; see batch_composition_sensitivity for the measured floor.",
     "Target slices use the POST-unlearning view and exclude adversarial probes; retain slices use the BASELINE view (retained facts must stay answerable) across BOTH routes.",
     "Paired CIs are entity-clustered percentile bootstraps over per-entity paired rate differences on the intersection of query ids, so every comparison is over identical probes.",
+    "FILR — not wrong-branch stability — is the measure of fine leakage. A state whose wrong-branch rate matches the target M_G has not thereby shown that 'nothing leaks a finer branch': leaking a finer level is exactly the under_forgetting category that FILR counts, and it is reported with its own paired CI here.",
+    "A paired CI that straddles zero means 'no significant difference detected'. It does NOT mean equivalence to M_G; that claim requires the prespecified margin tested in equivalence_vs_MG, which also states the achieved CI half-width so limited power is visible.",
+    "'diff'/'ci' in paired_cis_test are ENTITY-MACRO (the unit the bootstrap resamples); 'point_estimates.row_*' are ROW-MICRO and equal the rates in hierarchy_metrics_test. The two differ because entities contribute unequal numbers of probes, so subtracting two published rates gives row_diff, not diff.",
     "Individual metrics remain the primary scientific results; D_G was a model-selection criterion only."
   ]
 }

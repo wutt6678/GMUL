@@ -763,8 +763,9 @@ def main() -> None:
                 "the served photograph was NEVER in training (taxonomic "
                 "iNaturalist associations, whose val/test queries draw "
                 "from pools disjoint from the reserved training "
-                "photograph) — this is the stratum that can support a "
-                "held-out-photograph claim"),
+                "photograph) — the only stratum whose photograph is "
+                "genuinely unseen, so the only one that can carry a "
+                "held-out-photograph claim at all"),
             "seen_photo_unseen_wording": (
                 "the served photograph IS the training photograph and only "
                 "the wording is new (every MLLMU person has exactly one "
@@ -776,6 +777,31 @@ def main() -> None:
                             "source dataset name",
             "reported_in": "hierarchy_metrics_test[state]"
                            ".by_image_provenance",
+            "not_the_route_split": (
+                "These strata are NOT the input-route split relabelled. On "
+                "the test split both routes contain both strata — of the 90 "
+                "image_text_to_text target probes 30 are held_out_photo and "
+                "60 are seen_photo_unseen_wording, and of the 180 "
+                "image_to_text probes 60 are held_out and 120 are seen — so "
+                "the two partitions cross."),
+            "confound": (
+                "MEASURED, and it limits what a stratum CONTRAST can show: "
+                "on the frozen test split the flag corresponds 1:1 with the "
+                "source dataset. All 90 held_out_photo image target probes "
+                "are iNaturalist species and all 180 "
+                "seen_photo_unseen_wording probes are MLLMU persons, "
+                "because a person has one portrait while a species has "
+                "twelve photographs. A difference between the two strata is "
+                "therefore also a difference between species and persons "
+                "and between the taxonomic and semantic hierarchy types "
+                "(compare by_hierarchy_type), and cannot be attributed to "
+                "photograph novelty alone. What the split DOES licence is "
+                "the per-stratum statement itself: within held_out_photo "
+                "the photograph was never trained on, which Iteration 11 "
+                "could not say of any image query. Breaking the confound "
+                "would need multi-photograph entities whose wording and "
+                "hierarchy type are held fixed, which this dataset does not "
+                "contain."),
         },
         "metrics_by_state_test": metrics_test,
         "hierarchy_metrics_test": hierarchy_test,

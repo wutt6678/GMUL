@@ -2,13 +2,13 @@
   "reference": {
     "state": "MG",
     "vector": {
-      "filr": 0.1444,
-      "tga": 0.4321,
-      "ancestor": 0.2556,
+      "filr": 0.1416,
+      "tga": 0.4284,
+      "ancestor": 0.2519,
       "retain_same": 0.531,
-      "retain_other": 0.5611,
-      "over": 0.0325,
-      "wrong": 0.2436
+      "retain_other": 0.5444,
+      "over": 0.0321,
+      "wrong": 0.244
     }
   },
   "basis": "train+val probes only (test split held out)",
@@ -25,15 +25,15 @@
     "B0": {
       "method": "B0",
       "vector": {
-        "filr": 0.4477,
-        "tga": 0.2,
+        "filr": 0.4469,
+        "tga": 0.1971,
         "ancestor": 0.2074,
         "retain_same": 0.5594,
         "retain_other": 0.6056,
         "over": 0.0123,
-        "wrong": 0.2202
+        "wrong": 0.2198
       },
-      "distance_to_mg": 0.100014,
+      "distance_to_mg": 0.1021,
       "used_components": [
         "filr",
         "tga",
@@ -78,15 +78,15 @@
     "B1_lr1e-05_ep10": {
       "method": "B1",
       "vector": {
-        "filr": 0.3473,
-        "tga": 0.2247,
+        "filr": 0.3477,
+        "tga": 0.2222,
         "ancestor": 0.2778,
         "retain_same": 0.4819,
         "retain_other": 0.5944,
         "over": 0.0144,
-        "wrong": 0.2222
+        "wrong": 0.2202
       },
-      "distance_to_mg": 0.0792,
+      "distance_to_mg": 0.082686,
       "used_components": [
         "filr",
         "tga",
@@ -146,7 +146,7 @@
         "over": 0.0132,
         "wrong": 0.1152
       },
-      "distance_to_mg": 0.207057,
+      "distance_to_mg": 0.203214,
       "used_components": [
         "filr",
         "tga",
@@ -206,7 +206,7 @@
         "over": 0.0,
         "wrong": 0.0
       },
-      "distance_to_mg": 0.314329,
+      "distance_to_mg": 0.310486,
       "used_components": [
         "filr",
         "tga",
@@ -266,7 +266,7 @@
         "over": 0.0,
         "wrong": 0.0
       },
-      "distance_to_mg": 0.314329,
+      "distance_to_mg": 0.310486,
       "used_components": [
         "filr",
         "tga",
@@ -319,14 +319,14 @@
       "method": "B2",
       "vector": {
         "filr": 0.2214,
-        "tga": 0.3975,
+        "tga": 0.3947,
         "ancestor": 0.2889,
         "retain_same": 0.3385,
         "retain_other": 0.3556,
         "over": 0.0226,
-        "wrong": 0.2
+        "wrong": 0.1996
       },
-      "distance_to_mg": 0.0852,
+      "distance_to_mg": 0.083671,
       "used_components": [
         "filr",
         "tga",
@@ -379,14 +379,14 @@
       "method": "B2",
       "vector": {
         "filr": 0.0564,
-        "tga": 0.5909,
+        "tga": 0.5877,
         "ancestor": 0.3259,
         "retain_same": 0.1667,
         "retain_other": 0.1,
         "over": 0.0342,
-        "wrong": 0.1387
+        "wrong": 0.1383
       },
-      "distance_to_mg": 0.178443,
+      "distance_to_mg": 0.176429,
       "used_components": [
         "filr",
         "tga",
@@ -439,14 +439,14 @@
       "method": "B2",
       "vector": {
         "filr": 0.0218,
-        "tga": 0.7251,
+        "tga": 0.7206,
         "ancestor": 0.3667,
         "retain_same": 0.0827,
         "retain_other": 0.0667,
         "over": 0.0675,
         "wrong": 0.1383
       },
-      "distance_to_mg": 0.229957,
+      "distance_to_mg": 0.2277,
       "used_components": [
         "filr",
         "tga",
@@ -499,14 +499,14 @@
       "method": "B2",
       "vector": {
         "filr": 0.3029,
-        "tga": 0.2889,
+        "tga": 0.2856,
         "ancestor": 0.263,
         "retain_same": 0.416,
         "retain_other": 0.4667,
         "over": 0.023,
-        "wrong": 0.223
+        "wrong": 0.2226
       },
-      "distance_to_mg": 0.078371,
+      "distance_to_mg": 0.076914,
       "used_components": [
         "filr",
         "tga",
@@ -559,14 +559,14 @@
       "method": "B2",
       "vector": {
         "filr": 0.0214,
-        "tga": 0.723,
+        "tga": 0.7173,
         "ancestor": 0.3704,
         "retain_same": 0.1008,
         "retain_other": 0.0722,
         "over": 0.0654,
-        "wrong": 0.1444
+        "wrong": 0.1449
       },
-      "distance_to_mg": 0.2257,
+      "distance_to_mg": 0.2232,
       "used_components": [
         "filr",
         "tga",
@@ -618,15 +618,15 @@
     "B2R_lr5e-06_ep5": {
       "method": "B2R",
       "vector": {
-        "filr": 0.3988,
-        "tga": 0.207,
+        "filr": 0.3996,
+        "tga": 0.2037,
         "ancestor": 0.237,
         "retain_same": 0.5749,
         "retain_other": 0.6444,
         "over": 0.0181,
-        "wrong": 0.23
+        "wrong": 0.2296
       },
-      "distance_to_mg": 0.093329,
+      "distance_to_mg": 0.0957,
       "used_components": [
         "filr",
         "tga",
@@ -685,14 +685,14 @@
       "method": "B2R",
       "vector": {
         "filr": 0.2971,
-        "tga": 0.3086,
+        "tga": 0.3053,
         "ancestor": 0.2889,
         "retain_same": 0.6266,
         "retain_other": 0.6556,
         "over": 0.0226,
         "wrong": 0.2284
       },
-      "distance_to_mg": 0.074957,
+      "distance_to_mg": 0.078214,
       "used_components": [
         "filr",
         "tga",
@@ -750,15 +750,15 @@
     "B3_lam0.5_lr2e-05_ep5": {
       "method": "B3",
       "vector": {
-        "filr": 0.2165,
-        "tga": 0.3877,
+        "filr": 0.2156,
+        "tga": 0.3856,
         "ancestor": 0.2667,
         "retain_same": 0.6111,
         "retain_other": 0.5,
         "over": 0.028,
-        "wrong": 0.2181
+        "wrong": 0.2169
       },
-      "distance_to_mg": 0.042686,
+      "distance_to_mg": 0.041043,
       "used_components": [
         "filr",
         "tga",
@@ -823,14 +823,14 @@
       "method": "B3",
       "vector": {
         "filr": 0.1235,
-        "tga": 0.3728,
+        "tga": 0.3704,
         "ancestor": 0.1778,
         "retain_same": 0.5633,
         "retain_other": 0.3333,
         "over": 0.0494,
-        "wrong": 0.207
+        "wrong": 0.2066
       },
-      "distance_to_mg": 0.067371,
+      "distance_to_mg": 0.064043,
       "used_components": [
         "filr",
         "tga",
@@ -894,15 +894,15 @@
     "B3_lam0.25_lr2e-05_ep5": {
       "method": "B3",
       "vector": {
-        "filr": 0.2243,
-        "tga": 0.3745,
+        "filr": 0.2251,
+        "tga": 0.3708,
         "ancestor": 0.2815,
         "retain_same": 0.6202,
         "retain_other": 0.6444,
         "over": 0.0276,
-        "wrong": 0.2193
+        "wrong": 0.2189
       },
-      "distance_to_mg": 0.052157,
+      "distance_to_mg": 0.055643,
       "used_components": [
         "filr",
         "tga",
@@ -967,14 +967,14 @@
       "method": "B3",
       "vector": {
         "filr": 0.1247,
-        "tga": 0.4255,
+        "tga": 0.4226,
         "ancestor": 0.1926,
         "retain_same": 0.6021,
         "retain_other": 0.4278,
         "over": 0.0519,
-        "wrong": 0.2235
+        "wrong": 0.2226
       },
-      "distance_to_mg": 0.0476,
+      "distance_to_mg": 0.044414,
       "used_components": [
         "filr",
         "tga",
@@ -1045,11 +1045,21 @@
   },
   "note": "Distance is a model-selection criterion only; individual metrics remain the primary scientific results. Test-split numbers are computed AFTER selection and never fed back.",
   "tag": "pilot100",
+  "iteration": "11R",
+  "dataset_version": "pilot100_v2",
   "selection_scope": [
     "train",
     "val"
   ],
   "scope_note": "test queries were NOT generated at selection time",
+  "batch_layout_note": "MG and every candidate were generated in ONE batch layout over exactly this scope. The reference-state gate's all-split parquet was deliberately NOT filtered down and reused for MG: batched greedy decoding is not bit-stable across batch compositions, so scoring the oracle in a 6,777-query layout against candidates in a train+val layout would put decoding noise inside D_G itself.",
+  "supersedes": {
+    "commit": "3850461",
+    "iteration": 11,
+    "dataset_version": "pilot100_v1",
+    "reason": "The v1 selection ranked candidates on train+val predictions generated over assoc.images[0] — the photograph every checkpoint was trained on — for all three splits. Iteration 11R re-froze the dataset so val queries are served photographs disjoint from training, which changes the val half of the selection basis, so the ranking is recomputed rather than inherited.",
+    "v1_numbers_preserved_in": "git show 3850461"
+  },
   "staged": {
     "B0": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100_unlearn/selected/B0/adapters",
     "B1": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100_unlearn/selected/B1/adapters",
