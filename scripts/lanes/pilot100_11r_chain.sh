@@ -92,10 +92,11 @@ stale="$(find data/mllmu_hier_pilot100/predictions -name '*.parquet' \
            ! -name '*.provenance.json' 2>/dev/null | wc -l)"
 say "resumable prediction parquets already on disk: $stale"
 
-# ---- c3 and d3 in parallel ---------------------------------------------
-c3_pid=""; d3_pid=""; c3_rc=0; d3_rc=0
+# ---- c3 in the background, d3 sharded in the foreground ----------------
+c3_pid=""; c3_rc=0; d3_rc=0
 gate_report="data/reports/mllmu_pilot100_reference_eval.json"
 sel_report="data/reports/mllmu_pilot100_unlearning_selection.json"
+pred_dir="data/mllmu_hier_pilot100/predictions"
 
 if [ "$(report_current "$gate_report")" = "yes" ]; then
   say "skipping c3: $gate_report is already current for pilot100_v2"
@@ -109,19 +110,106 @@ else
   c3_pid=$!
 fi
 
-if [ "$(report_current "$sel_report")" = "yes" ]; then
-  say "skipping d3: $sel_report is already current for pilot100_v2"
-else
-  say "launching d3 (selection, train+val)"
+# d3 is the long pole: 16 candidates at ~33 min each on a quiet device, so
+# one sequential lane leaves the other GPUs idle for hours.  Generation is
+# therefore sharded across SHARDS lanes and a single UNSHARDED run
+# assembles the report.  Every shard is --generate-only, so no shard can
+# write a report computed over a subset of the grid.
+SHARDS="${SHARDS:-3}"
+
+run_d3() {
+  if [ "$(report_current "$sel_report")" = "yes" ]; then
+    say "skipping d3: $sel_report is already current for pilot100_v2"
+    return 0
+  fi
+
+  # MG is the reference EVERY shard needs, and _mg_reference_predictions
+  # generates it when its parquet is absent -- N shards starting together
+  # would all see it missing and all write that one file concurrently.
+  # Prime it serially before fanning out.
+  if [ ! -f "$pred_dir/predictions_tv_MG.parquet" ]; then
+    say "priming the MG reference pass serially: concurrent shards would race on that one file"
+    bash scripts/lanes/wait_for_gpu.sh "$MIN_FREE" \
+      "$LOGDIR/pilot100_11r_d3_prime.log" \
+      "$PY" scripts/select_unlearning_checkpoints.py \
+        --tag pilot100 --device cuda:0 --batch-size "$BATCH" \
+        --image-batch-size "$IMAGE_BATCH" --generate-only --candidates B0
+    local prime_rc=$?
+    say "MG prime finished rc=$prime_rc"
+    if [ "$prime_rc" -ne 0 ]; then
+      say "STOPPING: cannot shard without the MG reference predictions"
+      return "$prime_rc"
+    fi
+  fi
+
+  # ONE snapshot, partitioned into N disjoint shards.  Computing each
+  # shard's list separately would race the shards already running: a
+  # completed candidate shortens the todo list and shifts every later
+  # index, so two shards could be handed the same candidate (duplicated
+  # work and two writers on one parquet) while another is skipped.
+  local shard_ids=()
+  mapfile -t shard_ids < <("$PY" - "$SHARDS" <<'PYEOF'
+import pathlib, sys
+from granunlearn.training.candidate_grid import grid_for_tag
+n = int(sys.argv[1])
+ck = pathlib.Path("data/checkpoints/mllmu_pilot100_unlearn")
+pred = pathlib.Path("data/mllmu_hier_pilot100/predictions")
+todo = [s.candidate_id for s in grid_for_tag("pilot100")
+        if (ck / s.candidate_id / "adapters").exists()
+        and not (pred / f"predictions_tv_{s.candidate_id}.parquet").exists()]
+for k in range(n):
+    print(",".join(c for i, c in enumerate(todo) if i % n == k))
+PYEOF
+)
+
+  local total=0 pids=() k ids cnt rc=0 pid
+  for k in $(seq 0 $((SHARDS - 1))); do
+    ids="${shard_ids[$k]:-}"
+    if [ -z "$ids" ]; then
+      say "d3 shard $k/$SHARDS: nothing left to generate, not launched"
+      continue
+    fi
+    cnt=$(echo "$ids" | tr ',' '\n' | wc -l)
+    total=$((total + cnt))
+    say "launching d3 shard $k/$SHARDS ($cnt candidate(s)): $ids"
+    bash scripts/lanes/wait_for_gpu.sh "$MIN_FREE" \
+      "$LOGDIR/pilot100_11r_d3_s$k.log" \
+      "$PY" scripts/select_unlearning_checkpoints.py \
+        --tag pilot100 --device cuda:0 --batch-size "$BATCH" \
+        --image-batch-size "$IMAGE_BATCH" --generate-only \
+        --candidates "$ids" &
+    pids+=($!)
+  done
+  if [ "$total" -eq 0 ]; then
+    say "every candidate already has predictions; going straight to assembly"
+  fi
+
+  for pid in ${pids[@]+"${pids[@]}"}; do
+    wait "$pid" || { rc=1; say "a d3 shard failed (pid $pid)"; }
+  done
+  if [ "$rc" -ne 0 ]; then
+    say "STOPPING: not assembling a selection over partially generated"
+    say "  candidates. Re-run; finished shards resume by verified reuse."
+    return 1
+  fi
+
+  # The assembler is the only run allowed to write the report, and it is
+  # unsharded: it sees the whole grid, reuses every parquet the shards
+  # produced, and generates only what is somehow still missing.
+  say "assembling d3 (reuses every shard's parquet, writes the report)"
   bash scripts/lanes/wait_for_gpu.sh "$MIN_FREE" "$LOGDIR/pilot100_11r_d3.log" \
     "$PY" scripts/select_unlearning_checkpoints.py \
-      --tag pilot100 --device cuda:0 \
-      --batch-size "$BATCH" --image-batch-size "$IMAGE_BATCH" &
-  d3_pid=$!
-fi
+      --tag pilot100 --device cuda:0 --batch-size "$BATCH" \
+      --image-batch-size "$IMAGE_BATCH"
+  local asm_rc=$?
+  say "d3 assembly finished rc=$asm_rc"
+  return "$asm_rc"
+}
+
+run_d3; d3_rc=$?
 
 if [ -n "$c3_pid" ]; then wait "$c3_pid" || c3_rc=$?; say "c3 finished rc=$c3_rc"; fi
-if [ -n "$d3_pid" ]; then wait "$d3_pid" || d3_rc=$?; say "d3 finished rc=$d3_rc"; fi
+say "d3 finished rc=$d3_rc"
 
 if [ "$c3_rc" -ne 0 ] || [ "$d3_rc" -ne 0 ]; then
   say "STOPPING: c3=$c3_rc d3=$d3_rc. Re-run this script after fixing the"

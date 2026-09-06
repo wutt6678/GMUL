@@ -219,6 +219,16 @@ def main() -> None:
     parser.add_argument("--no-stage", action="store_true",
                         help="Score + report only; do not stage selected "
                              "adapters (used by partial lanes)")
+    parser.add_argument("--generate-only", action="store_true",
+                        help="Generate (or verify-reuse) the predictions for "
+                             "the requested candidates and stop, without "
+                             "scoring, staging or writing the selection "
+                             "report. This is what makes generation "
+                             "shardable across GPUs: a report computed over "
+                             "a subset would name a winner the full grid "
+                             "does not support, and it would look complete, "
+                             "carrying the same dataset_version as the real "
+                             "one. Only an unsharded run may write it.")
     args = parser.parse_args()
 
     # One generation contract for the whole selection run: MG and every
@@ -320,6 +330,13 @@ def main() -> None:
                  (tv_metrics.get("retain_other_entity") or {}).get(
                      "baseline_accuracy"),
                  (tv_metrics.get("failure_rates") or {}).get("wrong_branch"))
+
+    if args.generate_only:
+        log.info("generate-only: %d candidate(s) now have %s predictions on "
+                 "disk; no report written and no adapters staged, because a "
+                 "report over this subset would name a winner the full grid "
+                 "does not support", len(candidates), "+".join(splits))
+        return
 
     report = select_checkpoints(candidates, ref_vec)
     report["tag"] = args.tag
