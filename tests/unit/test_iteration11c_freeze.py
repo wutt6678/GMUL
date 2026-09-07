@@ -43,13 +43,21 @@ from freeze_confirmation_protocol import (  # noqa: E402
 )
 from power_analysis_confirmation import (  # noqa: E402
     ALPHA_ONE_SIDED,
+    ALPHA_STANDALONE_ONE_SIDED,
     BOOTSTRAP_SEED,
     CONFIRM_FETCH_IMAGES_PER_SPECIES,
     CONFIRM_FETCH_OUT,
+    CONFIRM_FETCH_ROLE,
     CONFIRM_FETCH_SEED,
+    CONFIRM_FETCH_TAG,
     CONFIRM_NEW_PHOTOS_PER_SPECIES,
     CONFIRM_NEW_WORDING_PROBES_PER_PERSON,
+    CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY,
+    CONFIRM_RETENTION_ROUTE,
     FAMILYWISE_ALPHA,
+    HOLM_WORST_CASE_ALPHA,
+    N_PERMUTATIONS,
+    PERMUTATION_SEED,
     PRIMARY_ESTIMAND,
     PRIMARY_ESTIMAND_STRATA,
     PRIMARY_FAMILY,
@@ -89,6 +97,24 @@ def _require_adapters() -> None:
             "cannot be distinguished from a missing checkpoint; see "
             "TestTheFreezeFailsClosedWithoutTheArtifacts for what IS "
             "asserted here")
+
+
+def _freeze_over_mutated_power(monkeypatch, mutate) -> dict:
+    """``build_freeze`` against a power report transformed by ``mutate``.
+
+    Every refusal test in this module needs the same wiring, and a copy of it
+    per test is a copy per test that can stop matching the real loader.
+    """
+    real = fz._load_report
+
+    def wrapped(reports, name):
+        out = real(reports, name)
+        if not name.endswith("confirmation_power.json"):
+            return out
+        return mutate(out)
+
+    monkeypatch.setattr(fz, "_load_report", wrapped)
+    return build_freeze(REPO_ROOT, "pilot100")
 
 
 # ── the checkpoints are bound by contract, and the gate fires ──────
@@ -480,13 +506,27 @@ class TestTheClaimFamilyMatchesThePowerAnalysis:
         """Iteration 11C-R1's finding #4 asked the preregistration to state
         whether familywise alpha is 0.05 or 0.025.  It states 0.05, and each
         level below must be that rate divided by something rather than a
-        second independent number: one unadjusted claim sits at familywise/2,
-        Holm's worst case for one of k claims at familywise/k."""
+        second independent number: familywise/2 is one arm of a two-sided
+        interval, Holm's worst case for one of k claims is familywise/k, and
+        the two coincide here only because k = 2.  Iteration 11C-R2's finding
+        #3 is that neither is what ONE-SIDEDNESS costs - a standalone
+        directional claim is tested at familywise itself."""
         f = _load()
         a, c = f["analysis"], f["claims"]
         assert a["familywise_alpha"] == FAMILYWISE_ALPHA == 0.05
         assert c["familywise_alpha"] == FAMILYWISE_ALPHA
         assert a["alpha_one_sided"] == ALPHA_ONE_SIDED == FAMILYWISE_ALPHA / 2
+        assert a["alpha_standalone_one_sided"] == \
+            ALPHA_STANDALONE_ONE_SIDED == FAMILYWISE_ALPHA
+        assert a["holm_worst_case_alpha"] == HOLM_WORST_CASE_ALPHA == \
+            a["alpha_one_sided"]
+        assert a["alpha_standalone_one_sided"] != a["alpha_one_sided"], \
+            "the standalone level must stay a separate number, or the k = 2 " \
+            "coincidence reads as a rule"
+        assert round(FAMILYWISE_ALPHA / 3, 4) != ALPHA_ONE_SIDED, \
+            "at k = 3 Holm's first threshold moves while familywise/2 does " \
+            "not, which is the only way to see that they are different " \
+            "quantities"
         k = len(PRIMARY_FAMILY)
         assert c["k"] == k
         assert c["worst_case_alpha_for_a_single_claim"] == \
@@ -686,9 +726,16 @@ class TestTheSelectedSizeIsBoundNotAGrid:
         assert cs["selected"] is True
         assert ph["new_photographs_per_species"] == \
             CONFIRM_NEW_PHOTOS_PER_SPECIES == 12
-        assert ph["species_covered"] == 36
-        assert ph["new_photographs_total"] == 432 == \
+        # Iteration 11C-R2's finding #2: the photograph budget covers the
+        # TARGET species.  36 was the count the seeded re-fetch could cover,
+        # which includes 6 retain-only species whose only purpose was the
+        # retain image families - and those are not renewed.
+        assert ph["species_covered"] == 30
+        assert ph["new_photographs_total"] == 360 == \
             ph["new_photographs_per_species"] * ph["species_covered"]
+        assert "TARGET species" in ph["species_covered_is"]
+        assert "36" in ph["species_covered_is"]
+        assert "no confirmation purpose" in ph["why_only_the_target_species"]
         assert w["new_probes_per_target_person"] == \
             CONFIRM_NEW_WORDING_PROBES_PER_PERSON == 12
         assert w["target_persons"] == 42
@@ -713,15 +760,43 @@ class TestTheSelectedSizeIsBoundNotAGrid:
             CONFIRM_FETCH_IMAGES_PER_SPECIES == 24
         assert ph["fetch_seed"] == CONFIRM_FETCH_SEED == 42
         assert ph["fetch_out"] == CONFIRM_FETCH_OUT
+        assert ph["fetch_role"] == CONFIRM_FETCH_ROLE == "target"
+        assert ph["fetch_tag"] == CONFIRM_FETCH_TAG == "pilot100"
         argv = shlex.split(ph["fetch_command"])
         assert argv[:2] == ["python", "scripts/fetch_inat_species.py"]
         flags = dict(zip(argv[2::2], argv[3::2]))
-        assert set(flags) == {"--seed", "--images-per-species", "--out"}
+        assert set(flags) == {"--seed", "--images-per-species", "--role",
+                              "--tag", "--out"}
         assert flags["--images-per-species"] == \
             str(ph["fetch_images_per_species"])
         assert flags["--seed"] == str(ph["fetch_seed"])
+        assert flags["--role"] == ph["fetch_role"]
+        assert flags["--tag"] == ph["fetch_tag"]
         assert flags["--out"] == ph["fetch_out"]
         assert (REPO_ROOT / "scripts" / "fetch_inat_species.py").exists()
+
+    def test_the_fetch_names_a_role_because_a_count_would_miss_species(self):
+        """``--limit-species 30`` reads like the same instruction and is not:
+        the 6 retain-only species are interleaved through SPECIES_LIST, so the
+        first 30 entries hold only 24 target species.  Iteration 11C-R2."""
+        ph = _load()["confirmation_size"]["held_out_photographs"]
+        assert "--limit-species" not in ph["fetch_command"]
+        why = ph["why_the_command_names_a_role_and_not_a_count"]
+        assert "24 of the 30" in why
+        assert "interleaved" in why
+        # and the fetcher really does derive the role rather than slice
+        sys.path.insert(0, str(REPO_ROOT / "scripts"))
+        import fetch_inat_species as fetch
+        target = fetch.species_for_role("target", "pilot100")
+        assert len(target) == ph["species_covered"] == 30
+        assert len(fetch.SPECIES_LIST[:30] ) != 30 or \
+            set(fetch.SPECIES_LIST[:30]) != set(target)
+        assert set(target) & set(fetch.SPECIES_LIST[:30]) != set(target), \
+            "if the first 30 entries were the target species the role flag " \
+            "would be decoration"
+        retain = fetch.species_for_role("retain", "pilot100")
+        assert len(retain) == 6
+        assert not set(retain) & set(target)
 
     def test_the_fetch_is_a_superset_of_what_is_already_frozen(self):
         """24 fetched per species of which 12 are new: the seeded superset
@@ -734,19 +809,71 @@ class TestTheSelectedSizeIsBoundNotAGrid:
             ph["new_photographs_per_species"] + \
             ph["already_allocated_per_species"]
 
-    def test_the_totals_are_the_sum_of_the_two_strata(self):
+    def test_the_totals_separate_the_target_budget_from_the_whole(self):
+        """Iteration 11C-R2's finding #2.  936 was published as
+        ``new_target_probes``; it was 504 target-person wordings plus 432
+        photographs over 36 species, i.e. the whole allocated photograph
+        budget including the 72 destined for retain-only species.  The target
+        total is 864, and once retention is allocated the overall total is a
+        third number again."""
         f = _load()
         cs = f["confirmation_size"]
         t = cs["totals"]
-        assert t["of_which_new_photographs"] == \
-            cs["held_out_photographs"]["new_photographs_total"]
-        assert t["of_which_new_wordings"] == \
-            cs["new_wording_probes"]["new_wording_probes_total"]
-        assert t["new_target_probes"] == 936 == \
-            t["of_which_new_photographs"] + t["of_which_new_wordings"]
-        assert t["entity_clusters"] == \
-            f["primary_estimand"]["entities_in_scope"]
+        pb = cs["probe_budget"]
+        n_words = cs["new_wording_probes"]["new_wording_probes_total"]
+        n_photos = cs["held_out_photographs"]["new_photographs_total"]
+        n_ret = f["retention_probes"]["total"]
+        assert t["of_which_new_wordings_on_target_persons"] == n_words == 504
+        assert t["of_which_new_photographs_on_target_species"] == \
+            n_photos == 360
+        assert t["new_target_probes"] == 864 == n_words + n_photos
+        assert t["new_retention_probes"] == n_ret == 345
+        assert t["total_new_probes_allocated"] == 1209 == \
+            n_words + n_photos + n_ret
+        # the three numbers are three DIFFERENT numbers
+        assert len({t["new_target_probes"], t["new_retention_probes"],
+                    t["total_new_probes_allocated"]}) == 3
+        assert t["total_generations_at_three_scored_states"] == \
+            3 * t["total_new_probes_allocated"]
         assert t["scored_states"] == len(CONFIRMATION_STATES)
+        assert t["entity_clusters_for_the_primary_claims"] == \
+            f["primary_estimand"]["entities_in_scope"] == 72
+        assert t["entity_clusters_for_retention"] == \
+            f["retention_probes"]["entities_covered"] == 70
+        # the freeze's own budget block agrees with the report's totals
+        assert pb["primary_target_total"] == t["new_target_probes"]
+        assert pb["new_retention_probes"] == t["new_retention_probes"]
+        assert pb["total_allocated"] == t["total_new_probes_allocated"]
+        assert pb["new_wordings_on_target_persons"] == n_words
+        assert pb["new_photographs_on_target_species"] == n_photos
+        # and the mislabelling is corrected in the artifact, not only here
+        corr = t["correction_to_the_previous_revision"]
+        assert "936" in corr and "864" in corr and "72" in corr
+        assert pb["correction_to_the_previous_revision"] == corr
+        assert "overstates the primary design" in pb[
+            "why_the_two_totals_are_reported_separately"]
+
+    def test_no_total_in_the_freeze_still_calls_936_the_target_count(self):
+        """The mislabelled number is the defect, so the artifact is searched
+        for it rather than only the fields a reader would think to check."""
+        f = _load()
+        blob = json.dumps(f)
+        assert '"new_target_probes": 936' not in blob
+        assert f["confirmation_size"]["totals"]["new_target_probes"] != 936
+        hits = []
+
+        def _walk(node, path):
+            if isinstance(node, dict):
+                for kk, vv in node.items():
+                    if vv == 936:
+                        hits.append(f"{path}.{kk}")
+                    _walk(vv, f"{path}.{kk}")
+            elif isinstance(node, list):
+                for ii, vv in enumerate(node):
+                    _walk(vv, f"{path}[{ii}]")
+
+        _walk(f, "freeze")
+        assert hits == [], f"936 still bound as a value at {hits}"
 
     def test_what_is_frozen_now_is_identifiers_not_intentions(self):
         fn = _load()["confirmation_size"]["frozen_now"]
@@ -817,6 +944,550 @@ class TestTheSelectedSizeIsBoundNotAGrid:
         assert any("fetch_images_per_species" in r for r in f["refusals"]), \
             f["refusals"]
 
+    def test_a_command_that_limits_by_count_refuses(self, monkeypatch):
+        """``--limit-species`` in place of ``--role`` fetches 24 of the 30
+        target species. The command is what a human runs at stage 3, so the
+        flag is checked and not only the count it implies."""
+        def mutate(out):
+            out = dict(out)
+            cs = dict(out["confirmation_size"])
+            ph = dict(cs["held_out_photographs"])
+            ph["fetch_command"] = ph["fetch_command"].replace(
+                "--role target --tag pilot100", "--limit-species 30")
+            cs["held_out_photographs"] = ph
+            out["confirmation_size"] = cs
+            return out
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("does not select species by role" in r
+                   for r in f["refusals"]), f["refusals"]
+        assert any("limits species by COUNT" in r
+                   for r in f["refusals"]), f["refusals"]
+
+    def test_a_species_count_that_is_not_the_target_role_refuses(
+            self, monkeypatch):
+        """36 is how many species the seeded re-fetch could cover; 30 is how
+        many carry a target association. Binding the wrong one budgets
+        photographs for entities no target metric is defined on."""
+        def mutate(out):
+            out = dict(out)
+            cs = dict(out["confirmation_size"])
+            ph = dict(cs["held_out_photographs"])
+            ph["species_covered"] = 36
+            ph["new_photographs_total"] = 12 * 36
+            cs["held_out_photographs"] = ph
+            cs["totals"] = dict(cs["totals"],
+                                new_target_probes=504 + 432,
+                                of_which_new_photographs_on_target_species=432,
+                                total_new_probes_allocated=504 + 432 + 345)
+            out["confirmation_size"] = cs
+            return out
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("TARGET iNaturalist" in r for r in f["refusals"]), \
+            f["refusals"]
+
+
+# ── the retention intervals have probes behind them ────────────────
+
+class TestTheRetentionProbesAreAllocatedNotPromised:
+    """Iteration 11C-R2's finding #2, second half.  The freeze has always
+    promised descriptive retain_same and retain_other intervals while
+    allocating NO probes to compute them from: the 504 new wordings are
+    TARGET-family probes on the 42 target persons, and the 70 entities
+    retain_same is defined on (45 for retain_other) were given nothing.  A
+    promised interval with no probes behind it is not a plan, and the
+    intervals it would have produced describe the exploratory split the
+    reference-state gate already saw."""
+
+    def test_the_allocation_is_frozen_with_a_route_and_a_count(self):
+        r = _load()["retention_probes"]
+        assert r["route"] == CONFIRM_RETENTION_ROUTE == "text_only"
+        assert r["new_templates_per_entity"] == \
+            CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY == 3
+        assert r["total"] == 345
+        assert r["entities_covered"] == 70
+        assert r["status"].startswith("DESCRIPTIVE")
+        assert "no Holm entry" in r["status"]
+        assert r["read_from"].startswith("retention_probe_allocation")
+        assert "unfalsifiable" in r["why_this_is_in_the_freeze"]
+        assert "reference-state gate" in r["why_this_is_in_the_freeze"]
+
+    def test_the_count_is_the_sum_of_the_two_metrics_own_allocations(self):
+        r = _load()["retention_probes"]
+        pm = r["per_metric"]
+        assert set(pm) == {"retain_same", "retain_other"}
+        m = CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY
+        assert pm["retain_same"]["entities_carried_by"] == 70
+        assert pm["retain_other"]["entities_carried_by"] == 45
+        for name, e in pm.items():
+            assert e["route"] == r["route"], name
+            assert e["new_probes_per_entity"] == m, name
+            assert e["new_probes"] == m * e["entities_carried_by"], name
+        assert pm["retain_same"]["new_probes"] == 210
+        assert pm["retain_other"]["new_probes"] == 135
+        assert r["total"] == sum(e["new_probes"] for e in pm.values())
+        assert r["retain_other_entities_are_a_subset_of_retain_same"] is True
+        # and the size block's totals carry the same number
+        assert _load()["confirmation_size"]["totals"][
+            "new_retention_probes"] == r["total"]
+
+    def test_the_count_is_set_by_the_noise_floor_not_by_the_exploratory_number(
+            self):
+        """The count is not "match pilot100_v2's precision".  Precision finer
+        than the batch-layout floor cannot be distinguished from batched
+        decoding noise, so buying it spends generations on a decimal nobody
+        can act on."""
+        r = _load()["retention_probes"]
+        floor = r["batch_layout_noise_floor_on_retain_metrics"]
+        assert floor == 0.0556
+        for name, e in r["per_metric"].items():
+            assert e["selected_count_is_at_or_above_the_noise_floor"] is True, \
+                name
+            assert e["half_width_at_the_selected_count"] >= floor, name
+            # the rejected counts are all recorded, and all finer than the
+            # floor is where the argument lives
+            for m, hw in e["half_width_at_rejected_counts"].items():
+                assert float(hw) < e["half_width_at_the_selected_count"] \
+                    or int(m) < CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY, \
+                    (name, m, hw)
+        same = r["per_metric"]["retain_same"]
+        assert same["probes_per_entity_that_would_match_the_exploratory_"
+                    "precision"] == 8
+        assert same["half_width_at_the_exploratory_count"] < floor
+        assert "cannot resolve" in r["why_this_count"]
+        assert "noise floor" in r["why_this_count"]
+
+    def test_the_image_route_omission_is_a_measured_constraint(self):
+        """Not a preference.  Each of the 64 MLLMU persons has exactly ONE
+        photograph in pilot100_v2, so an image-route retention probe on a
+        person either reuses exploratory media - which the novelty invariant
+        forbids - or does not exist."""
+        r = _load()["retention_probes"]
+        m = r["media_supply_the_route_decision_rests_on"]
+        assert m["retention_entities"] == r["entities_covered"] == 70
+        assert m["photographs_per_retention_entity"] == {"1": 64, "12": 6}
+        assert m["entities_with_a_single_photograph_or_none"] == 64
+        assert m["entities_a_new_photograph_could_cover"] == 6
+        assert m["entities_no_new_photograph_can_cover"] == 64
+        assert m["entities_a_new_photograph_could_cover"] + \
+            m["entities_no_new_photograph_can_cover"] == 70
+        assert m["by_source"]["inaturalist"] == 6
+        assert "reuses exploratory media" in r["why_the_image_route_is_omitted"]
+        assert "64" in r["why_the_image_route_is_omitted"]
+        assert "no confirmation purpose" in \
+            r["consequence_for_the_photograph_fetch"]
+
+    def test_the_confirmation_retention_estimand_is_not_the_exploratory_one(
+            self):
+        """pilot100_v2's retain metrics pool BOTH routes.  The confirmation's
+        are text-only, so the two numbers are not the same estimand and must
+        not be subtracted or called a replication of each other."""
+        r = _load()["retention_probes"]
+        assert "BOTH routes" in \
+            r["how_it_differs_from_the_exploratory_retention_number"]
+        assert "must not be subtracted" in \
+            r["how_it_differs_from_the_exploratory_retention_number"]
+        assert "TEXT route only" in \
+            r["what_the_confirmation_retention_estimand_is"]
+        assert str(CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY) in \
+            r["what_the_confirmation_retention_estimand_is"]
+        # retention stays out of the claim family
+        assert not set(_load()["claims"]["primary_family"]) & {
+            "B3_minus_B0:retain_same", "B3_minus_B0:retain_other"}
+
+    def test_a_report_with_no_retention_allocation_refuses(self, monkeypatch):
+        def mutate(out):
+            out = dict(out)
+            out.pop("retention_probe_allocation")
+            return out
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("no retention_probe_allocation" in r
+                   for r in f["refusals"]), f["refusals"]
+
+    def test_a_different_route_refuses(self, monkeypatch):
+        monkeypatch.setattr(fz, "CONFIRM_RETENTION_ROUTE", "both")
+        f = build_freeze(REPO_ROOT, "pilot100")
+        assert any("route" in r for r in f["refusals"]), f["refusals"]
+
+    def test_a_different_template_count_refuses(self, monkeypatch):
+        monkeypatch.setattr(
+            fz, "CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY", 12)
+        f = build_freeze(REPO_ROOT, "pilot100")
+        assert any("new retention templates" in r
+                   for r in f["refusals"]), f["refusals"]
+
+    def test_an_allocation_whose_own_arithmetic_disagrees_refuses(
+            self, monkeypatch):
+        """The total must be the sum of the per-metric allocations.  A total
+        written independently of them is a second copy of the design."""
+        def mutate(out):
+            out = dict(out)
+            ra = dict(out["retention_probe_allocation"])
+            ra["new_retention_probes_total"] = 560
+            out["retention_probe_allocation"] = ra
+            cs = dict(out["confirmation_size"])
+            cs["totals"] = dict(cs["totals"], new_retention_probes=560,
+                                total_new_probes_allocated=864 + 560)
+            out["confirmation_size"] = cs
+            return out
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("its own per-metric allocation sums to" in r
+                   for r in f["refusals"]), f["refusals"]
+
+    def test_a_target_total_that_equals_the_overall_total_refuses(
+            self, monkeypatch):
+        """The 936 mislabelling, reproduced: with retention allocated, the
+        target total and the overall total CANNOT be the same number, and a
+        report that says they are has one label wrong."""
+        def mutate(out):
+            out = dict(out)
+            cs = dict(out["confirmation_size"])
+            cs["totals"] = dict(cs["totals"], new_target_probes=1209)
+            out["confirmation_size"] = cs
+            return out
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("one of the two labels" in r for r in f["refusals"]), \
+            f["refusals"]
+        assert any("totals.new_target_probes is 1209" in r
+                   for r in f["refusals"]), f["refusals"]
+
+    def test_a_metric_nobody_carries_refuses(self, monkeypatch):
+        def mutate(out):
+            out = dict(out)
+            ra = dict(out["retention_probe_allocation"])
+            pm = {k: dict(v) for k, v in ra["per_metric"].items()}
+            pm["retain_other"]["entities_carried_by"] = 0
+            pm["retain_other"]["new_probes"] = 0
+            ra["per_metric"] = pm
+            ra["new_retention_probes_total"] = 210
+            out["retention_probe_allocation"] = ra
+            cs = dict(out["confirmation_size"])
+            cs["totals"] = dict(cs["totals"], new_retention_probes=210,
+                                total_new_probes_allocated=864 + 210)
+            out["confirmation_size"] = cs
+            return out
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("no entity carries retain_other" in r
+                   for r in f["refusals"]), f["refusals"]
+
+
+# ── the primary hypothesis test is frozen, not described ────────────
+
+class TestThePrimaryTestIsFrozenNotDescribed:
+    """Iteration 11C-R2's finding #3.  Holm and the power sizing were made
+    consistent in 11C-R1 - one-sided thresholds [0.025, 0.05], requirements
+    of 5 TGA and 4 FILR clusters - but the repository contained no one-sided
+    p-value at all.  ``paired_ci`` offered a 1000-resample percentile
+    interval and nothing that returned a p, so the frozen thresholds could
+    not be executed as frozen and the first person to score would have had to
+    invent a test, after seeing the data."""
+
+    def test_the_statistic_and_the_null_are_named(self):
+        t = _load()["primary_test"]
+        assert t["applies_to"] == list(PRIMARY_FAMILY)
+        assert "entity-macro paired difference" in t["statistic"]
+        # the statistic must be the quantity the published interval covers,
+        # or a claim can be rejected while its own interval contains zero
+        assert "paired_rate_diff_ci" in t["statistic"]
+        assert "contradict each other" in t[
+            "why_the_statistic_must_be_the_one_the_interval_covers"]
+        assert "symmetric about zero" in t["null_hypothesis"]
+        assert "2^k sign-flip vectors" in t["null_hypothesis"]
+        assert t["p_value_method"] == \
+            "Monte Carlo cluster sign-flip permutation"
+        assert "poorly calibrated" in t["why_sign_flips_and_not_the_bootstrap"]
+        assert t["interval_still_published"].startswith(
+            "the percentile bootstrap CI")
+
+    def test_the_draw_count_and_seed_are_the_module_constants(self):
+        t = _load()["primary_test"]
+        assert t["n_permutations"] == N_PERMUTATIONS == 10000
+        assert t["permutation_seed"] == PERMUTATION_SEED == 20260908
+        assert t["smallest_reportable_p_value"] == round(
+            1.0 / (N_PERMUTATIONS + 1), 6)
+        assert t["observed_vector_included_in_the_null"] is True
+        # the smallest reportable p must sit far below the threshold it is
+        # compared against, or "p <= 0.025" is an artefact of the draw count
+        assert t["smallest_reportable_p_value"] < \
+            HOLM_WORST_CASE_ALPHA / 10
+        seeds = {t["permutation_seed"],
+                 _load()["analysis"]["bootstrap"]["seed"],
+                 _load()["analysis"]["icc_bootstrap_seed"]}
+        assert len(seeds) == 3, seeds
+
+    def test_each_claim_has_its_own_direction_and_they_differ(self):
+        """TGA is an accuracy, so better is HIGHER; FILR is a leakage rate, so
+        better is LOWER.  Both claims are about the same B3-B0 difference and
+        point in OPPOSITE directions on it, so one shared sign convention
+        would test one of them backwards.  The sizing code sizes |theta|,
+        which is right for a power table and wrong for a test."""
+        from granunlearn.evaluation.paired_ci import CLAIM_DIRECTION
+        t = _load()["primary_test"]
+        assert t["direction_by_metric"] == dict(CLAIM_DIRECTION) == \
+            {"tga": "greater", "filr": "less"}
+        assert t["alternative_by_claim"] == {
+            "B3_minus_B0:tga": "theta > 0",
+            "B3_minus_B0:filr": "theta < 0"}
+        assert len(set(t["direction_by_metric"].values())) == 2
+        assert "OPPOSITE directions" in t["why_the_directions_differ"]
+        assert "|theta|" in t["why_the_directions_differ"]
+
+    def test_holm_is_frozen_with_its_ordering_ties_and_stopping_rule(self):
+        t = _load()["primary_test"]["multiplicity"]
+        k = len(PRIMARY_FAMILY)
+        assert t["procedure"] == "Holm step-down"
+        assert t["familywise_alpha"] == FAMILYWISE_ALPHA
+        assert t["thresholds_apply_to"] == "one-sided p-values"
+        assert t["thresholds"] == [round(FAMILYWISE_ALPHA / (k - i), 6)
+                                   for i in range(k)] == [0.025, 0.05]
+        assert t["worst_case_alpha_for_a_single_claim"] == \
+            round(HOLM_WORST_CASE_ALPHA, 6) == 0.025
+        assert t["ordering"] == "ascending p-value, ties broken by claim name"
+        assert "cannot change a verdict" in t["tie_handling"]
+        assert "FIRST non-rejection ends the procedure" in t["pass_fail_rule"]
+        assert "retained whether or not it clears its own threshold" in \
+            t["pass_fail_rule"]
+        assert "understates the familywise error rate" in \
+            t["why_the_stopping_rule_is_part_of_the_rule"]
+        # the worked examples are the real function's output, not a table
+        ex = _load()["primary_test"]["worked_examples"]
+        assert set(ex) == {"both_clear",
+                           "first_fails_so_the_second_is_retained"}
+        assert ex["both_clear"]["all_rejected"] is True
+        assert ex["first_fails_so_the_second_is_retained"]["rejected"] == []
+        assert ex["first_fails_so_the_second_is_retained"]["all_rejected"] \
+            is False
+        steps = ex["first_fails_so_the_second_is_retained"]["steps"]
+        assert [s["clears_its_own_threshold"] for s in steps] == \
+            [False, True], steps
+        assert [s["rejected"] for s in steps] == [False, False], steps
+
+    def test_the_level_the_frozen_test_achieves_is_measured_not_assumed(self):
+        """A threshold is only a threshold if the procedure delivers it.  The
+        achieved level is measured by re-signing the REAL 11R differences,
+        which is the null the test assumes and preserves the real
+        discreteness."""
+        t = _load()["primary_test"]
+        cal = t["achieved_level_under_the_real_null"]
+        assert set(cal) == set(PRIMARY_FAMILY)
+        for claim, e in cal.items():
+            assert e["num_clusters"] == 72, claim
+            assert e["threshold"] == HOLM_WORST_CASE_ALPHA, claim
+            assert e["replicates"] >= 1000, claim
+            assert e["permutations_are_the_frozen_count"] is True, claim
+            assert e["permutations_per_replicate"] == N_PERMUTATIONS, claim
+            assert e["sign_flips_shared_with_the_other_claims"] is True, claim
+            assert e["achieved_level_is_nominal_within_two_se"] is True, claim
+            lo, hi = e["two_se_band_around_the_nominal"]
+            assert lo <= e["achieved_level_at_the_threshold"] <= hi, claim
+            # uniform p-values under H0 have mean 0.5; this is the sharper of
+            # the two diagnostics because every replicate contributes
+            assert 0.4 < e["mean_p_under_the_null"] < 0.6, claim
+            assert 0 < e["zero_difference_fraction"] < 0.5, claim
+
+    def test_the_familywise_rate_is_measured_on_the_procedure_itself(self):
+        """Marginal levels at every step do NOT imply the familywise rate:
+        the two claims share their 72 clusters and are correlated, so the
+        joint re-signing applies ONE sign vector per entity to BOTH and runs
+        the real ``holm_family``.  This is the number the declared familywise
+        alpha is a promise about."""
+        fw = _load()["primary_test"][
+            "achieved_familywise_level_under_the_global_null"]
+        assert fw["nominal"] == FAMILYWISE_ALPHA
+        assert fw["procedure"].startswith("holm_family as implemented")
+        assert fw["one_sign_vector_per_entity_shared_by_both_claims"] is True
+        assert fw["achieved_is_nominal_within_two_se"] is True
+        lo, hi = fw["two_se_band_around_the_nominal"]
+        assert lo <= fw["achieved"] <= hi
+        assert fw["replicates"] >= 1000
+        assert "not the per-claim marginal levels" in fw["what_it_measures"]
+
+    def test_the_implementation_is_hashed_and_the_hash_is_recomputed(self):
+        """``paired_ci.py`` is NOT in CODE_FINGERPRINT_MODULES - adding it
+        would change the code fingerprint inside all 30 committed sidecars and
+        refuse their reuse - and before 11C-R2 it was bound nowhere, so the
+        procedure deciding the primary claims was the one part of the
+        analysis nothing pinned."""
+        from granunlearn.evaluation.prediction_provenance import (
+            CODE_FINGERPRINT_MODULES, sha256_file)
+        t = _load()["primary_test"]["implementation"]
+        assert t["module"] == fz.PAIRED_CI_MODULE == \
+            "src/granunlearn/evaluation/paired_ci.py"
+        assert t["in_the_code_fingerprint"] is False
+        assert t["module"] not in CODE_FINGERPRINT_MODULES
+        assert t["sha256"] == sha256_file(REPO_ROOT / t["module"])
+        assert len(t["sha256"]) == 64
+        assert "refuse their reuse" in t["why_it_is_hashed_separately"]
+        assert "recomputed HERE" in t["why_it_is_hashed_separately"]
+        assert set(t["functions"]) == {
+            "one_sided_permutation_pvalue", "holm_family",
+            "paired_rate_diff_ci"}
+        # the signatures are recorded so a changed parameter list is drift
+        assert t["signatures"]["one_sided_permutation_pvalue"] == [
+            "diffs", "direction", "n_permutations", "seed"]
+        assert t["signatures"]["holm_family"] == ["p_values",
+                                                  "familywise_alpha"]
+
+    def test_the_specification_and_its_implementation_agree(self):
+        a = _load(POWER_PATH)["primary_test"][
+            "specification_and_implementation_agree"]
+        assert a["all_agree"] is True
+        assert a["n_permutations_is_the_declared_count"] is True
+        assert a["seed_is_the_declared_seed"] is True
+        assert a["claim_direction_covers_exactly_the_primary_metrics"] is True
+        assert a["holm_family_takes_alpha_as_a_required_argument"] is True
+        read = a["every_value_read_off_the_implementation"]
+        assert read["n_permutations"] == N_PERMUTATIONS
+        assert read["seed"] == PERMUTATION_SEED
+
+    def test_a_moved_permutation_count_refuses(self, monkeypatch):
+        monkeypatch.setattr(fz, "N_PERMUTATIONS", 1000)
+        f = build_freeze(REPO_ROOT, "pilot100")
+        assert any("permutations but the module declares" in r
+                   for r in f["refusals"]), f["refusals"]
+
+    def test_a_moved_seed_refuses(self, monkeypatch):
+        monkeypatch.setattr(fz, "PERMUTATION_SEED", 42)
+        f = build_freeze(REPO_ROOT, "pilot100")
+        assert any("permutation seed" in r for r in f["refusals"]), \
+            f["refusals"]
+
+    def test_one_direction_for_both_claims_refuses(self, monkeypatch):
+        """The failure mode that would test FILR backwards."""
+        monkeypatch.setattr(fz, "CLAIM_DIRECTION",
+                            {"tga": "greater", "filr": "greater"})
+        f = build_freeze(REPO_ROOT, "pilot100")
+        assert any("backwards" in r for r in f["refusals"]), f["refusals"]
+
+    def test_an_edited_paired_ci_refuses(self, monkeypatch):
+        """The freeze re-hashes the module rather than trusting the report's
+        copy, so an edit between the analysis and the freeze refuses."""
+        real = fz.sha256_file
+        monkeypatch.setattr(
+            fz, "sha256_file",
+            lambda p: "0" * 64 if str(p).endswith("paired_ci.py")
+            else real(p))
+        f = build_freeze(REPO_ROOT, "pilot100")
+        assert any("changed after the analysis that specified it" in r
+                   for r in f["refusals"]), f["refusals"]
+
+    def test_a_test_that_overshoots_its_own_threshold_refuses(
+            self, monkeypatch):
+        """Non-vacuity of the calibration gate: freezing a threshold the
+        procedure does not deliver would publish a familywise rate the test
+        does not control."""
+        def mutate(out):
+            out = dict(out)
+            pt = dict(out["primary_test"])
+            cal = {k: dict(v) for k, v in
+                   pt["achieved_level_under_the_real_null"].items()}
+            cal["B3_minus_B0:tga"][
+                "achieved_level_is_nominal_within_two_se"] = False
+            pt["achieved_level_under_the_real_null"] = cal
+            fw = dict(pt["achieved_familywise_level_under_the_global_null"])
+            fw["achieved_is_nominal_within_two_se"] = False
+            pt["achieved_familywise_level_under_the_global_null"] = fw
+            out["primary_test"] = pt
+            return out
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("the procedure delivers" in r for r in f["refusals"]), \
+            f["refusals"]
+        assert any("familywise rejection rate" in r
+                   for r in f["refusals"]), f["refusals"]
+
+    def test_a_report_with_no_primary_test_refuses(self, monkeypatch):
+        def mutate(out):
+            out = dict(out)
+            out.pop("primary_test")
+            return out
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("no primary_test block" in r for r in f["refusals"]), \
+            f["refusals"]
+
+    def test_moved_holm_thresholds_refuse(self, monkeypatch):
+        def mutate(out):
+            out = dict(out)
+            pt = dict(out["primary_test"])
+            pt["multiplicity"] = dict(pt["multiplicity"],
+                                      thresholds=[0.0125, 0.025])
+            out["primary_test"] = pt
+            return out
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("Holm thresholds" in r for r in f["refusals"]), \
+            f["refusals"]
+
+
+# ── 0.025 has two sources and only one of them applies here ──────────
+
+class TestTheAlphaConventionSeparatesItsTwoSources:
+    """Iteration 11C-R2's finding #3, second half.  The freeze and the power
+    report both said a single unadjusted one-sided claim is tested at 0.025.
+    A STANDALONE directional claim at familywise 0.05 is tested at one-sided
+    0.05: one-sidedness spends nothing.  0.025 is right here because it is
+    Holm's first threshold for k = 2 - and separately because it is the one
+    arm of a two-sided 95% interval that a TOST or non-inferiority bound is
+    read off at.  The two coincide only at k = 2."""
+
+    def test_both_levels_are_named_and_only_one_is_used(self):
+        a = _load()["analysis"]
+        assert a["familywise_alpha"] == FAMILYWISE_ALPHA == 0.05
+        assert a["alpha_one_sided"] == ALPHA_ONE_SIDED == 0.025
+        assert a["alpha_standalone_one_sided"] == \
+            ALPHA_STANDALONE_ONE_SIDED == 0.05
+        assert a["holm_worst_case_alpha"] == HOLM_WORST_CASE_ALPHA == 0.025
+        assert a["alpha_standalone_one_sided"] != a["holm_worst_case_alpha"]
+
+    def test_the_convention_no_longer_calls_0025_the_unadjusted_level(self):
+        a = _load()["analysis"]["alpha_convention"]
+        assert "unadjusted" not in a
+        assert "does not halve" in a
+        assert "STANDALONE" in a
+        assert "property of k=2" in a or "only because" in a
+        # and the same correction is in the power report, in both places it
+        # appeared
+        p = _load(POWER_PATH)
+        for text in (p["design"]["alpha_convention"],):
+            assert "unadjusted" not in text
+            assert "does NOT halve" in text
+            assert "0.0167" in text, text   # what Holm's first step is at k=3
+        chosen = [d for d in p["preregistration_decisions"]["decisions"]
+                  if d["id"] == "familywise_alpha"][0]
+        assert "STANDALONE" in chosen["chosen"]
+        assert any("unadjusted one-sided claim" in r
+                   for r in chosen["rejected"]), chosen["rejected"]
+
+    def test_the_sizing_uses_the_holm_threshold_and_not_the_standalone_one(
+            self):
+        c = _load()["claims"]
+        assert c["sizing_alpha_one_sided"] == HOLM_WORST_CASE_ALPHA == 0.025
+        assert c["sizing_alpha_one_sided"] != ALPHA_STANDALONE_ONE_SIDED
+        assert c["sizing_critical_value_z"] == \
+            round(z(1 - HOLM_WORST_CASE_ALPHA), 6)
+        assert "z(1 - familywise/k)" in c["thresholds_and_sizing_agree"]
+        assert "same test" in c["thresholds_and_sizing_agree"]
+        assert c["clusters_required_at_that_threshold"] == {
+            "B3_minus_B0:tga": 5, "B3_minus_B0:filr": 4}
+
+    def test_the_test_thresholds_and_the_sizing_are_the_same_number(self):
+        """The point of the correction: 11C-R1 made the thresholds and the
+        sizing agree, and 11C-R2 must not break that while fixing the
+        prose."""
+        f = _load()
+        assert f["primary_test"]["multiplicity"]["thresholds"][0] == \
+            f["claims"]["sizing_alpha_one_sided"] == \
+            f["analysis"]["holm_worst_case_alpha"]
+        assert f["primary_test"]["multiplicity"][
+            "worst_case_alpha_for_a_single_claim"] == \
+            f["claims"]["sizing_alpha_one_sided"]
+
 
 # ── the code that turns scores into claims is bound too ────────────
 
@@ -867,26 +1538,92 @@ class TestTheSealedSplitInvariantsAreActionable:
         it."""
         f = _load()
         inv = f["sealed_split_invariants"]
-        assert len(inv) == 6
+        assert len(inv) == 8
         for item in inv:
-            assert set(item) == {"invariant", "why", "enforced_by",
-                                 "checked_at"}, item
+            # the four keys every invariant must carry; extras are allowed
+            # because Iteration 11C-R2's identity invariant also binds the
+            # hashes it is checked against, and a hash with no key to live in
+            # would be prose
+            assert {"invariant", "why", "enforced_by",
+                    "checked_at"} <= set(item), item
             for key in ("invariant", "why", "enforced_by"):
                 assert item[key] and len(item[key]) > 15, (key, item[key])
             # the enforcement point must be a named stage of the
             # confirmation sequence, not "later" or "somewhere"
             assert item["checked_at"].startswith("stage"), item["checked_at"]
 
+    def test_what_must_be_identical_and_what_must_be_new_are_separate(self):
+        """Iteration 11C-R2's finding #1.  One invariant used to forbid any
+        confirmation ASSOCIATION from appearing in the exploratory dataset,
+        which is impossible: the confirmation re-tests the same
+        entity-attribute associations with new photographs and new wording.
+        The requirement is now split, and each side is bound by a hash."""
+        f = _load()
+        inv = f["sealed_split_invariants"]
+        same = [i for i in inv if "IDENTICAL" in i["invariant"]]
+        assert len(same) == 1, [i["invariant"] for i in inv]
+        b = same[0]["bound_by"]
+        fn = f["confirmation_size"]["frozen_now"]
+        assert b["target_association_ids_sha256"] == \
+            fn["target_association_ids_sha256"]
+        assert len(b["target_association_ids_sha256"]) == 64
+        assert b["target_association_ids"] == \
+            len(fn["target_association_ids"]) > 0
+        assert b["target_entity_ids_sha256"] == fn["target_entity_ids_sha256"]
+        assert b["target_entity_ids"] == 72 == len(fn["target_entity_ids"])
+        assert "could not confirm" in same[0]["why"]
+        assert "repeating the probes would test nothing" in \
+            same[0]["why_it_is_not_a_leak"]
+
+        new = [i for i in inv if "is NEW" in i["invariant"]]
+        assert len(new) == 1, [i["invariant"] for i in inv]
+        nb = new[0]["bound_by"]
+        assert nb["exploratory_template_ids_sha256"] == \
+            fn["exploratory_template_ids_sha256"]
+        assert nb["exploratory_template_ids"] == \
+            len(fn["exploratory_template_ids"]) == 57
+        assert (REPO_ROOT
+                / nb["exploratory_photograph_sha256_manifest"]).exists()
+        assert "template TEXT" in new[0]["invariant"]
+        assert "same probe with a new label" in \
+            new[0]["why_template_text_and_not_only_template_id"]
+
+        reuse = [i for i in inv if "no exploratory QUERY or MEDIA" in
+                 i["invariant"]]
+        assert len(reuse) == 1, [i["invariant"] for i in inv]
+        assert "association-disjointness" in reuse[0]["why"]
+        assert reuse[0]["bound_by"]["what_may_not"].startswith("query_ids")
+
+    def test_no_invariant_forbids_the_associations_from_repeating(self):
+        """The impossible rule is searched for, not just its replacement
+        asserted present: a freeze could carry both and the contradiction
+        would only surface at stage 3."""
+        f = _load()
+        text = " ".join(json.dumps(i) for i in f["sealed_split_invariants"])
+        assert "no confirmation query_id, association" not in text
+        for item in f["sealed_split_invariants"]:
+            rule = item["invariant"].lower()
+            if "association" in rule:
+                assert "identical" in rule, item["invariant"]
+        # and the collision rules the stage-3 builder reads agree
+        rules = _load()["confirmation_size"][
+            "frozen_at_stage_3_before_any_scoring"]["collision_rules"]
+        assert any("REQUIRED to be IDENTICAL" in r for r in rules), rules
+        assert not any(r.startswith("no confirmation association")
+                       for r in rules)
+
     def test_the_three_ways_the_split_could_leak_are_all_covered(self):
         """The user's constraint was that the confirmation split must never
         enter the reference gate, candidate selection, or another go/no-go
-        decision.  All three appear, plus the disjointness they depend on."""
+        decision.  All three appear, plus the identity and novelty rules they
+        depend on."""
         f = _load()
         text = " ".join(i["invariant"] for i in f["sealed_split_invariants"])
         assert "reference-state gate" in text
         assert "candidate selection" in text
         assert "go/no-go" in text
         assert "query_id" in text and "photograph" in text
+        assert "IDENTICAL" in text and "NEW" in text
 
     def test_the_score_once_properties_are_recorded(self):
         f = _load()

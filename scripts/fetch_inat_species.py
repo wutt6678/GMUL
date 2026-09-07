@@ -329,6 +329,48 @@ def download_photo(session: requests.Session, url: str,
             "bytes": dest.stat().st_size}
 
 
+def species_for_role(role: str, tag: str) -> list[str]:
+    """The iNaturalist species in :data:`SPECIES_LIST` that carry ``role``.
+
+    Derived from the frozen dataset through the SAME census the power
+    analysis uses, rather than from a hand-copied list or a slice of
+    ``SPECIES_LIST``.  The slice is a trap with a measured shape: the 6
+    retain-only species sit at indices 1, 14, 16, 19, 22 and 28, so
+    ``--limit-species 30`` fetches 24 TARGET species plus those 6 and
+    silently drops 6 target ones - a pool that looks the right size and is
+    missing a fifth of the entities the confirmation needs.
+
+    Lazy imports: this is only reached when ``--role`` is used, and the
+    unit tests import this module to exercise the frozen-pool guard, which
+    needs no dataset and no parquet reader.
+    """
+    from granunlearn.evaluation.reference_eval import (
+        load_associations_parquet)
+    from power_analysis_confirmation import entity_role_census
+
+    data_dir = REPO_ROOT / "data" / f"mllmu_hier_{tag}"
+    assoc_path = data_dir / "associations.parquet"
+    if not assoc_path.exists():
+        raise SystemExit(
+            f"REFUSED - --role needs the frozen dataset at {data_dir} to "
+            f"derive which species carry a {role} association, and "
+            f"{assoc_path} is not there")
+    associations = load_associations_parquet(assoc_path)
+    census = entity_role_census(data_dir, associations)
+    if role not in census["by_role"]:
+        raise SystemExit(
+            f"REFUSED - unknown role {role!r}; the census knows "
+            f"{sorted(census['by_role'])}")
+    wanted = set(census["by_role"][role]["entity_ids"])
+    out = [s for s in SPECIES_LIST if s in wanted]
+    if not out:
+        raise SystemExit(
+            f"REFUSED - no species in SPECIES_LIST carries a {role} "
+            f"association in {data_dir}, so --role {role} would fetch "
+            f"nothing")
+    return out
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out",
@@ -336,6 +378,15 @@ def main() -> None:
     ap.add_argument("--images-per-species", type=int, default=12)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--limit-species", type=int, default=None)
+    ap.add_argument("--role", choices=("target", "retain", "all"),
+                    default="all",
+                    help="fetch only the species carrying this association "
+                         "role in the frozen dataset, derived by the same "
+                         "census the power analysis uses; mutually exclusive "
+                         "with --limit-species, which takes a slice of "
+                         "SPECIES_LIST and so cannot select a role")
+    ap.add_argument("--tag", default="pilot100",
+                    help="dataset tag --role reads its roles from")
     ap.add_argument("--skip-download", action="store_true")
     ap.add_argument(
         "--allow-overwrite-frozen", action="store_true",
@@ -344,11 +395,20 @@ def main() -> None:
              "the committed evidence certifies")
     args = ap.parse_args()
 
+    if args.role != "all" and args.limit_species:
+        raise SystemExit(
+            "REFUSED - --role and --limit-species select the species two "
+            "different ways and combining them makes it ambiguous which "
+            "species the pool is supposed to hold; pass one")
+
     out = (REPO_ROOT / args.out) if not Path(args.out).is_absolute() \
         else Path(args.out)
     refuse_if_frozen_pool(out, args.allow_overwrite_frozen)
-    species = SPECIES_LIST[:args.limit_species] \
-        if args.limit_species else SPECIES_LIST
+    if args.role != "all":
+        species = species_for_role(args.role, args.tag)
+    else:
+        species = SPECIES_LIST[:args.limit_species] \
+            if args.limit_species else SPECIES_LIST
     rng = random.Random(args.seed)
     session = _new_session()
     session.headers["User-Agent"] = \

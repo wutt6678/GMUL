@@ -55,6 +55,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import inspect
 import json
 import math
 import random
@@ -67,8 +68,11 @@ from typing import Any
 
 from granunlearn.config import _find_repo_root
 from granunlearn.evaluation.paired_ci import (
+    CLAIM_DIRECTION,
     PAIRED_METRICS,
     _paired_unit_diffs,
+    holm_family,
+    one_sided_permutation_pvalue,
     row_flags,
 )
 from granunlearn.evaluation.prediction_provenance import (
@@ -88,12 +92,27 @@ log = setup_logger("power_analysis_confirmation")
 #: declared alpha; every other level in this module is derived from it.
 FAMILYWISE_ALPHA = 0.05
 
-#: One-sided level for a single unadjusted claim: each arm of a TOST
-#: equivalence test, a non-inferiority test, or a directional superiority
-#: test.  Derived from FAMILYWISE_ALPHA rather than set beside it, because
-#: the two are the same convention read two ways and a module that declares
-#: both independently can silently disagree with itself.
+#: One-sided level corresponding to a 95% TWO-SIDED interval: each arm of a
+#: TOST equivalence test, and a non-inferiority test read off such an
+#: interval.  Derived from FAMILYWISE_ALPHA rather than set beside it, so the
+#: module cannot declare two independent levels and silently disagree with
+#: itself.
+#:
+#: THIS IS NOT the level of a standalone directional claim, and Iteration
+#: 11C-R2 found the comment saying it was.  A single one-sided superiority
+#: claim made at familywise alpha 0.05 is tested at ONE-SIDED 0.05: the whole
+#: error rate sits on one tail, so there is nothing to split.  Halving applies
+#: when a TWO-SIDED 95% interval is the object, which is what the margin
+#: claims below use.  That the primary family's Holm worst case is ALSO 0.025
+#: is a coincidence of k = 2 - it is familywise/k, the first Holm threshold,
+#: and it would be 0.05/3 at k = 3 while ALPHA_ONE_SIDED stayed 0.025.  The
+#: primary claims are sized from HOLM_WORST_CASE_ALPHA below, never from this.
 ALPHA_ONE_SIDED = FAMILYWISE_ALPHA / 2
+
+#: The level a STANDALONE one-sided directional claim carries at the declared
+#: familywise rate.  Named so that "unadjusted" has one meaning in this
+#: module instead of two.
+ALPHA_STANDALONE_ONE_SIDED = FAMILYWISE_ALPHA
 
 #: EVERY ``alpha`` parameter in this module is ONE-SIDED.  There is no
 #: two-sided alpha argument anywhere: ``n_for_superiority`` takes the
@@ -110,6 +129,47 @@ EQUIVALENCE_MARGIN = 0.05
 #: is identical on every run.  A preregistration whose sample size moves
 #: between runs of its own sizing script is not frozen.
 BOOTSTRAP_SEED = 20260907
+
+#: Sign-flip permutation draws for the primary one-sided p-values, and their
+#: seed.  Implemented in ``paired_ci.one_sided_permutation_pvalue``; these are
+#: the values the freeze binds by reading that signature.
+#:
+#: 10000 rather than the 1000 the CI bootstrap uses, and the reason is the
+#: threshold rather than tidiness: the Monte Carlo standard error of a
+#: p-value is sqrt(p(1-p)/n), which at the Holm threshold p = 0.025 is 0.0049
+#: for 1000 draws - a fifth of the threshold, so the draw noise alone could
+#: move a claim across it - and 0.0016 for 10000, a sixteenth.  10000 also
+#: makes the smallest reportable p-value 1/10001 ~ 1e-4, far enough below the
+#: threshold that "p < threshold" is never an artefact of the draw count.
+#:
+#: The seed is deliberately NOT the CI bootstrap's 42 and not the ICC
+#: bootstrap's 20260907.  Sharing a stream would make the interval's Monte
+#: Carlo error and the p-value's dependent, and a reader could not tell
+#: whether the two agreed because the data said so or because they were drawn
+#: from the same randomness.
+N_PERMUTATIONS = 10000
+PERMUTATION_SEED = 20260908
+
+#: Settings for the ACHIEVED-LEVEL study in ``primary_test_specification``,
+#: which re-signs the observed paired differences and measures how often the
+#: frozen test rejects at the Holm threshold.  Fixed so the report is
+#: reproducible; the seed is distinct from every other stream here for the
+#: same reason the permutation seed is.
+#:
+#: The study MUST use the frozen draw count.  A Monte Carlo permutation test
+#: with 2000 draws and the same test with 10000 draws are different
+#: procedures - their p-values are resolved on different grids, 1/2001 versus
+#: 1/10001 - so calibrating the smaller one says nothing about the level the
+#: frozen one actually achieves.  Earlier drafts calibrated at 2000.
+CALIBRATION_PERMUTATIONS = N_PERMUTATIONS
+#: 1000 replicates: the achieved level is itself an estimate with Monte Carlo
+#: standard error sqrt(p(1-p)/n), which at p = 0.025 is 0.0156 for 100
+#: replicates - larger than half the threshold it is checking - 0.0110 for
+#: 200, and 0.0049 for 1000.  At 1000 the estimate resolves the threshold to
+#: about a fifth of itself, which is what "the level is nominal" needs in
+#: order to mean something.  Costs about twenty seconds.
+CALIBRATION_REPLICATES = 1000
+CALIBRATION_SEED = 20260909
 
 #: Probes per nesting cluster the grid is evaluated at.  What a "probe" IS
 #: differs by stratum and is recorded per stratum in the report: for the
@@ -179,6 +239,13 @@ METRIC_CLUSTER_ROLE = {
 #: correct without weakening the claims that remain.
 PRIMARY_FAMILY = ("B3_minus_B0:tga", "B3_minus_B0:filr")
 
+#: Holm's WORST CASE for one claim in that family: the first threshold,
+#: familywise/k.  This - not ALPHA_ONE_SIDED - is the level the primary claims
+#: are sized at.  The two happen to be equal at k = 2, and that coincidence is
+#: exactly what let an earlier revision size one while declaring the other;
+#: naming them separately makes the difference visible at k = 3.
+HOLM_WORST_CASE_ALPHA = FAMILYWISE_ALPHA / len(PRIMARY_FAMILY)
+
 #: The PRIMARY ESTIMAND those two claims are about.  Declared explicitly
 #: because the family names are pooled while ``stratum_heterogeneity`` shows
 #: the effect living in one stratum, and a preregistration that leaves the
@@ -236,6 +303,17 @@ CONFIRM_FETCH_SEED = 42
 #: ``fetch_inat_species.refuse_if_frozen_pool`` because the committed image
 #: manifest pins 432 photographs under it.
 CONFIRM_FETCH_OUT = "data/raw/inaturalist/confirm_v1"
+#: WHICH species the fetch may draw.  ``target`` is derived from the same
+#: ``entity_role_census`` the report uses, not sliced off ``SPECIES_LIST``:
+#: the 6 retain-only species sit at indices 1, 14, 16, 19, 22 and 28, so
+#: ``--limit-species 30`` would fetch only 24 of the 30 TARGET species and
+#: silently drop Canis lupus, Felis catus, Mustela erminea, Mustela nivalis,
+#: Papilio machaon and Vulpes vulpes.  ``fetch_inat_species`` refuses
+#: ``--role`` together with ``--limit-species`` so the mistake cannot be
+#: made by accident.
+CONFIRM_FETCH_ROLE = "target"
+#: The tag whose ``associations.parquet`` defines the roles.
+CONFIRM_FETCH_TAG = "pilot100"
 
 #: NEW wording probes per target person.  The existing wording stratum is
 #: unbalanced (27 persons at 3 probes, 12 at 6, 3 at 9); the confirmation is
@@ -250,6 +328,36 @@ CONFIRM_NEW_WORDING_PROBES_PER_PERSON = 12
 CONFIRM_WORDING_FAMILIES = 3
 CONFIRM_NEW_TEMPLATES_PER_FAMILY = (
     CONFIRM_NEW_WORDING_PROBES_PER_PERSON // CONFIRM_WORDING_FAMILIES)
+
+#: Retention probes on the confirmation split: TEXT route only, 3 new
+#: template_ids per entity, on every entity that carries the metric.
+#:
+#: Iteration 11C-R2's finding: the freeze promised descriptive retain_same
+#: and retain_other intervals while the size block allocated NO retention
+#: probes at all - the 504 wordings are target-family probes on the 42 target
+#: persons, and the 70 entities retain_same needs (and the 45 retain_other
+#: needs) got nothing.
+#:
+#: The image route is omitted because it CANNOT be renewed for the entities
+#: that matter: each of the 64 MLLMU persons has exactly one photograph in
+#: pilot100_v2, so an image-route retention probe on a person either reuses
+#: exploratory media - which the sealed-split rules forbid - or does not
+#: exist.  Only the 6 retain-only species could have been given new
+#: photographs, and covering 6 of 70 entities on one route would barely move
+#: the pooled interval while making its route mix differ between entities.
+#: Their photographs are therefore not fetched either.
+CONFIRM_RETENTION_ROUTE = "text_only"
+CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY = 3
+#: Measured, not chosen for roundness.  At 3 probes per entity the
+#: entity-macro paired half-width is 0.0604 for retain_same and 0.1029 for
+#: retain_other, both at or above the 0.0556 batch-layout noise floor on the
+#: retain metrics: precision finer than that floor is not distinguishable
+#: from batched-decoding noise, so buying it would be waste.  Matching the
+#: exploratory precision instead would need 9 probes per entity for
+#: retain_same (half-width 0.0378, well below the floor) at 420 more probes;
+#: retain_other is cluster-bound at ICC 0.318 and gains almost nothing at any
+#: count.  ``retention_probe_allocation`` carries the numbers.
+CONFIRM_RETENTION_REJECTED_PROBES_PER_ENTITY = (6, 9, 12, 21)
 
 #: Every ``alpha`` above is one-sided; see FAMILYWISE_ALPHA.
 
@@ -1047,12 +1155,26 @@ def entity_role_census(data_dir: Path,
             per_source[entity_source[e]] = per_source.get(
                 entity_source[e], 0) + 1
         blob = "\n".join(ents).encode()
+        aids_sorted = sorted(aids)
         by_role[role] = {
             "entity_ids": ents,
             "total": len(ents),
             "by_source": dict(sorted(per_source.items())),
             "entity_ids_sha256": hashlib.sha256(blob).hexdigest(),
             "associations": len(aids),
+            #: The ASSOCIATION set is hashed separately from the ENTITY set
+            #: because Iteration 11C-R2's finding #1 makes them carry
+            #: OPPOSITE requirements.  The confirmation's target associations
+            #: must be IDENTICAL to these - it deliberately re-tests the same
+            #: entity-attribute pairs the frozen adapters were trained to
+            #: unlearn - while its queries, template ids and texts, and
+            #: photograph hashes must all be new.  A single hash over both,
+            #: or a single "nothing may repeat" rule, would make those two
+            #: requirements the same statement and the confirmation
+            #: impossible to build.
+            "association_ids": aids_sorted,
+            "association_ids_sha256": hashlib.sha256(
+                "\n".join(aids_sorted).encode()).hexdigest(),
         }
     role_sets: dict[str, int] = {}
     per_entity: dict[str, set] = {}
@@ -1119,6 +1241,545 @@ def batch_layout_floor(repo_root: Path, tag: str,
         "retain_metrics": block.get("retain_metrics"),
         "meaning": "same checkpoint weights under two batch layouts, so "
                    "this is decoding noise rather than a model difference",
+    }
+
+
+def _grouped_row_diffs(
+    fa: dict[str, tuple[int, str]],
+    fb: dict[str, tuple[int, str]],
+) -> dict[str, list[float]]:
+    """Row-level paired differences grouped by cluster entity.
+
+    ``_paired_unit_diffs`` collapses each entity to one number, which is what
+    the CI resamples and what the permutation test signs.  The variance
+    decomposition needs the rows BEFORE that collapse, or the within-entity
+    component cannot be separated from the between-entity one - and it is the
+    ratio of the two that decides how many probes per entity are worth
+    buying.
+    """
+    groups: dict[str, list[float]] = {}
+    for qid in sorted(set(fa) & set(fb)):
+        va, ea = fa[qid]
+        vb, eb = fb[qid]
+        if ea != eb:          # defensive: pairing must agree on the cluster
+            continue
+        groups.setdefault(ea, []).append(float(va - vb))
+    return groups
+
+
+def retention_media_supply(
+    associations: list[Any],
+    census: dict[str, Any],
+) -> dict[str, Any]:
+    """How many photographs each RETENTION entity actually has, measured.
+
+    The image route is omitted from the confirmation's retention probes, and
+    an omission stated as prose is worth nothing unless the number behind it
+    is in the same report.  What decides it is not taste but supply: a new
+    photograph can only be fetched for an iNaturalist species, and the
+    confirmation fetches nothing for the MLLMU persons because there is no
+    pool of new photographs of a real person to draw from.
+    """
+    photos: dict[str, set[str]] = {}
+    for a in associations:
+        photos.setdefault(a.entity_id, set()).update(
+            ref.path for ref in a.images)
+    retain = census["by_role"]["retain"]
+    retain_ids = retain["entity_ids"]
+    counts = {eid: len(photos.get(eid, ())) for eid in retain_ids}
+    dist: dict[str, int] = {}
+    for n in counts.values():
+        dist[str(n)] = dist.get(str(n), 0) + 1
+    #: Only iNaturalist species can be given a NEW photograph, because the
+    #: confirmation's only photograph source is the iNaturalist fetch.  The
+    #: complement is derived rather than named: the person source is
+    #: ``mllmu_hier`` in the data and hard-coding ``mllmu`` silently returned
+    #: zero, which made the omission look like it covered nobody.
+    renewable = retain["by_source"].get("inaturalist", 0)
+    return {
+        "retention_entities": len(retain_ids),
+        "photographs_per_retention_entity": dict(sorted(
+            dist.items(), key=lambda kv: int(kv[0]))),
+        "entities_with_a_single_photograph_or_none": sum(
+            1 for n in counts.values() if n <= 1),
+        "by_source": retain["by_source"],
+        "entities_a_new_photograph_could_cover": renewable,
+        "entities_no_new_photograph_can_cover": len(retain_ids) - renewable,
+        "sources_no_new_photograph_can_be_fetched_for": sorted(
+            s for s in retain["by_source"] if s != "inaturalist"),
+    }
+
+
+def retention_probe_allocation(
+    flags_b3: dict[str, dict[str, tuple[int, str]]],
+    flags_b0: dict[str, dict[str, tuple[int, str]]],
+    retain_floor: float | None,
+    media: dict[str, Any],
+    species_a_new_photograph_would_add: int,
+    fetch_species_covered: int,
+) -> dict[str, Any]:
+    """What the confirmation must build to produce the retention intervals it
+    promises, and what that allocation is worth.
+
+    Iteration 11C-R2's finding #2: the freeze published descriptive
+    retain_same and retain_other intervals while the selected size allocated
+    NO retention probes - the 504 new wordings are target-family probes on
+    the 42 TARGET persons, and the 70 entities retain_same is defined on (and
+    the 45 retain_other is defined on) were given nothing.  A promised
+    interval with no probes behind it is not a plan.
+
+    The count per entity is chosen against the batch-layout noise floor,
+    because that floor is what makes extra precision meaningless: scoring ONE
+    checkpoint under two batch layouts already moves the retain metrics by up
+    to ``retain_floor``, so a half-width below it is finer than the
+    reproducible noise of the measurement itself.
+    """
+    m_sel = CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY
+    per_metric: dict[str, Any] = {}
+    entities: dict[str, set[str]] = {}
+    for metric in ("retain_same", "retain_other"):
+        groups = _grouped_row_diffs(flags_b3[metric], flags_b0[metric])
+        entities[metric] = set(groups)
+        vc = variance_components(groups)
+        if not vc.get("estimable"):
+            per_metric[metric] = {"estimable": False,
+                                  "reason": vc.get("reason")}
+            continue
+        k = vc["num_clusters"]
+        sb, sw = vc["sigma2_between"], vc["sigma2_within"]
+        m_exp = int(round(vc["probes_per_cluster_harmonic_mean"]))
+        per_metric[metric] = {
+            "entities_carried_by": k,
+            "route": CONFIRM_RETENTION_ROUTE,
+            "new_probes_per_entity": m_sel,
+            "new_probes": k * m_sel,
+            "icc_point_estimate": vc["icc_point_estimate"],
+            "sigma2_between": sb,
+            "sigma2_within": sw,
+            "variance_is_dominated_by": (
+                "within-entity measurement noise" if vc["icc_point_estimate"]
+                < 0.5 else "between-entity variation"),
+            "half_width_at_the_selected_count": round(
+                half_width(math.sqrt(sb + sw / m_sel), k), 4),
+            "half_width_at_the_exploratory_count": round(
+                half_width(math.sqrt(sb + sw / m_exp), k), 4),
+            "exploratory_probes_per_entity_harmonic_mean": m_exp,
+            "half_width_at_rejected_counts": {
+                str(m): round(half_width(math.sqrt(sb + sw / m), k), 4)
+                for m in sorted(CONFIRM_RETENTION_REJECTED_PROBES_PER_ENTITY)},
+            "between_entity_floor_infinite_probes": round(
+                half_width(math.sqrt(sb), k), 4),
+            "selected_count_is_at_or_above_the_noise_floor": (
+                None if not retain_floor else
+                round(half_width(math.sqrt(sb + sw / m_sel), k), 4)
+                >= retain_floor),
+            "probes_per_entity_that_would_match_the_exploratory_precision":
+                m_exp,
+        }
+    covered = entities["retain_same"] | entities["retain_other"]
+    total = sum(v.get("new_probes", 0) for v in per_metric.values())
+    #: The count that WOULD have matched the exploratory precision, read out
+    #: of the block above rather than restated in prose: a sentence naming a
+    #: number the same report computes differently is how the "9 probes"
+    #: claim in the first draft of this block contradicted its own 8.
+    same = per_metric.get("retain_same", {})
+    other = per_metric.get("retain_other", {})
+    m_match_same = same.get(
+        "probes_per_entity_that_would_match_the_exploratory_precision")
+    m_match_other = other.get(
+        "probes_per_entity_that_would_match_the_exploratory_precision")
+    hw_match_same = same.get("half_width_at_the_exploratory_count")
+    floor_same = same.get("between_entity_floor_infinite_probes")
+    #: None when the decomposition was not estimable, so the prose below
+    #: reads "None" rather than raising on the arithmetic.
+    extra_same = (m_match_same - m_sel
+                  if isinstance(m_match_same, int) else None)
+    n_cover = media["entities_a_new_photograph_could_cover"]
+    n_uncoverable = media["entities_no_new_photograph_can_cover"]
+    return {
+        "selected": True,
+        "route": CONFIRM_RETENTION_ROUTE,
+        "new_templates_per_entity": m_sel,
+        "per_metric": per_metric,
+        "media_supply_the_route_decision_rests_on": media,
+        "distinct_entities_covered": len(covered),
+        "retain_other_entities_are_a_subset_of_retain_same":
+            entities["retain_other"] <= entities["retain_same"],
+        "new_retention_probes_total": total,
+        "batch_layout_noise_floor_on_retain_metrics": retain_floor,
+        "why_this_count_and_not_one_that_matches_the_exploratory_precision": (
+            "precision below the batch-layout noise floor cannot be "
+            "distinguished from batched-decoding noise, so buying it would "
+            "spend generations on a decimal nobody can act on. retain_same "
+            f"would need {m_match_same} probes per entity to match the "
+            f"exploratory half-width; at that count the half-width is "
+            f"{hw_match_same}, already below the {retain_floor} floor, and "
+            f"its between-entity floor is {floor_same} - so the "
+            f"{extra_same} extra probes per entity would buy "
+            "precision the measurement cannot resolve. retain_other would "
+            f"need {m_match_other}, no more than the selected count: it is "
+            "cluster-bound and gains almost nothing at any count. The numbers "
+            "are in per_metric."),
+        "why_the_image_route_is_omitted": (
+            "it cannot be renewed for the entities that carry the metric. "
+            f"{n_uncoverable} of the {media['retention_entities']} retention "
+            f"entities come from "
+            f"{media['sources_no_new_photograph_can_be_fetched_for']}, for "
+            "which there is no pool of new photographs to fetch, and "
+            f"{media['entities_with_a_single_photograph_or_none']} retention "
+            "entities hold a single photograph or none, so an image-route "
+            "retention probe on one of them either reuses exploratory media - "
+            "which the sealed-split rules forbid - or does not exist. Only "
+            f"the {n_cover} retain-only species could have been given new "
+            f"photographs, and covering {n_cover} of "
+            f"{media['retention_entities']} entities on one route would "
+            "barely move the pooled interval while making its route mix "
+            "differ between entities."),
+        "consequence_for_the_photograph_fetch": (
+            f"the {species_a_new_photograph_would_add} retain-only species "
+            "have no confirmation purpose once the image route is omitted, so "
+            "the fetch covers the TARGET species only; species_covered in "
+            "confirmation_size is the target-species count and not the "
+            f"{fetch_species_covered} the supply could cover"),
+        "what_the_confirmation_retention_estimand_is": (
+            "baseline correctness on the retained fine value, asked in "
+            f"{m_sel} new wordings per entity on the TEXT route only, "
+            "macro-averaged over the entities that carry the metric"),
+        "how_it_differs_from_the_exploratory_retention_number": (
+            "pilot100_v2's retain_same and retain_other pool BOTH routes and "
+            "ask every retained value of an entity in 3 wordings, so the "
+            "exploratory figures are NOT the same estimand and the two must "
+            "not be subtracted or called a replication of each other"),
+        "status": (
+            "DESCRIPTIVE. Retention carries no claim, no declared margin and "
+            "no Holm entry; this allocation exists so the published interval "
+            "describes the confirmation split rather than the exploratory "
+            "one the reference-state gate saw."),
+    }
+
+
+def primary_test_specification(
+    flags_b3: dict[str, dict[str, tuple[int, str]]],
+    flags_b0: dict[str, dict[str, tuple[int, str]]],
+    repo_root: Path,
+) -> dict[str, Any]:
+    """The primary hypothesis test, READ OFF the code that will run it.
+
+    Iteration 11C-R2's finding #3: the preregistration declared Holm
+    thresholds applied to "one-sided p-values" while the repository contained
+    no p-value procedure at all - ``paired_rate_diff_ci`` returns an interval
+    and nothing returned a p.  A threshold with no test behind it is not a
+    decision rule, and "score exactly once" cannot be honoured by a procedure
+    whose test statistic is chosen at scoring time.
+
+    Every parameter is read from the function that will be called, by
+    ``inspect.signature``, for the reason the freeze reads the bootstrap
+    settings the same way: a specification written down beside the code is a
+    second copy of it, and the copy is what a preregistration would bind
+    while the function is what runs.
+    """
+    perm_sig = inspect.signature(one_sided_permutation_pvalue).parameters
+    holm_sig = inspect.signature(holm_family).parameters
+    rel = "src/granunlearn/evaluation/paired_ci.py"
+
+    #: Does the code do what the specification says?  Both sides are read in
+    #: the same process, so they cannot disagree HERE - the point of recording
+    #: the comparison is that a later edit to either side changes a field in
+    #: the committed report, and the freeze refuses on the change, instead of
+    #: leaving a specification and an implementation quietly describing two
+    #: different tests.
+    primary_metrics = sorted(c.split(":")[1] for c in PRIMARY_FAMILY)
+    agreement = {
+        "n_permutations_is_the_declared_count":
+            perm_sig["n_permutations"].default == N_PERMUTATIONS,
+        "seed_is_the_declared_seed":
+            perm_sig["seed"].default == PERMUTATION_SEED,
+        "claim_direction_covers_exactly_the_primary_metrics":
+            sorted(CLAIM_DIRECTION) == primary_metrics,
+        "holm_family_takes_alpha_as_a_required_argument":
+            holm_sig["familywise_alpha"].default is inspect.Parameter.empty,
+        "every_value_read_off_the_implementation": {
+            "n_permutations": perm_sig["n_permutations"].default,
+            "seed": perm_sig["seed"].default,
+            "directions": dict(CLAIM_DIRECTION),
+            "holm_family_parameters": list(holm_sig),
+        },
+    }
+    agreement["all_agree"] = all(
+        v for k, v in agreement.items()
+        if k != "every_value_read_off_the_implementation"
+        and k != "all_agree")
+
+    def _mc_se(p: float, n_draws: int) -> float:
+        """Monte Carlo standard error of a rate estimated from n draws."""
+        return round(math.sqrt(p * (1 - p) / n_draws), 6)
+
+    # ---- achieved level, measured rather than assumed ----
+    # TWO measurements, because the freeze binds two different promises:
+    #
+    # * each claim's MARGINAL level at Holm's first threshold, which says the
+    #   one-sided test is calibrated on data this discrete;
+    # * the FAMILYWISE rate at which the Holm PROCEDURE rejects at least one
+    #   claim under a global null, which is the number "familywise alpha =
+    #   0.05" is actually a promise about.
+    #
+    # Marginal levels at every step do NOT imply the familywise rate, because
+    # the two claims share their clusters and are therefore correlated.  The
+    # joint re-signing applies ONE sign vector per entity to BOTH claims;
+    # flipping the two independently would destroy that correlation and
+    # measure a procedure on data shaped unlike the confirmation's.
+    #
+    # Re-signing the observed per-entity differences IS the null the test
+    # assumes (symmetry about zero), and it keeps the real discreteness and
+    # the real zero fraction, which a synthetic continuous null would not.
+    units = {c: _paired_unit_diffs(flags_b3[c.split(":")[1]],
+                                   flags_b0[c.split(":")[1]])
+             for c in PRIMARY_FAMILY}
+    clusters_aligned = len({tuple(u["keys"]) for u in units.values()}) == 1
+    diffs_by_claim = {c: u["diffs"] for c, u in units.items()}
+    n_clusters = len(next(iter(units.values()))["keys"])
+    calibration: dict[str, Any] = {}
+    familywise: dict[str, Any] = {}
+    if not clusters_aligned or not n_clusters:
+        calibration = {
+            "estimable": False,
+            "cluster_keys_agree_across_claims": clusters_aligned,
+            "num_clusters_per_claim": {c: len(u["keys"])
+                                       for c, u in units.items()},
+            "reason": (
+                "the primary claims do not share ONE ordered cluster list, so "
+                "a joint re-signing would apply one entity's sign flip to "
+                "another entity's difference" if not clusters_aligned
+                else "no cluster is paired, so there is nothing to re-sign"),
+        }
+    else:
+        rng = random.Random(CALIBRATION_SEED)
+        thr = HOLM_WORST_CASE_ALPHA
+        ps: dict[str, list[float]] = {c: [] for c in PRIMARY_FAMILY}
+        family_rejections = 0
+        for _ in range(CALIBRATION_REPLICATES):
+            #: ONE sign vector per entity, shared by every claim.
+            signs = [rng.choice((-1.0, 1.0)) for _ in range(n_clusters)]
+            pvals: dict[str, float] = {}
+            for claim in PRIMARY_FAMILY:
+                metric = claim.split(":")[1]
+                signed = [d * s
+                          for d, s in zip(diffs_by_claim[claim], signs)]
+                r = one_sided_permutation_pvalue(
+                    signed, CLAIM_DIRECTION[metric],
+                    CALIBRATION_PERMUTATIONS, rng.randrange(1, 2 ** 31))
+                pvals[claim] = r["p_value_one_sided"]
+                ps[claim].append(r["p_value_one_sided"])
+            if holm_family(pvals, FAMILYWISE_ALPHA)["rejected"]:
+                family_rejections += 1
+        n_rep = CALIBRATION_REPLICATES
+        #: The standard error of an achieved level is taken under the NOMINAL
+        #: rate, not under the achieved one.  sqrt(p(1-p)/n) at p = achieved
+        #: is exactly 0 when the test never rejects, and an earlier draft
+        #: wrote the check as ``abs(achieved - thr) <= 2 * (se or 1.0)``,
+        #: which turned the one failure mode this calibration exists to catch
+        #: - a test that does not reject - into a pass.
+        se_thr = math.sqrt(thr * (1 - thr) / n_rep)
+        for claim in PRIMARY_FAMILY:
+            diffs = diffs_by_claim[claim]
+            achieved = sum(1 for p in ps[claim] if p <= thr) / n_rep
+            calibration[claim] = {
+                "num_clusters": n_clusters,
+                "zero_difference_fraction": round(
+                    sum(1 for d in diffs if d == 0) / n_clusters, 4),
+                "distinct_nonzero_differences": len(
+                    {round(d, 6) for d in diffs if d != 0}),
+                "observed_statistic": round(sum(diffs) / n_clusters, 6),
+                "replicates": n_rep,
+                "permutations_per_replicate": CALIBRATION_PERMUTATIONS,
+                "permutations_are_the_frozen_count":
+                    CALIBRATION_PERMUTATIONS == N_PERMUTATIONS,
+                "sign_flips_shared_with_the_other_claims": True,
+                "threshold": thr,
+                "achieved_level_at_the_threshold": round(achieved, 4),
+                "monte_carlo_se_of_that_estimate_under_the_nominal": round(
+                    se_thr, 4),
+                "two_se_band_around_the_nominal": [
+                    round(thr - 2 * se_thr, 4), round(thr + 2 * se_thr, 4)],
+                "achieved_level_is_nominal_within_two_se":
+                    abs(achieved - thr) <= 2 * se_thr,
+                "achieved_over_nominal": round(achieved / thr, 3),
+                "mean_p_under_the_null": round(sum(ps[claim]) / n_rep, 4),
+                "why_the_mean_is_reported_beside_the_tail_rate": (
+                    "under H0 the p-values are uniform on the grid the draw "
+                    "count allows, so the mean should sit near 0.5. A mean "
+                    "well below it is an anti-conservative test and well "
+                    "above a conservative one, and unlike the tail rate it is "
+                    "estimated from every replicate instead of the handful "
+                    "that land in the tail, so it is the more precise of the "
+                    "two diagnostics"),
+            }
+        fw = family_rejections / n_rep
+        se_fw = math.sqrt(FAMILYWISE_ALPHA * (1 - FAMILYWISE_ALPHA) / n_rep)
+        familywise = {
+            "what_it_measures": (
+                "the rate at which the Holm procedure rejected AT LEAST ONE "
+                "claim, over joint re-signings of the observed difference "
+                "vectors under a global null. This, and not the per-claim "
+                "marginal levels, is what the declared familywise alpha is a "
+                "promise about."),
+            "procedure": "holm_family as implemented, not a restatement",
+            "replicates": n_rep,
+            "permutations_per_replicate": CALIBRATION_PERMUTATIONS,
+            "one_sign_vector_per_entity_shared_by_both_claims": True,
+            "nominal": FAMILYWISE_ALPHA,
+            "achieved": round(fw, 4),
+            "monte_carlo_se_under_the_nominal": round(se_fw, 4),
+            "two_se_band_around_the_nominal": [
+                round(FAMILYWISE_ALPHA - 2 * se_fw, 4),
+                round(FAMILYWISE_ALPHA + 2 * se_fw, 4)],
+            "achieved_is_nominal_within_two_se":
+                abs(fw - FAMILYWISE_ALPHA) <= 2 * se_fw,
+            "achieved_over_nominal": round(fw / FAMILYWISE_ALPHA, 3),
+        }
+
+    #: The threshold the claim has to clear, and the draw noise at the two
+    #: candidate draw counts: the 1001 the CI bootstrap already uses, and the
+    #: frozen permutation count.  Both are +1 because the observed vector is
+    #: in the null.
+    se_at_ci_draws = _mc_se(HOLM_WORST_CASE_ALPHA, 1000 + 1)
+    se_at_frozen_draws = _mc_se(HOLM_WORST_CASE_ALPHA, N_PERMUTATIONS + 1)
+
+    worked = {
+        "both_clear": holm_family(
+            {"B3_minus_B0:tga": 0.004, "B3_minus_B0:filr": 0.03},
+            FAMILYWISE_ALPHA),
+        "first_fails_so_the_second_is_retained": holm_family(
+            {"B3_minus_B0:tga": 0.03, "B3_minus_B0:filr": 0.04},
+            FAMILYWISE_ALPHA),
+    }
+    return {
+        "applies_to": list(PRIMARY_FAMILY),
+        "specification_and_implementation_agree": agreement,
+        "statistic": (
+            "the entity-macro paired difference: mean over entities of each "
+            "entity's own (rate_B3 - rate_B0), the SAME quantity "
+            "paired_rate_diff_ci reports as 'diff' and covers with the "
+            "published interval"),
+        "why_the_statistic_must_be_the_one_the_interval_covers": (
+            "a p-value for one quantity beside an interval for another lets a "
+            "claim be rejected while the interval still contains zero, and "
+            "the two numbers then contradict each other in the same table"),
+        "null_hypothesis": (
+            "each entity's paired difference is symmetric about zero, so all "
+            "2^k sign-flip vectors are equally likely"),
+        "alternative_by_claim": {
+            c: f"theta {'>' if CLAIM_DIRECTION[c.split(':')[1]] == 'greater' else '<'} 0"
+            for c in PRIMARY_FAMILY},
+        "direction_by_metric": {
+            c.split(":")[1]: CLAIM_DIRECTION[c.split(":")[1]]
+            for c in PRIMARY_FAMILY},
+        "why_the_directions_differ": (
+            "TGA is an accuracy, so better is HIGHER; FILR is a leakage rate, "
+            "so better is LOWER. Both claims are about the same B3-B0 "
+            "difference and point in OPPOSITE directions on it, so a single "
+            "sign convention applied to both would test one of them "
+            "backwards. The sizing code sizes |theta| and is "
+            "direction-agnostic, which is correct for a power table and "
+            "would be wrong for a test."),
+        "p_value_method": "Monte Carlo cluster sign-flip permutation",
+        "why_sign_flips_and_not_the_bootstrap": (
+            "the paired per-entity differences are bounded, discrete and "
+            "mostly exactly zero; a percentile bootstrap p-value is poorly "
+            "calibrated in exactly the tail a Holm threshold lives in. Sign "
+            "flips assume no distribution, and a zero difference cannot flip, "
+            "so it contributes to neither tail - which is the correct "
+            "behaviour rather than a resample of it."),
+        "n_permutations": perm_sig["n_permutations"].default,
+        "permutation_seed": perm_sig["seed"].default,
+        "n_permutations_declared_here": N_PERMUTATIONS,
+        "permutation_seed_declared_here": PERMUTATION_SEED,
+        "smallest_reportable_p_value": round(
+            1.0 / (N_PERMUTATIONS + 1), 6),
+        "monte_carlo_se_at_the_holm_threshold": se_at_frozen_draws,
+        "why_that_many_draws": (
+            "the Monte Carlo standard error of a p-value is sqrt(p(1-p)/n); "
+            f"at the Holm threshold it is {se_at_ci_draws}"
+            " for the 1000 draws the CI bootstrap uses - a fifth of the "
+            f"threshold, so draw noise alone could move a claim across it - "
+            f"and {se_at_frozen_draws} for {N_PERMUTATIONS}"),
+        "observed_vector_included_in_the_null":
+            True,
+        "seed_is_distinct_from": {
+            "ci_bootstrap": 42,
+            "icc_bootstrap": BOOTSTRAP_SEED,
+            "why": (
+                "sharing a stream would make the interval's Monte Carlo error "
+                "and the p-value's dependent, and a reader could not tell "
+                "whether the two agreed because the data said so or because "
+                "they were drawn from the same randomness"),
+        },
+        "multiplicity": {
+            "procedure": "Holm step-down",
+            "familywise_alpha": FAMILYWISE_ALPHA,
+            "thresholds_apply_to": "one-sided p-values",
+            "thresholds": [round(FAMILYWISE_ALPHA / (len(PRIMARY_FAMILY) - i),
+                                 6) for i in range(len(PRIMARY_FAMILY))],
+            "worst_case_alpha_for_a_single_claim": round(
+                HOLM_WORST_CASE_ALPHA, 6),
+            "ordering": "ascending p-value, ties broken by claim name",
+            "tie_handling": (
+                "ties are ordered by claim name so the result is reproducible "
+                "from the p-values alone; the break cannot change a verdict "
+                "because tied p-values meet the same threshold at the same "
+                "step, but it does fix which claim is reported first"),
+            "pass_fail_rule": (
+                "step down from the smallest p-value; the claim at step i "
+                "(0-based) is rejected when p_(i) <= familywise_alpha/(k-i); "
+                "the FIRST non-rejection ends the procedure and every later "
+                "claim is retained whether or not it clears its own "
+                "threshold"),
+            "why_the_stopping_rule_is_part_of_the_rule": (
+                "dropping it turns Holm into a per-comparison test at a "
+                "smaller alpha and understates the familywise error rate, "
+                "which is the one number the preregistration promises to "
+                "control"),
+            "worked_examples": worked,
+        },
+        "achieved_level_under_the_real_null": calibration,
+        "achieved_familywise_level_under_the_global_null": familywise,
+        "achieved_level_note": (
+            "measured by re-signing the 11R paired differences, which is the "
+            "null the test assumes and preserves the real discreteness. The "
+            "LIMIT is that the confirmation split will have 12 balanced "
+            "probes per person where the exploratory design had 3-9 "
+            "unbalanced, so its per-entity differences take more distinct "
+            "values and are LESS discrete - which moves the achieved level "
+            "toward nominal, not away from it. The per-claim numbers are "
+            "marginal levels; achieved_familywise_level_under_the_global_null "
+            "is the one that speaks to the declared familywise alpha, and it "
+            "is measured by running the real holm_family on jointly "
+            "re-signed p-values rather than by combining the marginals."),
+        "implementation": {
+            "module": rel,
+            "sha256": sha256_file(repo_root / rel),
+            "functions": ["one_sided_permutation_pvalue", "holm_family",
+                          "paired_rate_diff_ci"],
+            "signatures": {
+                "one_sided_permutation_pvalue": list(perm_sig),
+                "holm_family": list(holm_sig),
+            },
+            "why_the_signatures_are_recorded": (
+                "so a later change to the parameter list shows up as drift in "
+                "the freeze rather than as a quietly different test"),
+            "why_the_hash_is_here": (
+                "this module is NOT in CODE_FINGERPRINT_MODULES, because "
+                "adding it would change the code fingerprint inside all 30 "
+                "committed sidecars and refuse their reuse; and it was bound "
+                "nowhere, so the procedure that decides the primary claims "
+                "was the one part of the analysis nothing pinned"),
+        },
+        "interval_still_published": (
+            "the percentile bootstrap CI over the same per-entity differences, "
+            "unchanged: the test decides the claim and the interval reports "
+            "its size, and a rejection with an interval that still contains "
+            "zero would be a contradiction the reader is entitled to see "
+            "rather than have explained away"),
     }
 
 
@@ -1358,17 +2019,37 @@ def main() -> int:
         "design": {
             "familywise_alpha": FAMILYWISE_ALPHA,
             "alpha_one_sided": ALPHA_ONE_SIDED,
+            "alpha_standalone_one_sided": ALPHA_STANDALONE_ONE_SIDED,
+            "holm_worst_case_alpha": HOLM_WORST_CASE_ALPHA,
+            "the_level_the_primary_claims_are_tested_at":
+                HOLM_WORST_CASE_ALPHA,
+            "why_these_three_are_not_one_number": (
+                f"familywise/2 = {ALPHA_ONE_SIDED} is one arm of a two-sided "
+                f"interval. familywise/k = {HOLM_WORST_CASE_ALPHA} is Holm's "
+                f"first threshold for k = {len(PRIMARY_FAMILY)}. A standalone "
+                f"directional claim is tested at {ALPHA_STANDALONE_ONE_SIDED}. "
+                "The first two are equal here because k = 2 and neither is "
+                "what one-sidedness costs."),
             "alpha_convention": (
                 f"FAMILYWISE alpha is {FAMILYWISE_ALPHA} and it is the only "
-                "alpha declared. Every claim is ONE-SIDED and directional, "
-                f"so a single unadjusted claim is tested at "
-                f"{ALPHA_ONE_SIDED} = familywise/2 and Holm's worst-case "
-                f"threshold for one claim in a k-claim family is "
-                f"familywise/k. Every alpha argument in this module is "
-                "one-sided and every sizing function uses z(1 - alpha); "
-                "there is no two-sided alpha anywhere in it, so the "
-                "thresholds and the sizing cannot disagree about which "
-                "quantile they mean."),
+                "alpha declared. Every claim is ONE-SIDED and directional. "
+                "One-sidedness does NOT halve the threshold: a STANDALONE "
+                f"directional claim at familywise {FAMILYWISE_ALPHA} is "
+                f"tested at one-sided {ALPHA_STANDALONE_ONE_SIDED}, because "
+                "there is no other arm to spend error probability on. "
+                f"{ALPHA_ONE_SIDED} = familywise/2 is a DIFFERENT thing: it "
+                "is the one arm of a TWO-SIDED interval, i.e. the level a "
+                "TOST arm or a non-inferiority bound is read off a 95% "
+                "two-sided CI at. It is also what Holm charges the FIRST of "
+                f"k={len(PRIMARY_FAMILY)} claims here (familywise/k), so for "
+                "this family and only this family the two coincide. That "
+                "coincidence is a property of k=2, not of one-sidedness: "
+                "with three primary claims Holm's first threshold would be "
+                f"{FAMILYWISE_ALPHA / 3:.4f}, not {ALPHA_ONE_SIDED}. Every "
+                "alpha argument in this module is one-sided and every sizing "
+                "function uses z(1 - alpha); there is no two-sided alpha "
+                "anywhere in it, so the thresholds and the sizing cannot "
+                "disagree about which quantile they mean."),
             "power_targets": list(POWER_TARGETS),
             "equivalence_margin": EQUIVALENCE_MARGIN,
             "resampling_unit": "entity (species or person) for pooled "
@@ -1838,10 +2519,10 @@ def main() -> int:
             "Holm budget and weakens the thresholds for the claims that can."),
     }
 
-    # ---- the preregistration decisions this analysis produced ----
-    # Recorded here so the freeze in stage 2 and the probe construction in
-    # stage 3 read them from one place, and so a later reader can see which
-    # numbers were measured and which were chosen.
+    # ---- the held-out stratum's ceiling and rows, read out of the block ----
+    #: Computed once, above both the retention allocation and the size block,
+    #: because both quote the same two numbers and a ceiling derived twice is
+    #: a ceiling that can disagree with itself.
     chosen_supply = supply["seeded_refetch"]
     held_block = strata.get("held_out_photo", {})
     held_tga = held_block.get("metrics", {}).get("B3_minus_B0:tga", {})
@@ -1854,6 +2535,28 @@ def main() -> int:
     held_mde_key = f"mde_at_{held_ceiling}_clusters_conservative_icc_upper"
     held_out_mde_by_candidate = {
         m: row.get(held_mde_key) for m, row in sorted(held_rows.items())}
+
+    # ---- the retention probes the promised intervals actually need ----
+    # Placed before the size block because the size block reports the total,
+    # and a total that counted only target probes is what made 936 look like
+    # the number of new target probes.
+    report["retention_probe_allocation"] = retention_probe_allocation(
+        flags["B3"], flags["B0"], floor.get("max_abs_retain_delta"),
+        retention_media_supply(associations, census),
+        chosen_supply["species_covered"] - held_ceiling,
+        chosen_supply["species_covered"])
+    #: One name for the block, bound here because both the preregistration
+    #: decisions and the size block below quote its totals.
+    retention_alloc = report["retention_probe_allocation"]
+
+    # ---- the primary hypothesis test, read off its implementation ----
+    report["primary_test"] = primary_test_specification(
+        flags["B3"], flags["B0"], repo_root)
+
+    # ---- the preregistration decisions this analysis produced ----
+    # Recorded here so the freeze in stage 2 and the probe construction in
+    # stage 3 read them from one place, and so a later reader can see which
+    # numbers were measured and which were chosen.
     report["preregistration_decisions"] = {
         "primary_estimand": PRIMARY_ESTIMAND,
         "primary_family": list(PRIMARY_FAMILY),
@@ -1862,6 +2565,47 @@ def main() -> int:
         "multiplicity": (
             f"Holm over k = {len(PRIMARY_FAMILY)} at familywise alpha "
             f"{FAMILYWISE_ALPHA}, one-sided p-values"),
+        "primary_test": {
+            "statistic": report["primary_test"]["statistic"],
+            "null": report["primary_test"]["null_hypothesis"],
+            "method": report["primary_test"]["p_value_method"],
+            "n_permutations": report["primary_test"]["n_permutations"],
+            "seed": report["primary_test"]["permutation_seed"],
+            "directions": report["primary_test"]["direction_by_metric"],
+            "alternatives": report["primary_test"]["alternative_by_claim"],
+            "holm_thresholds":
+                report["primary_test"]["multiplicity"]["thresholds"],
+            "holm_ordering":
+                report["primary_test"]["multiplicity"]["ordering"],
+            "holm_tie_handling":
+                report["primary_test"]["multiplicity"]["tie_handling"],
+            "pass_fail_rule":
+                report["primary_test"]["multiplicity"]["pass_fail_rule"],
+            "achieved_level_under_the_real_null": {
+                c: v["achieved_level_at_the_threshold"]
+                for c, v in
+                report["primary_test"]["achieved_level_under_the_real_null"]
+                .items()},
+            "achieved_familywise_level_under_the_global_null":
+                report["primary_test"]
+                ["achieved_familywise_level_under_the_global_null"]
+                ["achieved"],
+            "implementation_module":
+                report["primary_test"]["implementation"]["module"],
+            "implementation_sha256":
+                report["primary_test"]["implementation"]["sha256"],
+            "read_from": "primary_test",
+        },
+        "retention_probes": {
+            "route": retention_alloc["route"],
+            "new_templates_per_entity":
+                retention_alloc["new_templates_per_entity"],
+            "total": retention_alloc["new_retention_probes_total"],
+            "entities_covered":
+                retention_alloc["distinct_entities_covered"],
+            "status": retention_alloc["status"],
+            "read_from": "retention_probe_allocation",
+        },
         "decisions": [
             {
                 "id": "primary_estimand",
@@ -1883,16 +2627,102 @@ def main() -> int:
                              if m != CONFIRM_NEW_PHOTOS_PER_SPECIES],
             },
             {
+                "id": "primary_test",
+                "question": "what statistic, what null, what p-value method, "
+                            "how many draws, what seed, and which direction "
+                            "for each claim",
+                "chosen": (
+                    "the entity-macro paired B3-B0 difference - the same "
+                    "quantity the published interval covers - tested "
+                    "one-sided by a Monte Carlo cluster sign-flip permutation "
+                    f"with {N_PERMUTATIONS} draws at seed {PERMUTATION_SEED}, "
+                    "TGA in the greater direction and FILR in the less "
+                    "direction, then Holm at familywise "
+                    f"{FAMILYWISE_ALPHA}"),
+                "evidence": "primary_test",
+                "rejected": [
+                    "declare thresholds and cluster requirements while "
+                    "leaving the p-value undefined, which is what the "
+                    "previous revision did: the repository had no one-sided "
+                    "p-value anywhere, only a 1000-resample percentile "
+                    "interval, so the frozen test could not be executed as "
+                    "frozen",
+                    "a percentile bootstrap p-value: the per-entity "
+                    "differences are bounded, discrete and mostly exactly "
+                    "zero, and a bootstrap is badly calibrated in exactly the "
+                    "tail a Holm threshold sits in",
+                    "one direction for both claims, or sizing-style "
+                    "|theta|: TGA is an accuracy and FILR a leakage rate, so "
+                    "the two claims point in OPPOSITE directions on the same "
+                    "difference and one sign convention tests one of them "
+                    "backwards",
+                    "calibrating the achieved level at a smaller draw count "
+                    "than the frozen one, which measures a different "
+                    "procedure's level and reports it as this test's",
+                    "publishing the thresholds without measuring the level "
+                    "they achieve on data with this much discreteness: "
+                    f"{CALIBRATION_REPLICATES} re-signings of the real 11R "
+                    "differences are in achieved_level_under_the_real_null, "
+                    "with their own Monte Carlo standard error beside each"],
+            },
+            {
+                "id": "retention_probe_allocation",
+                "question": "how many retention probes, on which route",
+                "chosen": (
+                    f"{CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY} new text "
+                    "templates per retention entity, on every entity that "
+                    "carries the metric: "
+                    f"{retention_alloc['new_retention_probes_total']} probes "
+                    "over "
+                    f"{retention_alloc['distinct_entities_covered']} "
+                    "entities, descriptive only"),
+                "evidence": "retention_probe_allocation",
+                "rejected": [
+                    "allocate no retention probes while publishing retention "
+                    "intervals, which is what the previous revision did: the "
+                    "504 new wordings are target-family probes on target "
+                    "persons, so the promised intervals would have described "
+                    "the exploratory split",
+                    "omit confirmation retention entirely and quote only the "
+                    "exploratory 11R intervals; rejected because those "
+                    "intervals describe a split the reference-state gate saw",
+                    "both routes: the image route cannot be renewed for the "
+                    "persons who carry most of the retention entities, so "
+                    "renewing it for the species alone would give the pooled "
+                    "interval a route mix that differs between entities",
+                    *[f"{m} new templates per entity" for m in
+                      CONFIRM_RETENTION_REJECTED_PROBES_PER_ENTITY],
+                ],
+            },
+            {
                 "id": "familywise_alpha",
                 "question": "is familywise alpha 0.05 or 0.025",
                 "chosen": (
-                    f"{FAMILYWISE_ALPHA}, applied to one-sided p-values; a "
-                    f"single unadjusted claim sits at {ALPHA_ONE_SIDED} and "
-                    f"Holm's worst case for one of {len(PRIMARY_FAMILY)} "
-                    f"claims is {FAMILYWISE_ALPHA / len(PRIMARY_FAMILY)}"),
+                    f"{FAMILYWISE_ALPHA}, applied to one-sided p-values. "
+                    f"A STANDALONE directional claim would be tested at "
+                    f"one-sided {ALPHA_STANDALONE_ONE_SIDED}: one-sidedness "
+                    "spends nothing. The primary claims are not standalone, "
+                    f"they are a family of {len(PRIMARY_FAMILY)}, so Holm "
+                    f"charges the first of them familywise/k = "
+                    f"{HOLM_WORST_CASE_ALPHA} and that is the level the "
+                    "sizing uses. It equals familywise/2 here only because "
+                    "k=2."),
                 "evidence": "holm_primary_family",
                 "rejected": [
                     "familywise 0.025",
+                    "describing " + str(ALPHA_ONE_SIDED) + " as the level of "
+                    "an unadjusted one-sided claim. One-sidedness does not "
+                    "halve anything: a standalone directional claim at "
+                    "familywise 0.05 is tested at one-sided "
+                    f"{ALPHA_STANDALONE_ONE_SIDED}. "
+                    f"{ALPHA_ONE_SIDED} is correct here because Holm charges "
+                    f"the first of k={len(PRIMARY_FAMILY)} claims "
+                    "familywise/k, and separately because it is the one arm "
+                    "of a two-sided 95% interval that a TOST or "
+                    "non-inferiority bound is read off at. Both readings "
+                    "happen to give 0.025 at k=2; neither follows from the "
+                    "claim being one-sided, which the previous revision "
+                    "asserted.",
                     "declaring a one-sided 0.025 threshold while sizing at a "
                     "two-sided 0.025, i.e. one-sided 0.0125, which is what "
                     "the previous revision did and which reported "
@@ -1993,6 +2823,20 @@ def main() -> int:
     template_blob = "\n".join(exploratory_templates).encode()
     already_allocated = supply["pools"]["pilot_v1"]["photos_per_species"][0] \
         if supply["pools"]["pilot_v1"]["photos_per_species"] else 0
+    # The three counts, computed once: a total written as an expression in
+    # two places is two chances for one of them to be the old design.
+    n_photos = CONFIRM_NEW_PHOTOS_PER_SPECIES * held_ceiling
+    n_words = CONFIRM_NEW_WORDING_PROBES_PER_PERSON * wording_ceiling
+    n_retention = retention_alloc["new_retention_probes_total"]
+    # What the PREVIOUS revision called new_target_probes, recomputed here so
+    # the correction below states its own arithmetic instead of asserting a
+    # number nobody can check.
+    n_fetch_species = chosen_supply["species_covered"]
+    n_retain_only_species = n_fetch_species - held_ceiling
+    prev_target_total = (n_words + CONFIRM_NEW_PHOTOS_PER_SPECIES
+                         * n_fetch_species)
+    prev_retain_only_photos = (CONFIRM_NEW_PHOTOS_PER_SPECIES
+                               * n_retain_only_species)
     report["confirmation_size"] = {
         "selected": True,
         "what_this_block_is": (
@@ -2001,26 +2845,42 @@ def main() -> int:
             "candidate, not an option left open"),
         "held_out_photographs": {
             "new_photographs_per_species": CONFIRM_NEW_PHOTOS_PER_SPECIES,
-            "species_covered": chosen_supply["species_covered"],
-            "new_photographs_total": (
-                CONFIRM_NEW_PHOTOS_PER_SPECIES
-                * chosen_supply["species_covered"]),
-            "why_every_species_and_not_only_the_target_ones": (
-                f"the target metrics only need the "
-                f"{held_ceiling} TARGET species, but the retain_*_image "
-                f"families probe the "
-                f"{census['role_sets'].get('inaturalist/retain', 0)} "
-                "retain-only species too, and a confirmation probe may not "
-                "reuse any photograph pilot100_v2 already used"),
+            "species_covered": held_ceiling,
+            "species_covered_is": (
+                f"the {held_ceiling} TARGET species, not the "
+                f"{n_fetch_species} the seeded re-fetch could cover"),
+            "new_photographs_total": n_photos,
+            "why_only_the_target_species": (
+                f"the target metrics need exactly the {held_ceiling} TARGET "
+                "species. The only reason an earlier revision fetched the "
+                f"{n_retain_only_species} "
+                "retain-only species as well was the "
+                "retain_same_entity_image / retain_other_entity_image "
+                "families, and retention_probe_allocation omits the image "
+                "route because it cannot be renewed for the persons who "
+                "carry most of the retention entities - so those species "
+                "have no confirmation purpose and their photographs are not "
+                "fetched"),
             "already_allocated_per_species": already_allocated,
             "fetch_images_per_species": CONFIRM_FETCH_IMAGES_PER_SPECIES,
             "fetch_seed": CONFIRM_FETCH_SEED,
             "fetch_out": CONFIRM_FETCH_OUT,
+            "fetch_role": CONFIRM_FETCH_ROLE,
+            "fetch_tag": CONFIRM_FETCH_TAG,
             "fetch_command": (
                 f"python scripts/fetch_inat_species.py"
                 f" --seed {CONFIRM_FETCH_SEED}"
                 f" --images-per-species {CONFIRM_FETCH_IMAGES_PER_SPECIES}"
+                f" --role {CONFIRM_FETCH_ROLE}"
+                f" --tag {CONFIRM_FETCH_TAG}"
                 f" --out {CONFIRM_FETCH_OUT}"),
+            "why_the_command_names_a_role_and_not_a_count": (
+                f"--limit-species {held_ceiling} looks equivalent and is not: "
+                f"it takes the FIRST {held_ceiling} entries of SPECIES_LIST, "
+                "and the retain-only species are interleaved through it, so "
+                f"that command fetches 24 of the {held_ceiling} target "
+                "species and misses six. --role target derives the list from "
+                "manifest.json the same way this report does."),
             "target_species_in_the_held_out_stratum": held_ceiling,
             "mde_at_the_selected_design_conservative_icc": sel_h.get(
                 held_mde_key),
@@ -2086,22 +2946,50 @@ def main() -> int:
                 if m != CONFIRM_NEW_WORDING_PROBES_PER_PERSON},
         },
         "totals": {
-            "new_target_probes": (
-                CONFIRM_NEW_WORDING_PROBES_PER_PERSON * wording_ceiling
-                + CONFIRM_NEW_PHOTOS_PER_SPECIES
-                * chosen_supply["species_covered"]),
-            "of_which_new_photographs": (
-                CONFIRM_NEW_PHOTOS_PER_SPECIES
-                * chosen_supply["species_covered"]),
-            "of_which_new_wordings": (
-                CONFIRM_NEW_WORDING_PROBES_PER_PERSON * wording_ceiling),
+            "new_target_probes": n_words + n_photos,
+            "of_which_new_wordings_on_target_persons": n_words,
+            "of_which_new_photographs_on_target_species": n_photos,
+            "new_retention_probes": n_retention,
+            "total_new_probes_allocated": n_words + n_photos + n_retention,
+            "total_generations_at_three_scored_states":
+                3 * (n_words + n_photos + n_retention),
             "scored_states": 3,
-            "entity_clusters": target_total,
+            "entity_clusters_for_the_primary_claims": target_total,
+            "entity_clusters_for_retention":
+                retention_alloc["distinct_entities_covered"],
+            "correction_to_the_previous_revision": (
+                f"the previous revision reported {prev_target_total}"
+                f" as new_target_probes. That counted the "
+                f"{prev_retain_only_photos}"
+                f" photographs destined for the {n_retain_only_species} "
+                "retain-only species as target probes, and they are not: "
+                "those species carry no target association. The target total "
+                f"is {n_words + n_photos} - {n_words} wordings on the "
+                f"{wording_ceiling} target persons plus {n_photos} "
+                f"photographs on the {held_ceiling} target species - and the "
+                "overall allocated count is a separate number that also "
+                "includes retention"),
         },
         "frozen_now": {
             "target_entity_ids": target_ids,
             "target_entity_ids_sha256":
                 census["by_role"]["target"]["entity_ids_sha256"],
+            #: The associations the confirmation MUST ask about, hashed so
+            #: stage 3 can prove identity rather than assert it.  This is the
+            #: one part of the exploratory dataset the confirmation is
+            #: REQUIRED to reproduce.
+            "target_association_ids":
+                census["by_role"]["target"]["association_ids"],
+            "target_association_ids_sha256":
+                census["by_role"]["target"]["association_ids_sha256"],
+            "target_association_ids_are_required_to_be_identical": (
+                "this set is NOT subject to the novelty rules below. The "
+                "preserved adapters unlearned exactly these entity-attribute "
+                "associations, so a confirmation that asked about different "
+                "ones would measure something they were never trained on and "
+                "could not confirm the result being confirmed"),
+            "retain_association_ids_sha256":
+                census["by_role"]["retain"]["association_ids_sha256"],
             "retain_entity_ids": retain_ids,
             "retain_entity_ids_sha256":
                 census["by_role"]["retain"]["entity_ids_sha256"],
@@ -2122,13 +3010,39 @@ def main() -> int:
                 "to be committed: the hash of every new photograph, plus the "
                 "licence and attribution the re-fetch records"),
             "collision_rules": [
+                # Finding #1 of Iteration 11C-R2: an earlier revision forbade
+                # any confirmation "association" from appearing in the
+                # exploratory dataset, which is impossible and would have
+                # forbidden the confirmation from existing.  The preserved
+                # adapters unlearned a FIXED target set; the confirmation has
+                # to ask about those same entity-attribute associations or it
+                # measures something the adapters were never trained on.
+                # What must be new is the PROBES, not what they are about.
+                f"the confirmation's target-association set is REQUIRED to "
+                f"be IDENTICAL to the frozen one, sha256 "
+                f"{census['by_role']['target']['association_ids_sha256'][:16]}"
+                f"... over "
+                f"{len(census['by_role']['target']['association_ids'])} "
+                f"association_ids and "
+                f"{len(census['by_role']['target']['entity_ids'])} target "
+                "entity ids, both hashed above. This is the one thing the "
+                "confirmation MUST repeat: the preserved adapters unlearned "
+                "exactly these entity-attribute pairs, so a confirmation "
+                "about different ones could not confirm them",
                 f"no confirmation template_id may appear among the "
                 f"{len(exploratory_templates)} exploratory template ids "
                 f"hashed above",
+                "no confirmation template TEXT may be a copy of an "
+                "exploratory template's text: a new id over the same wording "
+                "is the same probe with a new label",
                 "no confirmation photograph sha256 may appear in the frozen "
                 "exploratory image manifest",
                 "no confirmation query_id may appear in the exploratory "
                 "queries parquet",
+                "no exploratory query or media is reused: every confirmation "
+                "probe is a new query_id carrying a new template_id, and "
+                "every image-route probe carries a photograph whose sha256 "
+                "is not in the exploratory manifest",
                 "the confirmation split must not enter the reference-state "
                 "gate, candidate selection, or any go/no-go decision",
             ],
@@ -2215,13 +3129,18 @@ def main() -> int:
             f"anything but secondary; the interval and its half-width are "
             f"published and equivalence is stated as NOT concluded.")
     cs = report["confirmation_size"]
+    pt = report["primary_test"]
+    achieved = {c: v["achieved_level_at_the_threshold"] for c, v in
+                pt["achieved_level_under_the_real_null"].items()}
+    fw_achieved = pt["achieved_familywise_level_under_the_global_null"]
+    ra_media = retention_alloc["media_supply_the_route_decision_rests_on"]
     holm_n = {n_: v["n_at_holm_worst_case_alpha_power80"]
               for n_, v in holm["per_claim"].items()}
     notes.append(
         f"Primary family is {', '.join(PRIMARY_FAMILY)} under Holm with k = "
         f"{len(PRIMARY_FAMILY)} at familywise alpha {FAMILYWISE_ALPHA} on "
         f"ONE-SIDED p-values, so the worst-case threshold and the sizing "
-        f"level are both {FAMILYWISE_ALPHA / len(PRIMARY_FAMILY)} and both "
+        f"level are both {HOLM_WORST_CASE_ALPHA} and both "
         f"use z = {holm['critical_value_z']}. At that level the family needs "
         f"{holm_n} clusters against "
         f"{report['primary_estimand']['entities_in_scope']} available. An "
@@ -2230,20 +3149,54 @@ def main() -> int:
         f"which is conservative but not the declared test; the preregistration "
         f"now states the convention and the sizing obeys it.")
     notes.append(
+        f"PRIMARY TEST, frozen in primary_test: the statistic is "
+        f"{pt['statistic']}. H0: {pt['null_hypothesis']}. p-values by "
+        f"{pt['p_value_method']} with {pt['n_permutations']} draws at seed "
+        f"{pt['permutation_seed']}, the observed vector included in the null "
+        f"so the smallest reportable p is "
+        f"{pt['smallest_reportable_p_value']}. Directions: "
+        f"{pt['direction_by_metric']} - TGA is an accuracy and FILR a leakage "
+        f"rate, so the two claims point in OPPOSITE directions on the same "
+        f"difference and a single sign convention would test one of them "
+        f"backwards. Holm thresholds {pt['multiplicity']['thresholds']}, "
+        f"{pt['multiplicity']['ordering']}, and "
+        f"{pt['multiplicity']['pass_fail_rule']}. Implemented in "
+        f"{pt['implementation']['module']} at sha256 "
+        f"{pt['implementation']['sha256']}, a module the code fingerprint "
+        f"does not cover, which is why the hash is recorded here and bound by "
+        f"the freeze. Achieved level at the first threshold, measured by "
+        f"re-signing the real 11R differences: {achieved}"
+        f" against a nominal "
+        f"{pt['multiplicity']['worst_case_alpha_for_a_single_claim']}. "
+        f"Achieved FAMILYWISE rate, measured by running the real Holm "
+        f"procedure on jointly re-signed p-values: "
+        f"{fw_achieved['achieved']} against a nominal "
+        f"{fw_achieved['nominal']}, inside a two-standard-error band of "
+        f"{fw_achieved['two_se_band_around_the_nominal']}="
+        f"{fw_achieved['achieved_is_nominal_within_two_se']}.")
+    notes.append(
         f"SELECTED confirmation size: "
         f"{cs['new_wording_probes']['new_probes_per_target_person']} new "
         f"wording probes on each of "
         f"{cs['new_wording_probes']['target_persons']} target persons "
-        f"({cs['new_wording_probes']['new_wording_probes_total']} probes) and "
+        f"({cs['new_wording_probes']['new_wording_probes_total']} probes), "
         f"{cs['held_out_photographs']['new_photographs_per_species']} new "
         f"photographs on each of "
-        f"{cs['held_out_photographs']['species_covered']} species "
+        f"{cs['held_out_photographs']['species_covered']} TARGET species "
         f"({cs['held_out_photographs']['new_photographs_total']} photographs), "
-        f"fetched by `{cs['held_out_photographs']['fetch_command']}`. The "
-        f"primary claims are carried by the wording probes; the photographs "
-        f"are for the secondary held-out measurement and for the retain "
-        f"image families, not for a primary claim. Every other row of every "
-        f"grid in this report is a rejected candidate.")
+        f"and {retention_alloc['new_templates_per_entity']} new text "
+        f"templates on each entity carrying a retain metric "
+        f"({retention_alloc['new_retention_probes_total']} retention probes): "
+        f"{cs['totals']['total_new_probes_allocated']} probes in all, fetched "
+        f"by `{cs['held_out_photographs']['fetch_command']}`. The primary "
+        f"claims are carried by the wording probes; the photographs are for "
+        f"the secondary held-out measurement only - the retain image families "
+        f"are NOT renewed, because "
+        f"{ra_media['entities_no_new_photograph_can_cover']}"
+        f" of the {ra_media['retention_entities']}"
+        f" retention entities are persons no new photograph can be sourced "
+        f"for - and the retention probes are descriptive. Every other row of "
+        f"every grid in this report is a rejected candidate.")
     notes.append(
         f"{report['primary_estimand']['what_it_does_not_establish']}")
     notes.append(
@@ -2446,6 +3399,20 @@ def main() -> int:
     print(f"    mde at the selected design (conservative ICC) tga="
           f"{_s(nw['mde_at_the_selected_design_tga_conservative_icc'])} "
           f"filr={_s(nw['mde_at_the_selected_design_filr_conservative_icc'])}")
+    print(f"  {retention_alloc['new_templates_per_entity']} new text "
+          f"templates x the entities carrying a retain metric = "
+          f"{retention_alloc['new_retention_probes_total']} retention probes "
+          f"(route {retention_alloc['route']}, "
+          f"{retention_alloc['distinct_entities_covered']} entities)")
+    for m_ret, v_ret in retention_alloc["per_metric"].items():
+        print(f"    {m_ret}: k={v_ret['entities_carried_by']} "
+              f"icc={v_ret['icc_point_estimate']} half-width at the selected "
+              f"count {v_ret['half_width_at_the_selected_count']} against a "
+              f"batch-layout floor of "
+              f"{retention_alloc['batch_layout_noise_floor_on_retain_metrics']}"
+              f"; matching the exploratory half-width would take "
+              f"{v_ret['probes_per_entity_that_would_match_the_exploratory_precision']}"
+              f" probes per entity")
     print(f"  totals: {json.dumps(cs['totals'])}")
     print(f"  frozen now: {len(cs['frozen_now']['target_entity_ids'])} target "
           f"+ {len(cs['frozen_now']['retain_entity_ids'])} retain entity ids, "
@@ -2453,6 +3420,31 @@ def main() -> int:
           f"template ids")
     print(f"  frozen at stage 3: "
           f"{', '.join(k for k in cs['frozen_at_stage_3_before_any_scoring'])}")
+    print("\n=== PRIMARY TEST (frozen before any scoring) ===")
+    print(f"  statistic: {pt['statistic']}")
+    print(f"  H0: {pt['null_hypothesis']}")
+    print(f"  p-value: {pt['p_value_method']}, {pt['n_permutations']} draws, "
+          f"seed {pt['permutation_seed']}, smallest reportable p "
+          f"{pt['smallest_reportable_p_value']}, Monte Carlo SE at the "
+          f"threshold {pt['monte_carlo_se_at_the_holm_threshold']}")
+    print(f"  directions: {json.dumps(pt['direction_by_metric'])} -> "
+          f"{json.dumps(pt['alternative_by_claim'])}")
+    print(f"  Holm: thresholds "
+          f"{json.dumps(pt['multiplicity']['thresholds'])}, "
+          f"{pt['multiplicity']['ordering']}")
+    print(f"  pass/fail: {pt['multiplicity']['pass_fail_rule']}")
+    print(f"  achieved level at the first threshold: {json.dumps(achieved)} "
+          f"against a nominal "
+          f"{pt['multiplicity']['worst_case_alpha_for_a_single_claim']}")
+    print(f"  achieved FAMILYWISE level under a global null: "
+          f"{fw_achieved['achieved']} against a nominal "
+          f"{fw_achieved['nominal']} (2-SE band "
+          f"{json.dumps(fw_achieved['two_se_band_around_the_nominal'])}, "
+          f"inside={fw_achieved['achieved_is_nominal_within_two_se']})")
+    print(f"  implementation: {pt['implementation']['module']} sha256 "
+          f"{pt['implementation']['sha256']}")
+    print(f"    functions: "
+          f"{json.dumps(pt['implementation']['functions'])}")
     print("\n=== notes ===")
     for n in notes:
         print(f"  * {n}")

@@ -20,7 +20,16 @@ the confirmatory claims depend on:
   rather than written down beside it;
 * the familywise alpha and the ONE-SIDED convention that makes the Holm
   threshold and the cluster requirement the same test instead of one being a
-  two-sided reading of the other (Iteration 11C-R1's finding #4);
+  two-sided reading of the other (Iteration 11C-R1's finding #4), with the
+  three levels that all look like 0.025 kept apart: familywise/2 is one arm
+  of a two-sided interval, familywise/k is Holm's first threshold, and a
+  STANDALONE directional claim is tested at familywise itself
+  (11C-R2's finding #3);
+* the PRIMARY TEST — statistic, null, p-value method, draw count, seed, the
+  direction of each claim, Holm's ordering, tie handling, stopping rule and
+  pass/fail rule, the achieved level it was measured to deliver, and a hash
+  of the module that implements it, because a threshold with no statistic
+  behind it cannot be executed as frozen (11C-R2's finding #3);
 * the PRIMARY ESTIMAND, named once, with the per-stratum decomposition
   demoted to a pre-specified secondary and the fixed-cohort limit recorded,
   because "pooled" and "the stratum that carries the effect" are different
@@ -28,10 +37,20 @@ the confirmatory claims depend on:
   (finding #3);
 * the SELECTED confirmation size — ONE row of the power grid, the command
   line that fetches it, and the identifiers frozen now versus the ones stage
-  3 is obliged to commit before scoring (finding #1);
+  3 is obliged to commit before scoring (finding #1), with the TARGET budget
+  and the OVERALL allocated budget as separate numbers: 936 was published as
+  the target total when it was the whole photograph budget over 36 species
+  (11C-R2's finding #2);
+* the RETENTION probe allocation — route, templates per entity, total, and
+  the measured media supply that makes the image route impossible to renew,
+  because descriptive intervals with no probes behind them describe the
+  exploratory split rather than the confirmation one (11C-R2's finding #2);
 * the sealed-split and score-exactly-once invariants, as assertions with a
   named enforcement point, because an invariant nobody is obliged to check
-  is a comment.
+  is a comment.  The target-association set is REQUIRED to be identical and
+  the queries, template ids and texts, and photograph hashes are required to
+  be new: those are opposite requirements, and stating them as one rule
+  forbade the confirmation from existing (11C-R2's finding #1).
 
 Nothing is scored and no GPU is touched.
 
@@ -55,7 +74,13 @@ from pathlib import Path
 from typing import Any
 
 from granunlearn.config import _find_repo_root
-from granunlearn.evaluation.paired_ci import PAIRED_METRICS, paired_rate_diff_ci
+from granunlearn.evaluation.paired_ci import (
+    CLAIM_DIRECTION,
+    PAIRED_METRICS,
+    holm_family,
+    one_sided_permutation_pvalue,
+    paired_rate_diff_ci,
+)
 from granunlearn.evaluation.prediction_provenance import (
     CODE_FINGERPRINT_MODULES,
     PROVENANCE_CONTRACT_VERSION,
@@ -77,15 +102,23 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from evaluate_pilot100_final import EQUIVALENCE_MARGIN_TGA  # noqa: E402
 from power_analysis_confirmation import (  # noqa: E402
     ALPHA_ONE_SIDED,
+    ALPHA_STANDALONE_ONE_SIDED,
     BOOTSTRAP_SEED,
     CLAIM_KIND,
     CLAIM_KIND_VS_MG,
     CONFIRM_FETCH_IMAGES_PER_SPECIES,
     CONFIRM_FETCH_OUT,
+    CONFIRM_FETCH_ROLE,
     CONFIRM_FETCH_SEED,
+    CONFIRM_FETCH_TAG,
     CONFIRM_NEW_PHOTOS_PER_SPECIES,
     CONFIRM_NEW_WORDING_PROBES_PER_PERSON,
+    CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY,
+    CONFIRM_RETENTION_ROUTE,
     FAMILYWISE_ALPHA,
+    HOLM_WORST_CASE_ALPHA,
+    N_PERMUTATIONS,
+    PERMUTATION_SEED,
     PRIMARY_ESTIMAND,
     PRIMARY_ESTIMAND_STRATA,
     PRIMARY_FAMILY,
@@ -93,6 +126,13 @@ from power_analysis_confirmation import (  # noqa: E402
     WHAT_THE_CONFIRMATION_DOES_NOT_ESTABLISH,
     z,
 )
+
+#: The module holding the primary test.  It is deliberately NOT in
+#: ``CODE_FINGERPRINT_MODULES``: adding it there would change the code
+#: fingerprint inside all 30 committed 11R sidecars and refuse their reuse.
+#: So it is hashed on its own and bound here, which is the only place the
+#: procedure that decides the primary claims is pinned at all.
+PAIRED_CI_MODULE = "src/granunlearn/evaluation/paired_ci.py"
 
 log = setup_logger("freeze_confirmation_protocol")
 
@@ -209,6 +249,275 @@ def _ci_parameters() -> dict[str, Any]:
     }
 
 
+def _primary_test_refusals(power: dict[str, Any], repo_root: Path) -> list[str]:
+    """Refuse to freeze a primary test that is not fully specified.
+
+    Iteration 11C-R2's finding #3: the protocol declared Holm thresholds and
+    cluster requirements while the repository contained no one-sided p-value
+    at all - ``paired_ci`` offered a 1000-resample percentile interval and
+    nothing that returned a p.  A threshold with no statistic behind it is
+    not a frozen test, and the first person to score would have had to invent
+    one, after seeing the data.
+
+    Every check here compares the committed report against the module and the
+    code, so a specification that drifts from its own implementation refuses
+    the freeze instead of being published beside it.
+    """
+    out: list[str] = []
+    pt = power.get("primary_test")
+    if not pt:
+        return ["the power report has no primary_test block, so the "
+                "statistic, null, p-value method, draw count, seed and "
+                "directions of the primary claims are unfrozen"]
+    agree = pt.get("specification_and_implementation_agree") or {}
+    if not agree.get("all_agree"):
+        bad = {kk: vv for kk, vv in agree.items()
+               if vv is not True
+               and kk != "every_value_read_off_the_implementation"}
+        out.append(
+            f"the power report's specification and its implementation "
+            f"disagree: {json.dumps(bad)}")
+    if pt.get("n_permutations") != N_PERMUTATIONS:
+        out.append(
+            f"the power report freezes {pt.get('n_permutations')} "
+            f"permutations but the module declares {N_PERMUTATIONS}; the "
+            "p-value grid, and so the smallest reportable p, differ")
+    if pt.get("permutation_seed") != PERMUTATION_SEED:
+        out.append(
+            f"the power report freezes permutation seed "
+            f"{pt.get('permutation_seed')} but the module declares "
+            f"{PERMUTATION_SEED}")
+    directions = pt.get("direction_by_metric") or {}
+    want_directions = {c.split(":")[1]: CLAIM_DIRECTION[c.split(":")[1]]
+                       for c in PRIMARY_FAMILY}
+    if directions != want_directions:
+        out.append(
+            f"the power report freezes claim directions {directions} but the "
+            f"module declares {want_directions}")
+    #: Checked on BOTH sides.  The module's map is what a scorer will read and
+    #: the report's is what the freeze publishes, and only checking the
+    #: published one would let a scorer run a different test than the frozen
+    #: description of it.
+    for label, dirs in (("the module declares", dict(CLAIM_DIRECTION)),
+                        ("the power report freezes", directions)):
+        if sorted(dirs.values()) != ["greater", "less"]:
+            out.append(
+                f"{label} directions {dirs}, which are not one 'greater' and "
+                "one 'less'. TGA is an accuracy and FILR a leakage rate, so "
+                "the two primary claims point in OPPOSITE directions on the "
+                "same B3-B0 difference, and one shared sign convention would "
+                "test one of them backwards")
+    if sorted(CLAIM_DIRECTION) != sorted(
+            c.split(":")[1] for c in PRIMARY_FAMILY):
+        out.append(
+            f"CLAIM_DIRECTION covers {sorted(CLAIM_DIRECTION)} but the "
+            f"primary family's metrics are "
+            f"{sorted(c.split(':')[1] for c in PRIMARY_FAMILY)}; a claim "
+            "with no declared direction would be tested in whichever "
+            "direction the default happens to be")
+    mult = pt.get("multiplicity") or {}
+    k_fam = len(PRIMARY_FAMILY)
+    want_thresholds = [round(FAMILYWISE_ALPHA / (k_fam - i), 6)
+                       for i in range(k_fam)]
+    if mult.get("thresholds") != want_thresholds:
+        out.append(
+            f"the power report freezes Holm thresholds "
+            f"{mult.get('thresholds')} but familywise/{k_fam} step-down for "
+            f"k = {k_fam} gives {want_thresholds}")
+    if mult.get("worst_case_alpha_for_a_single_claim") != round(
+            HOLM_WORST_CASE_ALPHA, 6):
+        out.append(
+            f"the frozen worst-case single-claim alpha "
+            f"{mult.get('worst_case_alpha_for_a_single_claim')} is not "
+            f"familywise/k = {round(HOLM_WORST_CASE_ALPHA, 6)}")
+    for field in ("ordering", "tie_handling", "pass_fail_rule",
+                  "why_the_stopping_rule_is_part_of_the_rule"):
+        if not mult.get(field):
+            out.append(f"the frozen Holm block does not state {field}, so "
+                       "the procedure is not reproducible from the freeze")
+    # The level the frozen test ACHIEVES, measured in the power report by
+    # re-signing the real differences.  Freezing a threshold the procedure
+    # overshoots would publish a familywise rate the test does not deliver.
+    calib = pt.get("achieved_level_under_the_real_null") or {}
+    if calib.get("estimable") is False:
+        out.append(f"the achieved level of the frozen test could not be "
+                   f"measured: {calib.get('reason')}")
+    else:
+        for claim in PRIMARY_FAMILY:
+            entry = calib.get(claim) or {}
+            if not entry.get("achieved_level_is_nominal_within_two_se"):
+                out.append(
+                    f"{claim}: the frozen test achieves a level of "
+                    f"{entry.get('achieved_level_at_the_threshold')} at the "
+                    f"{entry.get('threshold')} threshold, outside two Monte "
+                    f"Carlo standard errors of nominal "
+                    f"{entry.get('two_se_band_around_the_nominal')}, so the "
+                    "declared threshold is not the threshold the procedure "
+                    "delivers")
+            if not entry.get("permutations_are_the_frozen_count"):
+                out.append(
+                    f"{claim}: the achieved level was calibrated at "
+                    f"{entry.get('permutations_per_replicate')} draws, not "
+                    f"the frozen {N_PERMUTATIONS}, which measures a "
+                    "different procedure's level and reports it as this "
+                    "test's")
+        fw = pt.get("achieved_familywise_level_under_the_global_null") or {}
+        if not fw.get("achieved_is_nominal_within_two_se"):
+            out.append(
+                f"the Holm procedure achieves a familywise rejection rate of "
+                f"{fw.get('achieved')} against a declared "
+                f"{fw.get('nominal')}, outside two Monte Carlo standard "
+                f"errors {fw.get('two_se_band_around_the_nominal')}, so "
+                "familywise alpha is not the rate the procedure delivers")
+    # Hash the implementation here rather than trusting the report's copy: a
+    # freeze that recorded a hash the report supplied would not notice the
+    # module changing between the report and the freeze.
+    impl = pt.get("implementation") or {}
+    module = repo_root / PAIRED_CI_MODULE
+    live = sha256_file(module) if module.exists() else None
+    if not module.exists():
+        out.append(f"{PAIRED_CI_MODULE} does not exist, so the primary test "
+                   "has no implementation to freeze")
+    elif impl.get("sha256") != live:
+        out.append(
+            f"the power report hashes {PAIRED_CI_MODULE} as "
+            f"{impl.get('sha256')} but it is now {live}; the module holding "
+            "the primary test changed after the analysis that specified it")
+    if impl.get("module") != PAIRED_CI_MODULE:
+        out.append(
+            f"the power report names {impl.get('module')!r} as the primary "
+            f"test's module but the freeze binds {PAIRED_CI_MODULE!r}")
+    return out
+
+
+def _retention_refusals(power: dict[str, Any]) -> list[str]:
+    """Refuse to promise retention intervals with no probes behind them.
+
+    Iteration 11C-R2's finding #2: the freeze published descriptive
+    retain_same and retain_other intervals while the selected size allocated
+    zero retention probes.  The 504 new wordings are TARGET-family probes on
+    target persons, so those intervals would have described the exploratory
+    split the reference-state gate had already seen.
+    """
+    out: list[str] = []
+    ra = power.get("retention_probe_allocation")
+    if not ra:
+        return ["the power report has no retention_probe_allocation block, "
+                "so the retention intervals the freeze promises have no "
+                "allocated probes"]
+    if ra.get("route") != CONFIRM_RETENTION_ROUTE:
+        out.append(
+            f"the power report allocates retention probes on the "
+            f"{ra.get('route')!r} route but the module declares "
+            f"{CONFIRM_RETENTION_ROUTE!r}")
+    if ra.get("new_templates_per_entity") != \
+            CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY:
+        out.append(
+            f"the power report allocates "
+            f"{ra.get('new_templates_per_entity')} new retention templates "
+            f"per entity but the module declares "
+            f"{CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY}")
+    per_metric = ra.get("per_metric") or {}
+    for metric in ("retain_same", "retain_other"):
+        entry = per_metric.get(metric) or {}
+        if not entry.get("entities_carried_by"):
+            out.append(f"no entity carries {metric}, so the descriptive "
+                       f"{metric} interval the freeze promises cannot be "
+                       "computed at all")
+        elif entry.get("new_probes") != entry["entities_carried_by"] * \
+                CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY:
+            out.append(
+                f"{metric}: the report allocates {entry.get('new_probes')} "
+                f"retention probes for {entry['entities_carried_by']} "
+                f"entities at "
+                f"{CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY} templates "
+                "each, which is not the same number")
+        if entry.get("route") != CONFIRM_RETENTION_ROUTE:
+            out.append(f"{metric}: allocated on the {entry.get('route')!r} "
+                       f"route, not the declared "
+                       f"{CONFIRM_RETENTION_ROUTE!r}")
+    want_total = sum((per_metric.get(m) or {}).get("new_probes", 0)
+                     for m in ("retain_same", "retain_other"))
+    if ra.get("new_retention_probes_total") != want_total:
+        out.append(
+            f"the report totals {ra.get('new_retention_probes_total')} "
+            f"retention probes but its own per-metric allocation sums to "
+            f"{want_total}")
+    # The counts the SIZE block publishes must be the same arithmetic, or the
+    # totals block is describing a different design than the allocation.
+    size = power.get("confirmation_size") or {}
+    totals = size.get("totals") or {}
+    photos = size.get("held_out_photographs") or {}
+    words = size.get("new_wording_probes") or {}
+    n_photos = photos.get("new_photographs_total", 0)
+    n_words = words.get("new_wording_probes_total", 0)
+    n_ret = ra.get("new_retention_probes_total", 0)
+    if totals.get("new_target_probes") != n_words + n_photos:
+        out.append(
+            f"totals.new_target_probes is {totals.get('new_target_probes')} "
+            f"but {n_words} new wordings plus {n_photos} new photographs is "
+            f"{n_words + n_photos}")
+    if totals.get("new_retention_probes") != n_ret:
+        out.append(
+            f"totals.new_retention_probes is "
+            f"{totals.get('new_retention_probes')} but the allocation says "
+            f"{n_ret}")
+    if totals.get("total_new_probes_allocated") != n_words + n_photos + n_ret:
+        out.append(
+            f"totals.total_new_probes_allocated is "
+            f"{totals.get('total_new_probes_allocated')} but the three "
+            f"allocations sum to {n_words + n_photos + n_ret}")
+    if totals.get("new_target_probes") == totals.get(
+            "total_new_probes_allocated") and n_ret:
+        out.append(
+            "the target total and the overall allocated total are the same "
+            f"number, {totals.get('new_target_probes')}, while "
+            f"{n_ret} retention probes are allocated: one of the two labels "
+            "is wrong, which is exactly the 936 mislabelling")
+    return out
+
+
+def _fetch_role_refusals(power: dict[str, Any]) -> list[str]:
+    """Refuse a fetch command that would not fetch the target species.
+
+    ``--limit-species 30`` reads like the right command and is not: the 6
+    retain-only species are interleaved through ``SPECIES_LIST``, so the
+    first 30 entries contain only 24 of the 30 target species.  The command
+    is what a human runs at stage 3, so it is checked, not assumed.
+    """
+    out: list[str] = []
+    photos = (power.get("confirmation_size") or {}).get(
+        "held_out_photographs") or {}
+    census = (power.get("entity_role_census") or {}).get("by_role") or {}
+    target_inat = ((census.get("target") or {}).get("by_source") or {}).get(
+        "inaturalist")
+    if photos.get("species_covered") != target_inat:
+        out.append(
+            f"the selected size covers {photos.get('species_covered')} "
+            f"species but the census counts {target_inat} TARGET iNaturalist "
+            "species; the photograph budget is not for the entities the "
+            "target metrics are defined on")
+    if photos.get("fetch_role") != CONFIRM_FETCH_ROLE:
+        out.append(
+            f"the frozen fetch names role {photos.get('fetch_role')!r} but "
+            f"the module declares {CONFIRM_FETCH_ROLE!r}")
+    if photos.get("fetch_tag") != CONFIRM_FETCH_TAG:
+        out.append(
+            f"the frozen fetch names tag {photos.get('fetch_tag')!r} but the "
+            f"module declares {CONFIRM_FETCH_TAG!r}")
+    cmd = photos.get("fetch_command") or ""
+    if f"--role {CONFIRM_FETCH_ROLE}" not in cmd:
+        out.append(
+            f"the frozen fetch command does not select species by role: "
+            f"{cmd!r}. A --limit-species count would fetch the FIRST n "
+            "entries of SPECIES_LIST, which contains the retain-only species "
+            "and so misses target ones")
+    if "--limit-species" in cmd:
+        out.append(f"the frozen fetch command limits species by COUNT "
+                   f"rather than by role: {cmd!r}")
+    return out
+
+
 def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
     reports = repo_root / "data" / "reports"
     data_dir = repo_root / "data" / f"mllmu_hier_{tag}"
@@ -255,6 +564,14 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
             f"{round(z(1 - want_alpha), 6)}, so the cluster requirement was "
             f"computed at a different alpha than the one declared")
 
+    # ---- the test itself, the retention allocation, and the fetch command --
+    # Iteration 11C-R2: thresholds without a p-value, intervals without
+    # probes, and a species count instead of a species ROLE are all things a
+    # freeze can state and a scorer still be unable to execute.
+    refusals.extend(_primary_test_refusals(power, repo_root))
+    refusals.extend(_retention_refusals(power))
+    refusals.extend(_fetch_role_refusals(power))
+
     # The estimand and the selected size are checked against the module
     # rather than copied from it, because a freeze that restated them would
     # bind its own copy and the sizing code could move underneath.  A
@@ -274,6 +591,71 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
     size = power.get("confirmation_size") or {}
     photos = size.get("held_out_photographs") or {}
     words = size.get("new_wording_probes") or {}
+    pt = power.get("primary_test") or {}
+    retention_alloc = power.get("retention_probe_allocation") or {}
+    #: Recomputed here, not copied from the report: see
+    #: ``primary_test.implementation.why_it_is_hashed_separately``.
+    paired_ci_path = repo_root / PAIRED_CI_MODULE
+    paired_ci_live = sha256_file(paired_ci_path) \
+        if paired_ci_path.exists() else None
+
+    # ---- what must be IDENTICAL and what must be NEW ----
+    # Iteration 11C-R2's finding #1 needs both, with a hash on each side: an
+    # invariant that binds ``None`` reads like a bound hash in the JSON and
+    # is the same fail-open shape as an adapter contract hashed over an
+    # absent directory, so a missing value refuses rather than freezes.
+    frozen_now = size.get("frozen_now") or {}
+    census_target = ((power.get("entity_role_census") or {})
+                     .get("by_role") or {}).get("target") or {}
+    target_assoc_sha = frozen_now.get("target_association_ids_sha256")
+    n_target_assoc = len(frozen_now.get("target_association_ids") or [])
+    target_entity_sha = frozen_now.get("target_entity_ids_sha256")
+    n_target_entity = len(frozen_now.get("target_entity_ids") or [])
+    expl_templates_sha = frozen_now.get("exploratory_template_ids_sha256")
+    expl_templates_n = len(frozen_now.get("exploratory_template_ids") or [])
+    for label, value in (
+            ("target_association_ids_sha256", target_assoc_sha),
+            ("target_entity_ids_sha256", target_entity_sha),
+            ("exploratory_template_ids_sha256", expl_templates_sha)):
+        if not value:
+            refusals.append(
+                f"the power report does not bind {label}, so the sealed-split "
+                "invariants would be recorded against nothing")
+    if not n_target_assoc:
+        refusals.append(
+            "the power report lists no target association_ids, so the "
+            "requirement that the confirmation reproduce them cannot be "
+            "checked at stage 3")
+    if target_assoc_sha != census_target.get("association_ids_sha256"):
+        refusals.append(
+            f"confirmation_size.frozen_now hashes the target associations as "
+            f"{target_assoc_sha} but entity_role_census hashes them as "
+            f"{census_target.get('association_ids_sha256')}; the same set "
+            "cannot have two hashes")
+    if not expl_templates_n:
+        refusals.append(
+            "the power report lists no exploratory template ids, so the "
+            "novelty invariant has nothing to be novel against")
+    collision_rules = (size.get("frozen_at_stage_3_before_any_scoring")
+                       or {}).get("collision_rules") or []
+    if not collision_rules:
+        refusals.append(
+            "the power report binds no collision_rules, so stage 3 would "
+            "decide for itself what may and may not repeat")
+    if not frozen_now.get(
+            "target_association_ids_are_required_to_be_identical"):
+        refusals.append(
+            "the power report does not state that the target-association set "
+            "must be IDENTICAL, only that other things must be new; without "
+            "the identity requirement the rule set forbids the confirmation "
+            "from existing")
+    if collision_rules and not any("IDENTICAL" in r for r in collision_rules):
+        refusals.append(
+            "none of the collision rules requires anything to be identical. "
+            "A rule set made only of prohibitions is Iteration 11C-R2's "
+            "finding #1: it forbids the confirmation from re-testing the "
+            "associations the adapters unlearned, which is the only thing it "
+            "is for")
     for field, want in (
             ("new_photographs_per_species", CONFIRM_NEW_PHOTOS_PER_SPECIES),
             ("new_photographs_total",
@@ -549,15 +931,88 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
             "paired_metrics": list(PAIRED_METRICS),
             "familywise_alpha": FAMILYWISE_ALPHA,
             "alpha_one_sided": ALPHA_ONE_SIDED,
+            "alpha_standalone_one_sided": ALPHA_STANDALONE_ONE_SIDED,
+            "holm_worst_case_alpha": HOLM_WORST_CASE_ALPHA,
             "alpha_convention": (
                 f"familywise alpha is {FAMILYWISE_ALPHA}, applied to "
-                f"ONE-SIDED p-values; a single unadjusted claim sits at "
-                f"{ALPHA_ONE_SIDED} = familywise/2 and Holm's worst case for "
-                f"one of {len(PRIMARY_FAMILY)} claims is familywise/k = "
-                f"{FAMILYWISE_ALPHA / len(PRIMARY_FAMILY)}. Every sizing "
+                f"ONE-SIDED p-values. One-sidedness does not halve anything: "
+                f"a STANDALONE directional claim at this familywise rate is "
+                f"tested at one-sided {ALPHA_STANDALONE_ONE_SIDED}. The "
+                f"primary claims are a family of {len(PRIMARY_FAMILY)}, so "
+                f"Holm charges the first of them familywise/k = "
+                f"{HOLM_WORST_CASE_ALPHA}, and that is the level the sizing "
+                f"uses. {ALPHA_ONE_SIDED} = familywise/2 is a SEPARATE "
+                "quantity - the one arm of a two-sided 95% interval, i.e. the "
+                "level a TOST arm or a non-inferiority bound is read off at - "
+                "which happens to equal familywise/k here only because "
+                f"k = {len(PRIMARY_FAMILY)}. At k = 3 Holm's first threshold "
+                f"would be {round(FAMILYWISE_ALPHA / 3, 4)} while "
+                f"familywise/2 stayed {ALPHA_ONE_SIDED}. Every sizing "
                 "function in the power module takes a one-sided alpha and "
                 "uses z(1 - alpha), so the declared threshold and the "
                 "reported cluster requirement are the same test."),
+        },
+        "primary_test": {
+            "applies_to": pt.get("applies_to"),
+            "statistic": pt.get("statistic"),
+            "why_the_statistic_must_be_the_one_the_interval_covers":
+                pt.get(
+                    "why_the_statistic_must_be_the_one_the_interval_covers"),
+            "null_hypothesis": pt.get("null_hypothesis"),
+            "alternative_by_claim": pt.get("alternative_by_claim"),
+            "direction_by_metric": pt.get("direction_by_metric"),
+            "why_the_directions_differ": pt.get("why_the_directions_differ"),
+            "p_value_method": pt.get("p_value_method"),
+            "why_sign_flips_and_not_the_bootstrap":
+                pt.get("why_sign_flips_and_not_the_bootstrap"),
+            "n_permutations": N_PERMUTATIONS,
+            "permutation_seed": PERMUTATION_SEED,
+            "smallest_reportable_p_value":
+                pt.get("smallest_reportable_p_value"),
+            "observed_vector_included_in_the_null":
+                pt.get("observed_vector_included_in_the_null"),
+            "multiplicity": {
+                kk: vv for kk, vv in (pt.get("multiplicity") or {}).items()
+                if kk != "worked_examples"},
+            "worked_examples": (pt.get("multiplicity") or {}).get(
+                "worked_examples"),
+            "achieved_level_under_the_real_null":
+                pt.get("achieved_level_under_the_real_null"),
+            "achieved_familywise_level_under_the_global_null":
+                pt.get("achieved_familywise_level_under_the_global_null"),
+            "achieved_level_note": pt.get("achieved_level_note"),
+            "interval_still_published": pt.get("interval_still_published"),
+            "implementation": {
+                "module": PAIRED_CI_MODULE,
+                "sha256": paired_ci_live,
+                "functions": (pt.get("implementation") or {}).get(
+                    "functions"),
+                "signatures": {
+                    "one_sided_permutation_pvalue": list(
+                        inspect.signature(
+                            one_sided_permutation_pvalue).parameters),
+                    "holm_family": list(
+                        inspect.signature(holm_family).parameters),
+                    "paired_rate_diff_ci": list(
+                        inspect.signature(paired_rate_diff_ci).parameters),
+                },
+                "in_the_code_fingerprint":
+                    PAIRED_CI_MODULE in CODE_FINGERPRINT_MODULES,
+                "why_it_is_hashed_separately": (
+                    "this module is NOT in CODE_FINGERPRINT_MODULES: adding "
+                    "it would change the code fingerprint inside all 30 "
+                    "committed 11R sidecars and refuse their reuse. Before "
+                    "Iteration 11C-R2 it was bound nowhere at all, so the "
+                    "procedure that decides the primary claims was the one "
+                    "part of the analysis nothing pinned. The hash is "
+                    "recomputed HERE rather than copied from the power "
+                    "report, so a module edited between the report and the "
+                    "freeze refuses instead of freezing the stale hash."),
+            },
+            "read_from": "primary_test in the power report bound above, with "
+                         "the draw count, seed and directions taken from the "
+                         "module constants and cross-checked against it; a "
+                         "disagreement refuses rather than picks one",
         },
         "primary_estimand": {
             "declared": PRIMARY_ESTIMAND,
@@ -593,6 +1048,75 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
                 "different row of the grid and nothing would notice until "
                 "after scoring; bound here, the split that gets built has to "
                 "match a number committed before any inference ran."),
+            "probe_budget": {
+                "new_wordings_on_target_persons":
+                    words.get("new_wording_probes_total"),
+                "new_photographs_on_target_species":
+                    photos.get("new_photographs_total"),
+                "primary_target_total":
+                    (words.get("new_wording_probes_total") or 0)
+                    + (photos.get("new_photographs_total") or 0),
+                "new_retention_probes":
+                    retention_alloc.get("new_retention_probes_total"),
+                "total_allocated":
+                    (size.get("totals") or {}).get(
+                        "total_new_probes_allocated"),
+                #: Taken from the report rather than restated here: the
+                #: sentence names five numbers, and a copy of it in the
+                #: freeze is a second place for one of them to go stale.
+                "correction_to_the_previous_revision":
+                    (size.get("totals") or {}).get(
+                        "correction_to_the_previous_revision"),
+                "why_the_two_totals_are_reported_separately": (
+                    "the primary claims are computed over the target probes "
+                    "alone, so a reader who takes the overall total for the "
+                    "target total overstates the primary design by whatever "
+                    "the descriptive probes cost"),
+            },
+        },
+        "retention_probes": {
+            "status": retention_alloc.get("status"),
+            "route": CONFIRM_RETENTION_ROUTE,
+            "new_templates_per_entity":
+                CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY,
+            "total": retention_alloc.get("new_retention_probes_total"),
+            "entities_covered":
+                retention_alloc.get("distinct_entities_covered"),
+            "retain_other_entities_are_a_subset_of_retain_same":
+                retention_alloc.get(
+                    "retain_other_entities_are_a_subset_of_retain_same"),
+            "per_metric": retention_alloc.get("per_metric"),
+            "media_supply_the_route_decision_rests_on":
+                retention_alloc.get(
+                    "media_supply_the_route_decision_rests_on"),
+            "why_the_image_route_is_omitted":
+                retention_alloc.get("why_the_image_route_is_omitted"),
+            "consequence_for_the_photograph_fetch":
+                retention_alloc.get("consequence_for_the_photograph_fetch"),
+            "what_the_confirmation_retention_estimand_is":
+                retention_alloc.get(
+                    "what_the_confirmation_retention_estimand_is"),
+            "how_it_differs_from_the_exploratory_retention_number":
+                retention_alloc.get(
+                    "how_it_differs_from_the_exploratory_retention_number"),
+            "batch_layout_noise_floor_on_retain_metrics":
+                retention_alloc.get(
+                    "batch_layout_noise_floor_on_retain_metrics"),
+            "why_this_count": retention_alloc.get(
+                "why_this_count_and_not_one_that_matches_the_exploratory_"
+                "precision"),
+            "read_from": "retention_probe_allocation in the power report "
+                         "bound above, cross-checked against the "
+                         "CONFIRM_RETENTION_* module constants",
+            "why_this_is_in_the_freeze": (
+                "the freeze has always promised descriptive retain_same and "
+                "retain_other intervals. Until Iteration 11C-R2 it allocated "
+                "no probes to compute them from, so the promise was "
+                "unfalsifiable and the intervals would silently have "
+                "described the exploratory split the reference-state gate "
+                "had already seen. Bound here, the intervals have a named "
+                "probe budget behind them and the omission of the image "
+                "route is a recorded decision rather than an absence."),
         },
         "claims": {
             "primary_family": list(PRIMARY_FAMILY),
@@ -654,14 +1178,84 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
             "selection_basis": selection["basis"],
         },
         "sealed_split_invariants": [
+            # Iteration 11C-R2's finding #1.  The single invariant that used
+            # to stand here read "no confirmation query_id, ASSOCIATION,
+            # paraphrase template or photograph appears in the exploratory
+            # dataset", and it was impossible: the confirmation exists to
+            # re-test the SAME entity-attribute associations the preserved
+            # adapters unlearned, with new photographs and new wording.  An
+            # association-disjoint confirmation would have measured adapters
+            # against associations they were never trained on, and could not
+            # have confirmed anything.  What must be identical and what must
+            # be new are therefore separate invariants with separate hashes.
             {
-                "invariant": "no confirmation query_id, association, "
-                             "paraphrase template or photograph appears in "
-                             "the exploratory dataset bound above",
+                "invariant": "the confirmation's target-association set is "
+                             "REQUIRED to be IDENTICAL to the frozen one",
+                "bound_by": {
+                    "target_association_ids_sha256": target_assoc_sha,
+                    "target_association_ids": n_target_assoc,
+                    "target_entity_ids_sha256": target_entity_sha,
+                    "target_entity_ids": n_target_entity,
+                },
+                "why": "the preserved adapters were trained to unlearn "
+                       "exactly these entity-attribute pairs. A "
+                       "confirmation about different associations would be a "
+                       "measurement of something no adapter in this protocol "
+                       "was trained on, so it could not confirm the result it "
+                       "claims to confirm. Identity here is the point, not a "
+                       "leak.",
+                "why_it_is_not_a_leak": (
+                    "what the reference-state gate and candidate selection "
+                    "were exposed to was the PROBES - the queries, the "
+                    "template wordings and the photographs - not the abstract "
+                    "association they ask about. Repeating the association "
+                    "with new probes tests whether the unlearning survives "
+                    "the surface form it was measured on, which is the "
+                    "question; repeating the probes would test nothing."),
+                "enforced_by": "the stage-3 probe builder, which derives its "
+                               "target associations from manifest.json and "
+                               "must reproduce this sha256",
+                "checked_at": "stage 3, before the stage-4 tag",
+            },
+            {
+                "invariant": "every confirmation query_id, template_id, "
+                             "template TEXT and photograph sha256 is NEW",
+                "bound_by": {
+                    "exploratory_template_ids_sha256": expl_templates_sha,
+                    "exploratory_template_ids": expl_templates_n,
+                    "exploratory_photograph_sha256_manifest":
+                        "data/mllmu_hier_pilot100/image_manifest.json",
+                    "exploratory_query_ids": "the exploratory queries "
+                                             "parquet bound above",
+                },
                 "why": "the reference-state gate inspected the exploratory "
                        "test split before candidate selection, which is why "
-                       "those results stay exploratory; a confirmation probe "
-                       "reused from that split inherits the exposure",
+                       "those results stay exploratory. A confirmation probe "
+                       "reused from that split inherits the exposure, "
+                       "whatever it is a probe OF.",
+                "why_template_text_and_not_only_template_id": (
+                    "a new id over the same wording is the same probe with a "
+                    "new label. Novelty is a property of the bytes shown to "
+                    "the model, so the text is checked and not just the "
+                    "identifier that names it"),
+                "enforced_by": "the stage-3 probe builder, by hash and by "
+                               "query_id, before the split is written",
+                "checked_at": "stage 3, before the stage-4 tag",
+            },
+            {
+                "invariant": "no exploratory QUERY or MEDIA is reused",
+                "bound_by": {
+                    "what_may_repeat": "the target-association set, invariant "
+                                       "1 above",
+                    "what_may_not": "query_ids, template ids, template "
+                                    "texts, and every photograph's sha256",
+                },
+                "why": "this is the invariant that used to be stated as "
+                       "association-disjointness. Stated over queries and "
+                       "media it is both satisfiable and the thing that "
+                       "actually matters: it is the bytes the gate saw, not "
+                       "the association they were about, that make the "
+                       "exploratory results exploratory.",
                 "enforced_by": "the stage-3 probe builder, by hash and by "
                                "query_id, before the split is written",
                 "checked_at": "stage 3, before the stage-4 tag",
@@ -829,13 +1423,37 @@ def main() -> int:
           f"clusters at that threshold, against a ceiling of "
           f"{c['cluster_ceiling_of_the_primary_claims']}")
     cs = freeze["confirmation_size"]
+    pb = cs["probe_budget"]
     print(f"  size         {cs['new_wording_probes']['new_wording_probes_total']}"
           f" new wording probes + "
           f"{cs['held_out_photographs']['new_photographs_total']} new "
-          f"photographs = {cs['totals']['new_target_probes']} target probes")
+          f"photographs = {pb['primary_target_total']} TARGET probes")
+    print(f"  retention    {pb['new_retention_probes']} descriptive "
+          f"retention probes ({freeze['retention_probes']['route']}, "
+          f"{freeze['retention_probes']['new_templates_per_entity']} new "
+          f"templates x "
+          f"{freeze['retention_probes']['entities_covered']} entities), so "
+          f"{pb['total_allocated']} allocated in all")
     print(f"  fetch        {cs['held_out_photographs']['fetch_command']}")
-    print(f"  invariants   {len(freeze['sealed_split_invariants'])} sealed-split"
-          f" / score-once assertions recorded")
+    t = freeze["primary_test"]
+    print(f"  test         {t['p_value_method']}, n={t['n_permutations']} "
+          f"seed={t['permutation_seed']}, directions "
+          f"{json.dumps(t['direction_by_metric'])}")
+    print(f"  holm         thresholds "
+          f"{json.dumps(t['multiplicity']['thresholds'])}, "
+          f"{t['multiplicity']['ordering']}")
+    fw = t["achieved_familywise_level_under_the_global_null"]
+    print(f"  achieved     familywise {fw['achieved']} against a nominal "
+          f"{fw['nominal']} (inside 2 SE = "
+          f"{fw['achieved_is_nominal_within_two_se']})")
+    print(f"  impl         {t['implementation']['module']} "
+          f"{str(t['implementation']['sha256'])[:16]} "
+          f"(in the code fingerprint: "
+          f"{t['implementation']['in_the_code_fingerprint']})")
+    inv = freeze["sealed_split_invariants"]
+    print(f"  invariants   {len(inv)} sealed-split / score-once assertions "
+          f"recorded, {sum(1 for i in inv if 'IDENTICAL' in i['invariant'])} "
+          f"of them requiring identity rather than novelty")
     return 0
 
 

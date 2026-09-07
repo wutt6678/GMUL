@@ -16,6 +16,7 @@ These tests pin the guard that prevents it.
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -178,3 +179,151 @@ class TestTheGuardFailsClosed:
         monkeypatch.setattr(fetch, "REPO_ROOT", tmp_path)
         with pytest.raises(SystemExit):
             refuse_if_frozen_pool(pool, False)
+
+
+# ── the fetch selects species by ROLE, because a count is a trap ────
+
+class TestTheFetchSelectsSpeciesByRoleNotByCount:
+    """Iteration 11C-R2.  The confirmation needs 12 new photographs for each
+    of the 30 TARGET species.  ``--limit-species 30`` reads like the way to
+    ask for that and is not: the 6 retain-only species sit at indices 1, 14,
+    16, 19, 22 and 28 of ``SPECIES_LIST``, so the first 30 entries hold 24
+    target species plus those 6.  A pool of the right SIZE missing a fifth of
+    the right entities is worse than an obviously wrong count, because
+    nothing downstream would notice until the held-out stratum came up 6
+    clusters short.
+    """
+
+    DATA_DIR = REPO_ROOT / "data" / "mllmu_hier_pilot100"
+
+    def _require_dataset(self):
+        if not (self.DATA_DIR / "associations.parquet").exists():
+            pytest.skip(f"frozen dataset not present: {self.DATA_DIR}")
+
+    def test_the_target_role_is_30_species_and_the_retain_role_is_6(self):
+        self._require_dataset()
+        target = fetch.species_for_role("target", "pilot100")
+        retain = fetch.species_for_role("retain", "pilot100")
+        assert len(target) == 30
+        assert len(retain) == 6
+        assert len(set(target)) == 30 and len(set(retain)) == 6
+        assert not set(target) & set(retain), \
+            "a retain-ONLY species carries no target association by definition"
+        assert set(target) | set(retain) == set(fetch.SPECIES_LIST)
+        assert len(fetch.SPECIES_LIST) == 36
+
+    def test_every_selected_species_is_in_the_list_the_fetcher_knows(self):
+        self._require_dataset()
+        for role in ("target", "retain"):
+            for s in fetch.species_for_role(role, "pilot100"):
+                assert s in fetch.SPECIES_LIST, (role, s)
+
+    def test_the_order_follows_species_list_so_the_seed_is_stable(self):
+        """The seeded shuffle that makes the first 12 photographs the
+        already-allocated ones runs per species, but the ORDER species are
+        fetched in has to be reproducible too, or two runs of the same
+        command produce pools that differ in more than their bytes."""
+        self._require_dataset()
+        a = fetch.species_for_role("target", "pilot100")
+        b = fetch.species_for_role("target", "pilot100")
+        assert a == b
+        idx = [fetch.SPECIES_LIST.index(s) for s in a]
+        assert idx == sorted(idx), "the role list must be SPECIES_LIST order"
+
+    def test_a_count_would_fetch_the_wrong_species(self):
+        """The trap, measured rather than asserted: name the six that a count
+        drops.  A test that only checks lengths cannot see this, because
+        ``--limit-species 30`` also returns 30 species."""
+        self._require_dataset()
+        target = set(fetch.species_for_role("target", "pilot100"))
+        sliced = set(fetch.SPECIES_LIST[:30])
+        assert len(sliced) == len(target) == 30
+        missing = sorted(target - sliced)
+        assert len(missing) == 6, missing
+        assert missing == ["Canis lupus", "Felis catus", "Mustela erminea",
+                           "Mustela nivalis", "Papilio machaon",
+                           "Vulpes vulpes"]
+        extra = sorted(sliced - target)
+        assert len(extra) == 6
+        assert set(extra) == set(fetch.species_for_role("retain", "pilot100"))
+
+    def test_the_frozen_command_uses_the_role_flag(self):
+        """The command in the freeze is what a human runs at stage 3."""
+        freeze = (REPO_ROOT / "data" / "reports"
+                  / "mllmu_pilot100_confirmation_freeze.json")
+        if not freeze.exists():
+            pytest.skip(f"committed evidence not present: {freeze}")
+        h = json.loads(freeze.read_text())["confirmation_size"][
+            "held_out_photographs"]
+        assert "--role target" in h["fetch_command"]
+        assert "--tag pilot100" in h["fetch_command"]
+        assert "--limit-species" not in h["fetch_command"]
+        self._require_dataset()
+        assert len(fetch.species_for_role("target", "pilot100")) == \
+            h["species_covered"] == 30
+
+    def test_an_unknown_role_refuses_rather_than_fetching_everything(self):
+        self._require_dataset()
+        with pytest.raises(SystemExit) as exc:
+            fetch.species_for_role("targett", "pilot100")
+        assert "unknown role" in str(exc.value)
+        assert "target" in str(exc.value) and "retain" in str(exc.value)
+
+    def test_a_missing_dataset_refuses_rather_than_guessing(self):
+        """Fail closed.  Falling back to ``SPECIES_LIST`` would produce a
+        36-species pool that looks successful."""
+        with pytest.raises(SystemExit) as exc:
+            fetch.species_for_role("target", "no_such_tag")
+        assert "REFUSED" in str(exc.value)
+        assert "associations.parquet" in str(exc.value)
+
+    def test_a_role_that_no_species_carries_refuses(self, monkeypatch):
+        """A role list that comes back empty must not become an empty fetch
+        that quietly writes a pool with nothing in it."""
+        self._require_dataset()
+        monkeypatch.setattr(fetch, "SPECIES_LIST", ["Not a real species"])
+        with pytest.raises(SystemExit) as exc:
+            fetch.species_for_role("target", "pilot100")
+        assert "would fetch nothing" in str(exc.value)
+
+    def test_the_real_cli_parses_the_frozen_command_s_flags(self):
+        """Run the real script rather than a copy of its parser: a duplicate
+        ``argparse`` block in a test proves only that the test can parse what
+        the test wrote.  The ambiguity refusal fires before any session is
+        opened and before anything is written, so this needs no network.
+        """
+        proc = subprocess.run(
+            [sys.executable, "scripts/fetch_inat_species.py",
+             "--seed", "42", "--images-per-species", "24",
+             "--role", "target", "--tag", "pilot100",
+             "--limit-species", "30",
+             "--out", "data/raw/inaturalist/confirm_v1"],
+            cwd=REPO_ROOT, capture_output=True, text=True, timeout=180)
+        assert proc.returncode != 0, proc.stdout + proc.stderr
+        assert "--role and --limit-species" in proc.stderr + proc.stdout
+        # an unrecognised flag would fail differently, which is the point:
+        # this proves the parser knows --role and --tag
+        assert "unrecognized arguments" not in proc.stderr
+
+    def test_the_frozen_command_itself_is_not_ambiguous(self):
+        proc = subprocess.run(
+            [sys.executable, "scripts/fetch_inat_species.py", "--help"],
+            cwd=REPO_ROOT, capture_output=True, text=True, timeout=180)
+        assert proc.returncode == 0, proc.stderr
+        for flag in ("--role", "--tag", "--limit-species",
+                     "--images-per-species", "--allow-overwrite-frozen"):
+            assert flag in proc.stdout, flag
+        assert "{target,retain,all}" in proc.stdout.replace(" ", "")
+
+    def test_the_ambiguity_check_runs_before_anything_is_written(self):
+        """Order matters: a refusal that arrives after the frozen-pool guard
+        has already been satisfied, or after a session is opened, is a
+        refusal the network has already seen."""
+        src = (REPO_ROOT / "scripts" / "fetch_inat_species.py").read_text()
+        i_amb = src.index('args.role != "all" and args.limit_species')
+        i_guard = src.index("refuse_if_frozen_pool(out,")
+        i_fetch = src.index("species_for_role(args.role")
+        #: the CALL site, not the definition, which sits above ``main()``
+        i_session = src.index("session = _new_session()")
+        assert i_amb < i_guard < i_fetch < i_session, \
+            (i_amb, i_guard, i_fetch, i_session)

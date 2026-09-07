@@ -21,6 +21,7 @@ Design (mirrors the frozen SALMU paired-CI machinery):
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 from granunlearn.evaluation.hierarchy_metrics import (
@@ -42,6 +43,19 @@ log = setup_logger("paired_ci")
 #: of its own rather than only a point estimate next to MG's.
 PAIRED_METRICS = ("filr", "tga", "wrong_branch", "over_forgetting",
                   "retain_same", "retain_other")
+
+#: Direction of each claim's ONE-SIDED alternative, for the paired difference
+#: theta = rate(state under test) - rate(reference state).
+#
+#: Declared here rather than left to ``abs(theta)`` in the sizing code, which
+#: is direction-agnostic: a power table can size |theta| and be right, but a
+#: hypothesis test cannot, and Iteration 11C-R2 found the repository declaring
+#: Holm thresholds over "one-sided p-values" with no direction and no
+#: p-value procedure anywhere.  TGA is an accuracy, so better is HIGHER;
+#: FILR is a leakage rate, so better is LOWER.  The two primary claims
+#: therefore point in OPPOSITE directions on the same B3-B0 difference, and a
+#: single sign convention applied to both would test one of them backwards.
+CLAIM_DIRECTION = {"tga": "greater", "filr": "less"}
 
 RETAIN_SAME_FAMILIES = {"retain_same_entity",
                         "retain_same_entity_image"}
@@ -264,4 +278,188 @@ def paired_metrics_report(
             "seed": seed,
         },
         "comparisons": comparisons,
+    }
+
+
+# ── the primary hypothesis test (Iteration 11C-R2) ─────────────────
+
+def one_sided_permutation_pvalue(
+    diffs: list[float] | tuple[float, ...],
+    direction: str = "greater",
+    n_permutations: int = 10000,
+    seed: int = 20260908,
+) -> dict[str, Any] | None:
+    """One-sided p-value for the entity-macro paired difference by cluster
+    sign flips.
+
+    ``diffs`` is one paired difference PER ENTITY - exactly the list
+    :func:`_paired_unit_diffs` returns and :func:`paired_rate_diff_ci`
+    resamples - so the p-value and the published interval are built for the
+    SAME statistic.  Using a different quantity for each is how one number
+    comes to serve two estimands.
+
+    Statistic
+        ``T = mean(diffs)``, the entity-macro paired difference.
+
+    Null
+        Each entity's paired difference is symmetric about zero: the two
+        states differ by no systematic amount, so flipping the sign of any
+        entity's difference leaves its distribution unchanged and all ``2^k``
+        sign-flip vectors are equally likely.  ``k`` is far too large to
+        enumerate (2^72 for the primary family), so ``n_permutations`` are
+        drawn.
+
+    Why sign flips rather than the bootstrap
+        A percentile bootstrap p-value is the fraction of resamples on the
+        wrong side of zero, which reuses machinery already bound - but these
+        paired differences are bounded, discrete and MOSTLY EXACTLY ZERO, and
+        a bootstrap p-value is poorly calibrated in exactly the tail a Holm
+        threshold lives in.  Sign flips assume no distribution at all, and
+        handle a zero difference correctly by construction: it cannot flip,
+        so it contributes nothing to either tail.  ``num_flippable_clusters``
+        is reported because the zeros lower the resolution the test actually
+        has below what ``k`` suggests.
+
+    The observed vector is included in the null sample, so the smallest
+    reportable p-value is ``1 / (n_permutations + 1)`` and an exact zero is
+    never returned: reporting ``p = 0.0`` would claim a resolution the draw
+    count does not have.
+
+    ``seed`` defaults to a value distinct from the CI bootstrap's 42 and the
+    ICC bootstrap's 20260907 on purpose.  Sharing a seed would make the two
+    procedures' Monte Carlo errors dependent, and a reader could not tell
+    whether an interval and a p-value agreed because the data said so or
+    because they were drawn from the same stream.
+    """
+    import numpy as np
+
+    if direction not in ("greater", "less"):
+        raise ValueError(
+            f"direction must be 'greater' or 'less', got {direction!r}; a "
+            f"two-sided alternative is not what the preregistration declares")
+    if n_permutations < 1:
+        raise ValueError(f"n_permutations must be positive, got {n_permutations}")
+
+    arr = np.asarray(list(diffs), dtype=np.float64)
+    k = int(arr.size)
+    if k == 0:
+        return None
+    observed = float(arr.mean())
+    flippable = int((arr != 0).sum())
+
+    rng = np.random.default_rng(seed)
+    signs = rng.integers(0, 2, size=(n_permutations, k)) * 2.0 - 1.0
+    null = np.concatenate(([observed], (signs * arr).mean(axis=1)))
+    tail = null >= observed if direction == "greater" else null <= observed
+    p = float(tail.mean())
+    n_null = int(null.size)
+
+    return {
+        "statistic": round(observed, 6),
+        "statistic_is": (
+            "mean over entities of the per-entity paired rate difference - "
+            "the same quantity paired_rate_diff_ci reports as 'diff' and "
+            "covers with its interval"),
+        "direction": direction,
+        "alternative": f"theta {'>' if direction == 'greater' else '<'} 0",
+        "null_hypothesis": (
+            "each entity's paired difference is symmetric about zero, so all "
+            f"2^{k} sign-flip vectors are equally likely and the mean of a "
+            "random one is a draw from the null distribution of the "
+            "statistic"),
+        "method": "Monte Carlo cluster sign-flip permutation",
+        "observed_vector_included_in_the_null": True,
+        "num_clusters": k,
+        "num_flippable_clusters": flippable,
+        "zero_difference_fraction": round(float((arr == 0).mean()), 4),
+        "n_permutations": n_permutations,
+        "seed": seed,
+        "p_value_one_sided": round(p, 6),
+        "p_smallest_reportable": round(1.0 / (n_permutations + 1), 6),
+        "monte_carlo_se_at_p": round(math.sqrt(p * (1.0 - p) / n_null), 6),
+        "all_differences_zero": flippable == 0,
+        "why_that_matters": (
+            "an entity whose paired difference is exactly zero cannot be "
+            "flipped, so the resolution the test has is set by "
+            f"num_flippable_clusters ({flippable}) and not by num_clusters "
+            f"({k}); when every difference is zero no sign flip can move the "
+            "statistic and the p-value is 1 by construction"),
+    }
+
+
+def holm_family(
+    p_values: dict[str, float],
+    familywise_alpha: float,
+) -> dict[str, Any]:
+    """Holm's step-down over one-sided p-values, with the rule written down.
+
+    Ordering
+        Ascending p-value.  TIES are broken by claim NAME rather than by
+        insertion order, so the result is reproducible from the p-values
+        alone.  The break cannot change a verdict - tied p-values meet the
+        same threshold at the same step - but it does change which claim is
+        reported first, and a report that reorders itself between runs reads
+        as a different result.
+
+    Pass/fail rule
+        Step down from the smallest p-value.  Claim at step ``i`` (0-based)
+        is rejected when ``p_(i) <= familywise_alpha / (k - i)``, so the
+        first threshold is ``alpha/k`` and the last is ``alpha``.  The FIRST
+        non-rejection ENDS the procedure: every later claim is retained
+        whether or not its own p-value would have cleared its own threshold.
+        That stopping rule is what makes the procedure familywise-valid;
+        dropping it turns Holm into a per-comparison test at a smaller alpha
+        and understates the familywise error rate.
+    """
+    k = len(p_values)
+    if k == 0:
+        return {"familywise_alpha": familywise_alpha, "k": 0, "steps": [],
+                "rejected": [], "retained": [], "all_rejected": False}
+    if not 0 < familywise_alpha < 1:
+        raise ValueError(
+            f"familywise_alpha must lie in (0, 1), got {familywise_alpha}")
+
+    ordered = sorted(p_values.items(), key=lambda kv: (kv[1], kv[0]))
+    steps: list[dict[str, Any]] = []
+    stopped = False
+    for i, (name, p) in enumerate(ordered):
+        threshold = familywise_alpha / (k - i)
+        clears = bool(p <= threshold)
+        rejected = bool(clears and not stopped)
+        if not rejected:
+            stopped = True
+        steps.append({
+            "step": i + 1,
+            "claim": name,
+            "p_value_one_sided": round(float(p), 6),
+            "threshold": round(threshold, 6),
+            "clears_its_own_threshold": clears,
+            "rejected": rejected,
+            "why": (
+                "p <= alpha/(k - i) and no earlier step failed"
+                if rejected else
+                f"p > alpha/(k - i) = {round(threshold, 6)}, and Holm stops "
+                "here"
+                if not clears else
+                "an earlier step already failed, so Holm retains this claim "
+                "even though its own p-value clears its own threshold"),
+        })
+    return {
+        "familywise_alpha": familywise_alpha,
+        "thresholds_apply_to": "one-sided p-values",
+        "k": k,
+        "thresholds": [round(familywise_alpha / (k - i), 6)
+                       for i in range(k)],
+        "ordering": "ascending p-value, ties broken by claim name",
+        "tie_handling": (
+            "ties are ordered by claim name so the procedure is reproducible "
+            "from the p-values alone; the break cannot change a verdict, "
+            "because tied p-values meet the same threshold at the same step"),
+        "stopping_rule": (
+            "the first non-rejection ends the procedure; every later claim is "
+            "retained whether or not it clears its own threshold"),
+        "steps": steps,
+        "rejected": [s["claim"] for s in steps if s["rejected"]],
+        "retained": [s["claim"] for s in steps if not s["rejected"]],
+        "all_rejected": not stopped,
     }

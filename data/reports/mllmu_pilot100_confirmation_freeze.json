@@ -1,7 +1,8 @@
 {
   "analysis": {
-    "alpha_convention": "familywise alpha is 0.05, applied to ONE-SIDED p-values; a single unadjusted claim sits at 0.025 = familywise/2 and Holm's worst case for one of 2 claims is familywise/k = 0.025. Every sizing function in the power module takes a one-sided alpha and uses z(1 - alpha), so the declared threshold and the reported cluster requirement are the same test.",
+    "alpha_convention": "familywise alpha is 0.05, applied to ONE-SIDED p-values. One-sidedness does not halve anything: a STANDALONE directional claim at this familywise rate is tested at one-sided 0.05. The primary claims are a family of 2, so Holm charges the first of them familywise/k = 0.025, and that is the level the sizing uses. 0.025 = familywise/2 is a SEPARATE quantity - the one arm of a two-sided 95% interval, i.e. the level a TOST arm or a non-inferiority bound is read off at - which happens to equal familywise/k here only because k = 2. At k = 3 Holm's first threshold would be 0.0167 while familywise/2 stayed 0.025. Every sizing function in the power module takes a one-sided alpha and uses z(1 - alpha), so the declared threshold and the reported cluster requirement are the same test.",
     "alpha_one_sided": 0.025,
+    "alpha_standalone_one_sided": 0.05,
     "averaging_units": {
       "entity_macro": "the statistic the CI is built for and the one the interval covers",
       "row_micro": "the published hierarchy_metrics rate; the two differ because entities contribute unequal numbers of probes, so subtracting two published rates does not reproduce the CI's centre"
@@ -15,6 +16,7 @@
     "ci_method": "paired percentile bootstrap",
     "ci_unit": "entity - the iNaturalist species or the MLLMU person - which is the unit the bootstrap resamples",
     "familywise_alpha": 0.05,
+    "holm_worst_case_alpha": 0.025,
     "icc_bootstrap_seed": 20260907,
     "paired_metrics": [
       "filr",
@@ -209,8 +211,8 @@
   "code": {
     "analysis_scripts_sha256": {
       "scripts/evaluate_pilot100_final.py": "508354306410a0e60917ff267470f07a8ff5cc0fe3f11e54a960513f2949e14f",
-      "scripts/freeze_confirmation_protocol.py": "bd55da5ac30e9409d922b042f2f7c119d7b45053002598901008a41afe146068",
-      "scripts/power_analysis_confirmation.py": "67980415e6dc3861035d3f37f8d9cc308e1afe7ecebcf4869c6b00ba5acedade",
+      "scripts/freeze_confirmation_protocol.py": "76a7384492166cfc8efdc73d85d87b9175c46fb4b94d50b7a6b57090c0120dcf",
+      "scripts/power_analysis_confirmation.py": "7fc6083a29d2ac199613d0b4098a7b7ec7fa68fc40a5aa885fc700192e48c221",
       "scripts/select_unlearning_checkpoints.py": "ecacee99a9dd52cba7c419081e11a628f931fc40e8300b45b489946e6da25f2d"
     },
     "fingerprinted_module_list": [
@@ -242,9 +244,12 @@
   "confirmation_size": {
     "frozen_at_stage_3_before_any_scoring": {
       "collision_rules": [
+        "the confirmation's target-association set is REQUIRED to be IDENTICAL to the frozen one, sha256 d86c92ad439b1f45... over 90 association_ids and 72 target entity ids, both hashed above. This is the one thing the confirmation MUST repeat: the preserved adapters unlearned exactly these entity-attribute pairs, so a confirmation about different ones could not confirm them",
         "no confirmation template_id may appear among the 57 exploratory template ids hashed above",
+        "no confirmation template TEXT may be a copy of an exploratory template's text: a new id over the same wording is the same probe with a new label",
         "no confirmation photograph sha256 may appear in the frozen exploratory image manifest",
         "no confirmation query_id may appear in the exploratory queries parquet",
+        "no exploratory query or media is reused: every confirmation probe is a new query_id carrying a new template_id, and every image-route probe carries a photograph whose sha256 is not in the exploratory manifest",
         "the confirmation split must not enter the reference-state gate, candidate selection, or any go/no-go decision"
       ],
       "confirmation_photograph_sha256_manifest": "to be committed: the hash of every new photograph, plus the licence and attribution the re-fetch records",
@@ -314,6 +319,7 @@
         "retain_same_entity_image:2"
       ],
       "exploratory_template_ids_sha256": "ecd95c11097b2518f23bbb551cea615739763587a6258b7318bf302afec2d5b0",
+      "retain_association_ids_sha256": "6e18001f26bb282f3b7b18c1d8a20b44d92f3680843be11dbb0af05132de2315",
       "retain_entity_ids": [
         "Anas crecca",
         "Anthocharis cardamines",
@@ -387,6 +393,100 @@
         "mllmu_482"
       ],
       "retain_entity_ids_sha256": "6702bbfaadb32d5681689b1171f1fac86faeff755c5e45e33ac22b6096a86b08",
+      "target_association_ids": [
+        "inat_Anas_platyrhynchos",
+        "inat_Branta_canadensis",
+        "inat_Canis_lupus",
+        "inat_Chloris_chloris",
+        "inat_Coloeus_monedula",
+        "inat_Corvus_corax",
+        "inat_Corvus_corone",
+        "inat_Cyanistes_caeruleus",
+        "inat_Felis_catus",
+        "inat_Gonepteryx_rhamni",
+        "inat_Mareca_strepera",
+        "inat_Mustela_erminea",
+        "inat_Mustela_nivalis",
+        "inat_Papilio_machaon",
+        "inat_Parus_major",
+        "inat_Passer_domesticus",
+        "inat_Passer_hispaniolensis",
+        "inat_Periparus_ater",
+        "inat_Pieris_brassicae",
+        "inat_Pieris_napi",
+        "inat_Pieris_rapae",
+        "inat_Poecile_montanus",
+        "inat_Poecile_palustris",
+        "inat_Sturnus_vulgaris",
+        "inat_Turdus_merula",
+        "inat_Turdus_philomelos",
+        "inat_Turdus_pilaris",
+        "inat_Vanessa_atalanta",
+        "inat_Vanessa_cardui",
+        "inat_Vulpes_vulpes",
+        "mllmu_005__date_of_birth",
+        "mllmu_005__salary",
+        "mllmu_054__salary",
+        "mllmu_057__residence",
+        "mllmu_060__height",
+        "mllmu_066__birthplace",
+        "mllmu_066__date_of_birth",
+        "mllmu_078__height",
+        "mllmu_089__residence",
+        "mllmu_090__occupation",
+        "mllmu_094__residence",
+        "mllmu_103__date_of_birth",
+        "mllmu_117__birthplace",
+        "mllmu_131__height",
+        "mllmu_159__birthplace",
+        "mllmu_159__education",
+        "mllmu_159__salary",
+        "mllmu_182__birthplace",
+        "mllmu_182__occupation",
+        "mllmu_187__residence",
+        "mllmu_191__date_of_birth",
+        "mllmu_191__salary",
+        "mllmu_222__height",
+        "mllmu_239__education",
+        "mllmu_244__salary",
+        "mllmu_252__birthplace",
+        "mllmu_252__salary",
+        "mllmu_258__height",
+        "mllmu_259__education",
+        "mllmu_272__date_of_birth",
+        "mllmu_272__education",
+        "mllmu_289__height",
+        "mllmu_291__birthplace",
+        "mllmu_291__education",
+        "mllmu_308__height",
+        "mllmu_318__birthplace",
+        "mllmu_318__occupation",
+        "mllmu_318__salary",
+        "mllmu_327__height",
+        "mllmu_327__salary",
+        "mllmu_332__education",
+        "mllmu_332__occupation",
+        "mllmu_354__birthplace",
+        "mllmu_354__height",
+        "mllmu_354__occupation",
+        "mllmu_356__education",
+        "mllmu_360__date_of_birth",
+        "mllmu_405__date_of_birth",
+        "mllmu_424__date_of_birth",
+        "mllmu_432__occupation",
+        "mllmu_435__occupation",
+        "mllmu_437__date_of_birth",
+        "mllmu_437__height",
+        "mllmu_438__residence",
+        "mllmu_442__residence",
+        "mllmu_462__residence",
+        "mllmu_462__salary",
+        "mllmu_465__residence",
+        "mllmu_465__salary",
+        "mllmu_481__date_of_birth"
+      ],
+      "target_association_ids_are_required_to_be_identical": "this set is NOT subject to the novelty rules below. The preserved adapters unlearned exactly these entity-attribute associations, so a confirmation that asked about different ones would measure something they were never trained on and could not confirm the result being confirmed",
+      "target_association_ids_sha256": "d86c92ad439b1f451fb25d17974145e1080d86705194ff786846a6fc2dbfce78",
       "target_entity_ids": [
         "Anas platyrhynchos",
         "Branta canadensis",
@@ -465,13 +565,15 @@
     },
     "held_out_photographs": {
       "already_allocated_per_species": 12,
-      "fetch_command": "python scripts/fetch_inat_species.py --seed 42 --images-per-species 24 --out data/raw/inaturalist/confirm_v1",
+      "fetch_command": "python scripts/fetch_inat_species.py --seed 42 --images-per-species 24 --role target --tag pilot100 --out data/raw/inaturalist/confirm_v1",
       "fetch_images_per_species": 24,
       "fetch_out": "data/raw/inaturalist/confirm_v1",
+      "fetch_role": "target",
       "fetch_seed": 42,
+      "fetch_tag": "pilot100",
       "mde_at_the_selected_design_conservative_icc": 0.0287,
       "new_photographs_per_species": 12,
-      "new_photographs_total": 432,
+      "new_photographs_total": 360,
       "power_at_the_selected_design_conservative_icc": 0.191,
       "rejected_candidates": {
         "24": {
@@ -487,10 +589,12 @@
           "mde_conservative_icc": 0.0326
         }
       },
-      "species_covered": 36,
+      "species_covered": 30,
+      "species_covered_is": "the 30 TARGET species, not the 36 the seeded re-fetch could cover",
       "target_species_in_the_held_out_stratum": 30,
       "what_the_power_number_means_here": "low, and expected to be: this stratum carries no primary claim because 11R measured its effect as indistinguishable from zero, so the budget is set by the mde above rather than by a power target",
-      "why_every_species_and_not_only_the_target_ones": "the target metrics only need the 30 TARGET species, but the retain_*_image families probe the 6 retain-only species too, and a confirmation probe may not reuse any photograph pilot100_v2 already used"
+      "why_only_the_target_species": "the target metrics need exactly the 30 TARGET species. The only reason an earlier revision fetched the 6 retain-only species as well was the retain_same_entity_image / retain_other_entity_image families, and retention_probe_allocation omits the image route because it cannot be renewed for the persons who carry most of the retention entities - so those species have no confirmation purpose and their photographs are not fetched",
+      "why_the_command_names_a_role_and_not_a_count": "--limit-species 30 looks equivalent and is not: it takes the FIRST 30 entries of SPECIES_LIST, and the retain-only species are interleaved through it, so that command fetches 24 of the 30 target species and misses six. --role target derives the list from manifest.json the same way this report does."
     },
     "new_wording_probes": {
       "balanced": true,
@@ -528,14 +632,28 @@
       "why_balanced": "the exploratory wording stratum allocates different numbers of probes to different persons, so its harmonic-mean cluster size is below its arithmetic mean and its between-person variance estimate carries that imbalance; a balanced confirmation design removes a confound the variance decomposition would otherwise have to be read against",
       "why_not_fewer": "power is not the binding constraint at this ceiling: the between-person variance floor is 11 persons for TGA and 14 for FILR against 42 available, so the count is chosen for design balance and comparability with the held-out stratum, not for power"
     },
+    "probe_budget": {
+      "correction_to_the_previous_revision": "the previous revision reported 936 as new_target_probes. That counted the 72 photographs destined for the 6 retain-only species as target probes, and they are not: those species carry no target association. The target total is 864 - 504 wordings on the 42 target persons plus 360 photographs on the 30 target species - and the overall allocated count is a separate number that also includes retention",
+      "new_photographs_on_target_species": 360,
+      "new_retention_probes": 345,
+      "new_wordings_on_target_persons": 504,
+      "primary_target_total": 864,
+      "total_allocated": 1209,
+      "why_the_two_totals_are_reported_separately": "the primary claims are computed over the target probes alone, so a reader who takes the overall total for the target total overstates the primary design by whatever the descriptive probes cost"
+    },
     "read_from": "confirmation_size in the power report bound above, cross-checked against the CONFIRM_* module constants in build_freeze",
     "selected": true,
     "totals": {
-      "entity_clusters": 72,
-      "new_target_probes": 936,
-      "of_which_new_photographs": 432,
-      "of_which_new_wordings": 504,
-      "scored_states": 3
+      "correction_to_the_previous_revision": "the previous revision reported 936 as new_target_probes. That counted the 72 photographs destined for the 6 retain-only species as target probes, and they are not: those species carry no target association. The target total is 864 - 504 wordings on the 42 target persons plus 360 photographs on the 30 target species - and the overall allocated count is a separate number that also includes retention",
+      "entity_clusters_for_retention": 70,
+      "entity_clusters_for_the_primary_claims": 72,
+      "new_retention_probes": 345,
+      "new_target_probes": 864,
+      "of_which_new_photographs_on_target_species": 360,
+      "of_which_new_wordings_on_target_persons": 504,
+      "scored_states": 3,
+      "total_generations_at_three_scored_states": 3627,
+      "total_new_probes_allocated": 1209
     },
     "why_the_size_is_in_the_freeze": "stage 3 builds probes and stage 5 scores them once. If the size were only in the power report, a builder could pick a different row of the grid and nothing would notice until after scoring; bound here, the split that gets built has to match a number committed before any inference ran."
   },
@@ -569,7 +687,7 @@
     "version": "pilot100_v2"
   },
   "freeze": "iteration_11c_confirmation_protocol",
-  "frozen_at_utc": "2026-09-07T02:45:36+00:00",
+  "frozen_at_utc": "2026-09-07T05:07:46+00:00",
   "generation": {
     "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
     "batch_layout": "ONE uniform layout for every scored state: all confirmation queries in a single pass, same batch_size and image_batch_size for B3, B0 and MG. Batched greedy decoding is not bit-stable across batch compositions, so two layouts would put decoding noise inside the paired difference itself.",
@@ -587,7 +705,7 @@
     "module_defaults_match": true,
     "source": "the single generation_config shared by all 30 committed 11R predictions"
   },
-  "git_commit": "3bfaf477f0b3e58a5e7f7805ccafe6b68a4d273a",
+  "git_commit": "0039fe74554df3a09fbd59ea972456d7f83ecdfb",
   "git_dirty": true,
   "inputs_bound": {
     "final_evaluation": {
@@ -596,7 +714,7 @@
     },
     "power_analysis": {
       "path": "data/reports/mllmu_pilot100_confirmation_power.json",
-      "sha256": "7cd70ee43288e3ec6477bcf82c6dc84f0171b63592d9107e4bd10317aedf61ff"
+      "sha256": "6c2f21204ca5b948a2a8f38f90bc86b42559dca983348572e7ddfa421dc1de7a"
     },
     "prediction_manifest": {
       "path": "data/reports/mllmu_pilot100_prediction_manifest.json",
@@ -627,9 +745,297 @@
     "what_it_does_not_establish": "Reusing the same entities with new probes confirms robustness on that fixed cohort; it does not create new entity clusters and does not establish independent population-level replication. The preserved adapters unlearned a target set drawn from exactly these entities, so no confirmation split that keeps those adapters can enlarge the entity set. Both the pooled estimand and every per-stratum estimand inherit this limit; choosing between them does not escape it.",
     "what_it_establishes": "that B3 changes the target metrics relative to B0 across the target entity set as a whole, on probes the exploratory pipeline never scored"
   },
+  "primary_test": {
+    "achieved_familywise_level_under_the_global_null": {
+      "achieved": 0.045,
+      "achieved_is_nominal_within_two_se": true,
+      "achieved_over_nominal": 0.9,
+      "monte_carlo_se_under_the_nominal": 0.0069,
+      "nominal": 0.05,
+      "one_sign_vector_per_entity_shared_by_both_claims": true,
+      "permutations_per_replicate": 10000,
+      "procedure": "holm_family as implemented, not a restatement",
+      "replicates": 1000,
+      "two_se_band_around_the_nominal": [
+        0.0362,
+        0.0638
+      ],
+      "what_it_measures": "the rate at which the Holm procedure rejected AT LEAST ONE claim, over joint re-signings of the observed difference vectors under a global null. This, and not the per-claim marginal levels, is what the declared familywise alpha is a promise about."
+    },
+    "achieved_level_note": "measured by re-signing the 11R paired differences, which is the null the test assumes and preserves the real discreteness. The LIMIT is that the confirmation split will have 12 balanced probes per person where the exploratory design had 3-9 unbalanced, so its per-entity differences take more distinct values and are LESS discrete - which moves the achieved level toward nominal, not away from it. The per-claim numbers are marginal levels; achieved_familywise_level_under_the_global_null is the one that speaks to the declared familywise alpha, and it is measured by running the real holm_family on jointly re-signed p-values rather than by combining the marginals.",
+    "achieved_level_under_the_real_null": {
+      "B3_minus_B0:filr": {
+        "achieved_level_at_the_threshold": 0.032,
+        "achieved_level_is_nominal_within_two_se": true,
+        "achieved_over_nominal": 1.28,
+        "distinct_nonzero_differences": 24,
+        "mean_p_under_the_null": 0.4957,
+        "monte_carlo_se_of_that_estimate_under_the_nominal": 0.0049,
+        "num_clusters": 72,
+        "observed_statistic": -0.244204,
+        "permutations_are_the_frozen_count": true,
+        "permutations_per_replicate": 10000,
+        "replicates": 1000,
+        "sign_flips_shared_with_the_other_claims": true,
+        "threshold": 0.025,
+        "two_se_band_around_the_nominal": [
+          0.0151,
+          0.0349
+        ],
+        "why_the_mean_is_reported_beside_the_tail_rate": "under H0 the p-values are uniform on the grid the draw count allows, so the mean should sit near 0.5. A mean well below it is an anti-conservative test and well above a conservative one, and unlike the tail rate it is estimated from every replicate instead of the handful that land in the tail, so it is the more precise of the two diagnostics",
+        "zero_difference_fraction": 0.0694
+      },
+      "B3_minus_B0:tga": {
+        "achieved_level_at_the_threshold": 0.025,
+        "achieved_level_is_nominal_within_two_se": true,
+        "achieved_over_nominal": 1.0,
+        "distinct_nonzero_differences": 20,
+        "mean_p_under_the_null": 0.4926,
+        "monte_carlo_se_of_that_estimate_under_the_nominal": 0.0049,
+        "num_clusters": 72,
+        "observed_statistic": 0.198172,
+        "permutations_are_the_frozen_count": true,
+        "permutations_per_replicate": 10000,
+        "replicates": 1000,
+        "sign_flips_shared_with_the_other_claims": true,
+        "threshold": 0.025,
+        "two_se_band_around_the_nominal": [
+          0.0151,
+          0.0349
+        ],
+        "why_the_mean_is_reported_beside_the_tail_rate": "under H0 the p-values are uniform on the grid the draw count allows, so the mean should sit near 0.5. A mean well below it is an anti-conservative test and well above a conservative one, and unlike the tail rate it is estimated from every replicate instead of the handful that land in the tail, so it is the more precise of the two diagnostics",
+        "zero_difference_fraction": 0.1389
+      }
+    },
+    "alternative_by_claim": {
+      "B3_minus_B0:filr": "theta < 0",
+      "B3_minus_B0:tga": "theta > 0"
+    },
+    "applies_to": [
+      "B3_minus_B0:tga",
+      "B3_minus_B0:filr"
+    ],
+    "direction_by_metric": {
+      "filr": "less",
+      "tga": "greater"
+    },
+    "implementation": {
+      "functions": [
+        "one_sided_permutation_pvalue",
+        "holm_family",
+        "paired_rate_diff_ci"
+      ],
+      "in_the_code_fingerprint": false,
+      "module": "src/granunlearn/evaluation/paired_ci.py",
+      "sha256": "8944d43d0f246a0ff9114a3e6bddf41ffc8d7c4ef2930c384b859bf091766ce4",
+      "signatures": {
+        "holm_family": [
+          "p_values",
+          "familywise_alpha"
+        ],
+        "one_sided_permutation_pvalue": [
+          "diffs",
+          "direction",
+          "n_permutations",
+          "seed"
+        ],
+        "paired_rate_diff_ci": [
+          "fa",
+          "fb",
+          "n_bootstrap",
+          "ci_level",
+          "seed"
+        ]
+      },
+      "why_it_is_hashed_separately": "this module is NOT in CODE_FINGERPRINT_MODULES: adding it would change the code fingerprint inside all 30 committed 11R sidecars and refuse their reuse. Before Iteration 11C-R2 it was bound nowhere at all, so the procedure that decides the primary claims was the one part of the analysis nothing pinned. The hash is recomputed HERE rather than copied from the power report, so a module edited between the report and the freeze refuses instead of freezing the stale hash."
+    },
+    "interval_still_published": "the percentile bootstrap CI over the same per-entity differences, unchanged: the test decides the claim and the interval reports its size, and a rejection with an interval that still contains zero would be a contradiction the reader is entitled to see rather than have explained away",
+    "multiplicity": {
+      "familywise_alpha": 0.05,
+      "ordering": "ascending p-value, ties broken by claim name",
+      "pass_fail_rule": "step down from the smallest p-value; the claim at step i (0-based) is rejected when p_(i) <= familywise_alpha/(k-i); the FIRST non-rejection ends the procedure and every later claim is retained whether or not it clears its own threshold",
+      "procedure": "Holm step-down",
+      "thresholds": [
+        0.025,
+        0.05
+      ],
+      "thresholds_apply_to": "one-sided p-values",
+      "tie_handling": "ties are ordered by claim name so the result is reproducible from the p-values alone; the break cannot change a verdict because tied p-values meet the same threshold at the same step, but it does fix which claim is reported first",
+      "why_the_stopping_rule_is_part_of_the_rule": "dropping it turns Holm into a per-comparison test at a smaller alpha and understates the familywise error rate, which is the one number the preregistration promises to control",
+      "worst_case_alpha_for_a_single_claim": 0.025
+    },
+    "n_permutations": 10000,
+    "null_hypothesis": "each entity's paired difference is symmetric about zero, so all 2^k sign-flip vectors are equally likely",
+    "observed_vector_included_in_the_null": true,
+    "p_value_method": "Monte Carlo cluster sign-flip permutation",
+    "permutation_seed": 20260908,
+    "read_from": "primary_test in the power report bound above, with the draw count, seed and directions taken from the module constants and cross-checked against it; a disagreement refuses rather than picks one",
+    "smallest_reportable_p_value": 0.0001,
+    "statistic": "the entity-macro paired difference: mean over entities of each entity's own (rate_B3 - rate_B0), the SAME quantity paired_rate_diff_ci reports as 'diff' and covers with the published interval",
+    "why_sign_flips_and_not_the_bootstrap": "the paired per-entity differences are bounded, discrete and mostly exactly zero; a percentile bootstrap p-value is poorly calibrated in exactly the tail a Holm threshold lives in. Sign flips assume no distribution, and a zero difference cannot flip, so it contributes to neither tail - which is the correct behaviour rather than a resample of it.",
+    "why_the_directions_differ": "TGA is an accuracy, so better is HIGHER; FILR is a leakage rate, so better is LOWER. Both claims are about the same B3-B0 difference and point in OPPOSITE directions on it, so a single sign convention applied to both would test one of them backwards. The sizing code sizes |theta| and is direction-agnostic, which is correct for a power table and would be wrong for a test.",
+    "why_the_statistic_must_be_the_one_the_interval_covers": "a p-value for one quantity beside an interval for another lets a claim be rejected while the interval still contains zero, and the two numbers then contradict each other in the same table",
+    "worked_examples": {
+      "both_clear": {
+        "all_rejected": true,
+        "familywise_alpha": 0.05,
+        "k": 2,
+        "ordering": "ascending p-value, ties broken by claim name",
+        "rejected": [
+          "B3_minus_B0:tga",
+          "B3_minus_B0:filr"
+        ],
+        "retained": [],
+        "steps": [
+          {
+            "claim": "B3_minus_B0:tga",
+            "clears_its_own_threshold": true,
+            "p_value_one_sided": 0.004,
+            "rejected": true,
+            "step": 1,
+            "threshold": 0.025,
+            "why": "p <= alpha/(k - i) and no earlier step failed"
+          },
+          {
+            "claim": "B3_minus_B0:filr",
+            "clears_its_own_threshold": true,
+            "p_value_one_sided": 0.03,
+            "rejected": true,
+            "step": 2,
+            "threshold": 0.05,
+            "why": "p <= alpha/(k - i) and no earlier step failed"
+          }
+        ],
+        "stopping_rule": "the first non-rejection ends the procedure; every later claim is retained whether or not it clears its own threshold",
+        "thresholds": [
+          0.025,
+          0.05
+        ],
+        "thresholds_apply_to": "one-sided p-values",
+        "tie_handling": "ties are ordered by claim name so the procedure is reproducible from the p-values alone; the break cannot change a verdict, because tied p-values meet the same threshold at the same step"
+      },
+      "first_fails_so_the_second_is_retained": {
+        "all_rejected": false,
+        "familywise_alpha": 0.05,
+        "k": 2,
+        "ordering": "ascending p-value, ties broken by claim name",
+        "rejected": [],
+        "retained": [
+          "B3_minus_B0:tga",
+          "B3_minus_B0:filr"
+        ],
+        "steps": [
+          {
+            "claim": "B3_minus_B0:tga",
+            "clears_its_own_threshold": false,
+            "p_value_one_sided": 0.03,
+            "rejected": false,
+            "step": 1,
+            "threshold": 0.025,
+            "why": "p > alpha/(k - i) = 0.025, and Holm stops here"
+          },
+          {
+            "claim": "B3_minus_B0:filr",
+            "clears_its_own_threshold": true,
+            "p_value_one_sided": 0.04,
+            "rejected": false,
+            "step": 2,
+            "threshold": 0.05,
+            "why": "an earlier step already failed, so Holm retains this claim even though its own p-value clears its own threshold"
+          }
+        ],
+        "stopping_rule": "the first non-rejection ends the procedure; every later claim is retained whether or not it clears its own threshold",
+        "thresholds": [
+          0.025,
+          0.05
+        ],
+        "thresholds_apply_to": "one-sided p-values",
+        "tie_handling": "ties are ordered by claim name so the procedure is reproducible from the p-values alone; the break cannot change a verdict, because tied p-values meet the same threshold at the same step"
+      }
+    }
+  },
   "provenance_contract_version": 2,
   "purpose": "Bind every parameter the confirmatory claims depend on before any confirmation probe is built or scored, so that a result produced afterwards cannot be explained by a parameter that moved beforehand.",
   "refusals": [],
+  "retention_probes": {
+    "batch_layout_noise_floor_on_retain_metrics": 0.0556,
+    "consequence_for_the_photograph_fetch": "the 6 retain-only species have no confirmation purpose once the image route is omitted, so the fetch covers the TARGET species only; species_covered in confirmation_size is the target-species count and not the 36 the supply could cover",
+    "entities_covered": 70,
+    "how_it_differs_from_the_exploratory_retention_number": "pilot100_v2's retain_same and retain_other pool BOTH routes and ask every retained value of an entity in 3 wordings, so the exploratory figures are NOT the same estimand and the two must not be subtracted or called a replication of each other",
+    "media_supply_the_route_decision_rests_on": {
+      "by_source": {
+        "inaturalist": 6,
+        "mllmu_hier": 64
+      },
+      "entities_a_new_photograph_could_cover": 6,
+      "entities_no_new_photograph_can_cover": 64,
+      "entities_with_a_single_photograph_or_none": 64,
+      "photographs_per_retention_entity": {
+        "1": 64,
+        "12": 6
+      },
+      "retention_entities": 70,
+      "sources_no_new_photograph_can_be_fetched_for": [
+        "mllmu_hier"
+      ]
+    },
+    "new_templates_per_entity": 3,
+    "per_metric": {
+      "retain_other": {
+        "between_entity_floor_infinite_probes": 0.0785,
+        "entities_carried_by": 45,
+        "exploratory_probes_per_entity_harmonic_mean": 3,
+        "half_width_at_rejected_counts": {
+          "12": 0.0853,
+          "21": 0.0824,
+          "6": 0.0915,
+          "9": 0.0874
+        },
+        "half_width_at_the_exploratory_count": 0.1029,
+        "half_width_at_the_selected_count": 0.1029,
+        "icc_point_estimate": 0.3176,
+        "new_probes": 135,
+        "new_probes_per_entity": 3,
+        "probes_per_entity_that_would_match_the_exploratory_precision": 3,
+        "route": "text_only",
+        "selected_count_is_at_or_above_the_noise_floor": true,
+        "sigma2_between": 0.07224,
+        "sigma2_within": 0.155247,
+        "variance_is_dominated_by": "within-entity measurement noise"
+      },
+      "retain_same": {
+        "between_entity_floor_infinite_probes": 0.0179,
+        "entities_carried_by": 70,
+        "exploratory_probes_per_entity_harmonic_mean": 8,
+        "half_width_at_rejected_counts": {
+          "12": 0.034,
+          "21": 0.0282,
+          "6": 0.0446,
+          "9": 0.0378
+        },
+        "half_width_at_the_exploratory_count": 0.0396,
+        "half_width_at_the_selected_count": 0.0604,
+        "icc_point_estimate": 0.0312,
+        "new_probes": 210,
+        "new_probes_per_entity": 3,
+        "probes_per_entity_that_would_match_the_exploratory_precision": 8,
+        "route": "text_only",
+        "selected_count_is_at_or_above_the_noise_floor": true,
+        "sigma2_between": 0.005864,
+        "sigma2_within": 0.181869,
+        "variance_is_dominated_by": "within-entity measurement noise"
+      }
+    },
+    "read_from": "retention_probe_allocation in the power report bound above, cross-checked against the CONFIRM_RETENTION_* module constants",
+    "retain_other_entities_are_a_subset_of_retain_same": true,
+    "route": "text_only",
+    "status": "DESCRIPTIVE. Retention carries no claim, no declared margin and no Holm entry; this allocation exists so the published interval describes the confirmation split rather than the exploratory one the reference-state gate saw.",
+    "total": 345,
+    "what_the_confirmation_retention_estimand_is": "baseline correctness on the retained fine value, asked in 3 new wordings per entity on the TEXT route only, macro-averaged over the entities that carry the metric",
+    "why_the_image_route_is_omitted": "it cannot be renewed for the entities that carry the metric. 64 of the 70 retention entities come from ['mllmu_hier'], for which there is no pool of new photographs to fetch, and 64 retention entities hold a single photograph or none, so an image-route retention probe on one of them either reuses exploratory media - which the sealed-split rules forbid - or does not exist. Only the 6 retain-only species could have been given new photographs, and covering 6 of 70 entities on one route would barely move the pooled interval while making its route mix differ between entities.",
+    "why_this_count": "precision below the batch-layout noise floor cannot be distinguished from batched-decoding noise, so buying it would spend generations on a decimal nobody can act on. retain_same would need 8 probes per entity to match the exploratory half-width; at that count the half-width is 0.0396, already below the 0.0556 floor, and its between-entity floor is 0.0179 - so the 5 extra probes per entity would buy precision the measurement cannot resolve. retain_other would need 3, no more than the selected count: it is cluster-bound and gains almost nothing at any count. The numbers are in per_metric.",
+    "why_this_is_in_the_freeze": "the freeze has always promised descriptive retain_same and retain_other intervals. Until Iteration 11C-R2 it allocated no probes to compute them from, so the promise was unfalsifiable and the intervals would silently have described the exploratory split the reference-state gate had already seen. Bound here, the intervals have a named probe budget behind them and the omission of the image route is a recorded decision rather than an absence."
+  },
   "scorer": {
     "equivalence_margin": {
       "margin_rationale": "prespecified: one third of the 0.15 separation the reference-state gate requires between MF/MG/MN",
@@ -650,10 +1056,40 @@
   },
   "sealed_split_invariants": [
     {
+      "bound_by": {
+        "target_association_ids": 90,
+        "target_association_ids_sha256": "d86c92ad439b1f451fb25d17974145e1080d86705194ff786846a6fc2dbfce78",
+        "target_entity_ids": 72,
+        "target_entity_ids_sha256": "acbf30d42b461a5c08a9d8d5fc6d4f12ed03043a92fbee9fdb03a1b2e0606225"
+      },
+      "checked_at": "stage 3, before the stage-4 tag",
+      "enforced_by": "the stage-3 probe builder, which derives its target associations from manifest.json and must reproduce this sha256",
+      "invariant": "the confirmation's target-association set is REQUIRED to be IDENTICAL to the frozen one",
+      "why": "the preserved adapters were trained to unlearn exactly these entity-attribute pairs. A confirmation about different associations would be a measurement of something no adapter in this protocol was trained on, so it could not confirm the result it claims to confirm. Identity here is the point, not a leak.",
+      "why_it_is_not_a_leak": "what the reference-state gate and candidate selection were exposed to was the PROBES - the queries, the template wordings and the photographs - not the abstract association they ask about. Repeating the association with new probes tests whether the unlearning survives the surface form it was measured on, which is the question; repeating the probes would test nothing."
+    },
+    {
+      "bound_by": {
+        "exploratory_photograph_sha256_manifest": "data/mllmu_hier_pilot100/image_manifest.json",
+        "exploratory_query_ids": "the exploratory queries parquet bound above",
+        "exploratory_template_ids": 57,
+        "exploratory_template_ids_sha256": "ecd95c11097b2518f23bbb551cea615739763587a6258b7318bf302afec2d5b0"
+      },
       "checked_at": "stage 3, before the stage-4 tag",
       "enforced_by": "the stage-3 probe builder, by hash and by query_id, before the split is written",
-      "invariant": "no confirmation query_id, association, paraphrase template or photograph appears in the exploratory dataset bound above",
-      "why": "the reference-state gate inspected the exploratory test split before candidate selection, which is why those results stay exploratory; a confirmation probe reused from that split inherits the exposure"
+      "invariant": "every confirmation query_id, template_id, template TEXT and photograph sha256 is NEW",
+      "why": "the reference-state gate inspected the exploratory test split before candidate selection, which is why those results stay exploratory. A confirmation probe reused from that split inherits the exposure, whatever it is a probe OF.",
+      "why_template_text_and_not_only_template_id": "a new id over the same wording is the same probe with a new label. Novelty is a property of the bytes shown to the model, so the text is checked and not just the identifier that names it"
+    },
+    {
+      "bound_by": {
+        "what_may_not": "query_ids, template ids, template texts, and every photograph's sha256",
+        "what_may_repeat": "the target-association set, invariant 1 above"
+      },
+      "checked_at": "stage 3, before the stage-4 tag",
+      "enforced_by": "the stage-3 probe builder, by hash and by query_id, before the split is written",
+      "invariant": "no exploratory QUERY or MEDIA is reused",
+      "why": "this is the invariant that used to be stated as association-disjointness. Stated over queries and media it is both satisfiable and the thing that actually matters: it is the bytes the gate saw, not the association they were about, that make the exploratory results exploratory."
     },
     {
       "checked_at": "stage 5, before scoring",

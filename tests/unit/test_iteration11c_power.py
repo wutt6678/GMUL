@@ -31,17 +31,27 @@ POWER_REPORT = REPORTS / "mllmu_pilot100_confirmation_power.json"
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 from power_analysis_confirmation import (  # noqa: E402
     ALPHA_ONE_SIDED,
+    ALPHA_STANDALONE_ONE_SIDED,
     BOOTSTRAP_SEED,
+    CALIBRATION_REPLICATES,
     CLAIM_KIND,
     CLAIM_KIND_VS_MG,
     CONFIRM_FETCH_IMAGES_PER_SPECIES,
     CONFIRM_FETCH_OUT,
+    CONFIRM_FETCH_ROLE,
     CONFIRM_FETCH_SEED,
+    CONFIRM_FETCH_TAG,
     CONFIRM_NEW_PHOTOS_PER_SPECIES,
     CONFIRM_NEW_WORDING_PROBES_PER_PERSON,
+    CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY,
+    CONFIRM_RETENTION_REJECTED_PROBES_PER_ENTITY,
+    CONFIRM_RETENTION_ROUTE,
     EQUIVALENCE_MARGIN,
     FAMILYWISE_ALPHA,
+    HOLM_WORST_CASE_ALPHA,
     METRIC_CLUSTER_ROLE,
+    N_PERMUTATIONS,
+    PERMUTATION_SEED,
     PRIMARY_ESTIMAND,
     PRIMARY_ESTIMAND_STRATA,
     PRIMARY_FAMILY,
@@ -153,9 +163,15 @@ class TestSizingPrimitives:
         sized the claim at one-sided 0.0125 - z = 2.2414 instead of 1.9600 -
         and reported 7/5 clusters where the declared threshold supports 5/4.
         A module with two alpha conventions cannot check itself, so the
-        convention is pinned here: the unadjusted one-sided level and the
-        two-sided level that shares its quantile must agree, and the
-        worst-case Holm level must NOT be halved again."""
+        convention is pinned here: a one-sided level and the two-sided level
+        that shares its quantile must give the same n, and the worst-case
+        Holm level must NOT be halved again.
+
+        Note what this does and does not say.  One-sided 0.025 and two-sided
+        0.05 share z(0.975), which is an identity about quantiles.  It is not
+        a statement that one-sidedness costs half of anything: a STANDALONE
+        directional claim at familywise 0.05 is tested at one-sided 0.05.
+        See TestTheAlphaConventionSeparatesItsTwoSources."""
         sd, theta = 0.157640, 0.198172
         # a one-sided 0.025 argument must reproduce the two-sided 0.05
         # textbook answer, computed here from the quantile rather than by
@@ -1266,15 +1282,43 @@ class TestThePreregistrationDecisionsAreRecorded:
             "B3_minus_B0:filr": "superiority"}
         by_id = {d["id"]: d for d in p["decisions"]}
         assert set(by_id) == {"primary_estimand", "confirmation_size",
+                              "primary_test", "retention_probe_allocation",
                               "familywise_alpha", "retention_margin",
                               "b3_vs_mg", "new_photograph_supply"}
         for d in p["decisions"]:
             assert d["chosen"], d["id"]
             assert d["rejected"], d["id"]
         # the alpha decision has to say which convention won, not merely that
-        # one was chosen
+        # one was chosen - and Iteration 11C-R2's correction is that a
+        # STANDALONE one-sided claim is tested at familywise alpha, not at
+        # half of it
         assert str(FAMILYWISE_ALPHA) in by_id["familywise_alpha"]["chosen"]
         assert "one-sided" in by_id["familywise_alpha"]["chosen"]
+        assert "STANDALONE" in by_id["familywise_alpha"]["chosen"]
+        assert str(ALPHA_STANDALONE_ONE_SIDED) in \
+            by_id["familywise_alpha"]["chosen"]
+        assert any("unadjusted one-sided claim" in r_
+                   for r_ in by_id["familywise_alpha"]["rejected"])
+        # the test decision names every part of a test
+        chosen = by_id["primary_test"]["chosen"]
+        for needle in ("entity-macro", "sign-flip", str(N_PERMUTATIONS),
+                       str(PERMUTATION_SEED), "greater", "less", "Holm"):
+            assert needle in chosen, needle
+        # and the retention decision states a route and a count
+        ret = by_id["retention_probe_allocation"]["chosen"]
+        assert str(CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY) in ret
+        assert "345" in ret and "70" in ret
+        assert any("no retention probes" in r_ for r_ in
+                   by_id["retention_probe_allocation"]["rejected"])
+        # the summary blocks the decisions point at are present too
+        assert p["primary_test"]["n_permutations"] == N_PERMUTATIONS
+        assert p["primary_test"]["seed"] == PERMUTATION_SEED
+        assert p["primary_test"]["directions"] == {"tga": "greater",
+                                                   "filr": "less"}
+        assert p["primary_test"]["holm_thresholds"] == [0.025, 0.05]
+        assert len(p["primary_test"]["implementation_sha256"]) == 64
+        assert p["retention_probes"]["route"] == CONFIRM_RETENTION_ROUTE
+        assert p["retention_probes"]["total"] == 345
 
     def test_the_evidence_pointers_resolve_to_real_blocks(self):
         r = _load()
@@ -1322,11 +1366,22 @@ class TestTheConfirmationSizeIsSelected:
         h = r["confirmation_size"]["held_out_photographs"]
         assert h["new_photographs_per_species"] == \
             CONFIRM_NEW_PHOTOS_PER_SPECIES == 12
-        assert h["species_covered"] == 36
-        assert h["new_photographs_total"] == 432
+        # Iteration 11C-R2's finding #2: the budget covers the TARGET species.
+        # 36 was what the seeded re-fetch could cover, which includes the 6
+        # retain-only species whose only purpose was the retain image families.
+        assert h["species_covered"] == 30
+        assert h["new_photographs_total"] == 360
         assert h["new_photographs_total"] == \
             h["new_photographs_per_species"] * h["species_covered"]
         assert h["already_allocated_per_species"] == 12
+        census = r["entity_role_census"]["by_role"]
+        assert h["species_covered"] == census["target"]["by_source"][
+            "inaturalist"]
+        assert census["retain"]["by_source"]["inaturalist"] == 6
+        assert h["species_covered"] + 6 == \
+            r["new_photograph_supply"]["seeded_refetch"]["species_covered"]
+        assert "TARGET species" in h["species_covered_is"]
+        assert "no confirmation purpose" in h["why_only_the_target_species"]
         # the selected value is a single number, not a grid
         assert isinstance(h["mde_at_the_selected_design_conservative_icc"],
                           float)
@@ -1355,12 +1410,21 @@ class TestTheConfirmationSizeIsSelected:
         assert h["fetch_images_per_species"] == \
             CONFIRM_FETCH_IMAGES_PER_SPECIES == 24
         assert h["fetch_out"] == CONFIRM_FETCH_OUT
+        assert h["fetch_role"] == CONFIRM_FETCH_ROLE == "target"
+        assert h["fetch_tag"] == CONFIRM_FETCH_TAG == "pilot100"
         cmd = h["fetch_command"]
         assert "fetch_inat_species.py" in cmd
         assert f"--seed {CONFIRM_FETCH_SEED}" in cmd
         assert f"--images-per-species {CONFIRM_FETCH_IMAGES_PER_SPECIES}" \
             in cmd
+        assert f"--role {CONFIRM_FETCH_ROLE}" in cmd
+        assert f"--tag {CONFIRM_FETCH_TAG}" in cmd
         assert f"--out {CONFIRM_FETCH_OUT}" in cmd
+        # a COUNT is not a role: the retain-only species are interleaved
+        # through SPECIES_LIST, so the first 30 entries are not the 30 targets
+        assert "--limit-species" not in cmd
+        assert "24 of the 30" in h[
+            "why_the_command_names_a_role_and_not_a_count"]
         # 24 drawn at the same seed makes the first 12 the already-allocated
         # ones and the remaining 12 new
         assert h["fetch_images_per_species"] == \
@@ -1388,14 +1452,39 @@ class TestTheConfirmationSizeIsSelected:
         assert "not the binding constraint" in w["why_not_fewer"]
 
     def test_the_totals_add_up(self):
+        """Iteration 11C-R2's finding #2: three different totals, three
+        different labels.  936 was published as the TARGET total when it was
+        the whole allocated photograph budget over 36 species."""
         r = _load()
         t = r["confirmation_size"]["totals"]
-        assert t["new_target_probes"] == \
-            t["of_which_new_photographs"] + t["of_which_new_wordings"]
-        assert t["of_which_new_photographs"] == 432
-        assert t["of_which_new_wordings"] == 504
-        assert t["entity_clusters"] == \
-            r["primary_estimand"]["entities_in_scope"]
+        w = r["confirmation_size"]["new_wording_probes"]
+        h = r["confirmation_size"]["held_out_photographs"]
+        ra = r["retention_probe_allocation"]
+        assert t["of_which_new_wordings_on_target_persons"] == \
+            w["new_wording_probes_total"] == 504
+        assert t["of_which_new_photographs_on_target_species"] == \
+            h["new_photographs_total"] == 360
+        assert t["new_target_probes"] == 864 == \
+            t["of_which_new_photographs_on_target_species"] \
+            + t["of_which_new_wordings_on_target_persons"]
+        assert t["new_retention_probes"] == \
+            ra["new_retention_probes_total"] == 345
+        assert t["total_new_probes_allocated"] == 1209 == \
+            t["new_target_probes"] + t["new_retention_probes"]
+        assert len({t["new_target_probes"], t["new_retention_probes"],
+                    t["total_new_probes_allocated"]}) == 3
+        assert t["total_generations_at_three_scored_states"] == \
+            3 * t["total_new_probes_allocated"]
+        assert t["entity_clusters_for_the_primary_claims"] == \
+            r["primary_estimand"]["entities_in_scope"] == 72
+        assert t["entity_clusters_for_retention"] == \
+            ra["distinct_entities_covered"] == 70
+        # the mislabelling is corrected in the artifact with its own arithmetic
+        corr = t["correction_to_the_previous_revision"]
+        for needle in ("936", "864", "72", "504", "360", "6"):
+            assert needle in corr, needle
+        assert 504 + 12 * 36 == 936
+        assert 12 * 6 == 72 and 936 - 72 == 864
 
     def test_the_entity_ids_are_frozen_and_hashed(self):
         """The entities can be frozen now because they already exist; the
@@ -1446,4 +1535,289 @@ class TestTheConfirmationSizeIsSelected:
             in text
         assert str(cs["new_wording_probes"]["new_wording_probes_total"]) \
             in text
+        assert str(cs["totals"]["new_retention_probes"]) in text
+        assert str(cs["totals"]["total_new_probes_allocated"]) in text
         assert cs["held_out_photographs"]["fetch_command"] in text
+        # the primary test is in the notes too, with every part of it
+        assert "PRIMARY TEST" in text
+        for needle in ("Monte Carlo cluster sign-flip permutation",
+                       str(N_PERMUTATIONS), str(PERMUTATION_SEED),
+                       "'tga': 'greater'", "'filr': 'less'",
+                       "[0.025, 0.05]", "paired_ci.py"):
+            assert needle in text, needle
+        # and the note does not still say the photographs serve the retain
+        # image families, which the allocation omits
+        size_note = next(n for n in r["notes"]
+                         if n.startswith("SELECTED confirmation size"))
+        assert "are NOT renewed" in size_note
+        assert "secondary held-out measurement only" in size_note
+        assert "and for the retain" not in size_note
+
+
+# ── the retention allocation is measured, and its prose agrees ──────
+
+class TestTheRetentionAllocationIsMeasuredNotAsserted:
+    """Iteration 11C-R2's finding #2, second half.  The count per entity is
+    chosen against the batch-layout noise floor, and the image route is
+    omitted because of a measured supply constraint - so both the numbers and
+    the sentences that quote them are checked against each other."""
+
+    def test_the_route_and_count_are_the_declared_ones(self):
+        ra = _load()["retention_probe_allocation"]
+        assert ra["selected"] is True
+        assert ra["route"] == CONFIRM_RETENTION_ROUTE == "text_only"
+        assert ra["new_templates_per_entity"] == \
+            CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY == 3
+        assert ra["status"].startswith("DESCRIPTIVE")
+        assert "no declared margin" in ra["status"]
+
+    def test_the_probe_counts_are_the_entities_times_the_templates(self):
+        ra = _load()["retention_probe_allocation"]
+        m = CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY
+        assert set(ra["per_metric"]) == {"retain_same", "retain_other"}
+        for name, e in ra["per_metric"].items():
+            assert e["route"] == ra["route"], name
+            assert e["new_probes_per_entity"] == m, name
+            assert e["new_probes"] == m * e["entities_carried_by"], name
+            assert e["sigma2_between"] > 0 and e["sigma2_within"] > 0, name
+            assert 0.0 <= e["icc_point_estimate"] <= 1.0, name
+        assert ra["per_metric"]["retain_same"]["entities_carried_by"] == 70
+        assert ra["per_metric"]["retain_other"]["entities_carried_by"] == 45
+        assert ra["new_retention_probes_total"] == 210 + 135 == 345
+        assert ra["new_retention_probes_total"] == sum(
+            e["new_probes"] for e in ra["per_metric"].values())
+        # retain_other's entities are a subset, so the union is retain_same's
+        assert ra["distinct_entities_covered"] == 70
+        assert ra["retain_other_entities_are_a_subset_of_retain_same"] is True
+
+    def test_every_half_width_is_recomputable_from_its_own_variance_components(
+            self):
+        """The prose quotes these numbers, so a half-width that is not the
+        formula applied to the block's own sigma2 values is a second copy."""
+        from power_analysis_confirmation import half_width
+        ra = _load()["retention_probe_allocation"]
+        for name, e in ra["per_metric"].items():
+            sb, sw = e["sigma2_between"], e["sigma2_within"]
+            k = e["entities_carried_by"]
+            m = e["new_probes_per_entity"]
+            assert e["half_width_at_the_selected_count"] == round(
+                half_width(math.sqrt(sb + sw / m), k), 4), name
+            m_exp = e["exploratory_probes_per_entity_harmonic_mean"]
+            assert e["half_width_at_the_exploratory_count"] == round(
+                half_width(math.sqrt(sb + sw / m_exp), k), 4), name
+            assert e["between_entity_floor_infinite_probes"] == round(
+                half_width(math.sqrt(sb), k), 4), name
+            assert e["probes_per_entity_that_would_match_the_exploratory_"
+                     "precision"] == m_exp, name
+            for sm, hw in e["half_width_at_rejected_counts"].items():
+                assert hw == round(half_width(math.sqrt(sb + sw / int(sm)),
+                                              k), 4), (name, sm)
+            # more probes can only narrow the half-width
+            counts = sorted({m, m_exp}
+                            | {int(x) for x in
+                               e["half_width_at_rejected_counts"]})
+            widths = {c: half_width(math.sqrt(sb + sw / c), k) for c in counts}
+            for a, b in zip(counts, counts[1:]):
+                assert widths[b] <= widths[a] + 1e-12, (name, a, b)
+
+    def test_the_selected_count_sits_at_or_above_the_noise_floor(self):
+        """This is the reason the count is 3 and not 8.  Precision finer than
+        the batch-layout floor cannot be distinguished from batched-decoding
+        noise, so buying it spends generations on nothing."""
+        ra = _load()["retention_probe_allocation"]
+        floor = ra["batch_layout_noise_floor_on_retain_metrics"]
+        assert floor == _load()["batch_layout_noise_floor"][
+            "max_abs_retain_delta"]
+        for name, e in ra["per_metric"].items():
+            assert e["selected_count_is_at_or_above_the_noise_floor"] is True, \
+                name
+            assert e["half_width_at_the_selected_count"] >= floor, name
+        assert set(str(m) for m in
+                   CONFIRM_RETENTION_REJECTED_PROBES_PER_ENTITY) == \
+            set(ra["per_metric"]["retain_same"]["half_width_at_rejected_counts"])
+        # and the sentence quotes the count the table computes, not another
+        why = ra["why_this_count_and_not_one_that_matches_the_exploratory_"
+                 "precision"]
+        assert str(ra["per_metric"]["retain_same"][
+            "probes_per_entity_that_would_match_the_exploratory_precision"]) \
+            in why
+        assert str(floor) in why
+        assert "cannot resolve" in why
+
+    def test_the_image_route_omission_rests_on_a_measured_supply(self):
+        """Not a preference.  The persons cannot be given a new photograph
+        because there is no pool of new photographs of a real person, and each
+        of them has exactly one in pilot100_v2."""
+        ra = _load()["retention_probe_allocation"]
+        m = ra["media_supply_the_route_decision_rests_on"]
+        assert m["retention_entities"] == 70
+        assert m["photographs_per_retention_entity"] == {"1": 64, "12": 6}
+        assert m["entities_with_a_single_photograph_or_none"] == 64
+        assert m["by_source"] == {"inaturalist": 6, "mllmu_hier": 64}
+        assert m["entities_a_new_photograph_could_cover"] == 6
+        assert m["entities_no_new_photograph_can_cover"] == 64
+        assert m["entities_a_new_photograph_could_cover"] + \
+            m["entities_no_new_photograph_can_cover"] == 70
+        assert m["sources_no_new_photograph_can_be_fetched_for"] == [
+            "mllmu_hier"]
+        why = ra["why_the_image_route_is_omitted"]
+        assert "64" in why and "reuses exploratory media" in why
+        cons = ra["consequence_for_the_photograph_fetch"]
+        assert "TARGET species only" in cons
+        assert "36" in cons
+        # the consequence is visible in the size block, not only here
+        assert _load()["confirmation_size"]["held_out_photographs"][
+            "species_covered"] == 30
+
+    def test_the_confirmation_retention_estimand_is_not_the_exploratory_one(
+            self):
+        ra = _load()["retention_probe_allocation"]
+        assert "TEXT route only" in \
+            ra["what_the_confirmation_retention_estimand_is"]
+        assert "BOTH routes" in \
+            ra["how_it_differs_from_the_exploratory_retention_number"]
+        assert "must not be subtracted" in \
+            ra["how_it_differs_from_the_exploratory_retention_number"]
+
+
+# ── the primary test is read off the code that implements it ────────
+
+class TestThePrimaryTestSpecificationIsReadOffTheCode:
+    """Iteration 11C-R2's finding #3.  A specification written beside the code
+    is a second copy of it; the report reads the draw count, the seed and the
+    parameter lists off ``inspect.signature`` and hashes the module, so the
+    two cannot describe different tests."""
+
+    def test_the_values_are_the_signatures_not_a_restatement(self):
+        import inspect
+        from granunlearn.evaluation.paired_ci import (
+            holm_family, one_sided_permutation_pvalue)
+        pt = _load()["primary_test"]
+        perm = inspect.signature(one_sided_permutation_pvalue).parameters
+        assert pt["n_permutations"] == perm["n_permutations"].default
+        assert pt["permutation_seed"] == perm["seed"].default
+        assert pt["n_permutations_declared_here"] == N_PERMUTATIONS
+        assert pt["permutation_seed_declared_here"] == PERMUTATION_SEED
+        assert pt["implementation"]["signatures"][
+            "one_sided_permutation_pvalue"] == list(perm)
+        assert pt["implementation"]["signatures"]["holm_family"] == \
+            list(inspect.signature(holm_family).parameters)
+
+    def test_the_specification_and_the_implementation_agree(self):
+        a = _load()["primary_test"]["specification_and_implementation_agree"]
+        assert a["all_agree"] is True
+        for key in ("n_permutations_is_the_declared_count",
+                    "seed_is_the_declared_seed",
+                    "claim_direction_covers_exactly_the_primary_metrics",
+                    "holm_family_takes_alpha_as_a_required_argument"):
+            assert a[key] is True, key
+        read = a["every_value_read_off_the_implementation"]
+        assert read["n_permutations"] == N_PERMUTATIONS
+        assert read["seed"] == PERMUTATION_SEED
+        assert read["directions"] == {"tga": "greater", "filr": "less"}
+
+    def test_the_module_is_hashed_and_says_why_it_is_not_fingerprinted(self):
+        from granunlearn.evaluation.prediction_provenance import (
+            CODE_FINGERPRINT_MODULES, sha256_file)
+        pt = _load()["primary_test"]["implementation"]
+        rel = pt["module"]
+        assert rel == "src/granunlearn/evaluation/paired_ci.py"
+        assert pt["sha256"] == sha256_file(REPO_ROOT / rel)
+        assert rel not in CODE_FINGERPRINT_MODULES
+        assert "would change the code fingerprint" in pt["why_the_hash_is_here"]
+        assert "bound nowhere" in pt["why_the_hash_is_here"]
+
+    def test_the_draw_count_is_set_by_its_own_monte_carlo_error(self):
+        """1000 draws - what the CI bootstrap uses - have a standard error at
+        the Holm threshold of a fifth of the threshold, so draw noise alone
+        could move a claim across it."""
+        pt = _load()["primary_test"]
+        thr = HOLM_WORST_CASE_ALPHA
+        assert pt["n_permutations"] == N_PERMUTATIONS == 10000
+        assert pt["smallest_reportable_p_value"] == round(
+            1.0 / (N_PERMUTATIONS + 1), 6)
+        se = pt["monte_carlo_se_at_the_holm_threshold"]
+        assert se == round(math.sqrt(thr * (1 - thr) / (N_PERMUTATIONS + 1)), 6)
+        assert se < thr / 10
+        se_1000 = math.sqrt(thr * (1 - thr) / 1001)
+        assert se_1000 > thr / 6, "the rejected draw count must be shown to " \
+            "be too coarse, or the choice looks arbitrary"
+        assert str(round(se_1000, 6)) in pt["why_that_many_draws"]
+        assert pt["observed_vector_included_in_the_null"] is True
+        seeds = {pt["permutation_seed"], pt["seed_is_distinct_from"][
+            "ci_bootstrap"], pt["seed_is_distinct_from"]["icc_bootstrap"]}
+        assert len(seeds) == 3, seeds
+        assert pt["seed_is_distinct_from"]["icc_bootstrap"] == BOOTSTRAP_SEED
+
+    def test_the_holm_block_carries_the_whole_rule(self):
+        m = _load()["primary_test"]["multiplicity"]
+        k = len(PRIMARY_FAMILY)
+        assert m["procedure"] == "Holm step-down"
+        assert m["familywise_alpha"] == FAMILYWISE_ALPHA
+        assert m["thresholds"] == [round(FAMILYWISE_ALPHA / (k - i), 6)
+                                   for i in range(k)]
+        assert m["worst_case_alpha_for_a_single_claim"] == round(
+            HOLM_WORST_CASE_ALPHA, 6)
+        assert m["ordering"] == "ascending p-value, ties broken by claim name"
+        assert "cannot change a verdict" in m["tie_handling"]
+        assert "FIRST non-rejection ends the procedure" in m["pass_fail_rule"]
+        assert "understates the familywise error rate" in \
+            m["why_the_stopping_rule_is_part_of_the_rule"]
+
+    def test_the_achieved_level_was_measured_at_the_frozen_draw_count(self):
+        """Calibrating at a smaller draw count measures a DIFFERENT procedure:
+        the p-values resolve on a different grid."""
+        pt = _load()["primary_test"]
+        cal = pt["achieved_level_under_the_real_null"]
+        assert set(cal) == set(PRIMARY_FAMILY)
+        for claim, e in cal.items():
+            assert e["permutations_per_replicate"] == N_PERMUTATIONS, claim
+            assert e["permutations_are_the_frozen_count"] is True, claim
+            assert e["replicates"] == CALIBRATION_REPLICATES >= 1000, claim
+            assert e["threshold"] == HOLM_WORST_CASE_ALPHA, claim
+            assert e["num_clusters"] == 72, claim
+            assert e["achieved_level_is_nominal_within_two_se"] is True, claim
+            lo, hi = e["two_se_band_around_the_nominal"]
+            assert lo < HOLM_WORST_CASE_ALPHA < hi
+            assert lo <= e["achieved_level_at_the_threshold"] <= hi, claim
+            assert e["achieved_over_nominal"] < 1.5, claim
+            assert 0.4 < e["mean_p_under_the_null"] < 0.6, claim
+            assert e["sign_flips_shared_with_the_other_claims"] is True, claim
+            # the discreteness that makes the calibration worth running
+            assert 0 < e["zero_difference_fraction"] < 0.5, claim
+            assert e["distinct_nonzero_differences"] < e["num_clusters"], claim
+
+    def test_the_familywise_rate_is_measured_on_the_real_procedure(self):
+        fw = _load()["primary_test"][
+            "achieved_familywise_level_under_the_global_null"]
+        assert fw["nominal"] == FAMILYWISE_ALPHA
+        assert fw["procedure"] == "holm_family as implemented, not a " \
+            "restatement"
+        assert fw["one_sign_vector_per_entity_shared_by_both_claims"] is True
+        assert fw["replicates"] == CALIBRATION_REPLICATES
+        assert fw["achieved_is_nominal_within_two_se"] is True
+        lo, hi = fw["two_se_band_around_the_nominal"]
+        assert lo < FAMILYWISE_ALPHA < hi
+        assert lo <= fw["achieved"] <= hi
+        assert fw["achieved_over_nominal"] < 1.5
+        # the marginal levels do NOT imply this number, which is why both are
+        # reported
+        assert "not the per-claim marginal levels" in fw["what_it_measures"]
+
+    def test_the_alpha_convention_separates_its_two_sources(self):
+        """0.025 is Holm's first threshold for k = 2 AND one arm of a
+        two-sided 95% interval.  It is NOT what one-sidedness costs: a
+        standalone directional claim at familywise 0.05 is tested at 0.05."""
+        d = _load()["design"]
+        assert d["familywise_alpha"] == FAMILYWISE_ALPHA
+        assert d["alpha_one_sided"] == ALPHA_ONE_SIDED == 0.025
+        assert d["alpha_standalone_one_sided"] == \
+            ALPHA_STANDALONE_ONE_SIDED == 0.05
+        conv = d["alpha_convention"]
+        assert "unadjusted" not in conv
+        assert "does NOT halve" in conv
+        assert "STANDALONE" in conv
+        assert "0.0167" in conv, "the k = 3 counterexample is what shows the " \
+            "coincidence is a property of k = 2"
+        assert "TOST" in conv
+        assert round(FAMILYWISE_ALPHA / 3, 4) != ALPHA_ONE_SIDED
