@@ -64,7 +64,11 @@ from power_analysis_confirmation import (  # noqa: E402
     PRIMARY_ESTIMAND,
     PRIMARY_ESTIMAND_STRATA,
     PRIMARY_FAMILY,
+    RETENTION_ESTIMAND_LABEL,
+    RETENTION_SAMPLING_RULE,
+    RETENTION_SAMPLING_SALTS,
     STRATUM_ESTIMAND_STATUS,
+    TARGET_ASSOCIATION_ALLOCATION_RULE,
     WHAT_THE_CONFIRMATION_DOES_NOT_ESTABLISH,
     z,
 )
@@ -991,7 +995,10 @@ class TestTheSelectedSizeIsBoundNotAGrid:
             f["refusals"]
 
 
-# ── which 12 of the 24 photographs, decided before the fetch ─────────
+# ── which 12 of the 24 photographs, decided by a rule and not by hand ─
+# The rule is an outcome-blind amendment: it was published after the pool was
+# fetched and before the subset was selected.  See
+# TestTheAmendmentIsDisclosedInTheFreeze below for the timeline.
 
 class TestThePhotographSelectionRuleIsFrozenAndExecutable:
     """Iteration 11C stage 3.
@@ -2241,3 +2248,379 @@ class TestTheFreezeIsWrittenOnce:
                    for rel in f["code"]["fingerprinted_module_list"])
         assert not any("environment" in rel
                        for rel in f["code"]["fingerprinted_modules"])
+
+
+# ── which fact each probe asks, and when the rule was fixed ────────
+
+def _mutate_target_alloc(out, **fields):
+    """Rewrite fields of ``probe_allocation.target_associations``."""
+    out = dict(out)
+    pa = dict(out["probe_allocation"])
+    pa["target_associations"] = dict(pa["target_associations"], **fields)
+    out["probe_allocation"] = pa
+    return out
+
+
+def _mutate_retention(out, **fields):
+    """Rewrite fields of ``probe_allocation.retention``."""
+    out = dict(out)
+    pa = dict(out["probe_allocation"])
+    pa["retention"] = dict(pa["retention"], **fields)
+    out["probe_allocation"] = pa
+    return out
+
+
+def _mutate_amendment(out, **fields):
+    """Rewrite the single disclosed amendment."""
+    out = dict(out)
+    block = dict(out["protocol_amendments"])
+    block["amendments"] = [dict(block["amendments"][0], **fields)]
+    out["protocol_amendments"] = block
+    return out
+
+
+class TestWhichFactEachProbeAsksIsFrozenAndRefusable:
+    """Iteration 11C stage 3, review findings 2 and 3.
+
+    Two rules decide which FACT a probe asks.  Because the primary statistic
+    averages over entities, both are choices about the estimand, so both are
+    bound here and refused if the measurement behind them stops holding.  Each
+    refusal below was observed to fire.
+    """
+
+    def test_the_real_report_produces_no_refusal(self):
+        assert fz._probe_allocation_refusals(_load(POWER_PATH)) == []
+
+    def test_the_freeze_binds_the_rules_the_module_declares(self):
+        alloc = _load()["probe_allocation"]
+        assert alloc["target_association_rule"] == \
+            TARGET_ASSOCIATION_ALLOCATION_RULE
+        assert alloc["retention_sampling_rule"] == RETENTION_SAMPLING_RULE
+        assert alloc["retention_sampling_salts"] == \
+            dict(sorted(RETENTION_SAMPLING_SALTS.items()))
+        assert alloc["retention_estimand_label"] == RETENTION_ESTIMAND_LABEL
+
+    def test_the_freeze_binds_the_measured_balance_and_the_rejected_rule(self):
+        alloc = _load()["probe_allocation"]
+        assert alloc["target_associations_per_person"] == \
+            {"1": 27, "2": 12, "3": 3}
+        assert alloc["probes_per_association_given_its_size"] == \
+            {"1": [[12]], "2": [[6, 6]], "3": [[4, 4, 4]]}
+        assert alloc["balanced_sizes"] == ["1", "2", "3"]
+        assert alloc["unbalanced_sizes"] == []
+        assert alloc["allocation_is_balanced_for_every_observed_size"] is True
+        mix = alloc["attribute_mix_over_retain_same_probes"]
+        assert mix["attributes_the_rejected_rule_would_have_excluded"] == \
+            ["salary"]
+        #: Absent, not zero: the mix counts what was selected, so an attribute
+        #: the rejected rule never selects has no key at all.  That absence is
+        #: the measurement, and it is what the exclusion list above names.
+        assert "salary" not in mix["rejected_sorted_first_three"]
+        assert mix["rejected_sorted_first_three"]["residence"] == 1
+        assert mix["rejected_sorted_first_three"]["occupation"] == 6
+        assert mix["this_rule"]["salary"] > 0
+        assert mix["attributes_this_rule_covers"] == \
+            mix["attributes_in_the_population"] == 8
+
+    def test_the_allocation_rows_are_bound_by_hash_not_copied(self):
+        """The 504 + 210 + 135 rows live in the power report; the freeze binds
+        their hashes so a builder that allocated differently fails a hash
+        rather than disagreeing with prose nobody re-reads."""
+        alloc = _load()["probe_allocation"]
+        p = _load(POWER_PATH)["probe_allocation"]
+        hashes = alloc["row_hashes"]
+        assert set(hashes) == {"target_association_rows", "retain_same_rows",
+                               "retain_other_rows"}
+        for key, rows in (("target_association_rows",
+                           p["target_associations"]["rows"]),
+                          ("retain_same_rows",
+                           p["retention"]["rows_retain_same"]),
+                          ("retain_other_rows",
+                           p["retention"]["rows_retain_other"])):
+            assert hashes[key] == hashlib.sha256(json.dumps(
+                rows, sort_keys=True, separators=(",", ":")).encode()
+            ).hexdigest(), key
+        assert len({v for v in hashes.values()}) == 3
+        assert alloc["rows_total"] == 849
+        assert alloc["photograph_probes"] == 360
+        assert alloc["confirmation_probes_total"] == 1209
+
+    def test_a_rule_that_is_not_the_modules_own_refuses(self):
+        out = _mutate_target_alloc(
+            _load(POWER_PATH), rule=TARGET_ASSOCIATION_ALLOCATION_RULE + " ")
+        assert any("not the module's" in r
+                   for r in fz._probe_allocation_refusals(out))
+
+    def test_a_salt_that_moves_refuses(self):
+        """The rank is a function of the salt, so a different salt is a
+        different sample and the frozen rows would no longer be the rows."""
+        out = _mutate_retention(
+            _load(POWER_PATH),
+            salts={"retain_same_entity": "moved",
+                   "retain_other_entity":
+                       RETENTION_SAMPLING_SALTS["retain_other_entity"]})
+        assert any("not the module's RETENTION_SAMPLING_SALTS" in r
+                   for r in fz._probe_allocation_refusals(out))
+
+    def test_salts_that_are_not_domain_separated_refuse(self, monkeypatch):
+        """One salt for both families makes the second ranking a deterministic
+        function of the first, which is not a second sample."""
+        monkeypatch.setattr(fz, "RETENTION_SAMPLING_SALTS",
+                            {"retain_same_entity": "one",
+                             "retain_other_entity": "one"})
+        assert any("not domain-separated" in r
+                   for r in fz._probe_allocation_refusals(_load(POWER_PATH)))
+
+    def test_an_unbalanced_allocation_refuses(self):
+        out = _mutate_target_alloc(
+            _load(POWER_PATH),
+            allocation_is_balanced_for_every_observed_size=False,
+            unbalanced_sizes=["3"])
+        refusals = fz._probe_allocation_refusals(out)
+        assert any("uneven for association-list size(s)" in r
+                   for r in refusals), refusals
+
+    def test_balance_claimed_over_a_size_the_data_lacks_refuses(self):
+        """The vacuous-truth shape: a flag quantified over sizes that divide 12
+        reports success when no observed size divides 12, which is exactly when
+        the allocation is uneven."""
+        out = _mutate_target_alloc(
+            _load(POWER_PATH),
+            every_observed_size_divides_the_probe_count=False)
+        assert any("does not divide" in r
+                   for r in fz._probe_allocation_refusals(out))
+
+    def test_a_retention_estimand_that_is_not_labelled_a_sample_refuses(self):
+        """The label is what stops this rate being quoted against the 11R one,
+        which averaged every retained fact rather than a sampled three."""
+        out = _mutate_retention(_load(POWER_PATH),
+                                estimates="retained facts, text route")
+        assert any("rather than" in r
+                   for r in fz._probe_allocation_refusals(out))
+
+    def test_retention_rows_that_are_not_three_per_entity_refuse(self):
+        out = _mutate_retention(
+            _load(POWER_PATH),
+            retain_same=dict(_load(POWER_PATH)["probe_allocation"]
+                             ["retention"]["retain_same"], rows=209))
+        assert any("retain_same allocates 209 rows" in r
+                   for r in fz._probe_allocation_refusals(out))
+        out = _mutate_retention(
+            _load(POWER_PATH),
+            retain_other=dict(_load(POWER_PATH)["probe_allocation"]
+                              ["retention"]["retain_other"], rows=134))
+        assert any("retain_other allocates 134 rows" in r
+                   for r in fz._probe_allocation_refusals(out))
+
+    def test_an_attribute_the_sample_never_asks_refuses(self):
+        out = _mutate_retention(
+            _load(POWER_PATH),
+            attribute_mix_over_retain_same_probes=dict(
+                _load(POWER_PATH)["probe_allocation"]["retention"]
+                ["attribute_mix_over_retain_same_probes"],
+                attributes_this_rule_covers=7))
+        assert any("would never be asked about" in r
+                   for r in fz._probe_allocation_refusals(out))
+
+    def test_losing_the_evidence_against_sorted_order_refuses(self):
+        """The rejection of sorted order rests on a measurement.  A report that
+        no longer records it would leave the rejection asserting itself."""
+        out = _mutate_retention(
+            _load(POWER_PATH),
+            attribute_mix_over_retain_same_probes=dict(
+                _load(POWER_PATH)["probe_allocation"]["retention"]
+                ["attribute_mix_over_retain_same_probes"],
+                attributes_the_rejected_rule_would_have_excluded=[]))
+        assert any("rejects the rule" in r or "rests on nothing measured" in r
+                   for r in fz._probe_allocation_refusals(out))
+
+    def test_a_rejected_rule_that_stops_rejecting_itself_refuses(self):
+        """If the sorted allocation is recomputed into one that contains salary
+        facts, the evidence no longer supports the decision it was recorded
+        for -- which means either the ids stopped sorting by attribute or the
+        measurement is wrong, and both have to stop the freeze."""
+        out = _mutate_retention(
+            _load(POWER_PATH),
+            attribute_mix_over_retain_same_probes=dict(
+                _load(POWER_PATH)["probe_allocation"]["retention"]
+                ["attribute_mix_over_retain_same_probes"],
+                rejected_sorted_first_three={"salary": 49}))
+        assert any("no longer rejects the rule" in r
+                   for r in fz._probe_allocation_refusals(out))
+
+    def test_two_budgets_for_one_probe_count_refuse(self):
+        out = dict(_load(POWER_PATH))
+        pa = dict(out["probe_allocation"], confirmation_probes_total=1210)
+        out["probe_allocation"] = pa
+        assert any("confirmation_probes_total is 1210" in r
+                   for r in fz._probe_allocation_refusals(out))
+
+    def test_a_phograph_budget_that_disagrees_with_the_frozen_one_refuses(
+            self):
+        """The 360 photograph probes are not allocated by these rules, but they
+        are frozen elsewhere in the same report; two numbers for one budget is
+        how a total quietly becomes two totals."""
+        out = dict(_load(POWER_PATH))
+        pa = dict(out["probe_allocation"])
+        pa["photograph_probes_are_not_allocated_here"] = dict(
+            pa["photograph_probes_are_not_allocated_here"], count=432)
+        out["probe_allocation"] = pa
+        refusals = fz._probe_allocation_refusals(out)
+        assert any("while the frozen held-out-photograph budget states 360"
+                   in r for r in refusals), refusals
+
+    def test_a_missing_allocation_block_refuses_rather_than_omitting(self):
+        out = dict(_load(POWER_PATH))
+        out.pop("probe_allocation")
+        refusals = fz._probe_allocation_refusals(out)
+        assert len(refusals) == 1
+        assert "no probe_allocation block" in refusals[0]
+
+    def test_the_refusals_are_wired_into_the_freeze(self, monkeypatch):
+        """A refusal that is never reached refuses nothing."""
+        f = _freeze_over_mutated_power(
+            monkeypatch,
+            lambda out: _mutate_target_alloc(
+                out, allocation_is_balanced_for_every_observed_size=False,
+                unbalanced_sizes=["2"]))
+        assert any("uneven for association-list size(s)" in r
+                   for r in f["refusals"]), f["refusals"]
+
+
+class TestTheAmendmentIsDisclosedInTheFreeze:
+    """Iteration 11C stage 3, review finding 1.
+
+    The photograph-selection rule was described as sealed before the fetch.
+    The repository's own timestamps say otherwise, so the freeze discloses the
+    amendment with its ordering measured from artifacts -- and refuses to
+    freeze if the disclosure stops holding, so it cannot quietly become a
+    claim of preregistration.
+    """
+
+    def test_the_real_report_produces_no_refusal(self):
+        assert fz._protocol_amendment_refusals(_load(POWER_PATH)) == []
+
+    def test_the_freeze_carries_the_amendment_and_the_retraction(self):
+        am = _load()["protocol_amendment"]
+        assert am["kind"] == "outcome-blind protocol amendment"
+        assert "PHOTO_SELECTION_RULE" in am["what"]
+        assert am["prior_freeze"]["contained_the_rule"] is False
+        assert am["amending_freeze"]["contained_the_rule"] is True
+        assert am["confirmation_prediction_files"] == 0
+        assert "BEFORE the fetch" in am["retracted_claim"]
+        assert am["ordering"]["every_ordering_claim_is_measured"] is True
+        assert "independent seed" in \
+            am["if_literal_pre_fetch_preregistration_is_required"]
+
+    def test_the_disclosed_timeline_is_ordered(self):
+        am = _load()["protocol_amendment"]
+        assert am["prior_freeze"]["frozen_at_utc"] \
+            < am["pool_acquired_at_utc"] \
+            < am["amending_freeze"]["frozen_at_utc"] \
+            < am["subset_selected_at_utc"]
+
+    def test_a_second_amendment_refuses(self):
+        """An amendment list that can silently grow is not a disclosure."""
+        out = dict(_load(POWER_PATH))
+        block = dict(out["protocol_amendments"])
+        block["amendments"] = list(block["amendments"]) * 2
+        out["protocol_amendments"] = block
+        refusals = fz._protocol_amendment_refusals(out)
+        assert any("2 protocol amendments" in r for r in refusals), refusals
+
+    def test_a_missing_disclosure_refuses(self):
+        out = dict(_load(POWER_PATH))
+        out.pop("protocol_amendments")
+        assert fz._protocol_amendment_refusals(out)
+
+    def test_calling_it_preregistration_refuses(self):
+        out = _mutate_amendment(_load(POWER_PATH), kind="preregistration")
+        assert any("only label the timestamps support" in r
+                   for r in fz._protocol_amendment_refusals(out))
+
+    def test_an_amendment_that_does_not_name_the_rule_refuses(self):
+        out = _mutate_amendment(_load(POWER_PATH), what="the retention rule")
+        assert any("does not name the photograph selection rule" in r
+                   for r in fz._protocol_amendment_refusals(out))
+
+    @pytest.mark.parametrize("key", [
+        "rule_was_absent_when_the_pool_was_fetched",
+        "rule_was_published_after_the_pool",
+        "rule_was_published_before_the_subset_was_selected",
+        "rule_was_published_before_any_model_output",
+        "every_ordering_claim_is_measured",
+    ])
+    def test_any_ordering_claim_that_stops_holding_refuses(self, key):
+        power = _load(POWER_PATH)
+        ordering = dict(power["protocol_amendments"]["amendments"][0]
+                        ["ordering"], **{key: False})
+        out = _mutate_amendment(power, ordering=ordering)
+        refusals = fz._protocol_amendment_refusals(out)
+        assert any(key in r for r in refusals), refusals
+
+    def test_claiming_the_prior_freeze_had_the_rule_refuses(self):
+        out = _mutate_amendment(
+            _load(POWER_PATH),
+            prior_freeze=dict(_load(POWER_PATH)["protocol_amendments"]
+                              ["amendments"][0]["prior_freeze"],
+                              contained_the_rule=True))
+        assert any("contradicts its own claim" in r
+                   for r in fz._protocol_amendment_refusals(out))
+
+    def test_scoring_before_amending_refuses(self):
+        """Once a confirmation prediction exists the amendment is no longer
+        outcome-blind, and the freeze may not keep claiming it is."""
+        out = _mutate_amendment(_load(POWER_PATH),
+                                confirmation_prediction_files=3)
+        assert any("no longer outcome-blind" in r
+                   for r in fz._protocol_amendment_refusals(out))
+
+    def test_dropping_the_retraction_refuses(self):
+        """Leaving a false timeline in the prose beside a true one is worse
+        than either alone."""
+        out = dict(_load(POWER_PATH))
+        out["protocol_amendments"] = dict(out["protocol_amendments"],
+                                          retracted_claim="")
+        assert any("does not retract" in r
+                   for r in fz._protocol_amendment_refusals(out))
+
+    def test_the_refusals_are_wired_into_the_freeze(self, monkeypatch):
+        f = _freeze_over_mutated_power(
+            monkeypatch,
+            lambda out: _mutate_amendment(out, kind="preregistration"))
+        assert any("only label the timestamps support" in r
+                   for r in f["refusals"]), f["refusals"]
+
+    def test_no_tracked_source_still_carries_the_false_timeline(self):
+        """Correcting a claim in the place you remembered is not correcting it.
+
+        The first correction fixed the module comment and the report prose and
+        left two copies behind -- a section header in this file and a module
+        docstring in the selection tests -- both of which kept telling a reader
+        the rule predated the fetch.  A sweep over every tracked source file is
+        the only check that catches the copies nobody remembered, so the
+        disclosure cannot be contradicted by the code beside it.
+        """
+        #: Assembled from fragments so that THIS file does not contain the
+        #: claims it sweeps for.  A sweep that has to allowlist its own source
+        #: is a sweep that can be defeated by editing the allowlist, and the
+        #: two files it would have to allowlist are the two that already
+        #: proved the point by carrying stale copies.
+        lower, upper = "before the fetch", "BEFORE the fetch"
+        phrases = (f"Frozen {lower} runs",
+                   f"Frozen here, {lower} is run",
+                   f"sealed {upper} ran",
+                   f"decided {lower}")
+        offenders = []
+        for root in ("scripts", "src", "tests"):
+            for path in sorted((REPO_ROOT / root).rglob("*.py")):
+                text = path.read_text(errors="replace")
+                for phrase in phrases:
+                    if phrase in text:
+                        offenders.append(
+                            f"{path.relative_to(REPO_ROOT)}: {phrase!r}")
+        assert offenders == [], offenders
+        #: The fragment all four phrases share is what makes the sweep
+        #: non-vacuous: if the retraction stopped naming it, the sweep would be
+        #: searching for a claim the repository no longer retracts.
+        assert upper in _load()["protocol_amendment"]["retracted_claim"]

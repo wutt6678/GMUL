@@ -60,10 +60,16 @@ from power_analysis_confirmation import (  # noqa: E402
     PRIMARY_ESTIMAND_STRATA,
     PRIMARY_FAMILY,
     PROBE_OPTIONS,
+    RETENTION_ESTIMAND_LABEL,
+    RETENTION_SAMPLING_RULE,
+    RETENTION_SAMPLING_SALTS,
     STRATUM_ESTIMAND_STATUS,
+    TARGET_ASSOCIATION_ALLOCATION_RULE,
     WHAT_THE_CONFIRMATION_DOES_NOT_ESTABLISH,
     _chi2_quantile,
+    _hash_rank,
     _mean_sd,
+    _take_m_with_cycling,
     entity_role_census,
     icc_ci,
     margin_achievable,
@@ -72,6 +78,8 @@ from power_analysis_confirmation import (  # noqa: E402
     n_for_superiority,
     nested_size_grid,
     power_at,
+    protocol_amendments,
+    target_association_allocation,
     usable_distance,
     variance_components,
 )
@@ -2025,3 +2033,348 @@ class TestThePrimaryTestSpecificationIsReadOffTheCode:
             "coincidence is a property of k = 2"
         assert "TOST" in conv
         assert round(FAMILYWISE_ALPHA / 3, 4) != ALPHA_ONE_SIDED
+
+
+# ── which fact each probe asks ─────────────────────────────────────
+
+class _Assoc:
+    """The two fields the allocation rules read off an AssociationRecord."""
+
+    def __init__(self, association_id, entity_id, attribute_name="a"):
+        self.association_id = association_id
+        self.entity_id = entity_id
+        self.attribute_name = attribute_name
+
+
+class TestWhichFactEachProbeAsksIsMeasuredNotLeftToTheBuilder:
+    """Iteration 11C stage 3, review findings 2 and 3.
+
+    The freeze specified 12 wording probes per person and 3 retention probes
+    per entity, but not WHICH target association or WHICH retained fact each
+    one asks.  Both are choices about the estimand rather than about the
+    plumbing, because the primary statistic averages over ENTITIES: an entity
+    whose probes all ask one association reports that association's fate as
+    the entity's.
+
+    The retention choice was first proposed as "three in sorted order" and is
+    measurably wrong, which is why the rejected allocation is computed beside
+    the accepted one instead of being described in prose.
+    """
+
+    def test_the_rules_are_the_module_constants_and_not_a_paraphrase(self):
+        pa = _load()["probe_allocation"]
+        t = pa["target_associations"]
+        ret = pa["retention"]
+        assert t["rule"] == TARGET_ASSOCIATION_ALLOCATION_RULE
+        assert ret["rule"] == RETENTION_SAMPLING_RULE
+        assert ret["salts"] == dict(sorted(RETENTION_SAMPLING_SALTS.items()))
+        assert ret["estimates"] == RETENTION_ESTIMAND_LABEL
+        # the rule has to name the offset that makes it balanced
+        assert "(j + f) mod |A_e|" in TARGET_ASSOCIATION_ALLOCATION_RULE
+
+    def test_the_two_salts_are_domain_separated(self):
+        """One salt would make the second family's ranking a deterministic
+        function of the first, which is not a second sample."""
+        assert len(RETENTION_SAMPLING_SALTS) == 2
+        assert len(set(RETENTION_SAMPLING_SALTS.values())) == 2
+        same = RETENTION_SAMPLING_SALTS["retain_same_entity"]
+        other = RETENTION_SAMPLING_SALTS["retain_other_entity"]
+        assert not same.startswith(other) and not other.startswith(same)
+        # and the ranks they produce for one item really do differ
+        assert _hash_rank(same, "e", "x") != _hash_rank(other, "e", "x")
+
+    def test_the_target_distribution_is_the_one_the_data_has(self):
+        pa = _load()["probe_allocation"]["target_associations"]
+        assert pa["persons"] == 42
+        assert pa["target_associations_per_person"] == \
+            {"1": 27, "2": 12, "3": 3}
+        assert 27 + 12 + 3 == 42
+        # 27*1 + 12*2 + 3*3 = 60 person target associations
+        assert 27 + 24 + 9 == 60
+
+    def test_the_balance_is_exact_where_the_size_divides_the_probe_count(self):
+        """12 probes over |A| associations is balanced exactly when |A| divides
+        12, so 1 -> 12, 2 -> 6/6 and 3 -> 4/4/4.  That is the property the
+        within-entity weighting depends on."""
+        pa = _load()["probe_allocation"]["target_associations"]
+        assert pa["probes_per_person"] == \
+            CONFIRM_WORDING_FAMILIES * CONFIRM_NEW_TEMPLATES_PER_FAMILY == 12
+        assert pa["probes_per_association_given_its_size"] == \
+            {"1": [[12]], "2": [[6, 6]], "3": [[4, 4, 4]]}
+        assert pa["balanced_sizes"] == ["1", "2", "3"]
+        assert pa["unbalanced_sizes"] == []
+        assert pa["allocation_is_balanced_for_every_observed_size"] is True
+        assert pa["every_observed_size_divides_the_probe_count"] is True
+        #: The shapes are the DISTINCT shapes per size, so one entry for size
+        #: 2 means all 12 of those persons got 6/6 -- a per-person listing
+        #: would repeat one shape twelve times and hide the fact that the
+        #: balance is a property of the rule rather than of a lucky entity.
+        assert pa["target_associations_per_person"]["2"] == 12
+        assert pa["target_associations_per_person"]["3"] == 3
+        assert "vacuously" in pa["why_balance_is_reported_per_size"]
+
+    def test_the_rule_is_balanced_for_a_size_the_data_does_not_have(self):
+        """|A| = 4 also divides 12, so the rule must give 3/3/3/3 there even
+        though no person in this dataset carries four target associations.
+        A rule balanced only on the observed sizes is a rule fitted to them."""
+        assocs = [_Assoc(f"e1__a{i}", "e1") for i in range(4)]
+        out = target_association_allocation(
+            assocs, {"target_association_ids": [a.association_id
+                                                for a in assocs]},
+            ["e1"])
+        assert out["probes_per_association_given_its_size"] == {"4": [[3] * 4]}
+        assert out["rows_allocated"] == 12
+        assert out["balanced_sizes"] == ["4"]
+        assert out["unbalanced_sizes"] == []
+        assert out["allocation_is_balanced_for_every_observed_size"] is True
+
+    def test_a_size_that_does_not_divide_twelve_is_recorded_not_hidden(self):
+        """|A| = 5 cannot be balanced over 12 probes.  A single flag quantified
+        over "sizes that divide 12" is vacuously TRUE here -- there is no such
+        size to check -- so the unevenness has to be named outright, or the
+        one case that needs a warning is the one that reports success."""
+        assocs = [_Assoc(f"e1__a{i}", "e1") for i in range(5)]
+        out = target_association_allocation(
+            assocs, {"target_association_ids": [a.association_id
+                                                for a in assocs]},
+            ["e1"])
+        assert out["probes_per_association_given_its_size"] == \
+            {"5": [[3, 3, 2, 2, 2]]}
+        assert out["unbalanced_sizes"] == ["5"]
+        assert out["balanced_sizes"] == []
+        assert out["allocation_is_balanced_for_every_observed_size"] is False
+        assert out["every_observed_size_divides_the_probe_count"] is False
+
+    def test_every_allocated_row_asks_a_fact_that_entity_really_carries(self):
+        """Recomputed from the two artifacts the freeze binds, not trusted
+        from the report: manifest.json's target_association_ids joined to
+        associations.parquet.  A row pointing at another entity's association
+        would put the wrong fact into the wrong cluster."""
+        from granunlearn.evaluation.reference_eval import (
+            load_associations_parquet)
+        data_dir = REPO_ROOT / "data" / "mllmu_hier_pilot100"
+        if not (data_dir / "associations.parquet").exists():
+            pytest.skip(f"frozen dataset not present: {data_dir}")
+        assoc = load_associations_parquet(data_dir / "associations.parquet")
+        manifest = json.loads((data_dir / "manifest.json").read_text())
+        target = set(manifest["target_association_ids"])
+        owner = {a.association_id: a.entity_id for a in assoc}
+        rows = _load()["probe_allocation"]["target_associations"]["rows"]
+        assert len(rows) == 504
+        persons = {r["entity_id"] for r in rows}
+        assert len(persons) == 42
+        per_person: dict = {}
+        for r in rows:
+            assert r["association_id"] in target, r
+            assert owner[r["association_id"]] == r["entity_id"], r
+            per_person.setdefault(r["entity_id"], []).append(
+                r["association_id"])
+        # 12 rows each, and the rule's own offset reproduced independently
+        by_entity: dict = {}
+        for a in assoc:
+            if a.association_id in target:
+                by_entity.setdefault(a.entity_id, []).append(a.association_id)
+        for entity, asked in per_person.items():
+            A = sorted(by_entity[entity])
+            want = [A[(j + f) % len(A)]
+                    for f in range(CONFIRM_WORDING_FAMILIES)
+                    for j in range(CONFIRM_NEW_TEMPLATES_PER_FAMILY)]
+            assert asked == want, entity
+
+    def test_the_retention_rows_are_the_frozen_345_and_cover_both_families(
+            self):
+        ret = _load()["probe_allocation"]["retention"]
+        m = CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY
+        assert ret["probes_per_entity"] == m == 3
+        assert ret["route"] == CONFIRM_RETENTION_ROUTE == "text_only"
+        assert ret["retain_same"]["entities"] == 70
+        assert ret["retain_same"]["rows"] == 70 * m == 210
+        assert ret["retain_other"]["donor_entities"] == 45
+        assert ret["retain_other"]["rows"] == 45 * m == 135
+        assert len(ret["rows_retain_same"]) == 210
+        assert len(ret["rows_retain_other"]) == 135
+        # 64 of the 70 carry 4-7 facts, so 63 of them are a genuine sample
+        assert ret["retain_same"]["candidates_per_entity"] == \
+            {"1": 6, "4": 3, "5": 16, "6": 26, "7": 19}
+        assert ret["retain_same"][
+            "entities_that_cycle_because_they_have_fewer"] == 6
+        assert ret["retain_same"]["facts_available"] == 387
+        assert ret["retain_other"]["pairs_available"] == 90
+
+    def test_the_hash_rank_is_reproducible_and_depends_on_the_salt(self):
+        """The sample has to be reproducible from the rule alone, and it has
+        to actually depend on the salt -- a rank that ignored the salt would
+        be a fixed order wearing a hash's clothes."""
+        items = [f"a{i}" for i in range(7)]
+        salt = RETENTION_SAMPLING_SALTS["retain_same_entity"]
+        rank = sorted(items, key=lambda i: (_hash_rank(salt, "e", i), i))
+        assert rank == sorted(items, key=lambda i: (_hash_rank(salt, "e", i),
+                                                    i))
+        assert _take_m_with_cycling(rank, 3) == rank[:3]
+        # a different entity, a different salt and a different item order all
+        # move the ranking
+        assert sorted(items, key=lambda i: (_hash_rank(salt, "e2", i), i)) \
+            != rank
+        assert sorted(items, key=lambda i: (_hash_rank(salt + "x", "e", i),
+                                            i)) != rank
+        # cycling only happens when there are fewer than m candidates
+        assert _take_m_with_cycling(rank[:2], 3) == \
+            [rank[0], rank[1], rank[0]]
+
+    def test_the_hash_rank_covers_what_sorted_order_would_have_dropped(self):
+        """The rejected rule is computed, not described: sorting the
+        association ids sorts by attribute name, so the first three are almost
+        always birthplace, date_of_birth and education."""
+        mix = _load()["probe_allocation"]["retention"][
+            "attribute_mix_over_retain_same_probes"]
+        accepted = mix["this_rule"]
+        rejected = mix["rejected_sorted_first_three"]
+        population = mix["whole_exploratory_retained_population"]
+        assert mix["attributes_the_rejected_rule_would_have_excluded"] == \
+            ["salary"]
+        assert rejected.get("salary", 0) == 0
+        assert rejected["residence"] == 1
+        assert rejected["occupation"] == 6
+        # and the accepted rule leaves nothing out
+        assert mix["attributes_this_rule_covers"] == \
+            mix["attributes_in_the_population"] == len(population) == 8
+        assert set(accepted) == set(population)
+        for k, v in accepted.items():
+            assert v > 0, k
+        # both allocations are 210 probes, so this is a mix difference and not
+        # a size difference
+        assert sum(accepted.values()) == sum(rejected.values()) == 210
+
+    def test_cycling_is_disclosed_because_it_repeats_a_fact(self):
+        """An entity with one retained fact contributes three probes to it.
+        That is what gives every entity equal weight, and it inflates the
+        attribute carried by single-fact entities -- so it is stated rather
+        than quietly averaged away."""
+        ret = _load()["probe_allocation"]["retention"]
+        mix = ret["attribute_mix_over_retain_same_probes"]
+        assert "the mix is over PROBES" in \
+            mix["cycling_inflates_single_fact_entities"]
+        assert mix["this_rule"]["taxonomic_classification"] == 18
+        # 6 species entities x 3 probes on their single retained fact
+        assert 6 * CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY == 18
+        assert ret["estimand_is_not_the_11r_one"]
+        assert "EVERY retained fact" in ret["estimand_is_not_the_11r_one"]
+
+    def test_the_retention_estimand_is_labelled_as_a_sample(self):
+        assert RETENTION_ESTIMAND_LABEL == \
+            "hash-sampled retained facts, text route"
+        assert "hash-sampled" in RETENTION_ESTIMAND_LABEL
+
+    def test_the_totals_reconcile_to_one_probe_budget(self):
+        """Two budgets for one probe count is how a total quietly becomes two
+        totals.  849 rows come from these two rules and 360 from the
+        photograph selection, which is the 1209 the size block states."""
+        pa = _load()["probe_allocation"]
+        size = _load()["confirmation_size"]
+        assert pa["rows_total"] == 504 + 210 + 135 == 849
+        photos = pa["photograph_probes_are_not_allocated_here"]
+        assert photos["count"] == 360
+        assert photos["species_covered"] == 30
+        assert photos["count"] == \
+            size["held_out_photographs"]["new_photographs_total"]
+        assert pa["confirmation_probes_total"] == 849 + 360 == 1209
+        #: The same 1209 the size block reaches by its own route: 864 target
+        #: probes (504 wordings + 360 photographs) plus 345 retention.
+        totals = size["totals"]
+        assert totals["of_which_new_wordings_on_target_persons"] == 504
+        assert totals["of_which_new_photographs_on_target_species"] == 360
+        assert totals["new_target_probes"] == 864
+        assert totals["new_retention_probes"] == 345
+        assert totals["new_target_probes"] + totals["new_retention_probes"] \
+            == pa["confirmation_probes_total"] == 1209
+
+
+class TestTheAmendmentDisclosesWhenItHappened:
+    """Iteration 11C stage 3, review finding 1.
+
+    The photograph-selection rule was described as sealed before the fetch.
+    The repository's own timestamps say otherwise: the prior freeze has no
+    ``selection_rule`` at all, the pool was acquired between the two freezes,
+    and the rule first appears in the later one.  The defensible claim is the
+    narrower one -- fixed after acquisition exposed the nesting defect, before
+    subset selection and before any model output -- and that is what is
+    recorded, with the ordering computed from artifacts.
+    """
+
+    def test_the_pool_timestamp_is_read_from_the_pools_own_provenance(self):
+        """If the timeline were typed in it could drift from the history it
+        describes; the pool's timestamp is read from the committed file."""
+        prov = REPO_ROOT / "data/raw/inaturalist/confirm_v1/PROVENANCE.json"
+        if not prov.exists():
+            pytest.skip(f"pool provenance not present: {prov}")
+        retrieved = json.loads(prov.read_text())["retrieved_at"]
+        block = protocol_amendments(REPO_ROOT)
+        assert block["amendments"][0]["pool_acquired_at_utc"] == retrieved
+
+    def test_every_ordering_claim_is_computed_and_holds(self):
+        ordering = _load()["protocol_amendments"]["amendments"][0]["ordering"]
+        for key in ("rule_was_absent_when_the_pool_was_fetched",
+                    "rule_was_published_after_the_pool",
+                    "rule_was_published_before_the_subset_was_selected",
+                    "rule_was_published_before_any_model_output",
+                    "every_ordering_claim_is_measured"):
+            assert ordering[key] is True, key
+        # and the commands that reproduce each timestamp are listed: two
+        # committed freezes, the pool's provenance, the selection report, and
+        # the predictions directory whose absence is the outcome-blindness
+        assert len(ordering["measured_from"]) == 5
+        assert sum(1 for c in ordering["measured_from"]
+                   if "git show" in c) == 2
+        assert any("predictions/" in c for c in ordering["measured_from"])
+
+    def test_the_amendment_says_it_is_an_amendment(self):
+        a = _load()["protocol_amendments"]["amendments"][0]
+        assert a["kind"] == "outcome-blind protocol amendment"
+        assert "PHOTO_SELECTION_RULE" in a["what"]
+        assert a["prior_freeze"]["contained_the_rule"] is False
+        assert a["amending_freeze"]["contained_the_rule"] is True
+        assert a["confirmation_prediction_files"] == 0
+        assert "no model output existed" in a["the_defensible_claim"]
+
+    def test_the_prior_freeze_really_did_not_contain_the_rule(self):
+        """Checked against the committed artifact rather than the constant
+        that describes it, so the disclosure cannot outlive the history."""
+        prov = REPO_ROOT / "data/raw/inaturalist/confirm_v1/PROVENANCE.json"
+        if not prov.exists():
+            pytest.skip(f"pool provenance not present: {prov}")
+        a = _load()["protocol_amendments"]["amendments"][0]
+        before = a["prior_freeze"]["frozen_at_utc"]
+        pool = a["pool_acquired_at_utc"]
+        after = a["amending_freeze"]["frozen_at_utc"]
+        selected = a["subset_selected_at_utc"]
+        assert before < pool < after < selected, (before, pool, after,
+                                                  selected)
+
+    def test_the_claim_that_was_wrong_is_retracted_not_just_replaced(self):
+        block = _load()["protocol_amendments"]
+        assert "BEFORE the fetch" in block["retracted_claim"]
+        assert "retracted" in block["retracted_claim"]
+
+    def test_the_source_no_longer_claims_the_rule_predated_the_fetch(self):
+        """The false claim lived in three places: two comments and the
+        report's own prose.  All three are checked, because a correction that
+        leaves one behind leaves a reader with two timelines."""
+        import inspect
+        src = inspect.getsource(sys.modules["power_analysis_confirmation"])
+        #: Assembled from a fragment so this file does not itself contain the
+        #: claims it checks for; the repo-wide sweep in the freeze tests would
+        #: otherwise have to allowlist this file, and an allowlist is a place
+        #: for a stale copy to hide.
+        stem = "before the fetch"
+        for phrase in (f"Frozen {stem} runs",
+                       f"Frozen here, {stem} is run",
+                       "so it cannot be made after seeing"):
+            assert phrase not in src, phrase
+        assert "OUTCOME-BLIND PROTOCOL AMENDMENT" in src
+
+    def test_what_a_literal_preregistration_would_cost_is_stated(self):
+        a = _load()["protocol_amendments"]["amendments"][0]
+        cost = a["if_literal_pre_fetch_preregistration_is_required"]
+        assert "fresh" in cost and "independent seed" in cost
+        assert a["what_was_not_available"]
+        assert any("B3" in x for x in a["what_was_not_available"])

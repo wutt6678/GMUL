@@ -1,8 +1,16 @@
 {
+ "byte_verification": {
+  "files_missing": 0,
+  "photographs_rehashed": 360,
+  "sha256_mismatches": 0,
+  "verified_against": "each file's own bytes, not its existence"
+ },
  "checks": {
   "all_sha256_distinct": true,
   "distinct_sha256": 360,
   "every_record_carries_licence_and_attribution": true,
+  "every_selected_file_rehashed_and_matching": true,
+  "every_species_drew_its_frozen_count": true,
   "every_species_got_its_full_allocation": true,
   "exploratory_media_pinned": 496,
   "intersection_with_exploratory_media": 0,
@@ -24,6 +32,7 @@
   },
   "photographs_selected": 360,
   "species_selected": 30,
+  "species_set_is_the_frozen_one": true,
   "species_whose_draw_was_a_superset_of_its_exploratory_12": [
    "Passer domesticus"
   ]
@@ -34,7 +43,7 @@
   "manifest_sha256": "ccbf4ab4fb2faf3d3ead4736bb7527a01efb1a43a5a4d3d74deb4ab4071c82a6",
   "manifest_sha256_bound_by_the_freeze": "ccbf4ab4fb2faf3d3ead4736bb7527a01efb1a43a5a4d3d74deb4ab4071c82a6"
  },
- "generated_utc": "2026-09-07T07:28:49.890605+00:00",
+ "generated_utc": "2026-09-07T11:17:31.360125+00:00",
  "next_step": "scripts/build_confirmation_split.py attaches these photographs to the target species' associations, then scripts/build_image_manifest.py --tag confirm100 seals them into a manifest dataset_fingerprint binds",
  "per_species": {
   "Anas platyrhynchos": {
@@ -6113,6 +6122,74 @@
   }
  ],
  "selected_sha256_list_sha256": "c794162cbe393521e19f4485713ebdfc9917e97dbfefa5f50f97146bd85ed744",
+ "species_set_derivation": {
+  "derived": [
+   "Anas platyrhynchos",
+   "Branta canadensis",
+   "Canis lupus",
+   "Chloris chloris",
+   "Coloeus monedula",
+   "Corvus corax",
+   "Corvus corone",
+   "Cyanistes caeruleus",
+   "Felis catus",
+   "Gonepteryx rhamni",
+   "Mareca strepera",
+   "Mustela erminea",
+   "Mustela nivalis",
+   "Papilio machaon",
+   "Parus major",
+   "Passer domesticus",
+   "Passer hispaniolensis",
+   "Periparus ater",
+   "Pieris brassicae",
+   "Pieris napi",
+   "Pieris rapae",
+   "Poecile montanus",
+   "Poecile palustris",
+   "Sturnus vulgaris",
+   "Turdus merula",
+   "Turdus philomelos",
+   "Turdus pilaris",
+   "Vanessa atalanta",
+   "Vanessa cardui",
+   "Vulpes vulpes"
+  ],
+  "in_the_pool": [
+   "Anas platyrhynchos",
+   "Branta canadensis",
+   "Canis lupus",
+   "Chloris chloris",
+   "Coloeus monedula",
+   "Corvus corax",
+   "Corvus corone",
+   "Cyanistes caeruleus",
+   "Felis catus",
+   "Gonepteryx rhamni",
+   "Mareca strepera",
+   "Mustela erminea",
+   "Mustela nivalis",
+   "Papilio machaon",
+   "Parus major",
+   "Passer domesticus",
+   "Passer hispaniolensis",
+   "Periparus ater",
+   "Pieris brassicae",
+   "Pieris napi",
+   "Pieris rapae",
+   "Poecile montanus",
+   "Poecile palustris",
+   "Sturnus vulgaris",
+   "Turdus merula",
+   "Turdus philomelos",
+   "Turdus pilaris",
+   "Vanessa atalanta",
+   "Vanessa cardui",
+   "Vulpes vulpes"
+  ],
+  "rule": "target species = target_entity_ids - target_person_ids, both bound by the freeze",
+  "why_a_count_is_not_enough": "30 species is also satisfied by a --limit-species 30 pool, which holds 24 of the target species plus the 6 retain-only ones and silently drops 6 target ones"
+ },
  "stage": "11C-3c",
  "what_this_is": "the committed record of WHICH 360 photographs the confirmation uses. The photographs are gitignored; this report plus the pool's committed PROVENANCE.json is what makes them auditable"
 }

@@ -420,7 +420,7 @@
         "not_the_first_12_files": "chosen.sort(key=(observation_id, photo_id)) runs before files are named 000.jpg..., so position on disk is canonical order and says nothing about the draw",
         "not_the_last_12_of_the_draw": "the draw itself does not nest with pilot_v1's: rng is built once for the whole walk, and --role target walks 30 species where pilot_v1 walked 36",
         "refutation_recorded_at": "new_photograph_supply.seeded_refetch.draw_nesting_is_not_relied_on",
-        "why_it_matters": "'which 12 of the 24' is a choice. Frozen here, before the fetch is run, so it cannot be made after seeing which photographs came back"
+        "why_it_matters": "'which 12 of the 24' is a choice, and a choice made over a pool that is already on disk is one the protocol never specified. This rule is an outcome-blind amendment: it was published after the fetch and before the subset was selected or scored, so the pool could not have shaped it. See protocol_amendments for the timestamps and for the retracted claim that it predated the fetch"
       },
       "selection_rule": "of the 24 photographs the fetch accepts for a species, take the 12 whose sha256 appears nowhere in data/mllmu_hier_pilot100/image_manifest.json, in the fetch's own canonical (observation_id, photo_id) order; refuse the species rather than substitute if fewer than 12 are disjoint",
       "species_covered": 30,
@@ -2193,7 +2193,7 @@
       }
     }
   },
-  "generated_utc": "2026-09-07T07:03:33+00:00",
+  "generated_utc": "2026-09-07T11:17:34+00:00",
   "holm_primary_family": {
     "critical_value_z": 1.959964,
     "familywise_alpha": 0.05,
@@ -5599,6 +5599,4947 @@
     "why_that_many_draws": "the Monte Carlo standard error of a p-value is sqrt(p(1-p)/n); at the Holm threshold it is 0.004935 for the 1000 draws the CI bootstrap uses - a fifth of the threshold, so draw noise alone could move a claim across it - and 0.001561 for 10000",
     "why_the_directions_differ": "TGA is an accuracy, so better is HIGHER; FILR is a leakage rate, so better is LOWER. Both claims are about the same B3-B0 difference and point in OPPOSITE directions on it, so a single sign convention applied to both would test one of them backwards. The sizing code sizes |theta| and is direction-agnostic, which is correct for a power table and would be wrong for a test.",
     "why_the_statistic_must_be_the_one_the_interval_covers": "a p-value for one quantity beside an interval for another lets a claim be rejected while the interval still contains zero, and the two numbers then contradict each other in the same table"
+  },
+  "probe_allocation": {
+    "confirmation_probes_total": 1209,
+    "photograph_probes_are_not_allocated_here": {
+      "count": 360,
+      "species_covered": 30,
+      "why": "a held-out-photograph probe asks one selected photograph, so there is no fact to choose: the allocation is fixed by the selection report, one probe per photograph in its canonical order"
+    },
+    "retention": {
+      "attribute_mix_over_retain_same_probes": {
+        "attributes_in_the_population": 8,
+        "attributes_the_rejected_rule_would_have_excluded": [
+          "salary"
+        ],
+        "attributes_the_rejected_rule_would_have_kept_below_ten": [
+          "occupation",
+          "residence"
+        ],
+        "attributes_this_rule_covers": 8,
+        "cycling_inflates_single_fact_entities": "the mix is over PROBES, so an entity with one retained fact contributes three probes to its attribute; that is inherent to giving every entity equal weight, and it is disclosed rather than corrected",
+        "rejected_sorted_first_three": {
+          "birthplace": 56,
+          "date_of_birth": 54,
+          "education": 56,
+          "height": 19,
+          "occupation": 6,
+          "residence": 1,
+          "taxonomic_classification": 18
+        },
+        "this_rule": {
+          "birthplace": 32,
+          "date_of_birth": 24,
+          "education": 32,
+          "height": 27,
+          "occupation": 26,
+          "residence": 29,
+          "salary": 22,
+          "taxonomic_classification": 18
+        },
+        "whole_exploratory_retained_population": {
+          "birthplace": 56,
+          "date_of_birth": 54,
+          "education": 56,
+          "height": 54,
+          "occupation": 56,
+          "residence": 56,
+          "salary": 49,
+          "taxonomic_classification": 6
+        },
+        "why_sorted_is_rejected": "association ids sort alphabetically by attribute, so the first three of a 4-7 fact entity are almost always birthplace, date_of_birth and education; the counts beside this note are what that costs"
+      },
+      "estimand_is_not_the_11r_one": "11R averaged EVERY retained fact of an entity; this averages a hash-sampled three, so the two retention rates are not directly comparable and must not be quoted against each other without saying so",
+      "estimates": "hash-sampled retained facts, text route",
+      "probes_per_entity": 3,
+      "rank_is_deterministic_and_salt_separated": "the same salt and the same entity give the same ranking on every run, and the two families use different salts so neither ranking is a function of the other",
+      "retain_other": {
+        "distinct_pairs_used": 77,
+        "donor_entities": 45,
+        "donors_that_cycle_because_they_have_fewer": 36,
+        "pairs_available": 90,
+        "pairs_per_donor": {
+          "1": 22,
+          "2": 14,
+          "3": 2,
+          "4": 5,
+          "5": 1,
+          "9": 1
+        },
+        "rows": 135,
+        "sampling_unit_is_the_pair_not_the_donor_association": "one donor association can be paired with several targets, so ranking donor associations alone would drop pairs"
+      },
+      "retain_same": {
+        "candidates_per_entity": {
+          "1": 6,
+          "4": 3,
+          "5": 16,
+          "6": 26,
+          "7": 19
+        },
+        "distinct_facts_used": 198,
+        "entities": 70,
+        "entities_that_cycle_because_they_have_fewer": 6,
+        "facts_available": 387,
+        "rows": 210
+      },
+      "route": "text_only",
+      "rows_retain_other": [
+        {
+          "cycled": false,
+          "entity_id": "Anas crecca",
+          "item": "inat_Anas_crecca|inat_Turdus_merula"
+        },
+        {
+          "cycled": false,
+          "entity_id": "Anas crecca",
+          "item": "inat_Anas_crecca|inat_Felis_catus"
+        },
+        {
+          "cycled": false,
+          "entity_id": "Anas crecca",
+          "item": "inat_Anas_crecca|inat_Vanessa_cardui"
+        },
+        {
+          "cycled": false,
+          "entity_id": "Anthocharis cardamines",
+          "item": "inat_Anthocharis_cardamines|inat_Mustela_erminea"
+        },
+        {
+          "cycled": false,
+          "entity_id": "Anthocharis cardamines",
+          "item": "inat_Anthocharis_cardamines|inat_Mareca_strepera"
+        },
+        {
+          "cycled": false,
+          "entity_id": "Anthocharis cardamines",
+          "item": "inat_Anthocharis_cardamines|inat_Corvus_corax"
+        },
+        {
+          "cycled": false,
+          "entity_id": "Branta leucopsis",
+          "item": "inat_Branta_leucopsis|inat_Passer_domesticus"
+        },
+        {
+          "cycled": false,
+          "entity_id": "Branta leucopsis",
+          "item": "inat_Branta_leucopsis|inat_Pieris_brassicae"
+        },
+        {
+          "cycled": false,
+          "entity_id": "Branta leucopsis",
+          "item": "inat_Branta_leucopsis|inat_Gonepteryx_rhamni"
+        },
+        {
+          "cycled": false,
+          "entity_id": "Carduelis carduelis",
+          "item": "inat_Carduelis_carduelis|inat_Anas_platyrhynchos"
+        },
+        {
+          "cycled": false,
+          "entity_id": "Carduelis carduelis",
+          "item": "inat_Carduelis_carduelis|inat_Pieris_napi"
+        },
+        {
+          "cycled": false,
+          "entity_id": "Carduelis carduelis",
+          "item": "inat_Carduelis_carduelis|inat_Parus_major"
+        },
+        {
+          "cycled": false,
+          "entity_id": "Erithacus rubecula",
+          "item": "inat_Erithacus_rubecula|inat_Coloeus_monedula"
+        },
+        {
+          "cycled": false,
+          "entity_id": "Erithacus rubecula",
+          "item": "inat_Erithacus_rubecula|inat_Vanessa_atalanta"
+        },
+        {
+          "cycled": false,
+          "entity_id": "Erithacus rubecula",
+          "item": "inat_Erithacus_rubecula|inat_Branta_canadensis"
+        },
+        {
+          "cycled": false,
+          "entity_id": "Passer montanus",
+          "item": "inat_Passer_montanus|inat_Turdus_pilaris"
+        },
+        {
+          "cycled": false,
+          "entity_id": "Passer montanus",
+          "item": "inat_Passer_montanus|inat_Cyanistes_caeruleus"
+        },
+        {
+          "cycled": false,
+          "entity_id": "Passer montanus",
+          "item": "inat_Passer_montanus|inat_Chloris_chloris"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_006",
+          "item": "mllmu_006__date_of_birth|mllmu_005__date_of_birth"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_006",
+          "item": "mllmu_006__date_of_birth|mllmu_005__date_of_birth"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_006",
+          "item": "mllmu_006__date_of_birth|mllmu_005__date_of_birth"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_007",
+          "item": "mllmu_007__date_of_birth|mllmu_424__date_of_birth"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_007",
+          "item": "mllmu_007__height|mllmu_131__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_007",
+          "item": "mllmu_007__date_of_birth|mllmu_424__date_of_birth"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_047",
+          "item": "mllmu_047__birthplace|mllmu_066__birthplace"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_047",
+          "item": "mllmu_047__date_of_birth|mllmu_191__date_of_birth"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_047",
+          "item": "mllmu_047__birthplace|mllmu_066__birthplace"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_054",
+          "item": "mllmu_054__residence|mllmu_094__residence"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_054",
+          "item": "mllmu_054__residence|mllmu_094__residence"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_054",
+          "item": "mllmu_054__residence|mllmu_094__residence"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_057",
+          "item": "mllmu_057__salary|mllmu_327__salary"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_057",
+          "item": "mllmu_057__salary|mllmu_327__salary"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_057",
+          "item": "mllmu_057__salary|mllmu_327__salary"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_060",
+          "item": "mllmu_060__residence|mllmu_057__residence"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_060",
+          "item": "mllmu_060__residence|mllmu_057__residence"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_060",
+          "item": "mllmu_060__residence|mllmu_057__residence"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_066",
+          "item": "mllmu_066__height|mllmu_258__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_066",
+          "item": "mllmu_066__height|mllmu_258__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_066",
+          "item": "mllmu_066__height|mllmu_258__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_078",
+          "item": "mllmu_078__salary|mllmu_252__salary"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_078",
+          "item": "mllmu_078__education|mllmu_291__education"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_078",
+          "item": "mllmu_078__salary|mllmu_252__salary"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_089",
+          "item": "mllmu_089__height|mllmu_437__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_089",
+          "item": "mllmu_089__height|mllmu_060__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_089",
+          "item": "mllmu_089__height|mllmu_437__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_096",
+          "item": "mllmu_096__date_of_birth|mllmu_360__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_096",
+          "item": "mllmu_096__height|mllmu_078__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_096",
+          "item": "mllmu_096__residence|mllmu_462__residence"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_103",
+          "item": "mllmu_103__birthplace|mllmu_252__birthplace"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_103",
+          "item": "mllmu_103__birthplace|mllmu_252__birthplace"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_103",
+          "item": "mllmu_103__birthplace|mllmu_252__birthplace"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_104",
+          "item": "mllmu_104__height|mllmu_327__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_104",
+          "item": "mllmu_104__height|mllmu_327__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_104",
+          "item": "mllmu_104__height|mllmu_327__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_117",
+          "item": "mllmu_117__salary|mllmu_465__salary"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_117",
+          "item": "mllmu_117__salary|mllmu_465__salary"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_117",
+          "item": "mllmu_117__salary|mllmu_465__salary"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_131",
+          "item": "mllmu_131__residence|mllmu_089__residence"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_131",
+          "item": "mllmu_131__residence|mllmu_089__residence"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_131",
+          "item": "mllmu_131__residence|mllmu_089__residence"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_133",
+          "item": "mllmu_133__salary|mllmu_462__salary"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_133",
+          "item": "mllmu_133__residence|mllmu_438__residence"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_133",
+          "item": "mllmu_133__salary|mllmu_462__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_142",
+          "item": "mllmu_142__date_of_birth|mllmu_066__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_142",
+          "item": "mllmu_142__residence|mllmu_465__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_142",
+          "item": "mllmu_142__education|mllmu_239__education"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_159",
+          "item": "mllmu_159__occupation|mllmu_332__occupation"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_159",
+          "item": "mllmu_159__occupation|mllmu_332__occupation"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_159",
+          "item": "mllmu_159__occupation|mllmu_332__occupation"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_182",
+          "item": "mllmu_182__salary|mllmu_318__salary"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_182",
+          "item": "mllmu_182__salary|mllmu_318__salary"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_182",
+          "item": "mllmu_182__salary|mllmu_318__salary"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_187",
+          "item": "mllmu_187__height|mllmu_308__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_187",
+          "item": "mllmu_187__date_of_birth|mllmu_272__date_of_birth"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_187",
+          "item": "mllmu_187__height|mllmu_308__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_191",
+          "item": "mllmu_191__residence|mllmu_442__residence"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_191",
+          "item": "mllmu_191__residence|mllmu_442__residence"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_191",
+          "item": "mllmu_191__residence|mllmu_442__residence"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_239",
+          "item": "mllmu_239__occupation|mllmu_318__occupation"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_239",
+          "item": "mllmu_239__occupation|mllmu_318__occupation"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_239",
+          "item": "mllmu_239__occupation|mllmu_318__occupation"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_250",
+          "item": "mllmu_250__education|mllmu_272__education"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_250",
+          "item": "mllmu_250__occupation|mllmu_354__occupation"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_250",
+          "item": "mllmu_250__education|mllmu_272__education"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_252",
+          "item": "mllmu_252__date_of_birth|mllmu_437__date_of_birth"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_252",
+          "item": "mllmu_252__education|mllmu_159__education"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_252",
+          "item": "mllmu_252__date_of_birth|mllmu_437__date_of_birth"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_258",
+          "item": "mllmu_258__birthplace|mllmu_182__birthplace"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_258",
+          "item": "mllmu_258__salary|mllmu_191__salary"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_258",
+          "item": "mllmu_258__birthplace|mllmu_182__birthplace"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_291",
+          "item": "mllmu_291__height|mllmu_289__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_291",
+          "item": "mllmu_291__height|mllmu_289__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_291",
+          "item": "mllmu_291__height|mllmu_289__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_307",
+          "item": "mllmu_307__education|mllmu_332__education"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_307",
+          "item": "mllmu_307__education|mllmu_332__education"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_307",
+          "item": "mllmu_307__education|mllmu_332__education"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_318",
+          "item": "mllmu_318__height|mllmu_222__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_318",
+          "item": "mllmu_318__height|mllmu_222__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_318",
+          "item": "mllmu_318__height|mllmu_222__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_327",
+          "item": "mllmu_327__date_of_birth|mllmu_405__date_of_birth"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_327",
+          "item": "mllmu_327__date_of_birth|mllmu_405__date_of_birth"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_327",
+          "item": "mllmu_327__date_of_birth|mllmu_405__date_of_birth"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_341",
+          "item": "mllmu_341__residence|mllmu_187__residence"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_341",
+          "item": "mllmu_341__residence|mllmu_187__residence"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_341",
+          "item": "mllmu_341__residence|mllmu_187__residence"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_356",
+          "item": "mllmu_356__occupation|mllmu_182__occupation"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_356",
+          "item": "mllmu_356__birthplace|mllmu_318__birthplace"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_356",
+          "item": "mllmu_356__occupation|mllmu_182__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_369",
+          "item": "mllmu_369__occupation|mllmu_435__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_369",
+          "item": "mllmu_369__birthplace|mllmu_117__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_369",
+          "item": "mllmu_369__education|mllmu_356__education"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_405",
+          "item": "mllmu_405__height|mllmu_354__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_405",
+          "item": "mllmu_405__height|mllmu_354__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_405",
+          "item": "mllmu_405__height|mllmu_354__height"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_422",
+          "item": "mllmu_422__salary|mllmu_054__salary"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_422",
+          "item": "mllmu_422__salary|mllmu_054__salary"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_422",
+          "item": "mllmu_422__salary|mllmu_054__salary"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_435",
+          "item": "mllmu_435__date_of_birth|mllmu_103__date_of_birth"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_435",
+          "item": "mllmu_435__education|mllmu_259__education"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_435",
+          "item": "mllmu_435__date_of_birth|mllmu_103__date_of_birth"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_437",
+          "item": "mllmu_437__salary|mllmu_005__salary"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_437",
+          "item": "mllmu_437__occupation|mllmu_432__occupation"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_437",
+          "item": "mllmu_437__salary|mllmu_005__salary"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_438",
+          "item": "mllmu_438__occupation|mllmu_090__occupation"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_438",
+          "item": "mllmu_438__salary|mllmu_159__salary"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_438",
+          "item": "mllmu_438__occupation|mllmu_090__occupation"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_462",
+          "item": "mllmu_462__birthplace|mllmu_291__birthplace"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_462",
+          "item": "mllmu_462__date_of_birth|mllmu_481__date_of_birth"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_462",
+          "item": "mllmu_462__birthplace|mllmu_291__birthplace"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_465",
+          "item": "mllmu_465__birthplace|mllmu_159__birthplace"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_465",
+          "item": "mllmu_465__birthplace|mllmu_159__birthplace"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_465",
+          "item": "mllmu_465__birthplace|mllmu_159__birthplace"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_482",
+          "item": "mllmu_482__birthplace|mllmu_354__birthplace"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_482",
+          "item": "mllmu_482__birthplace|mllmu_354__birthplace"
+        },
+        {
+          "cycled": true,
+          "entity_id": "mllmu_482",
+          "item": "mllmu_482__birthplace|mllmu_354__birthplace"
+        }
+      ],
+      "rows_retain_same": [
+        {
+          "cycled": true,
+          "entity_id": "Anas crecca",
+          "item": "inat_Anas_crecca"
+        },
+        {
+          "cycled": true,
+          "entity_id": "Anas crecca",
+          "item": "inat_Anas_crecca"
+        },
+        {
+          "cycled": true,
+          "entity_id": "Anas crecca",
+          "item": "inat_Anas_crecca"
+        },
+        {
+          "cycled": true,
+          "entity_id": "Anthocharis cardamines",
+          "item": "inat_Anthocharis_cardamines"
+        },
+        {
+          "cycled": true,
+          "entity_id": "Anthocharis cardamines",
+          "item": "inat_Anthocharis_cardamines"
+        },
+        {
+          "cycled": true,
+          "entity_id": "Anthocharis cardamines",
+          "item": "inat_Anthocharis_cardamines"
+        },
+        {
+          "cycled": true,
+          "entity_id": "Branta leucopsis",
+          "item": "inat_Branta_leucopsis"
+        },
+        {
+          "cycled": true,
+          "entity_id": "Branta leucopsis",
+          "item": "inat_Branta_leucopsis"
+        },
+        {
+          "cycled": true,
+          "entity_id": "Branta leucopsis",
+          "item": "inat_Branta_leucopsis"
+        },
+        {
+          "cycled": true,
+          "entity_id": "Carduelis carduelis",
+          "item": "inat_Carduelis_carduelis"
+        },
+        {
+          "cycled": true,
+          "entity_id": "Carduelis carduelis",
+          "item": "inat_Carduelis_carduelis"
+        },
+        {
+          "cycled": true,
+          "entity_id": "Carduelis carduelis",
+          "item": "inat_Carduelis_carduelis"
+        },
+        {
+          "cycled": true,
+          "entity_id": "Erithacus rubecula",
+          "item": "inat_Erithacus_rubecula"
+        },
+        {
+          "cycled": true,
+          "entity_id": "Erithacus rubecula",
+          "item": "inat_Erithacus_rubecula"
+        },
+        {
+          "cycled": true,
+          "entity_id": "Erithacus rubecula",
+          "item": "inat_Erithacus_rubecula"
+        },
+        {
+          "cycled": true,
+          "entity_id": "Passer montanus",
+          "item": "inat_Passer_montanus"
+        },
+        {
+          "cycled": true,
+          "entity_id": "Passer montanus",
+          "item": "inat_Passer_montanus"
+        },
+        {
+          "cycled": true,
+          "entity_id": "Passer montanus",
+          "item": "inat_Passer_montanus"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_005",
+          "item": "mllmu_005__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_005",
+          "item": "mllmu_005__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_005",
+          "item": "mllmu_005__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_006",
+          "item": "mllmu_006__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_006",
+          "item": "mllmu_006__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_006",
+          "item": "mllmu_006__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_007",
+          "item": "mllmu_007__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_007",
+          "item": "mllmu_007__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_007",
+          "item": "mllmu_007__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_047",
+          "item": "mllmu_047__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_047",
+          "item": "mllmu_047__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_047",
+          "item": "mllmu_047__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_054",
+          "item": "mllmu_054__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_054",
+          "item": "mllmu_054__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_054",
+          "item": "mllmu_054__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_057",
+          "item": "mllmu_057__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_057",
+          "item": "mllmu_057__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_057",
+          "item": "mllmu_057__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_060",
+          "item": "mllmu_060__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_060",
+          "item": "mllmu_060__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_060",
+          "item": "mllmu_060__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_066",
+          "item": "mllmu_066__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_066",
+          "item": "mllmu_066__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_066",
+          "item": "mllmu_066__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_072",
+          "item": "mllmu_072__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_072",
+          "item": "mllmu_072__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_072",
+          "item": "mllmu_072__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_078",
+          "item": "mllmu_078__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_078",
+          "item": "mllmu_078__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_078",
+          "item": "mllmu_078__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_089",
+          "item": "mllmu_089__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_089",
+          "item": "mllmu_089__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_089",
+          "item": "mllmu_089__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_090",
+          "item": "mllmu_090__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_090",
+          "item": "mllmu_090__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_090",
+          "item": "mllmu_090__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_094",
+          "item": "mllmu_094__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_094",
+          "item": "mllmu_094__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_094",
+          "item": "mllmu_094__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_096",
+          "item": "mllmu_096__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_096",
+          "item": "mllmu_096__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_096",
+          "item": "mllmu_096__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_103",
+          "item": "mllmu_103__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_103",
+          "item": "mllmu_103__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_103",
+          "item": "mllmu_103__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_104",
+          "item": "mllmu_104__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_104",
+          "item": "mllmu_104__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_104",
+          "item": "mllmu_104__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_108",
+          "item": "mllmu_108__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_108",
+          "item": "mllmu_108__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_108",
+          "item": "mllmu_108__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_117",
+          "item": "mllmu_117__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_117",
+          "item": "mllmu_117__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_117",
+          "item": "mllmu_117__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_131",
+          "item": "mllmu_131__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_131",
+          "item": "mllmu_131__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_131",
+          "item": "mllmu_131__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_133",
+          "item": "mllmu_133__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_133",
+          "item": "mllmu_133__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_133",
+          "item": "mllmu_133__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_141",
+          "item": "mllmu_141__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_141",
+          "item": "mllmu_141__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_141",
+          "item": "mllmu_141__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_142",
+          "item": "mllmu_142__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_142",
+          "item": "mllmu_142__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_142",
+          "item": "mllmu_142__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_151",
+          "item": "mllmu_151__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_151",
+          "item": "mllmu_151__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_151",
+          "item": "mllmu_151__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_159",
+          "item": "mllmu_159__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_159",
+          "item": "mllmu_159__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_159",
+          "item": "mllmu_159__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_182",
+          "item": "mllmu_182__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_182",
+          "item": "mllmu_182__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_182",
+          "item": "mllmu_182__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_187",
+          "item": "mllmu_187__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_187",
+          "item": "mllmu_187__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_187",
+          "item": "mllmu_187__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_191",
+          "item": "mllmu_191__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_191",
+          "item": "mllmu_191__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_191",
+          "item": "mllmu_191__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_222",
+          "item": "mllmu_222__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_222",
+          "item": "mllmu_222__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_222",
+          "item": "mllmu_222__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_224",
+          "item": "mllmu_224__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_224",
+          "item": "mllmu_224__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_224",
+          "item": "mllmu_224__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_239",
+          "item": "mllmu_239__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_239",
+          "item": "mllmu_239__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_239",
+          "item": "mllmu_239__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_244",
+          "item": "mllmu_244__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_244",
+          "item": "mllmu_244__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_244",
+          "item": "mllmu_244__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_250",
+          "item": "mllmu_250__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_250",
+          "item": "mllmu_250__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_250",
+          "item": "mllmu_250__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_252",
+          "item": "mllmu_252__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_252",
+          "item": "mllmu_252__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_252",
+          "item": "mllmu_252__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_258",
+          "item": "mllmu_258__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_258",
+          "item": "mllmu_258__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_258",
+          "item": "mllmu_258__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_259",
+          "item": "mllmu_259__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_259",
+          "item": "mllmu_259__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_259",
+          "item": "mllmu_259__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_272",
+          "item": "mllmu_272__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_272",
+          "item": "mllmu_272__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_272",
+          "item": "mllmu_272__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_282",
+          "item": "mllmu_282__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_282",
+          "item": "mllmu_282__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_282",
+          "item": "mllmu_282__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_289",
+          "item": "mllmu_289__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_289",
+          "item": "mllmu_289__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_289",
+          "item": "mllmu_289__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_291",
+          "item": "mllmu_291__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_291",
+          "item": "mllmu_291__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_291",
+          "item": "mllmu_291__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_307",
+          "item": "mllmu_307__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_307",
+          "item": "mllmu_307__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_307",
+          "item": "mllmu_307__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_308",
+          "item": "mllmu_308__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_308",
+          "item": "mllmu_308__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_308",
+          "item": "mllmu_308__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_318",
+          "item": "mllmu_318__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_318",
+          "item": "mllmu_318__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_318",
+          "item": "mllmu_318__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_327",
+          "item": "mllmu_327__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_327",
+          "item": "mllmu_327__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_327",
+          "item": "mllmu_327__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_332",
+          "item": "mllmu_332__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_332",
+          "item": "mllmu_332__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_332",
+          "item": "mllmu_332__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_341",
+          "item": "mllmu_341__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_341",
+          "item": "mllmu_341__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_341",
+          "item": "mllmu_341__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_354",
+          "item": "mllmu_354__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_354",
+          "item": "mllmu_354__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_354",
+          "item": "mllmu_354__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_356",
+          "item": "mllmu_356__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_356",
+          "item": "mllmu_356__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_356",
+          "item": "mllmu_356__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_360",
+          "item": "mllmu_360__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_360",
+          "item": "mllmu_360__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_360",
+          "item": "mllmu_360__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_361",
+          "item": "mllmu_361__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_361",
+          "item": "mllmu_361__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_361",
+          "item": "mllmu_361__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_369",
+          "item": "mllmu_369__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_369",
+          "item": "mllmu_369__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_369",
+          "item": "mllmu_369__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_405",
+          "item": "mllmu_405__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_405",
+          "item": "mllmu_405__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_405",
+          "item": "mllmu_405__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_422",
+          "item": "mllmu_422__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_422",
+          "item": "mllmu_422__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_422",
+          "item": "mllmu_422__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_424",
+          "item": "mllmu_424__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_424",
+          "item": "mllmu_424__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_424",
+          "item": "mllmu_424__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_432",
+          "item": "mllmu_432__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_432",
+          "item": "mllmu_432__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_432",
+          "item": "mllmu_432__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_435",
+          "item": "mllmu_435__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_435",
+          "item": "mllmu_435__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_435",
+          "item": "mllmu_435__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_437",
+          "item": "mllmu_437__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_437",
+          "item": "mllmu_437__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_437",
+          "item": "mllmu_437__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_438",
+          "item": "mllmu_438__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_438",
+          "item": "mllmu_438__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_438",
+          "item": "mllmu_438__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_442",
+          "item": "mllmu_442__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_442",
+          "item": "mllmu_442__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_442",
+          "item": "mllmu_442__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_443",
+          "item": "mllmu_443__education"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_443",
+          "item": "mllmu_443__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_443",
+          "item": "mllmu_443__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_453",
+          "item": "mllmu_453__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_453",
+          "item": "mllmu_453__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_453",
+          "item": "mllmu_453__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_462",
+          "item": "mllmu_462__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_462",
+          "item": "mllmu_462__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_462",
+          "item": "mllmu_462__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_465",
+          "item": "mllmu_465__date_of_birth"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_465",
+          "item": "mllmu_465__occupation"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_465",
+          "item": "mllmu_465__height"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_481",
+          "item": "mllmu_481__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_481",
+          "item": "mllmu_481__salary"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_481",
+          "item": "mllmu_481__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_482",
+          "item": "mllmu_482__residence"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_482",
+          "item": "mllmu_482__birthplace"
+        },
+        {
+          "cycled": false,
+          "entity_id": "mllmu_482",
+          "item": "mllmu_482__occupation"
+        }
+      ],
+      "rule": "rank each entity's candidate facts by sha256(salt + 0x00 + entity_id + 0x00 + item) ascending, tie-broken by the item itself, and take the first 3 without replacement, cycling back to the top only when the entity has fewer than 3; the item is the association_id for retain_same_entity and donor_association_id + '|' + target_association_id for retain_other_entity, and each family has its own salt",
+      "salts": {
+        "retain_other_entity": "granunlearn/11C/confirm100/retain_other_entity",
+        "retain_same_entity": "granunlearn/11C/confirm100/retain_same_entity"
+      }
+    },
+    "rows_total": 849,
+    "target_associations": {
+      "allocation_is_balanced_for_every_observed_size": true,
+      "balanced_sizes": [
+        "1",
+        "2",
+        "3"
+      ],
+      "every_observed_size_divides_the_probe_count": true,
+      "persons": 42,
+      "probes_per_association_given_its_size": {
+        "1": [
+          [
+            12
+          ]
+        ],
+        "2": [
+          [
+            6,
+            6
+          ]
+        ],
+        "3": [
+          [
+            4,
+            4,
+            4
+          ]
+        ]
+      },
+      "probes_per_person": 12,
+      "rows": [
+        {
+          "association_id": "mllmu_005__date_of_birth",
+          "entity_id": "mllmu_005",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_005__salary",
+          "entity_id": "mllmu_005",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_005__date_of_birth",
+          "entity_id": "mllmu_005",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_005__salary",
+          "entity_id": "mllmu_005",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_005__salary",
+          "entity_id": "mllmu_005",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_005__date_of_birth",
+          "entity_id": "mllmu_005",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_005__salary",
+          "entity_id": "mllmu_005",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_005__date_of_birth",
+          "entity_id": "mllmu_005",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_005__date_of_birth",
+          "entity_id": "mllmu_005",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_005__salary",
+          "entity_id": "mllmu_005",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_005__date_of_birth",
+          "entity_id": "mllmu_005",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_005__salary",
+          "entity_id": "mllmu_005",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_054__salary",
+          "entity_id": "mllmu_054",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_054__salary",
+          "entity_id": "mllmu_054",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_054__salary",
+          "entity_id": "mllmu_054",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_054__salary",
+          "entity_id": "mllmu_054",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_054__salary",
+          "entity_id": "mllmu_054",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_054__salary",
+          "entity_id": "mllmu_054",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_054__salary",
+          "entity_id": "mllmu_054",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_054__salary",
+          "entity_id": "mllmu_054",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_054__salary",
+          "entity_id": "mllmu_054",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_054__salary",
+          "entity_id": "mllmu_054",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_054__salary",
+          "entity_id": "mllmu_054",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_054__salary",
+          "entity_id": "mllmu_054",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_057__residence",
+          "entity_id": "mllmu_057",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_057__residence",
+          "entity_id": "mllmu_057",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_057__residence",
+          "entity_id": "mllmu_057",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_057__residence",
+          "entity_id": "mllmu_057",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_057__residence",
+          "entity_id": "mllmu_057",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_057__residence",
+          "entity_id": "mllmu_057",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_057__residence",
+          "entity_id": "mllmu_057",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_057__residence",
+          "entity_id": "mllmu_057",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_057__residence",
+          "entity_id": "mllmu_057",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_057__residence",
+          "entity_id": "mllmu_057",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_057__residence",
+          "entity_id": "mllmu_057",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_057__residence",
+          "entity_id": "mllmu_057",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_060__height",
+          "entity_id": "mllmu_060",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_060__height",
+          "entity_id": "mllmu_060",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_060__height",
+          "entity_id": "mllmu_060",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_060__height",
+          "entity_id": "mllmu_060",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_060__height",
+          "entity_id": "mllmu_060",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_060__height",
+          "entity_id": "mllmu_060",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_060__height",
+          "entity_id": "mllmu_060",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_060__height",
+          "entity_id": "mllmu_060",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_060__height",
+          "entity_id": "mllmu_060",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_060__height",
+          "entity_id": "mllmu_060",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_060__height",
+          "entity_id": "mllmu_060",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_060__height",
+          "entity_id": "mllmu_060",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_066__birthplace",
+          "entity_id": "mllmu_066",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_066__date_of_birth",
+          "entity_id": "mllmu_066",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_066__birthplace",
+          "entity_id": "mllmu_066",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_066__date_of_birth",
+          "entity_id": "mllmu_066",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_066__date_of_birth",
+          "entity_id": "mllmu_066",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_066__birthplace",
+          "entity_id": "mllmu_066",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_066__date_of_birth",
+          "entity_id": "mllmu_066",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_066__birthplace",
+          "entity_id": "mllmu_066",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_066__birthplace",
+          "entity_id": "mllmu_066",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_066__date_of_birth",
+          "entity_id": "mllmu_066",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_066__birthplace",
+          "entity_id": "mllmu_066",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_066__date_of_birth",
+          "entity_id": "mllmu_066",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_078__height",
+          "entity_id": "mllmu_078",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_078__height",
+          "entity_id": "mllmu_078",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_078__height",
+          "entity_id": "mllmu_078",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_078__height",
+          "entity_id": "mllmu_078",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_078__height",
+          "entity_id": "mllmu_078",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_078__height",
+          "entity_id": "mllmu_078",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_078__height",
+          "entity_id": "mllmu_078",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_078__height",
+          "entity_id": "mllmu_078",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_078__height",
+          "entity_id": "mllmu_078",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_078__height",
+          "entity_id": "mllmu_078",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_078__height",
+          "entity_id": "mllmu_078",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_078__height",
+          "entity_id": "mllmu_078",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_089__residence",
+          "entity_id": "mllmu_089",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_089__residence",
+          "entity_id": "mllmu_089",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_089__residence",
+          "entity_id": "mllmu_089",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_089__residence",
+          "entity_id": "mllmu_089",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_089__residence",
+          "entity_id": "mllmu_089",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_089__residence",
+          "entity_id": "mllmu_089",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_089__residence",
+          "entity_id": "mllmu_089",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_089__residence",
+          "entity_id": "mllmu_089",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_089__residence",
+          "entity_id": "mllmu_089",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_089__residence",
+          "entity_id": "mllmu_089",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_089__residence",
+          "entity_id": "mllmu_089",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_089__residence",
+          "entity_id": "mllmu_089",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_090__occupation",
+          "entity_id": "mllmu_090",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_090__occupation",
+          "entity_id": "mllmu_090",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_090__occupation",
+          "entity_id": "mllmu_090",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_090__occupation",
+          "entity_id": "mllmu_090",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_090__occupation",
+          "entity_id": "mllmu_090",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_090__occupation",
+          "entity_id": "mllmu_090",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_090__occupation",
+          "entity_id": "mllmu_090",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_090__occupation",
+          "entity_id": "mllmu_090",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_090__occupation",
+          "entity_id": "mllmu_090",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_090__occupation",
+          "entity_id": "mllmu_090",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_090__occupation",
+          "entity_id": "mllmu_090",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_090__occupation",
+          "entity_id": "mllmu_090",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_094__residence",
+          "entity_id": "mllmu_094",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_094__residence",
+          "entity_id": "mllmu_094",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_094__residence",
+          "entity_id": "mllmu_094",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_094__residence",
+          "entity_id": "mllmu_094",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_094__residence",
+          "entity_id": "mllmu_094",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_094__residence",
+          "entity_id": "mllmu_094",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_094__residence",
+          "entity_id": "mllmu_094",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_094__residence",
+          "entity_id": "mllmu_094",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_094__residence",
+          "entity_id": "mllmu_094",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_094__residence",
+          "entity_id": "mllmu_094",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_094__residence",
+          "entity_id": "mllmu_094",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_094__residence",
+          "entity_id": "mllmu_094",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_103__date_of_birth",
+          "entity_id": "mllmu_103",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_103__date_of_birth",
+          "entity_id": "mllmu_103",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_103__date_of_birth",
+          "entity_id": "mllmu_103",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_103__date_of_birth",
+          "entity_id": "mllmu_103",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_103__date_of_birth",
+          "entity_id": "mllmu_103",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_103__date_of_birth",
+          "entity_id": "mllmu_103",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_103__date_of_birth",
+          "entity_id": "mllmu_103",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_103__date_of_birth",
+          "entity_id": "mllmu_103",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_103__date_of_birth",
+          "entity_id": "mllmu_103",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_103__date_of_birth",
+          "entity_id": "mllmu_103",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_103__date_of_birth",
+          "entity_id": "mllmu_103",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_103__date_of_birth",
+          "entity_id": "mllmu_103",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_117__birthplace",
+          "entity_id": "mllmu_117",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_117__birthplace",
+          "entity_id": "mllmu_117",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_117__birthplace",
+          "entity_id": "mllmu_117",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_117__birthplace",
+          "entity_id": "mllmu_117",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_117__birthplace",
+          "entity_id": "mllmu_117",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_117__birthplace",
+          "entity_id": "mllmu_117",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_117__birthplace",
+          "entity_id": "mllmu_117",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_117__birthplace",
+          "entity_id": "mllmu_117",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_117__birthplace",
+          "entity_id": "mllmu_117",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_117__birthplace",
+          "entity_id": "mllmu_117",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_117__birthplace",
+          "entity_id": "mllmu_117",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_117__birthplace",
+          "entity_id": "mllmu_117",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_131__height",
+          "entity_id": "mllmu_131",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_131__height",
+          "entity_id": "mllmu_131",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_131__height",
+          "entity_id": "mllmu_131",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_131__height",
+          "entity_id": "mllmu_131",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_131__height",
+          "entity_id": "mllmu_131",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_131__height",
+          "entity_id": "mllmu_131",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_131__height",
+          "entity_id": "mllmu_131",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_131__height",
+          "entity_id": "mllmu_131",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_131__height",
+          "entity_id": "mllmu_131",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_131__height",
+          "entity_id": "mllmu_131",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_131__height",
+          "entity_id": "mllmu_131",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_131__height",
+          "entity_id": "mllmu_131",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_159__birthplace",
+          "entity_id": "mllmu_159",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_159__education",
+          "entity_id": "mllmu_159",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_159__salary",
+          "entity_id": "mllmu_159",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_159__birthplace",
+          "entity_id": "mllmu_159",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_159__education",
+          "entity_id": "mllmu_159",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_159__salary",
+          "entity_id": "mllmu_159",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_159__birthplace",
+          "entity_id": "mllmu_159",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_159__education",
+          "entity_id": "mllmu_159",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_159__salary",
+          "entity_id": "mllmu_159",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_159__birthplace",
+          "entity_id": "mllmu_159",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_159__education",
+          "entity_id": "mllmu_159",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_159__salary",
+          "entity_id": "mllmu_159",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_182__birthplace",
+          "entity_id": "mllmu_182",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_182__occupation",
+          "entity_id": "mllmu_182",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_182__birthplace",
+          "entity_id": "mllmu_182",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_182__occupation",
+          "entity_id": "mllmu_182",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_182__occupation",
+          "entity_id": "mllmu_182",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_182__birthplace",
+          "entity_id": "mllmu_182",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_182__occupation",
+          "entity_id": "mllmu_182",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_182__birthplace",
+          "entity_id": "mllmu_182",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_182__birthplace",
+          "entity_id": "mllmu_182",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_182__occupation",
+          "entity_id": "mllmu_182",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_182__birthplace",
+          "entity_id": "mllmu_182",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_182__occupation",
+          "entity_id": "mllmu_182",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_187__residence",
+          "entity_id": "mllmu_187",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_187__residence",
+          "entity_id": "mllmu_187",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_187__residence",
+          "entity_id": "mllmu_187",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_187__residence",
+          "entity_id": "mllmu_187",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_187__residence",
+          "entity_id": "mllmu_187",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_187__residence",
+          "entity_id": "mllmu_187",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_187__residence",
+          "entity_id": "mllmu_187",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_187__residence",
+          "entity_id": "mllmu_187",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_187__residence",
+          "entity_id": "mllmu_187",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_187__residence",
+          "entity_id": "mllmu_187",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_187__residence",
+          "entity_id": "mllmu_187",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_187__residence",
+          "entity_id": "mllmu_187",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_191__date_of_birth",
+          "entity_id": "mllmu_191",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_191__salary",
+          "entity_id": "mllmu_191",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_191__date_of_birth",
+          "entity_id": "mllmu_191",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_191__salary",
+          "entity_id": "mllmu_191",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_191__salary",
+          "entity_id": "mllmu_191",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_191__date_of_birth",
+          "entity_id": "mllmu_191",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_191__salary",
+          "entity_id": "mllmu_191",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_191__date_of_birth",
+          "entity_id": "mllmu_191",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_191__date_of_birth",
+          "entity_id": "mllmu_191",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_191__salary",
+          "entity_id": "mllmu_191",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_191__date_of_birth",
+          "entity_id": "mllmu_191",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_191__salary",
+          "entity_id": "mllmu_191",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_222__height",
+          "entity_id": "mllmu_222",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_222__height",
+          "entity_id": "mllmu_222",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_222__height",
+          "entity_id": "mllmu_222",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_222__height",
+          "entity_id": "mllmu_222",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_222__height",
+          "entity_id": "mllmu_222",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_222__height",
+          "entity_id": "mllmu_222",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_222__height",
+          "entity_id": "mllmu_222",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_222__height",
+          "entity_id": "mllmu_222",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_222__height",
+          "entity_id": "mllmu_222",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_222__height",
+          "entity_id": "mllmu_222",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_222__height",
+          "entity_id": "mllmu_222",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_222__height",
+          "entity_id": "mllmu_222",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_239__education",
+          "entity_id": "mllmu_239",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_239__education",
+          "entity_id": "mllmu_239",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_239__education",
+          "entity_id": "mllmu_239",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_239__education",
+          "entity_id": "mllmu_239",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_239__education",
+          "entity_id": "mllmu_239",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_239__education",
+          "entity_id": "mllmu_239",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_239__education",
+          "entity_id": "mllmu_239",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_239__education",
+          "entity_id": "mllmu_239",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_239__education",
+          "entity_id": "mllmu_239",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_239__education",
+          "entity_id": "mllmu_239",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_239__education",
+          "entity_id": "mllmu_239",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_239__education",
+          "entity_id": "mllmu_239",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_244__salary",
+          "entity_id": "mllmu_244",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_244__salary",
+          "entity_id": "mllmu_244",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_244__salary",
+          "entity_id": "mllmu_244",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_244__salary",
+          "entity_id": "mllmu_244",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_244__salary",
+          "entity_id": "mllmu_244",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_244__salary",
+          "entity_id": "mllmu_244",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_244__salary",
+          "entity_id": "mllmu_244",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_244__salary",
+          "entity_id": "mllmu_244",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_244__salary",
+          "entity_id": "mllmu_244",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_244__salary",
+          "entity_id": "mllmu_244",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_244__salary",
+          "entity_id": "mllmu_244",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_244__salary",
+          "entity_id": "mllmu_244",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_252__birthplace",
+          "entity_id": "mllmu_252",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_252__salary",
+          "entity_id": "mllmu_252",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_252__birthplace",
+          "entity_id": "mllmu_252",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_252__salary",
+          "entity_id": "mllmu_252",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_252__salary",
+          "entity_id": "mllmu_252",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_252__birthplace",
+          "entity_id": "mllmu_252",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_252__salary",
+          "entity_id": "mllmu_252",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_252__birthplace",
+          "entity_id": "mllmu_252",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_252__birthplace",
+          "entity_id": "mllmu_252",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_252__salary",
+          "entity_id": "mllmu_252",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_252__birthplace",
+          "entity_id": "mllmu_252",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_252__salary",
+          "entity_id": "mllmu_252",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_258__height",
+          "entity_id": "mllmu_258",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_258__height",
+          "entity_id": "mllmu_258",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_258__height",
+          "entity_id": "mllmu_258",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_258__height",
+          "entity_id": "mllmu_258",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_258__height",
+          "entity_id": "mllmu_258",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_258__height",
+          "entity_id": "mllmu_258",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_258__height",
+          "entity_id": "mllmu_258",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_258__height",
+          "entity_id": "mllmu_258",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_258__height",
+          "entity_id": "mllmu_258",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_258__height",
+          "entity_id": "mllmu_258",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_258__height",
+          "entity_id": "mllmu_258",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_258__height",
+          "entity_id": "mllmu_258",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_259__education",
+          "entity_id": "mllmu_259",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_259__education",
+          "entity_id": "mllmu_259",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_259__education",
+          "entity_id": "mllmu_259",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_259__education",
+          "entity_id": "mllmu_259",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_259__education",
+          "entity_id": "mllmu_259",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_259__education",
+          "entity_id": "mllmu_259",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_259__education",
+          "entity_id": "mllmu_259",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_259__education",
+          "entity_id": "mllmu_259",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_259__education",
+          "entity_id": "mllmu_259",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_259__education",
+          "entity_id": "mllmu_259",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_259__education",
+          "entity_id": "mllmu_259",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_259__education",
+          "entity_id": "mllmu_259",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_272__date_of_birth",
+          "entity_id": "mllmu_272",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_272__education",
+          "entity_id": "mllmu_272",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_272__date_of_birth",
+          "entity_id": "mllmu_272",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_272__education",
+          "entity_id": "mllmu_272",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_272__education",
+          "entity_id": "mllmu_272",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_272__date_of_birth",
+          "entity_id": "mllmu_272",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_272__education",
+          "entity_id": "mllmu_272",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_272__date_of_birth",
+          "entity_id": "mllmu_272",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_272__date_of_birth",
+          "entity_id": "mllmu_272",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_272__education",
+          "entity_id": "mllmu_272",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_272__date_of_birth",
+          "entity_id": "mllmu_272",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_272__education",
+          "entity_id": "mllmu_272",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_289__height",
+          "entity_id": "mllmu_289",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_289__height",
+          "entity_id": "mllmu_289",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_289__height",
+          "entity_id": "mllmu_289",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_289__height",
+          "entity_id": "mllmu_289",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_289__height",
+          "entity_id": "mllmu_289",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_289__height",
+          "entity_id": "mllmu_289",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_289__height",
+          "entity_id": "mllmu_289",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_289__height",
+          "entity_id": "mllmu_289",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_289__height",
+          "entity_id": "mllmu_289",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_289__height",
+          "entity_id": "mllmu_289",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_289__height",
+          "entity_id": "mllmu_289",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_289__height",
+          "entity_id": "mllmu_289",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_291__birthplace",
+          "entity_id": "mllmu_291",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_291__education",
+          "entity_id": "mllmu_291",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_291__birthplace",
+          "entity_id": "mllmu_291",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_291__education",
+          "entity_id": "mllmu_291",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_291__education",
+          "entity_id": "mllmu_291",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_291__birthplace",
+          "entity_id": "mllmu_291",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_291__education",
+          "entity_id": "mllmu_291",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_291__birthplace",
+          "entity_id": "mllmu_291",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_291__birthplace",
+          "entity_id": "mllmu_291",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_291__education",
+          "entity_id": "mllmu_291",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_291__birthplace",
+          "entity_id": "mllmu_291",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_291__education",
+          "entity_id": "mllmu_291",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_308__height",
+          "entity_id": "mllmu_308",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_308__height",
+          "entity_id": "mllmu_308",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_308__height",
+          "entity_id": "mllmu_308",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_308__height",
+          "entity_id": "mllmu_308",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_308__height",
+          "entity_id": "mllmu_308",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_308__height",
+          "entity_id": "mllmu_308",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_308__height",
+          "entity_id": "mllmu_308",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_308__height",
+          "entity_id": "mllmu_308",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_308__height",
+          "entity_id": "mllmu_308",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_308__height",
+          "entity_id": "mllmu_308",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_308__height",
+          "entity_id": "mllmu_308",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_308__height",
+          "entity_id": "mllmu_308",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_318__birthplace",
+          "entity_id": "mllmu_318",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_318__occupation",
+          "entity_id": "mllmu_318",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_318__salary",
+          "entity_id": "mllmu_318",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_318__birthplace",
+          "entity_id": "mllmu_318",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_318__occupation",
+          "entity_id": "mllmu_318",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_318__salary",
+          "entity_id": "mllmu_318",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_318__birthplace",
+          "entity_id": "mllmu_318",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_318__occupation",
+          "entity_id": "mllmu_318",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_318__salary",
+          "entity_id": "mllmu_318",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_318__birthplace",
+          "entity_id": "mllmu_318",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_318__occupation",
+          "entity_id": "mllmu_318",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_318__salary",
+          "entity_id": "mllmu_318",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_327__height",
+          "entity_id": "mllmu_327",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_327__salary",
+          "entity_id": "mllmu_327",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_327__height",
+          "entity_id": "mllmu_327",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_327__salary",
+          "entity_id": "mllmu_327",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_327__salary",
+          "entity_id": "mllmu_327",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_327__height",
+          "entity_id": "mllmu_327",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_327__salary",
+          "entity_id": "mllmu_327",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_327__height",
+          "entity_id": "mllmu_327",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_327__height",
+          "entity_id": "mllmu_327",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_327__salary",
+          "entity_id": "mllmu_327",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_327__height",
+          "entity_id": "mllmu_327",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_327__salary",
+          "entity_id": "mllmu_327",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_332__education",
+          "entity_id": "mllmu_332",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_332__occupation",
+          "entity_id": "mllmu_332",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_332__education",
+          "entity_id": "mllmu_332",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_332__occupation",
+          "entity_id": "mllmu_332",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_332__occupation",
+          "entity_id": "mllmu_332",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_332__education",
+          "entity_id": "mllmu_332",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_332__occupation",
+          "entity_id": "mllmu_332",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_332__education",
+          "entity_id": "mllmu_332",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_332__education",
+          "entity_id": "mllmu_332",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_332__occupation",
+          "entity_id": "mllmu_332",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_332__education",
+          "entity_id": "mllmu_332",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_332__occupation",
+          "entity_id": "mllmu_332",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_354__birthplace",
+          "entity_id": "mllmu_354",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_354__height",
+          "entity_id": "mllmu_354",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_354__occupation",
+          "entity_id": "mllmu_354",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_354__birthplace",
+          "entity_id": "mllmu_354",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_354__height",
+          "entity_id": "mllmu_354",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_354__occupation",
+          "entity_id": "mllmu_354",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_354__birthplace",
+          "entity_id": "mllmu_354",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_354__height",
+          "entity_id": "mllmu_354",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_354__occupation",
+          "entity_id": "mllmu_354",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_354__birthplace",
+          "entity_id": "mllmu_354",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_354__height",
+          "entity_id": "mllmu_354",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_354__occupation",
+          "entity_id": "mllmu_354",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_356__education",
+          "entity_id": "mllmu_356",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_356__education",
+          "entity_id": "mllmu_356",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_356__education",
+          "entity_id": "mllmu_356",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_356__education",
+          "entity_id": "mllmu_356",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_356__education",
+          "entity_id": "mllmu_356",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_356__education",
+          "entity_id": "mllmu_356",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_356__education",
+          "entity_id": "mllmu_356",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_356__education",
+          "entity_id": "mllmu_356",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_356__education",
+          "entity_id": "mllmu_356",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_356__education",
+          "entity_id": "mllmu_356",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_356__education",
+          "entity_id": "mllmu_356",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_356__education",
+          "entity_id": "mllmu_356",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_360__date_of_birth",
+          "entity_id": "mllmu_360",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_360__date_of_birth",
+          "entity_id": "mllmu_360",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_360__date_of_birth",
+          "entity_id": "mllmu_360",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_360__date_of_birth",
+          "entity_id": "mllmu_360",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_360__date_of_birth",
+          "entity_id": "mllmu_360",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_360__date_of_birth",
+          "entity_id": "mllmu_360",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_360__date_of_birth",
+          "entity_id": "mllmu_360",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_360__date_of_birth",
+          "entity_id": "mllmu_360",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_360__date_of_birth",
+          "entity_id": "mllmu_360",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_360__date_of_birth",
+          "entity_id": "mllmu_360",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_360__date_of_birth",
+          "entity_id": "mllmu_360",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_360__date_of_birth",
+          "entity_id": "mllmu_360",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_405__date_of_birth",
+          "entity_id": "mllmu_405",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_405__date_of_birth",
+          "entity_id": "mllmu_405",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_405__date_of_birth",
+          "entity_id": "mllmu_405",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_405__date_of_birth",
+          "entity_id": "mllmu_405",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_405__date_of_birth",
+          "entity_id": "mllmu_405",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_405__date_of_birth",
+          "entity_id": "mllmu_405",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_405__date_of_birth",
+          "entity_id": "mllmu_405",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_405__date_of_birth",
+          "entity_id": "mllmu_405",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_405__date_of_birth",
+          "entity_id": "mllmu_405",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_405__date_of_birth",
+          "entity_id": "mllmu_405",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_405__date_of_birth",
+          "entity_id": "mllmu_405",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_405__date_of_birth",
+          "entity_id": "mllmu_405",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_424__date_of_birth",
+          "entity_id": "mllmu_424",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_424__date_of_birth",
+          "entity_id": "mllmu_424",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_424__date_of_birth",
+          "entity_id": "mllmu_424",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_424__date_of_birth",
+          "entity_id": "mllmu_424",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_424__date_of_birth",
+          "entity_id": "mllmu_424",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_424__date_of_birth",
+          "entity_id": "mllmu_424",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_424__date_of_birth",
+          "entity_id": "mllmu_424",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_424__date_of_birth",
+          "entity_id": "mllmu_424",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_424__date_of_birth",
+          "entity_id": "mllmu_424",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_424__date_of_birth",
+          "entity_id": "mllmu_424",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_424__date_of_birth",
+          "entity_id": "mllmu_424",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_424__date_of_birth",
+          "entity_id": "mllmu_424",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_432__occupation",
+          "entity_id": "mllmu_432",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_432__occupation",
+          "entity_id": "mllmu_432",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_432__occupation",
+          "entity_id": "mllmu_432",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_432__occupation",
+          "entity_id": "mllmu_432",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_432__occupation",
+          "entity_id": "mllmu_432",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_432__occupation",
+          "entity_id": "mllmu_432",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_432__occupation",
+          "entity_id": "mllmu_432",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_432__occupation",
+          "entity_id": "mllmu_432",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_432__occupation",
+          "entity_id": "mllmu_432",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_432__occupation",
+          "entity_id": "mllmu_432",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_432__occupation",
+          "entity_id": "mllmu_432",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_432__occupation",
+          "entity_id": "mllmu_432",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_435__occupation",
+          "entity_id": "mllmu_435",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_435__occupation",
+          "entity_id": "mllmu_435",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_435__occupation",
+          "entity_id": "mllmu_435",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_435__occupation",
+          "entity_id": "mllmu_435",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_435__occupation",
+          "entity_id": "mllmu_435",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_435__occupation",
+          "entity_id": "mllmu_435",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_435__occupation",
+          "entity_id": "mllmu_435",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_435__occupation",
+          "entity_id": "mllmu_435",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_435__occupation",
+          "entity_id": "mllmu_435",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_435__occupation",
+          "entity_id": "mllmu_435",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_435__occupation",
+          "entity_id": "mllmu_435",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_435__occupation",
+          "entity_id": "mllmu_435",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_437__date_of_birth",
+          "entity_id": "mllmu_437",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_437__height",
+          "entity_id": "mllmu_437",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_437__date_of_birth",
+          "entity_id": "mllmu_437",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_437__height",
+          "entity_id": "mllmu_437",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_437__height",
+          "entity_id": "mllmu_437",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_437__date_of_birth",
+          "entity_id": "mllmu_437",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_437__height",
+          "entity_id": "mllmu_437",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_437__date_of_birth",
+          "entity_id": "mllmu_437",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_437__date_of_birth",
+          "entity_id": "mllmu_437",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_437__height",
+          "entity_id": "mllmu_437",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_437__date_of_birth",
+          "entity_id": "mllmu_437",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_437__height",
+          "entity_id": "mllmu_437",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_438__residence",
+          "entity_id": "mllmu_438",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_438__residence",
+          "entity_id": "mllmu_438",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_438__residence",
+          "entity_id": "mllmu_438",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_438__residence",
+          "entity_id": "mllmu_438",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_438__residence",
+          "entity_id": "mllmu_438",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_438__residence",
+          "entity_id": "mllmu_438",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_438__residence",
+          "entity_id": "mllmu_438",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_438__residence",
+          "entity_id": "mllmu_438",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_438__residence",
+          "entity_id": "mllmu_438",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_438__residence",
+          "entity_id": "mllmu_438",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_438__residence",
+          "entity_id": "mllmu_438",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_438__residence",
+          "entity_id": "mllmu_438",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_442__residence",
+          "entity_id": "mllmu_442",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_442__residence",
+          "entity_id": "mllmu_442",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_442__residence",
+          "entity_id": "mllmu_442",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_442__residence",
+          "entity_id": "mllmu_442",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_442__residence",
+          "entity_id": "mllmu_442",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_442__residence",
+          "entity_id": "mllmu_442",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_442__residence",
+          "entity_id": "mllmu_442",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_442__residence",
+          "entity_id": "mllmu_442",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_442__residence",
+          "entity_id": "mllmu_442",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_442__residence",
+          "entity_id": "mllmu_442",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_442__residence",
+          "entity_id": "mllmu_442",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_442__residence",
+          "entity_id": "mllmu_442",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_462__residence",
+          "entity_id": "mllmu_462",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_462__salary",
+          "entity_id": "mllmu_462",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_462__residence",
+          "entity_id": "mllmu_462",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_462__salary",
+          "entity_id": "mllmu_462",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_462__salary",
+          "entity_id": "mllmu_462",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_462__residence",
+          "entity_id": "mllmu_462",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_462__salary",
+          "entity_id": "mllmu_462",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_462__residence",
+          "entity_id": "mllmu_462",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_462__residence",
+          "entity_id": "mllmu_462",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_462__salary",
+          "entity_id": "mllmu_462",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_462__residence",
+          "entity_id": "mllmu_462",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_462__salary",
+          "entity_id": "mllmu_462",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_465__residence",
+          "entity_id": "mllmu_465",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_465__salary",
+          "entity_id": "mllmu_465",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_465__residence",
+          "entity_id": "mllmu_465",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_465__salary",
+          "entity_id": "mllmu_465",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_465__salary",
+          "entity_id": "mllmu_465",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_465__residence",
+          "entity_id": "mllmu_465",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_465__salary",
+          "entity_id": "mllmu_465",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_465__residence",
+          "entity_id": "mllmu_465",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_465__residence",
+          "entity_id": "mllmu_465",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_465__salary",
+          "entity_id": "mllmu_465",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_465__residence",
+          "entity_id": "mllmu_465",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_465__salary",
+          "entity_id": "mllmu_465",
+          "family_index": 2,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_481__date_of_birth",
+          "entity_id": "mllmu_481",
+          "family_index": 0,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_481__date_of_birth",
+          "entity_id": "mllmu_481",
+          "family_index": 0,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_481__date_of_birth",
+          "entity_id": "mllmu_481",
+          "family_index": 0,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_481__date_of_birth",
+          "entity_id": "mllmu_481",
+          "family_index": 0,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_481__date_of_birth",
+          "entity_id": "mllmu_481",
+          "family_index": 1,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_481__date_of_birth",
+          "entity_id": "mllmu_481",
+          "family_index": 1,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_481__date_of_birth",
+          "entity_id": "mllmu_481",
+          "family_index": 1,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_481__date_of_birth",
+          "entity_id": "mllmu_481",
+          "family_index": 1,
+          "template_index": 3
+        },
+        {
+          "association_id": "mllmu_481__date_of_birth",
+          "entity_id": "mllmu_481",
+          "family_index": 2,
+          "template_index": 0
+        },
+        {
+          "association_id": "mllmu_481__date_of_birth",
+          "entity_id": "mllmu_481",
+          "family_index": 2,
+          "template_index": 1
+        },
+        {
+          "association_id": "mllmu_481__date_of_birth",
+          "entity_id": "mllmu_481",
+          "family_index": 2,
+          "template_index": 2
+        },
+        {
+          "association_id": "mllmu_481__date_of_birth",
+          "entity_id": "mllmu_481",
+          "family_index": 2,
+          "template_index": 3
+        }
+      ],
+      "rows_allocated": 504,
+      "rule": "probe (family f, template j) on entity e asks A_e[(j + f) mod |A_e|], where A_e is e's target-association list sorted by association_id, f is the index of the wording family in CONFIRM_WORDING_FAMILIES (0..2) and j is the new template index (0..3); an entity with one target association asks it on all 12 probes, which is forced and not a choice",
+      "size_one_is_forced_not_chosen": "a person with one target association asks it on all 12 probes; there is no alternative to choose between",
+      "target_associations_per_person": {
+        "1": 27,
+        "2": 12,
+        "3": 3
+      },
+      "target_associations_read_from": "manifest.json target_association_ids joined to associations.parquet, grouped by entity_id",
+      "unbalanced_sizes": [],
+      "what_it_decides": "which target fact each new-wording probe asks, and so how much within-entity weight each fact carries in the entity-macro statistic the primary claims are defined on",
+      "why_balance_is_reported_per_size": "a single flag quantified over the sizes that divide the probe count is vacuously true when none of them does, and that is the case where the allocation is uneven; the per-size shapes below are the measurement and the two lists are its verdict"
+    },
+    "why_both_rules_are_frozen_before_the_split_is_built": "each decides which FACT a probe asks, so each changes what the entity-macro statistic averages; a builder that chose them would be choosing the estimand"
+  },
+  "protocol_amendments": {
+    "amendments": [
+      {
+        "amending_freeze": {
+          "commit": "977319a",
+          "contained_the_rule": true,
+          "frozen_at_utc": "2026-09-07T07:06:58+00:00"
+        },
+        "confirmation_dataset_dir": "data/mllmu_hier_confirm100",
+        "confirmation_prediction_files": 0,
+        "if_literal_pre_fetch_preregistration_is_required": "this pool has to be discarded and a fresh one drawn under an independent seed, with the rule frozen first; the rule as written does not depend on the pool it is applied to, so re-drawing costs a fetch and not a redesign",
+        "kind": "outcome-blind protocol amendment",
+        "ordering": {
+          "every_ordering_claim_is_measured": true,
+          "measured_from": [
+            "git show 726288c:data/reports/mllmu_pilot100_confirmation_freeze.json -> frozen_at_utc",
+            "data/raw/inaturalist/confirm_v1/PROVENANCE.json -> retrieved_at",
+            "git show 977319a:data/reports/mllmu_pilot100_confirmation_freeze.json -> frozen_at_utc",
+            "data/reports/mllmu_confirm100_photograph_selection.json -> generated_utc",
+            "data/mllmu_hier_confirm100/predictions/ -> absent"
+          ],
+          "rule_was_absent_when_the_pool_was_fetched": true,
+          "rule_was_published_after_the_pool": true,
+          "rule_was_published_before_any_model_output": true,
+          "rule_was_published_before_the_subset_was_selected": true
+        },
+        "pool_acquired_at_utc": "2026-09-07T05:42:36.393947+00:00",
+        "prior_freeze": {
+          "commit": "726288c",
+          "contained_the_rule": false,
+          "frozen_at_utc": "2026-09-07T05:07:46+00:00"
+        },
+        "subset_selected_at_utc": "2026-09-07T11:17:31.360125+00:00",
+        "the_defensible_claim": "the rule was fixed after acquisition exposed the nesting defect, but before subset selection and before any model scoring; no model output existed that could have informed it, so retaining this pool is sound PROVIDED this amendment is disclosed as outcome-blind rather than presented as pre-fetch preregistration",
+        "what": "the photograph selection rule (PHOTO_SELECTION_RULE)",
+        "what_was_available_when_the_rule_was_written": [
+          "the 720 fetched photographs and their sha256 values",
+          "the measured overlap with the 496 exploratory photographs"
+        ],
+        "what_was_not_available": [
+          "which 12 of the 24 any species would keep",
+          "any confirmation query, template or prompt",
+          "any B3, B0 or M_G prediction"
+        ],
+        "why_it_was_needed": "the 11C-2 justification for novelty - that drawing 24 and taking 12 makes the second 12 new BY CONSTRUCTION - is false, and the fetched pool is what made that measurable; without a stated rule, 'which 12 of these 24' would have been decided after seeing the pool"
+      }
+    ],
+    "retracted_claim": "an earlier revision of this analysis and its commit message stated the rule was 'sealed BEFORE the fetch was run'. It was not: the timestamps above are the repository's own and they say the opposite. The claim is retracted here rather than left in the prose, because a preregistration whose timeline is misstated is worse than one that is honestly amended"
   },
   "retention_claim_decision": {
     "binding_argument": "The batch-layout noise floor on the retain metrics is 0.0556, measured by scoring ONE checkpoint under two batch layouts, and it already exceeds the declared 0.05 margin. That bound does not depend on any cluster count, so it holds before precision is even considered; precision at each claim's own ceiling is the second and weaker of the two.",

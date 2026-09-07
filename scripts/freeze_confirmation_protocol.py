@@ -113,6 +113,7 @@ from power_analysis_confirmation import (  # noqa: E402
     CONFIRM_FETCH_SEED,
     CONFIRM_FETCH_TAG,
     CONFIRM_NEW_PHOTOS_PER_SPECIES,
+    CONFIRM_NEW_TEMPLATES_PER_FAMILY,
     CONFIRM_NEW_WORDING_PROBES_PER_PERSON,
     CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY,
     CONFIRM_RETENTION_ROUTE,
@@ -126,7 +127,11 @@ from power_analysis_confirmation import (  # noqa: E402
     PRIMARY_ESTIMAND,
     PRIMARY_ESTIMAND_STRATA,
     PRIMARY_FAMILY,
+    RETENTION_ESTIMAND_LABEL,
+    RETENTION_SAMPLING_RULE,
+    RETENTION_SAMPLING_SALTS,
     STRATUM_ESTIMAND_STATUS,
+    TARGET_ASSOCIATION_ALLOCATION_RULE,
     WHAT_THE_CONFIRMATION_DOES_NOT_ESTABLISH,
     z,
 )
@@ -533,8 +538,15 @@ def _photo_selection_refusals(power: dict[str, Any],
     """Refuse to freeze a photograph-novelty rule that cannot be executed.
 
     Iteration 11C stage 3.  The confirmation keeps 12 of the 24 photographs
-    each species draws, and "which 12" is a choice -- so it has to be frozen
-    before the fetch runs, not made afterwards over the pool that came back.
+    each species draws, and "which 12" is a choice -- so it has to be stated
+    as a rule rather than left to whoever holds the pool.
+
+    It is an OUTCOME-BLIND AMENDMENT, not a pre-fetch preregistration, and
+    this function refuses the freeze unless the report says so: the
+    repository's own timestamps show the pool was acquired before the rule
+    existed.  What the rule was fixed before is the subset selection and every
+    model output, which is what makes retaining the pool defensible.  A freeze
+    that presented this as preregistered would be the less honest artifact.
 
     An earlier revision specified it positionally: the seeded shuffle was
     claimed to nest, making the last 12 of the longer draw new BY
@@ -747,6 +759,225 @@ def _portrait_exemption_refusals(power: dict[str, Any],
     return out
 
 
+def _probe_allocation_refusals(power: dict[str, Any]) -> list[str]:
+    """Refuse to freeze an allocation whose balance was asserted, not measured.
+
+    Iteration 11C stage 3.  Two rules decide which FACT each probe asks, and
+    both change what the entity-macro statistic averages, so both belong in
+    the freeze and not in whichever script builds the split.
+
+    The first replaces an unstated choice: 27 of the 42 target persons carry
+    one target association, 12 carry two and 3 carry three, so "12 wording
+    probes per person" says nothing about how much weight each fact gets.
+    ``A[(j + f) mod |A|]`` is balanced whenever ``|A|`` divides 12, and that
+    balance is COMPUTED over the real distribution rather than claimed.
+
+    The second replaces a rule that was proposed and is measurably wrong.
+    Taking three retained facts in sorted association-id order selects no
+    salary facts at all, one residence fact and six occupation facts, because
+    the ids sort alphabetically by attribute and 64 of the 70 entities carry
+    4-7 facts.  A hash rank over a domain-separated salt is deterministic and
+    reproducible but carries no information about the facts it selects, so it
+    covers every attribute the exploratory population has.
+    """
+    out: list[str] = []
+    pa = power.get("probe_allocation") or {}
+    if not pa:
+        return [
+            "the power report carries no probe_allocation block, so which "
+            "fact each probe asks would be decided by the stage-3 builder "
+            "rather than by this freeze"]
+    t = pa.get("target_associations") or {}
+    ret = pa.get("retention") or {}
+
+    # ---- the rules are the module's, not a paraphrase of them ----
+    if t.get("rule") != TARGET_ASSOCIATION_ALLOCATION_RULE:
+        out.append(
+            "the power report's target-association rule is not the module's "
+            "TARGET_ASSOCIATION_ALLOCATION_RULE, so the freeze would bind a "
+            "wording nothing executes")
+    if ret.get("rule") != RETENTION_SAMPLING_RULE:
+        out.append(
+            "the power report's retention rule is not the module's "
+            "RETENTION_SAMPLING_RULE")
+    if ret.get("salts") != dict(sorted(RETENTION_SAMPLING_SALTS.items())):
+        out.append(
+            "the retention salts in the power report are not the module's "
+            "RETENTION_SAMPLING_SALTS; the rank is a function of the salt, so "
+            "a different salt is a different sample")
+    if len(set(RETENTION_SAMPLING_SALTS.values())) != \
+            len(RETENTION_SAMPLING_SALTS):
+        out.append(
+            "the retention salts are not domain-separated, so one family's "
+            "ranking would be a deterministic function of the other's")
+    if ret.get("estimates") != RETENTION_ESTIMAND_LABEL:
+        out.append(
+            f"the retention estimand is labelled {ret.get('estimates')!r} "
+            f"rather than {RETENTION_ESTIMAND_LABEL!r}; the label is what "
+            "stops this rate being quoted against the 11R one")
+
+    # ---- the balance is measured over the real distribution ----
+    if t.get("allocation_is_balanced_for_every_observed_size") is not True:
+        out.append(
+            f"the target-association allocation is uneven for association-"
+            f"list size(s) {t.get('unbalanced_sizes')}, so some facts of a "
+            "multi-fact person would carry more within-entity weight than "
+            "others")
+    if t.get("every_observed_size_divides_the_probe_count") is not True:
+        out.append(
+            "some observed target-association count does not divide the "
+            f"{CONFIRM_WORDING_FAMILIES * CONFIRM_NEW_TEMPLATES_PER_FAMILY} "
+            "probes per person, so exact balance is not attainable and the "
+            "balance claim would be resting on a size the data does not have")
+    if not t.get("balanced_sizes"):
+        out.append(
+            "no association-list size is reported as balanced, so the "
+            "balance the rule is chosen for is not observed anywhere in the "
+            "data it is applied to")
+    probes_per_person = CONFIRM_WORDING_FAMILIES * \
+        CONFIRM_NEW_TEMPLATES_PER_FAMILY
+    if t.get("probes_per_person") != probes_per_person:
+        out.append(
+            f"the allocation gives each person {t.get('probes_per_person')} "
+            f"wording probes where the frozen size says "
+            f"{probes_per_person}")
+    want_rows = (t.get("persons") or 0) * probes_per_person
+    if t.get("rows_allocated") != want_rows:
+        out.append(
+            f"the target allocation has {t.get('rows_allocated')} rows where "
+            f"{t.get('persons')} persons x {probes_per_person} probes is "
+            f"{want_rows}")
+
+    # ---- retention rows, and the evidence that rejects sorted order ----
+    same = ret.get("retain_same") or {}
+    other = ret.get("retain_other") or {}
+    m = CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY
+    if same.get("rows") != (same.get("entities") or 0) * m:
+        out.append(
+            f"retain_same allocates {same.get('rows')} rows over "
+            f"{same.get('entities')} entities where {m} per entity is "
+            f"{(same.get('entities') or 0) * m}")
+    if other.get("rows") != (other.get("donor_entities") or 0) * m:
+        out.append(
+            f"retain_other allocates {other.get('rows')} rows over "
+            f"{other.get('donor_entities')} donor entities where {m} per "
+            f"entity is {(other.get('donor_entities') or 0) * m}")
+    mix = ret.get("attribute_mix_over_retain_same_probes") or {}
+    if mix.get("attributes_this_rule_covers") != \
+            mix.get("attributes_in_the_population"):
+        out.append(
+            f"the hash-sampled retention allocation covers "
+            f"{mix.get('attributes_this_rule_covers')} attributes where the "
+            f"exploratory retained population has "
+            f"{mix.get('attributes_in_the_population')}, so some attribute "
+            "would never be asked about")
+    if not mix.get("attributes_the_rejected_rule_would_have_excluded"):
+        out.append(
+            "the report does not record what sorted order would have "
+            "excluded, so the rejection of that rule rests on nothing "
+            "measured")
+    rejected = mix.get("rejected_sorted_first_three") or {}
+    if rejected.get("salary"):
+        out.append(
+            "the rejected sorted allocation is recorded as containing "
+            f"{rejected.get('salary')} salary facts, which is not what "
+            "sorting these association ids does; the evidence has been "
+            "recomputed into something that no longer rejects the rule")
+
+    # ---- the whole thing reconciles with the frozen probe budget ----
+    total = (t.get("rows_allocated") or 0) + (same.get("rows") or 0) \
+        + (other.get("rows") or 0)
+    if pa.get("rows_total") != total:
+        out.append(
+            f"probe_allocation.rows_total is {pa.get('rows_total')} but its "
+            f"own three allocations sum to {total}")
+    photos = (pa.get("photograph_probes_are_not_allocated_here") or {}).get(
+        "count")
+    if photos is None or pa.get("confirmation_probes_total") != total + photos:
+        out.append(
+            f"confirmation_probes_total is "
+            f"{pa.get('confirmation_probes_total')} where "
+            f"{total} allocated rows plus {photos} photograph probes is "
+            f"{(total or 0) + (photos or 0)}")
+    #: The photograph probes are not allocated by these rules, but their count
+    #: is frozen elsewhere in the same report, and two budgets for one thing
+    #: is how a total quietly becomes two totals.
+    frozen_photos = ((power.get("confirmation_size") or {}).get(
+        "held_out_photographs") or {}).get("new_photographs_total")
+    if photos != frozen_photos:
+        out.append(
+            f"the allocation states {photos} photograph probes while the "
+            f"frozen held-out-photograph budget states {frozen_photos}; the "
+            "two must be one number")
+    return out
+
+
+def _protocol_amendment_refusals(power: dict[str, Any]) -> list[str]:
+    """Refuse to freeze an amendment that does not disclose when it happened.
+
+    The photograph-selection rule was NOT preregistered before the fetch: the
+    repository's own timestamps show the pool was acquired first, and the rule
+    was written once the pool made the nesting defect it replaces measurable.
+    That is defensible -- no model output existed, so nothing about the rule
+    could have been shaped by a result -- but only if the freeze says so.
+    Presenting an amended protocol as a preregistered one is a worse artifact
+    than an honestly amended one, so a freeze that omits the disclosure is
+    refused rather than merely weakened.
+    """
+    out: list[str] = []
+    block = power.get("protocol_amendments") or {}
+    amendments = block.get("amendments") or []
+    if len(amendments) != 1:
+        out.append(
+            f"the power report discloses {len(amendments)} protocol "
+            "amendments where exactly one is expected (the photograph "
+            "selection rule); an amendment list that can silently grow is "
+            "not a disclosure")
+        return out
+    a = amendments[0]
+    if "PHOTO_SELECTION_RULE" not in (a.get("what") or ""):
+        out.append(
+            f"the disclosed amendment is {a.get('what')!r}, which does not "
+            "name the photograph selection rule it is about")
+    if a.get("kind") != "outcome-blind protocol amendment":
+        out.append(
+            f"the amendment is labelled {a.get('kind')!r} rather than "
+            "'outcome-blind protocol amendment', which is the only label the "
+            "timestamps support")
+    ordering = a.get("ordering") or {}
+    for key in ("rule_was_absent_when_the_pool_was_fetched",
+                "rule_was_published_after_the_pool",
+                "rule_was_published_before_the_subset_was_selected",
+                "rule_was_published_before_any_model_output",
+                "every_ordering_claim_is_measured"):
+        if ordering.get(key) is not True:
+            out.append(
+                f"the amendment's ordering claim {key!r} is "
+                f"{ordering.get(key)!r}; the amendment is only defensible if "
+                "every one of them holds")
+    prior = a.get("prior_freeze") or {}
+    amending = a.get("amending_freeze") or {}
+    if prior.get("contained_the_rule") is not False:
+        out.append(
+            "the disclosure says the prior freeze contained the rule, which "
+            "contradicts its own claim that the rule is an amendment")
+    if amending.get("contained_the_rule") is not True:
+        out.append(
+            "the disclosure does not record the rule as present in the "
+            "amending freeze")
+    if a.get("confirmation_prediction_files"):
+        out.append(
+            f"{a.get('confirmation_prediction_files')} confirmation "
+            "prediction file(s) already exist, so the amendment is no longer "
+            "outcome-blind and this freeze cannot claim it is")
+    if not (block.get("retracted_claim") or ""):
+        out.append(
+            "the report does not retract the earlier claim that the rule was "
+            "sealed before the fetch; leaving a false timeline in the prose "
+            "beside a true one is worse than either alone")
+    return out
+
+
 def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
     reports = repo_root / "data" / "reports"
     data_dir = repo_root / "data" / f"mllmu_hier_{tag}"
@@ -802,6 +1033,8 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
     refusals.extend(_fetch_role_refusals(power))
     refusals.extend(_photo_selection_refusals(power, repo_root))
     refusals.extend(_portrait_exemption_refusals(power, repo_root))
+    refusals.extend(_probe_allocation_refusals(power))
+    refusals.extend(_protocol_amendment_refusals(power))
 
     # The estimand and the selected size are checked against the module
     # rather than copied from it, because a freeze that restated them would
@@ -853,6 +1086,32 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
     n_portraits = portraits.get("count", 0)
     n_gate_saw = portrait_block.get(
         "portraits_the_exploratory_gate_exercised", 0)
+    #: Which FACT each probe asks.  Read out of the power report rather than
+    #: recomputed here, and refused if the balance it claims was not measured:
+    #: see ``_probe_allocation_refusals``.
+    alloc_block = power.get("probe_allocation") or {}
+    target_alloc = alloc_block.get("target_associations") or {}
+    retention_sample = alloc_block.get("retention") or {}
+    alloc_mix = retention_sample.get(
+        "attribute_mix_over_retain_same_probes") or {}
+    amendment_block = power.get("protocol_amendments") or {}
+    amendment = (amendment_block.get("amendments") or [{}])[0]
+    #: The allocation rows are bound by hash rather than copied into the
+    #: freeze, so the freeze stays readable and the rows stay checkable: a
+    #: builder that allocated differently would not match the hash.
+    def _rows_sha(rows: Any) -> str | None:
+        if not rows:
+            return None
+        return hashlib.sha256(json.dumps(
+            rows, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+
+    alloc_row_hashes = {
+        "target_association_rows": _rows_sha(target_alloc.get("rows")),
+        "retain_same_rows": _rows_sha(retention_sample.get("rows_retain_same")),
+        "retain_other_rows":
+            _rows_sha(retention_sample.get("rows_retain_other")),
+    }
     for label, value in (
             ("target_association_ids_sha256", target_assoc_sha),
             ("target_entity_ids_sha256", target_entity_sha),
@@ -1427,6 +1686,108 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
                 "without a re-freeze, and the cost is recorded rather than "
                 "argued away: the gate scored all 42."),
         },
+        "probe_allocation": {
+            "target_association_rule": TARGET_ASSOCIATION_ALLOCATION_RULE,
+            "retention_sampling_rule": RETENTION_SAMPLING_RULE,
+            "retention_sampling_salts": dict(
+                sorted(RETENTION_SAMPLING_SALTS.items())),
+            "retention_estimand_label": RETENTION_ESTIMAND_LABEL,
+            "persons": target_alloc.get("persons"),
+            "target_associations_per_person":
+                target_alloc.get("target_associations_per_person"),
+            "probes_per_person": target_alloc.get("probes_per_person"),
+            "probes_per_association_given_its_size":
+                target_alloc.get("probes_per_association_given_its_size"),
+            "balanced_sizes": target_alloc.get("balanced_sizes"),
+            "unbalanced_sizes": target_alloc.get("unbalanced_sizes"),
+            "every_observed_size_divides_the_probe_count":
+                target_alloc.get(
+                    "every_observed_size_divides_the_probe_count"),
+            "allocation_is_balanced_for_every_observed_size":
+                target_alloc.get(
+                    "allocation_is_balanced_for_every_observed_size"),
+            "why_balance_is_reported_per_size":
+                target_alloc.get("why_balance_is_reported_per_size"),
+            "retain_same_entities":
+                (retention_sample.get("retain_same") or {}).get("entities"),
+            "retain_same_rows":
+                (retention_sample.get("retain_same") or {}).get("rows"),
+            "retain_other_donor_entities":
+                (retention_sample.get("retain_other") or {}).get(
+                    "donor_entities"),
+            "retain_other_rows":
+                (retention_sample.get("retain_other") or {}).get("rows"),
+            "entities_that_cycle_because_they_have_fewer_candidates": {
+                "retain_same": (retention_sample.get("retain_same") or {}).get(
+                    "entities_that_cycle_because_they_have_fewer"),
+                "retain_other":
+                    (retention_sample.get("retain_other") or {}).get(
+                        "donors_that_cycle_because_they_have_fewer"),
+            },
+            "attribute_mix_over_retain_same_probes": {
+                "this_rule": alloc_mix.get("this_rule"),
+                "rejected_sorted_first_three":
+                    alloc_mix.get("rejected_sorted_first_three"),
+                "attributes_the_rejected_rule_would_have_excluded":
+                    alloc_mix.get(
+                        "attributes_the_rejected_rule_would_have_excluded"),
+                "attributes_this_rule_covers":
+                    alloc_mix.get("attributes_this_rule_covers"),
+                "attributes_in_the_population":
+                    alloc_mix.get("attributes_in_the_population"),
+                "cycling_inflates_single_fact_entities":
+                    alloc_mix.get("cycling_inflates_single_fact_entities"),
+            },
+            "row_hashes": alloc_row_hashes,
+            "rows_bound_by_hash_and_not_copied": (
+                "the allocation rows live in the power report bound above; "
+                "only their hashes are here, so the freeze stays readable and "
+                "a builder that allocated differently fails the hash rather "
+                "than silently disagreeing with prose"),
+            "rows_total": alloc_block.get("rows_total"),
+            "photograph_probes":
+                (alloc_block.get(
+                    "photograph_probes_are_not_allocated_here") or {}).get(
+                    "count"),
+            "confirmation_probes_total":
+                alloc_block.get("confirmation_probes_total"),
+            "why_this_is_in_the_freeze": (
+                "Both rules decide which FACT a probe asks, and the primary "
+                "statistic averages over ENTITIES, so an entity whose probes "
+                "all ask one association reports that association's fate as "
+                "the entity's. Leaving either to the stage-3 builder would "
+                "leave the estimand to it. The retention rule also carries "
+                "the measurement that rejects the obvious alternative: "
+                "association ids sort alphabetically by attribute, so three "
+                "in sorted order would have asked no salary fact at all, one "
+                "residence fact and six occupation facts."),
+        },
+        "protocol_amendment": {
+            "what": amendment.get("what"),
+            "kind": amendment.get("kind"),
+            "prior_freeze": amendment.get("prior_freeze"),
+            "pool_acquired_at_utc": amendment.get("pool_acquired_at_utc"),
+            "amending_freeze": amendment.get("amending_freeze"),
+            "subset_selected_at_utc": amendment.get("subset_selected_at_utc"),
+            "confirmation_prediction_files":
+                amendment.get("confirmation_prediction_files"),
+            "ordering": amendment.get("ordering"),
+            "the_defensible_claim": amendment.get("the_defensible_claim"),
+            "what_was_not_available": amendment.get("what_was_not_available"),
+            "if_literal_pre_fetch_preregistration_is_required":
+                amendment.get(
+                    "if_literal_pre_fetch_preregistration_is_required"),
+            "retracted_claim": amendment_block.get("retracted_claim"),
+            "why_this_is_in_the_freeze": (
+                "A preregistration amended after the fact is still usable, but "
+                "only if it says when. The photograph-selection rule was NOT "
+                "sealed before the fetch, and an earlier revision of this "
+                "repository said it was. The freeze records the ordering as "
+                "measured from artifacts -- two committed freezes, the pool's "
+                "own provenance and the selection report -- and refuses to "
+                "freeze if any of it stops holding, so the disclosure cannot "
+                "quietly become a claim of preregistration."),
+        },
         "claims": {
             "primary_family": list(PRIMARY_FAMILY),
             "primary_estimand": PRIMARY_ESTIMAND,
@@ -1814,6 +2175,30 @@ def main() -> int:
     print(f"  portraits    {pb['exempted']} target-person portraits may "
           f"repeat (set sha256 {str(pb['set_sha256'])[:16]}); the gate saw "
           f"{pb['the_exploratory_gate_exercised']} of them, disclosed")
+    alloc = freeze["probe_allocation"]
+    print(f"  which fact   {alloc['target_associations_per_person']} target "
+          f"associations per person -> "
+          f"{alloc['probes_per_association_given_its_size']} probes each; "
+          f"retention {alloc['retain_same_rows']}+{alloc['retain_other_rows']}"
+          f" rows hash-sampled")
+    print(f"  alloc rows   {alloc['rows_total']} rows allocated by the two "
+          f"rules + {alloc['photograph_probes']} photograph probes = "
+          f"{alloc['confirmation_probes_total']} in all; row hashes "
+          f"{ {k: str(v)[:12] for k, v in alloc['row_hashes'].items()} }")
+    mix = alloc["attribute_mix_over_retain_same_probes"]
+    print(f"  sorted order would have excluded "
+          f"{mix['attributes_the_rejected_rule_would_have_excluded']} and "
+          f"kept {mix['attributes_this_rule_covers']} of "
+          f"{mix['attributes_in_the_population']} attributes; the hash rank "
+          f"keeps all {mix['attributes_this_rule_covers']}")
+    am = freeze["protocol_amendment"]
+    print(f"  amendment    {am['kind']}: {am['what']}")
+    print(f"               pool {str(am['pool_acquired_at_utc'])[:19]}Z, "
+          f"rule {str((am['amending_freeze'] or {}).get('frozen_at_utc'))[:19]}"
+          f"Z, subset {str(am['subset_selected_at_utc'])[:19]}Z, "
+          f"{am['confirmation_prediction_files']} prediction file(s) -> "
+          f"outcome-blind: "
+          f"{(am['ordering'] or {}).get('every_ordering_claim_is_measured')}")
     return 0
 
 

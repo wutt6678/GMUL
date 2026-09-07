@@ -322,10 +322,16 @@ CONFIRM_FETCH_SEED = 42
 #: exploratory run actually saw.
 EXPLORATORY_IMAGE_MANIFEST = "data/mllmu_hier_pilot100/image_manifest.json"
 #: HOW the 12 new photographs per species are chosen out of the 24 drawn.
-#: Frozen before the fetch runs, because "which 12 of these 24" is a choice,
-#: and a choice made after seeing the pool is one the protocol never
-#: specified.  It is a hash rule and not a positional one for the two measured
-#: reasons recorded under
+#: This rule is an OUTCOME-BLIND PROTOCOL AMENDMENT and not a pre-fetch
+#: preregistration.  The repository history shows the fetch completed before
+#: the rule existed; the rule was written once the fetched pool made the
+#: nesting defect it replaces measurable.  What it was fixed BEFORE is subset
+#: selection and every model output, so no result could have shaped it.  See
+#: ``protocol_amendments`` for the timestamps and for what a literal pre-fetch
+#: preregistration would have required instead.
+#:
+#: It is a hash rule and not a positional one for the two measured reasons
+#: recorded under
 #: ``new_photograph_supply.seeded_refetch.draw_nesting_is_not_relied_on``.
 PHOTO_SELECTION_RULE = (
     "of the 24 photographs the fetch accepts for a species, take the "
@@ -334,6 +340,73 @@ PHOTO_SELECTION_RULE = (
     "(observation_id, photo_id) order; refuse the species rather than "
     f"substitute if fewer than {CONFIRM_NEW_PHOTOS_PER_SPECIES} are "
     "disjoint")
+
+#: Which of a person's target associations each of their 12 new-wording probes
+#: asks.  27 of the 42 target persons carry one target association, 12 carry
+#: two and 3 carry three, so the rule is a choice about how much within-entity
+#: weight each retained-or-unlearned FACT gets in the entity-macro statistic --
+#: and the statistic averages over ENTITIES, so an entity whose probes all ask
+#: one association reports that association's fate, not the entity's.
+#:
+#: A is the entity's sorted target-association list, f is the family index
+#: 0..2 (the three wording families in the frozen order) and j is the template
+#: index 0..3.  Adding f to the offset makes the walk advance by one for each
+#: family as well as each template, which is what turns 12 probes into exact
+#: balance: 6/6 across two associations and 4/4/4 across three, so no
+#: association of a multi-fact entity is asked more often than another.
+TARGET_ASSOCIATION_ALLOCATION_RULE = (
+    "probe (family f, template j) on entity e asks "
+    "A_e[(j + f) mod |A_e|], where A_e is e's target-association list sorted "
+    "by association_id, f is the index of the wording family in "
+    "CONFIRM_WORDING_FAMILIES (0..2) and j is the new template index (0..3); "
+    "an entity with one target association asks it on all 12 probes, which is "
+    "forced and not a choice")
+
+#: Retention probes are 3 per entity, but 64 of the 70 retain_same entities
+#: carry 4-7 retained facts, so 3 cannot cover them and WHICH 3 is a choice.
+#: Taking them in sorted order is severely biased: association ids sort
+#: alphabetically by attribute, so the first three are almost always
+#: birthplace, date_of_birth and education, and the allocation would contain
+#: no salary facts at all, one residence fact and six occupation facts.  A
+#: hash rank is used instead, so the choice is deterministic and reproducible
+#: but carries no information about the facts it selects.
+RETENTION_SAMPLING_SALTS = {
+    "retain_same_entity": "granunlearn/11C/confirm100/retain_same_entity",
+    "retain_other_entity": "granunlearn/11C/confirm100/retain_other_entity",
+}
+RETENTION_SAMPLING_RULE = (
+    "rank each entity's candidate facts by "
+    "sha256(salt + 0x00 + entity_id + 0x00 + item) ascending, tie-broken by "
+    "the item itself, and take the first 3 without replacement, cycling back "
+    "to the top only when the entity has fewer than 3; the item is the "
+    "association_id for retain_same_entity and "
+    "donor_association_id + '|' + target_association_id for "
+    "retain_other_entity, and each family has its own salt")
+#: What the retention rate therefore estimates.  It is NOT the 11R quantity:
+#: 11R averaged every retained fact of an entity, this averages a hash-sampled
+#: three, so the two rates are not directly comparable and must not be quoted
+#: against each other without saying so.
+RETENTION_ESTIMAND_LABEL = "hash-sampled retained facts, text route"
+
+#: The photograph-selection rule is an AMENDMENT, and an amendment has to say
+#: when.  These are facts about the repository history, not claims: each is
+#: reproducible with
+#:   git show <commit>:data/reports/mllmu_pilot100_confirmation_freeze.json
+#: reading ``frozen_at_utc``, and the pool's own timestamp is in its committed
+#: provenance.  They are recorded so the ordering below is computed from
+#: artifacts rather than asserted.
+AMENDMENT_COMMIT_BEFORE_THE_RULE = "726288c"
+AMENDMENT_FROZEN_AT_BEFORE_THE_RULE = "2026-09-07T05:07:46+00:00"
+AMENDMENT_COMMIT_WITH_THE_RULE = "977319a"
+AMENDMENT_FROZEN_AT_WITH_THE_RULE = "2026-09-07T07:06:58+00:00"
+CONFIRM_FETCH_PROVENANCE = "data/raw/inaturalist/confirm_v1/PROVENANCE.json"
+CONFIRM_SELECTION_REPORT = (
+    "data/reports/mllmu_confirm100_photograph_selection.json")
+#: Where the confirmation split will live, and so where its predictions would
+#: live (``<dataset>/predictions/``, the convention every other dataset in
+#: ``data/`` follows).  Its absence is the evidence that no confirmation model
+#: output exists yet - which is what makes the amendment outcome-blind.
+CONFIRM_DATASET_DIR = "data/mllmu_hier_confirm100"
 #: A NEW pool.  The default ``pilot_v1`` is refused by
 #: ``fetch_inat_species.refuse_if_frozen_pool`` because the committed image
 #: manifest pins 432 photographs under it.
@@ -1506,6 +1579,374 @@ def wording_stratum_portrait_reuse(
     }
 
 
+def _hash_rank(salt: str, entity_id: str, item: str) -> str:
+    """A deterministic rank key over a DOMAIN-SEPARATED salt.
+
+    The salt is per family so an entity's ``retain_same`` ranking and its
+    ``retain_other`` ranking are unrelated: sharing one salt would make the
+    second draw a deterministic function of the first, which is not a second
+    sample.  ``\\x00`` separates the fields so no concatenation of one
+    entity's fields can equal another's.
+    """
+    return hashlib.sha256(
+        f"{salt}\x00{entity_id}\x00{item}".encode("utf-8")).hexdigest()
+
+
+def _take_m_with_cycling(ranked: list, m: int) -> list:
+    """The first ``m`` of a ranked list, cycling only when it is shorter.
+
+    Cycling is what makes the allocation exactly ``m`` rows per entity rather
+    than fewer for the entities that have fewer candidates, so every entity
+    carries the same weight in an entity-macro average.  It is recorded per
+    entity below because it means those entities repeat a fact.
+    """
+    return [ranked[j % len(ranked)] for j in range(m)]
+
+
+def _distribution(sizes) -> dict:
+    """Counts of counts, as strings, so the report's keys stay JSON-safe."""
+    out: dict[str, int] = {}
+    for n in sorted(set(sizes)):
+        out[str(n)] = sum(1 for s in sizes if s == n)
+    return out
+
+
+def target_association_allocation(
+        associations: list, manifest: dict, person_ids: list[str],
+        n_families: int = CONFIRM_WORDING_FAMILIES,
+        n_templates: int = CONFIRM_NEW_TEMPLATES_PER_FAMILY) -> dict:
+    """Apply ``TARGET_ASSOCIATION_ALLOCATION_RULE`` and measure what it buys.
+
+    The 12 new-wording probes of a person are 3 families x 4 templates.  A
+    person with more than one target association cannot have all 12 ask the
+    same fact without the entity-macro statistic reporting that fact's fate as
+    the entity's, so which association each probe asks changes the primary
+    estimand.  ``A[(j + f) mod |A|]`` is balanced by construction: advancing
+    the offset by the family index as well as the template index visits every
+    association the same number of times whenever ``|A|`` divides the probe
+    count.
+    """
+    #: The per-person target-association lists, from the two artifacts the
+    #: freeze already binds -- manifest.json's target_association_ids joined
+    #: to associations.parquet -- rather than from a summary that could drift.
+    target_ids = set(manifest.get("target_association_ids", []))
+    by_entity: dict[str, list] = {}
+    for a in associations:
+        if a.association_id in target_ids:
+            by_entity.setdefault(a.entity_id, []).append(a.association_id)
+    rows: list[dict] = []
+    sizes: list[int] = []
+    counts_by_size: dict[int, set] = {}
+    for entity in person_ids:
+        assoc = sorted(by_entity.get(entity, []))
+        if not assoc:
+            raise SystemExit(
+                f"REFUSED - target person {entity} carries no target "
+                "association, so no probe can be allocated to it")
+        sizes.append(len(assoc))
+        counts = {a: 0 for a in assoc}
+        for f in range(n_families):
+            for j in range(n_templates):
+                chosen = assoc[(j + f) % len(assoc)]
+                counts[chosen] += 1
+                rows.append({"entity_id": entity, "family_index": f,
+                             "template_index": j,
+                             "association_id": chosen})
+        counts_by_size.setdefault(len(assoc), set()).add(
+            tuple(sorted(counts.values(), reverse=True)))
+    probes = n_families * n_templates
+
+    def _even(shapes: set) -> bool:
+        """One distinct shape, and within it every association asked as often.
+
+        Reported per SIZE rather than as one flag, because a single flag
+        quantified over "sizes that divide the probe count" is vacuously true
+        when no observed size divides it -- which is exactly the case where
+        the allocation is uneven and a reader most needs to be told.
+        """
+        return len(shapes) == 1 and len(set(next(iter(shapes)))) == 1
+
+    balanced = sorted(str(k) for k, v in counts_by_size.items() if _even(v))
+    unbalanced = sorted(str(k) for k, v in counts_by_size.items()
+                        if not _even(v))
+    return {
+        "rule": TARGET_ASSOCIATION_ALLOCATION_RULE,
+        "what_it_decides": (
+            "which target fact each new-wording probe asks, and so how much "
+            "within-entity weight each fact carries in the entity-macro "
+            "statistic the primary claims are defined on"),
+        "persons": len(person_ids),
+        "target_associations_per_person": _distribution(sizes),
+        "target_associations_read_from":
+            "manifest.json target_association_ids joined to "
+            "associations.parquet, grouped by entity_id",
+        "probes_per_person": probes,
+        "rows_allocated": len(rows),
+        "probes_per_association_given_its_size": {
+            str(k): [list(t) for t in sorted(v)]
+            for k, v in sorted(counts_by_size.items())},
+        "balanced_sizes": balanced,
+        "unbalanced_sizes": unbalanced,
+        "every_observed_size_divides_the_probe_count": all(
+            probes % k == 0 for k in counts_by_size),
+        "allocation_is_balanced_for_every_observed_size": not unbalanced,
+        "why_balance_is_reported_per_size": (
+            "a single flag quantified over the sizes that divide the probe "
+            "count is vacuously true when none of them does, and that is the "
+            "case where the allocation is uneven; the per-size shapes below "
+            "are the measurement and the two lists are its verdict"),
+        "size_one_is_forced_not_chosen": (
+            "a person with one target association asks it on all 12 probes; "
+            "there is no alternative to choose between"),
+        "rows": rows,
+    }
+
+
+def retention_allocation(
+        queries: list, associations: list, manifest: dict,
+        salts: dict[str, str] = RETENTION_SAMPLING_SALTS,
+        m: int = CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY) -> dict:
+    """Apply ``RETENTION_SAMPLING_RULE`` and measure the bias it avoids.
+
+    Three probes per entity over 4-7 retained facts cannot cover them, so the
+    choice of three is what determines the retention estimand.  Sorting the
+    association ids is the obvious deterministic rule and it is badly biased:
+    the ids sort alphabetically by attribute, so the first three are almost
+    always birthplace, date_of_birth and education.  That rejected allocation
+    is computed here too, because a rule has to be rejected with the numbers
+    that reject it rather than with an assertion.
+    """
+    attribute = {a.association_id: a.attribute_name for a in associations}
+    entity_of = {a.association_id: a.entity_id for a in associations}
+
+    #: retain_same: the entity's own retained facts.
+    retained: dict[str, list] = {}
+    for aid in manifest.get("retain_association_ids", []):
+        retained.setdefault(entity_of[aid], []).append(aid)
+    same_entities = sorted(
+        {entity_of[q.association_id] for q in queries
+         if q.family == "retain_same_entity"})
+    missing = sorted(e for e in same_entities if e not in retained)
+    if missing:
+        raise SystemExit(
+            f"REFUSED - {len(missing)} entity(ies) carry a retain_same probe "
+            f"but no retained association ({missing[0]}, ...)")
+
+    #: retain_other: the complete (donor, target) pairs of the donor entity.
+    #: One donor association can be paired with several targets, so ranking
+    #: donor associations alone would drop pairs.
+    pairs_by_donor: dict[str, set] = {}
+    for q in queries:
+        if q.family == "retain_other_entity":
+            pairs_by_donor.setdefault(
+                entity_of[q.association_id], set()).add(
+                f"{q.association_id}|{q.target_association_id}")
+    other_entities = sorted(pairs_by_donor)
+
+    def _rank(entity: str, items, salt: str) -> list:
+        return sorted(items, key=lambda i: (_hash_rank(salt, entity, i), i))
+
+    same_rows = [
+        {"entity_id": e, "item": it, "cycled": len(retained[e]) < m}
+        for e in same_entities
+        for it in _take_m_with_cycling(
+            _rank(e, retained[e], salts["retain_same_entity"]), m)]
+    other_rows = [
+        {"entity_id": e, "item": it,
+         "cycled": len(pairs_by_donor[e]) < m}
+        for e in other_entities
+        for it in _take_m_with_cycling(
+            _rank(e, sorted(pairs_by_donor[e]),
+                  salts["retain_other_entity"]), m)]
+
+    def _mix(items) -> dict:
+        c: dict[str, int] = {}
+        for it in items:
+            key = attribute.get(it.split("|")[0], "?")
+            c[key] = c.get(key, 0) + 1
+        return dict(sorted(c.items()))
+
+    all_retained = [i for e in same_entities for i in retained[e]]
+    sorted_first_m = [i for e in same_entities
+                      for i in _take_m_with_cycling(sorted(retained[e]), m)]
+    hashed = _mix(r["item"] for r in same_rows)
+    rejected = _mix(sorted_first_m)
+    population = _mix(all_retained)
+    return {
+        "rule": RETENTION_SAMPLING_RULE,
+        "salts": dict(sorted(salts.items())),
+        "probes_per_entity": m,
+        "route": CONFIRM_RETENTION_ROUTE,
+        "estimates": RETENTION_ESTIMAND_LABEL,
+        "estimand_is_not_the_11r_one": (
+            "11R averaged EVERY retained fact of an entity; this averages a "
+            "hash-sampled three, so the two retention rates are not directly "
+            "comparable and must not be quoted against each other without "
+            "saying so"),
+        "rank_is_deterministic_and_salt_separated": (
+            "the same salt and the same entity give the same ranking on every "
+            "run, and the two families use different salts so neither ranking "
+            "is a function of the other"),
+        "retain_same": {
+            "entities": len(same_entities),
+            "rows": len(same_rows),
+            "candidates_per_entity":
+                _distribution([len(retained[e]) for e in same_entities]),
+            "entities_that_cycle_because_they_have_fewer":
+                sum(1 for e in same_entities if len(retained[e]) < m),
+            "distinct_facts_used": len({r["item"] for r in same_rows}),
+            "facts_available": len(all_retained),
+        },
+        "retain_other": {
+            "donor_entities": len(other_entities),
+            "rows": len(other_rows),
+            "pairs_per_donor": _distribution(
+                [len(v) for v in pairs_by_donor.values()]),
+            "donors_that_cycle_because_they_have_fewer":
+                sum(1 for e in other_entities
+                    if len(pairs_by_donor[e]) < m),
+            "distinct_pairs_used": len({r["item"] for r in other_rows}),
+            "pairs_available": sum(len(v) for v in pairs_by_donor.values()),
+            "sampling_unit_is_the_pair_not_the_donor_association": (
+                "one donor association can be paired with several targets, so "
+                "ranking donor associations alone would drop pairs"),
+        },
+        "attribute_mix_over_retain_same_probes": {
+            "this_rule": hashed,
+            "rejected_sorted_first_three": rejected,
+            "whole_exploratory_retained_population": population,
+            "why_sorted_is_rejected": (
+                "association ids sort alphabetically by attribute, so the "
+                "first three of a 4-7 fact entity are almost always "
+                "birthplace, date_of_birth and education; the counts beside "
+                "this note are what that costs"),
+            "attributes_the_rejected_rule_would_have_excluded": sorted(
+                set(population) - set(rejected)),
+            "attributes_the_rejected_rule_would_have_kept_below_ten": sorted(
+                k for k, v in rejected.items() if v < 10),
+            "attributes_this_rule_covers": len(hashed),
+            "attributes_in_the_population": len(population),
+            "cycling_inflates_single_fact_entities": (
+                "the mix is over PROBES, so an entity with one retained fact "
+                "contributes three probes to its attribute; that is inherent "
+                "to giving every entity equal weight, and it is disclosed "
+                "rather than corrected"),
+        },
+        "rows_retain_same": same_rows,
+        "rows_retain_other": other_rows,
+    }
+
+
+def protocol_amendments(repo_root: Path) -> dict:
+    """The one amendment this protocol carries, with its timeline MEASURED.
+
+    A preregistration that is amended after the fact is still usable, but only
+    if the amendment says when it happened and what could have informed it.
+    The ordering here is computed from three timestamps that exist as
+    artifacts - two committed freezes and the pool's own provenance - so it
+    cannot drift from the repository history it describes.
+    """
+    path = repo_root / CONFIRM_FETCH_PROVENANCE
+    retrieved_at = None
+    if path.exists():
+        retrieved_at = json.loads(path.read_text()).get("retrieved_at")
+    before = datetime.fromisoformat(AMENDMENT_FROZEN_AT_BEFORE_THE_RULE)
+    with_rule = datetime.fromisoformat(AMENDMENT_FROZEN_AT_WITH_THE_RULE)
+    pool = (datetime.fromisoformat(retrieved_at)
+            if retrieved_at else None)
+    #: The subset the rule governs, and whether any model output exists for
+    #: the confirmation at all.  Both are read from artifacts rather than
+    #: asserted, so the claim "outcome-blind" is checkable by anyone.
+    sel_path = repo_root / CONFIRM_SELECTION_REPORT
+    selected_at = (json.loads(sel_path.read_text()).get("generated_utc")
+                   if sel_path.exists() else None)
+    selected = (datetime.fromisoformat(selected_at) if selected_at else None)
+    ds_dir = repo_root / CONFIRM_DATASET_DIR
+    predictions = sorted(ds_dir.glob("predictions/*")) if ds_dir.exists() \
+        else []
+    return {
+        "amendments": [{
+            "what": "the photograph selection rule "
+                    "(PHOTO_SELECTION_RULE)",
+            "kind": "outcome-blind protocol amendment",
+            "why_it_was_needed": (
+                "the 11C-2 justification for novelty - that drawing 24 and "
+                "taking 12 makes the second 12 new BY CONSTRUCTION - is "
+                "false, and the fetched pool is what made that measurable; "
+                "without a stated rule, 'which 12 of these 24' would have "
+                "been decided after seeing the pool"),
+            "prior_freeze": {
+                "commit": AMENDMENT_COMMIT_BEFORE_THE_RULE,
+                "frozen_at_utc": AMENDMENT_FROZEN_AT_BEFORE_THE_RULE,
+                "contained_the_rule": False,
+            },
+            "pool_acquired_at_utc": retrieved_at,
+            "subset_selected_at_utc": selected_at,
+            "confirmation_prediction_files": len(predictions),
+            "confirmation_dataset_dir": CONFIRM_DATASET_DIR,
+            "amending_freeze": {
+                "commit": AMENDMENT_COMMIT_WITH_THE_RULE,
+                "frozen_at_utc": AMENDMENT_FROZEN_AT_WITH_THE_RULE,
+                "contained_the_rule": True,
+            },
+            "ordering": {
+                "rule_was_absent_when_the_pool_was_fetched":
+                    pool is None or before < pool < with_rule,
+                "rule_was_published_after_the_pool":
+                    pool is not None and pool < with_rule,
+                "rule_was_published_before_the_subset_was_selected":
+                    selected is not None and with_rule < selected,
+                "rule_was_published_before_any_model_output":
+                    not predictions,
+                "measured_from": [
+                    f"git show {AMENDMENT_COMMIT_BEFORE_THE_RULE}:"
+                    "data/reports/mllmu_pilot100_confirmation_freeze.json "
+                    "-> frozen_at_utc",
+                    f"{CONFIRM_FETCH_PROVENANCE} -> retrieved_at",
+                    f"git show {AMENDMENT_COMMIT_WITH_THE_RULE}:"
+                    "data/reports/mllmu_pilot100_confirmation_freeze.json "
+                    "-> frozen_at_utc",
+                    f"{CONFIRM_SELECTION_REPORT} -> generated_utc",
+                    f"{CONFIRM_DATASET_DIR}/predictions/ -> absent",
+                ],
+                "every_ordering_claim_is_measured": all([
+                    pool is None or before < pool < with_rule,
+                    pool is not None and pool < with_rule,
+                    selected is not None and with_rule < selected,
+                    not predictions]),
+            },
+            "the_defensible_claim": (
+                "the rule was fixed after acquisition exposed the nesting "
+                "defect, but before subset selection and before any model "
+                "scoring; no model output existed that could have informed "
+                "it, so retaining this pool is sound PROVIDED this amendment "
+                "is disclosed as outcome-blind rather than presented as "
+                "pre-fetch preregistration"),
+            "what_was_available_when_the_rule_was_written": [
+                "the 720 fetched photographs and their sha256 values",
+                "the measured overlap with the 496 exploratory photographs",
+            ],
+            "what_was_not_available": [
+                "which 12 of the 24 any species would keep",
+                "any confirmation query, template or prompt",
+                "any B3, B0 or M_G prediction",
+            ],
+            "if_literal_pre_fetch_preregistration_is_required": (
+                "this pool has to be discarded and a fresh one drawn under an "
+                "independent seed, with the rule frozen first; the rule as "
+                "written does not depend on the pool it is applied to, so "
+                "re-drawing costs a fetch and not a redesign"),
+        }],
+        "retracted_claim": (
+            "an earlier revision of this analysis and its commit message "
+            "stated the rule was 'sealed BEFORE the fetch was run'. It was "
+            "not: the timestamps above are the repository's own and they say "
+            "the opposite. The claim is retracted here rather than left in "
+            "the prose, because a preregistration whose timeline is "
+            "misstated is worse than one that is honestly amended"),
+    }
+
+
 def retention_media_supply(
     associations: list[Any],
     census: dict[str, Any],
@@ -2162,6 +2603,19 @@ def main() -> int:
     strata_ids = image_stratum_query_ids(queries)
     portrait_reuse = wording_stratum_portrait_reuse(
         queries, associations, census, strata_ids, _exploratory_images)
+    #: Which fact each probe asks.  Both rules are choices the primary and
+    #: retention estimands depend on, so both are applied and measured here
+    #: rather than left to whoever builds the split.
+    #: The dataset manifest binds the target and retain association sets both
+    #: rules read from; it is read here rather than passed down so the
+    #: allocation cannot inherit a role summary that has drifted from it.
+    _dataset_manifest = json.loads(
+        (repo_root / f"data/mllmu_hier_{args.tag}/manifest.json").read_text())
+    target_alloc = target_association_allocation(
+        associations, _dataset_manifest,
+        portrait_reuse["target_person_ids"])
+    retention_sample = retention_allocation(
+        queries, associations, _dataset_manifest)
 
     # ---- the batch-layout noise floor, from a committed measurement ----
     floor = batch_layout_floor(
@@ -2820,6 +3274,42 @@ def main() -> int:
     # be, because it IS the image route and it carries the effect.
     report["portrait_reuse_exemption"] = portrait_reuse
 
+    # ---- which fact each probe asks, and the amendment that fixed when ----
+    # The probe construction in stage 3 reads these two rules, so they are
+    # applied to the real frozen data here: a rule whose balance is asserted
+    # rather than computed is a rule nobody has seen fail.
+    report["probe_allocation"] = {
+        "target_associations": target_alloc,
+        "retention": retention_sample,
+        "rows_total": (target_alloc["rows_allocated"]
+                       + retention_sample["retain_same"]["rows"]
+                       + retention_sample["retain_other"]["rows"]),
+        "photograph_probes_are_not_allocated_here": {
+            #: held_ceiling (the TARGET species the design covers), not
+            #: chosen_supply["species_covered"] (the species the pool COULD
+            #: cover, which includes the retain-only ones).  Using the pool's
+            #: count would state 432 photograph probes where the frozen
+            #: budget is 360.
+            "count": held_ceiling * CONFIRM_NEW_PHOTOS_PER_SPECIES,
+            "species_covered": held_ceiling,
+            "why": (
+                "a held-out-photograph probe asks one selected photograph, so "
+                "there is no fact to choose: the allocation is fixed by the "
+                "selection report, one probe per photograph in its canonical "
+                "order"),
+        },
+        "confirmation_probes_total": (
+            target_alloc["rows_allocated"]
+            + retention_sample["retain_same"]["rows"]
+            + retention_sample["retain_other"]["rows"]
+            + held_ceiling * CONFIRM_NEW_PHOTOS_PER_SPECIES),
+        "why_both_rules_are_frozen_before_the_split_is_built": (
+            "each decides which FACT a probe asks, so each changes what the "
+            "entity-macro statistic averages; a builder that chose them would "
+            "be choosing the estimand"),
+    }
+    report["protocol_amendments"] = protocol_amendments(repo_root)
+
     # ---- the primary hypothesis test, read off its implementation ----
     report["primary_test"] = primary_test_specification(
         flags["B3"], flags["B0"], repo_root)
@@ -3193,9 +3683,13 @@ def main() -> int:
             "selection_rule": PHOTO_SELECTION_RULE,
             "selection_is_by_hash_and_not_by_position": {
                 "why_it_matters": (
-                    "'which 12 of the 24' is a choice. Frozen here, before "
-                    "the fetch is run, so it cannot be made after seeing "
-                    "which photographs came back"),
+                    "'which 12 of the 24' is a choice, and a choice made over "
+                    "a pool that is already on disk is one the protocol never "
+                    "specified. This rule is an outcome-blind amendment: it "
+                    "was published after the fetch and before the subset was "
+                    "selected or scored, so the pool could not have shaped "
+                    "it. See protocol_amendments for the timestamps and for "
+                    "the retracted claim that it predated the fetch"),
                 "not_the_first_12_files": (
                     "chosen.sort(key=(observation_id, photo_id)) runs before "
                     "files are named 000.jpg..., so position on disk is "

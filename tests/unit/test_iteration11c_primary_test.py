@@ -27,6 +27,7 @@ import json
 import math
 import random
 import sys
+from fractions import Fraction
 from pathlib import Path
 
 import pytest
@@ -73,6 +74,29 @@ def _mc_tolerance(p_exact, n_permutations, n_sd=4.0):
             + 1.0 / (n_permutations + 1))
 
 
+def _tie_mass(diffs: list[float],
+              exact_diffs: list[Fraction]) -> tuple[Fraction, Fraction]:
+    """The mass of sign flips whose statistic EQUALS the observed one.
+
+    Returned twice over the SAME enumeration: once from exact rational
+    arithmetic, which is the mathematical value and cannot depend on a
+    summation order, and once from a raw float ``==``, which can.  The gap
+    between the two is the platform-dependence documented in
+    ``test_decimal_differences_make_float_ties_platform_dependent``.
+    """
+    k = len(diffs)
+    obs_exact = sum(exact_diffs) / k
+    obs_float = sum(diffs) / k
+    n_exact = n_float = 0
+    for signs in itertools.product((1, -1), repeat=k):
+        if sum(Fraction(s) * d
+               for s, d in zip(signs, exact_diffs)) / k == obs_exact:
+            n_exact += 1
+        if sum(float(s) * d for s, d in zip(signs, diffs)) / k == obs_float:
+            n_float += 1
+    return Fraction(n_exact, 2 ** k), Fraction(n_float, 2 ** k)
+
+
 # ── the sign-flip p-value is the exact one it claims to estimate ────
 
 class TestTheSignFlipPValueMatchesEnumeration:
@@ -96,18 +120,62 @@ class TestTheSignFlipPValueMatchesEnumeration:
         """`greater` and `less` on the same vector must account for the whole
         null up to the mass exactly AT the observed statistic, which both
         tails include.  Without that identity the two directions are not two
-        readings of one distribution."""
-        diffs = [0.3, -0.7, 1.1, 0.0, -0.2, 0.9]
-        obs = sum(diffs) / len(diffs)
-        at = sum(1 for signs in itertools.product((1.0, -1.0),
-                                                  repeat=len(diffs))
-                 if sum(s * d for s, d in zip(signs, diffs)) / len(diffs)
-                 == obs) / 2 ** len(diffs)
+        readings of one distribution.
+
+        The differences are INTEGER-valued on purpose.  The identity is about
+        the mass of draws exactly EQUAL to the observed statistic, and
+        "exactly equal" is only decidable in floating point when every signed
+        sum is exactly representable: then ``sum`` in any order, numpy's
+        pairwise ``mean``, and the rational value all agree, on every
+        platform.  With decimal differences they do not -- see
+        ``test_decimal_differences_make_float_ties_platform_dependent``.
+        """
+        diffs = [3.0, -7.0, 11.0, 0.0, -2.0, 9.0]
+        exact_diffs = [Fraction(int(d)) for d in diffs]
+        at_exact, at_float = _tie_mass(diffs, exact_diffs)
+        #: The float count must equal the exact one BECAUSE the inputs are
+        #: integers -- asserting the agreement is what makes the choice of
+        #: input load-bearing rather than incidental.
+        assert at_float == at_exact == Fraction(4, 64), (at_float, at_exact)
         n = 200000
         g = one_sided_permutation_pvalue(diffs, "greater", n, seed=3)
         l = one_sided_permutation_pvalue(diffs, "less", n, seed=3)
         assert abs(g["p_value_one_sided"] + l["p_value_one_sided"]
-                   - (1.0 + at)) <= _mc_tolerance(0.5, n) * 3
+                   - (1.0 + float(at_exact))) <= _mc_tolerance(0.5, n)
+
+    def test_decimal_differences_make_float_ties_platform_dependent(self):
+        """WHY the identity above uses integers, measured rather than asserted.
+
+        On the decimal vector below the mathematical tie mass is 4/64, but
+        counting ties with a raw float ``==`` finds only 2/64: two sign
+        vectors whose signed sums are mathematically equal to the observed one
+        round to a different float, because the summation order differs.  The
+        count therefore depends on how the platform and the summation routine
+        round -- Python's left-to-right ``sum`` and numpy's pairwise ``mean``
+        do not agree -- so an identity asserted against it passes on one
+        machine and fails on another.
+
+        This is a defect in the TEST, not in the estimator: the production
+        tails compare with ``>=`` and ``<=`` against the same float the draws
+        were computed from, so they are self-consistent, and a draw that is
+        mathematically tied to the observed statistic is worth at most
+        ``1/(n+1)`` of p-value.  It is pinned here so the identity test is not
+        "fixed" back onto a decimal vector, where it is not reproducible.
+        """
+        diffs = [1.0, 0.8, -0.2, -0.7, 0.0, -0.3]
+        exact_diffs = [Fraction(1), Fraction(4, 5), Fraction(-1, 5),
+                       Fraction(-7, 10), Fraction(0), Fraction(-3, 10)]
+        #: The decimal literals really are these rationals, so the exact
+        #: enumeration is of the same vector and not of an idealised one.
+        assert [float(d) for d in exact_diffs] == diffs
+        at_exact, at_float = _tie_mass(diffs, exact_diffs)
+        assert at_exact == Fraction(4, 64)
+        #: The float count is AT MOST the exact one -- a mathematically tied
+        #: draw can fail to compare equal, but a draw that is not tied can
+        #: never compare equal.  On this machine it is strictly smaller, which
+        #: is the whole point; the bound is <= so it holds everywhere.
+        assert at_float <= at_exact
+        assert at_exact - at_float <= Fraction(2, 64)
 
     def test_the_statistic_is_the_mean_of_the_per_entity_differences(self):
         diffs = [0.1, -0.2, 0.0, 0.45, 0.05]

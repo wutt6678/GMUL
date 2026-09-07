@@ -145,6 +145,7 @@ def read_frozen_rule(repo_root: Path) -> dict[str, Any]:
         "fetch_seed": photos.get("fetch_seed"),
         "short_refusal_at": photos.get(
             "refuse_a_species_with_fewer_than_n_disjoint"),
+        "drawn_per_species": photos.get("fetch_images_per_species"),
         "exploratory_manifest":
             frozen_now.get("exploratory_photograph_sha256_manifest"),
         "exploratory_manifest_sha256":
@@ -195,6 +196,110 @@ def select_for_species(drawn: list[dict], forbidden: set[str],
             len(overlap) == need,
     }
     return disjoint[:need], measurement
+
+
+def expected_target_species(frozen: dict[str, Any],
+                            repo_root: Path) -> list[str]:
+    """The exact set of species the frozen design covers, derived not counted.
+
+    A count of 30 is satisfied by any 30 species, including a pool fetched
+    with ``--limit-species 30`` -- which holds 24 of the target species plus
+    the 6 retain-only ones, and is the exact mistake ``--role`` exists to
+    prevent.  So the SET is derived here from two lists the freeze binds
+    independently, and compared to the pool's:
+
+        target species = target_entity_ids - target_person_ids
+
+    ``target_entity_ids`` is the 72-entity census the primary claims are
+    defined on; ``target_person_ids`` is the 42 persons measured for the
+    portrait exemption.  Their difference has to be the 30 species the fetch
+    was told to draw, and deriving it this way cross-checks two measurements
+    against each other instead of trusting either.
+    """
+    path = repo_root / "data" / "reports" / \
+        "mllmu_pilot100_confirmation_freeze.json"
+    freeze = json.loads(path.read_text())
+    frozen_now = (freeze.get("confirmation_size") or {}).get(
+        "frozen_now") or {}
+    persons = (freeze.get("portrait_exemption") or {}).get(
+        "target_person_ids") or []
+    entities = frozen_now.get("target_entity_ids") or []
+    if not entities or not persons:
+        raise SystemExit(
+            f"REFUSED - the freeze binds {len(entities)} target entity ids and "
+            f"{len(persons)} target person ids; both are needed to derive the "
+            "target species set, and an empty list would derive an empty set "
+            "that any pool would fail against for the wrong reason")
+    species = sorted(set(entities) - set(persons))
+    want = frozen.get("species_expected")
+    if want is not None and len(species) != want:
+        raise SystemExit(
+            f"REFUSED - {len(entities)} target entities minus {len(persons)} "
+            f"target persons leaves {len(species)} species, but the frozen "
+            f"size covers {want}; the freeze's own lists disagree with its "
+            "own budget")
+    #: A set difference cannot intersect its own subtrahend, so asserting
+    #: "nothing is both a person and a species" here would be vacuous -- a
+    #: guard that cannot fire is a comment.  What CAN go wrong is a person id
+    #: missing from target_entity_ids: the difference would not remove it, and
+    #: it would be fetched as a species.  A person leaking the other way -- in
+    #: target_entity_ids but not measured as a person -- changes the count and
+    #: is caught by the budget check above.
+    stray = sorted(set(persons) - set(entities))
+    if stray:
+        raise SystemExit(
+            f"REFUSED - {len(stray)} target person id(s) are not in "
+            f"target_entity_ids ({stray[:3]}), so the set difference would "
+            "not remove them and they would be fetched as species")
+    return species
+
+
+def verify_selected_bytes(selected: list[dict], pool_dir: Path) -> dict:
+    """Re-hash every selected photograph and compare to what the pool recorded.
+
+    Existence is not integrity.  ``PROVENANCE.json`` records a sha256 and a
+    byte count per photograph, and the committed selection report copies both
+    into evidence the freeze and the stage-4 tag will bind -- so a file that
+    was replaced, truncated or re-encoded after the fetch would otherwise be
+    pinned by a hash that no longer describes it.  That is the failure mode
+    ``build_image_manifest.py`` exists to catch for the exploratory dataset,
+    and catching it here means the selection cannot be sealed over bytes that
+    moved.
+    """
+    mismatched: list[dict] = []
+    missing: list[str] = []
+    for rec in selected:
+        path = pool_dir / rec["pool_file_name"]
+        if not path.exists():
+            missing.append(rec["pool_file_name"])
+            continue
+        data = path.read_bytes()
+        actual = hashlib.sha256(data).hexdigest()
+        if actual != rec["sha256"] or len(data) != rec["bytes"]:
+            mismatched.append({
+                "file": rec["pool_file_name"],
+                "recorded_sha256": rec["sha256"],
+                "actual_sha256": actual,
+                "recorded_bytes": rec["bytes"],
+                "actual_bytes": len(data),
+            })
+    if missing:
+        raise SystemExit(
+            f"REFUSED - {len(missing)} selected photograph(s) are recorded in "
+            f"the pool's provenance but are not on disk ({missing[0]}, ...), "
+            "so their bytes cannot be the bytes the manifest would pin")
+    if mismatched:
+        raise SystemExit(
+            f"REFUSED - {len(mismatched)} selected photograph(s) do not hash "
+            f"to what the pool recorded: "
+            f"{json.dumps(mismatched[0])}. The bytes moved after the fetch, "
+            "so the selection would pin a hash that describes nothing on disk")
+    return {
+        "photographs_rehashed": len(selected),
+        "sha256_mismatches": len(mismatched),
+        "files_missing": len(missing),
+        "verified_against": "each file's own bytes, not its existence",
+    }
 
 
 def _resolution_comparability(selected: list[dict],
@@ -298,13 +403,33 @@ def build_selection(repo_root: Path) -> dict[str, Any]:
         drawn_by_species.setdefault(rec["species"], []).append(rec)
 
     need = frozen["per_species"] or CONFIRM_NEW_PHOTOS_PER_SPECIES
-    expected_species = frozen["species_expected"]
-    if expected_species is not None and \
-            len(drawn_by_species) != expected_species:
+    drawn_per_species = frozen.get("drawn_per_species")
+    #: The exact SET, not its size: 30 species is satisfied by a
+    #: ``--limit-species 30`` pool, which holds 24 target species plus the 6
+    #: retain-only ones.
+    want_species = expected_target_species(frozen, repo_root)
+    got_species = sorted(drawn_by_species)
+    if got_species != want_species:
+        missing = sorted(set(want_species) - set(drawn_by_species))
+        extra = sorted(set(drawn_by_species) - set(want_species))
         raise SystemExit(
-            f"REFUSED - the pool holds {len(drawn_by_species)} species but the "
-            f"frozen size covers {expected_species}; the fetch that produced "
-            "this pool was not the frozen one")
+            f"REFUSED - the pool holds {len(got_species)} species but not the "
+            f"{len(want_species)} the frozen design covers. Missing "
+            f"{len(missing)}: {missing[:4]}. Unexpected {len(extra)}: "
+            f"{extra[:4]}. The fetch that produced this pool was not the "
+            "frozen one")
+    #: And exactly the frozen draw per species, not merely enough: a pool
+    #: drawn at a smaller --images-per-species could still supply 12 disjoint
+    #: photographs while being a different draw than the one sealed.
+    wrong_draw = sorted(
+        s for s, ps in drawn_by_species.items()
+        if drawn_per_species is not None and len(ps) != drawn_per_species)
+    if wrong_draw:
+        raise SystemExit(
+            f"REFUSED - {len(wrong_draw)} species have "
+            f"{ {s: len(drawn_by_species[s]) for s in wrong_draw[:3]} } "
+            f"drawn photographs where the frozen fetch binds "
+            f"{drawn_per_species} each ({wrong_draw[0]}, ...)")
 
     selected: list[dict] = []
     per_species: dict[str, Any] = {}
@@ -317,11 +442,6 @@ def build_selection(repo_root: Path) -> dict[str, Any]:
         kept, measurement = select_for_species(drawn, forbidden, need, species)
         per_species[species] = measurement
         for n, p in enumerate(kept):
-            if not (pool_dir / p["file_name"]).exists():
-                raise SystemExit(
-                    f"REFUSED - {species}: {p['file_name']} is recorded in the "
-                    "pool's provenance but is not on disk, so its bytes cannot "
-                    "be the bytes the manifest will pin")
             selected.append({
                 "species": species,
                 "selection_index": n,
@@ -329,10 +449,17 @@ def build_selection(repo_root: Path) -> dict[str, Any]:
                 **{k: p.get(k) for k in PROVENANCE_FIELDS},
             })
 
+    #: Re-hash every selected file rather than checking it exists: existence
+    #: is not integrity, and the hashes about to be sealed have to describe
+    #: the bytes that are actually there.
+    byte_verification = verify_selected_bytes(selected, pool_dir)
+
     hashes = [p["sha256"] for p in selected]
     total_expected = frozen["total_expected"]
     checks = {
         "species_selected": len(per_species),
+        "species_set_is_the_frozen_one": got_species == want_species,
+        "every_species_drew_its_frozen_count": not wrong_draw,
         "photographs_selected": len(selected),
         "distinct_sha256": len(set(hashes)),
         "all_sha256_distinct": len(set(hashes)) == len(hashes),
@@ -358,12 +485,19 @@ def build_selection(repo_root: Path) -> dict[str, Any]:
         "longest_edge_below_the_resolution_floor":
             sum(1 for p in selected
                 if max(p["width"], p["height"]) < MIN_IMAGE_EDGE_PX),
+        "every_selected_file_rehashed_and_matching":
+            byte_verification["sha256_mismatches"] == 0
+            and byte_verification["files_missing"] == 0
+            and byte_verification["photographs_rehashed"] == len(selected),
         "matches_the_frozen_total":
             total_expected is None or len(selected) == total_expected,
     }
     failures = [k for k, v in checks.items()
                 if k in ("all_sha256_distinct",
                          "every_species_got_its_full_allocation",
+                         "species_set_is_the_frozen_one",
+                         "every_species_drew_its_frozen_count",
+                         "every_selected_file_rehashed_and_matching",
                          "matches_the_frozen_total",
                          "every_record_carries_licence_and_attribution")
                 and v is not True]
@@ -406,6 +540,17 @@ def build_selection(repo_root: Path) -> dict[str, Any]:
             "exploratory_photographs_pinned": len(forbidden),
         },
         "per_species": per_species,
+        "species_set_derivation": {
+            "rule": "target species = target_entity_ids - target_person_ids, "
+                    "both bound by the freeze",
+            "why_a_count_is_not_enough": (
+                "30 species is also satisfied by a --limit-species 30 pool, "
+                "which holds 24 of the target species plus the 6 retain-only "
+                "ones and silently drops 6 target ones"),
+            "derived": want_species,
+            "in_the_pool": got_species,
+        },
+        "byte_verification": byte_verification,
         "resolution_gate_comparability":
             _resolution_comparability(selected, repo_root),
         "resolution_gate_the_pool_was_fetched_under":

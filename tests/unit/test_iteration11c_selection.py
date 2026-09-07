@@ -1,9 +1,15 @@
 """Iteration 11C stage 3c: the 360 photographs, selected under the frozen rule.
 
-``select_confirmation_photographs.py`` executes ``PHOTO_SELECTION_RULE``, which
-the freeze sealed BEFORE the fetch ran, because "which 12 of the 24" is a
-choice and a choice made after seeing the pool is one the protocol never
-specified.
+``select_confirmation_photographs.py`` executes ``PHOTO_SELECTION_RULE``,
+because "which 12 of the 24" is a choice and a choice left to whoever holds the
+pool is one the protocol never specified.
+
+The rule is an OUTCOME-BLIND AMENDMENT and not a pre-fetch preregistration:
+the repository's own timestamps show the pool was acquired before the rule
+existed, and the rule was written once the pool made the nesting defect it
+replaces measurable.  What it was fixed before is this selection and every
+model output.  ``TestTheAmendmentDisclosesWhenItHappened`` in the power tests
+pins the timeline; an earlier revision of this docstring claimed otherwise.
 
 Two things are tested separately here, because passing one does not imply the
 other:
@@ -38,6 +44,7 @@ POOL = REPO_ROOT / "data" / "raw" / "inaturalist" / "confirm_v1"
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import select_confirmation_photographs as sel  # noqa: E402
 from power_analysis_confirmation import (  # noqa: E402
+    CONFIRM_FETCH_IMAGES_PER_SPECIES,
     CONFIRM_NEW_PHOTOS_PER_SPECIES,
     EXPLORATORY_IMAGE_MANIFEST,
     PHOTO_SELECTION_RULE,
@@ -426,3 +433,201 @@ class TestTheScriptRefusesToRunOnTheWrongInputs:
         assert proc.returncode == 0, proc.stdout + proc.stderr
         assert "nothing to do" in proc.stdout
         assert SELECTION_PATH.read_bytes() == before
+
+
+# ── the verification is fail-closed, not a count and an existence check ──
+
+def _freeze_for_species(entities, persons, tmp_path, species_expected=30):
+    """A minimal freeze carrying only the two lists the derivation reads."""
+    reports = tmp_path / "data" / "reports"
+    reports.mkdir(parents=True, exist_ok=True)
+    (reports / "mllmu_pilot100_confirmation_freeze.json").write_text(
+        json.dumps({
+            "confirmation_size": {"frozen_now": {
+                "target_entity_ids": list(entities)}},
+            "portrait_exemption": {"target_person_ids": list(persons)},
+        }))
+    return {"species_expected": species_expected}
+
+
+class TestTheSelectorVerifiesTheSetAndTheBytesNotTheCounts:
+    """Iteration 11C stage 3, review finding 5.
+
+    The selector checked 30 species rather than the frozen species SET, enough
+    photographs rather than exactly 24 each, and file existence rather than
+    file bytes.  All three are fail-open: a pool fetched with
+    ``--limit-species 30`` also holds 30 species (24 of them targets, 6 of them
+    retain-only), a smaller ``--images-per-species`` can still supply 12
+    disjoint photographs, and a replaced or truncated file still exists.
+    """
+
+    def test_the_species_set_is_derived_from_two_lists_the_freeze_binds(self):
+        frozen = sel.read_frozen_rule(REPO_ROOT)
+        derived = sel.expected_target_species(frozen, REPO_ROOT)
+        assert len(derived) == 30
+        assert len(set(derived)) == 30
+        # the derivation is reproducible from the freeze's own two lists
+        freeze = json.loads(
+            (REPORTS / "mllmu_pilot100_confirmation_freeze.json").read_text())
+        entities = freeze["confirmation_size"]["frozen_now"][
+            "target_entity_ids"]
+        persons = freeze["portrait_exemption"]["target_person_ids"]
+        assert derived == sorted(set(entities) - set(persons))
+        assert len(entities) == 72 and len(persons) == 42
+        # and it is the set the pool actually holds, not merely the same size
+        pool_species = {p["species"] for p in _provenance()["photos"]}
+        assert set(derived) == pool_species
+        # every derived name looks like a species and no person leaked in
+        assert not (set(derived) & set(persons))
+        assert all(name[0].isupper() and " " in name for name in derived)
+
+    def test_the_report_records_the_derivation_and_the_set_it_matched(self):
+        d = _selection()["species_set_derivation"]
+        assert d["derived"] == d["in_the_pool"]
+        assert len(d["derived"]) == 30
+        assert "target_entity_ids - target_person_ids" in d["rule"]
+        assert "--limit-species 30" in d["why_a_count_is_not_enough"]
+        assert _selection()["checks"]["species_set_is_the_frozen_one"] is True
+
+    def test_a_pool_of_thirty_of_the_wrong_species_refuses(self, monkeypatch):
+        """The exact fail-open case: same count, wrong members.  Swapping one
+        target species for a retain-only one keeps 30 species and 12 disjoint
+        photographs per species, and a count check accepts it."""
+        _require_pool_bytes()
+        frozen = sel.read_frozen_rule(REPO_ROOT)
+        real = sel.expected_target_species(frozen, REPO_ROOT)
+        wrong = sorted(set(real[1:]) | {"Zosterops lateralis"})
+        assert len(wrong) == 30
+        monkeypatch.setattr(sel, "expected_target_species",
+                            lambda f, r: wrong)
+        with pytest.raises(SystemExit) as exc:
+            sel.build_selection(REPO_ROOT)
+        msg = str(exc.value)
+        assert "not the 30 the frozen design covers" in msg
+        assert real[0] in msg and "Zosterops lateralis" in msg
+
+    def test_the_derivation_refuses_lists_that_cannot_support_it(
+            self, tmp_path):
+        entities = [f"e{i}" for i in range(72)]
+        persons = [f"e{i}" for i in range(42)]
+        # a freeze with no lists would derive an empty set that any pool fails
+        # against for the wrong reason
+        frozen = _freeze_for_species([], [], tmp_path, species_expected=None)
+        with pytest.raises(SystemExit) as exc:
+            sel.expected_target_species(frozen, tmp_path)
+        assert "both are needed to derive" in str(exc.value)
+        # lists that disagree with the frozen budget
+        frozen = _freeze_for_species(entities, persons, tmp_path,
+                                     species_expected=36)
+        with pytest.raises(SystemExit) as exc:
+            sel.expected_target_species(frozen, tmp_path)
+        assert "disagree with its own budget" in str(exc.value)
+        #: A person id missing from target_entity_ids.  "Nothing is both a
+        #: person and a species" cannot be checked here -- a set difference
+        #: never intersects its own subtrahend -- so the guard that CAN fire
+        #: is the one on a person the difference would fail to remove.
+        frozen = _freeze_for_species(entities, persons + ["stray_person"],
+                                     tmp_path, species_expected=None)
+        with pytest.raises(SystemExit) as exc:
+            sel.expected_target_species(frozen, tmp_path)
+        assert "are not in target_entity_ids" in str(exc.value)
+        assert "would be fetched as species" in str(exc.value)
+        # and the well-formed case derives 30
+        frozen = _freeze_for_species(entities, persons, tmp_path)
+        assert len(sel.expected_target_species(frozen, tmp_path)) == 30
+
+    def test_every_species_drew_exactly_the_frozen_24(self):
+        prov = _provenance()
+        frozen = sel.read_frozen_rule(REPO_ROOT)
+        assert frozen["drawn_per_species"] == \
+            CONFIRM_FETCH_IMAGES_PER_SPECIES == 24
+        per_species: dict = {}
+        for p in prov["photos"]:
+            per_species.setdefault(p["species"], []).append(p)
+        assert len(per_species) == 30
+        assert {n: len(v) for n, v in per_species.items()} == \
+            {n: 24 for n in per_species}
+        assert len(prov["photos"]) == 720
+        assert _selection()["checks"][
+            "every_species_drew_its_frozen_count"] is True
+
+    def test_a_shorter_draw_refuses_even_when_twelve_are_disjoint(self,
+                                                                  monkeypatch):
+        """A pool drawn at 12 per species would still be hash-disjoint and
+        still supply a full allocation -- but it is not the draw that was
+        sealed, and the overlap that made the nesting defect measurable would
+        be gone with it."""
+        _require_pool_bytes()
+        real = sel.read_frozen_rule
+
+        def shorter(repo_root):
+            out = dict(real(repo_root))
+            out["drawn_per_species"] = 12
+            return out
+
+        monkeypatch.setattr(sel, "read_frozen_rule", shorter)
+        with pytest.raises(SystemExit) as exc:
+            sel.build_selection(REPO_ROOT)
+        msg = str(exc.value)
+        assert "drawn photographs where the frozen fetch binds 12" in msg
+
+    def test_every_selected_file_is_rehashed_against_its_own_bytes(self):
+        _require_pool_bytes()
+        v = sel.verify_selected_bytes(_selection()["selected"], POOL)
+        assert v["photographs_rehashed"] == 360
+        assert v["sha256_mismatches"] == 0
+        assert v["files_missing"] == 0
+        assert v["verified_against"] == \
+            "each file's own bytes, not its existence"
+        assert _selection()["byte_verification"] == v
+        assert _selection()["checks"][
+            "every_selected_file_rehashed_and_matching"] is True
+
+    def test_a_replaced_file_refuses_and_names_both_hashes(self):
+        _require_pool_bytes()
+        selected = [dict(r) for r in _selection()["selected"]]
+        selected[0]["sha256"] = "0" * 64
+        with pytest.raises(SystemExit) as exc:
+            sel.verify_selected_bytes(selected, POOL)
+        msg = str(exc.value)
+        assert "do not hash to what the pool recorded" in msg
+        assert "0" * 64 in msg
+        assert selected[0]["pool_file_name"] in msg
+
+    def test_a_truncated_file_refuses_on_its_byte_count(self):
+        """Same sha256, different length is not reachable by a real edit, but
+        the byte count is recorded in the report and pinned by the freeze, so
+        a report that disagrees with the file has to be refused rather than
+        trusted."""
+        _require_pool_bytes()
+        selected = [dict(r) for r in _selection()["selected"]]
+        selected[1]["bytes"] = selected[1]["bytes"] + 1
+        with pytest.raises(SystemExit) as exc:
+            sel.verify_selected_bytes(selected, POOL)
+        assert "do not hash to what the pool recorded" in str(exc.value)
+
+    def test_a_missing_file_refuses_without_hashing_anything(self):
+        """Exists is the weakest check and it is the one that used to be the
+        only one; a file recorded in provenance but absent from disk cannot be
+        the bytes the manifest would pin."""
+        selected = [dict(r) for r in _selection()["selected"]]
+        selected[2]["pool_file_name"] = "images/Not_a_species/999.jpg"
+        with pytest.raises(SystemExit) as exc:
+            sel.verify_selected_bytes(selected, POOL)
+        msg = str(exc.value)
+        assert "are not on disk" in msg
+        assert "images/Not_a_species/999.jpg" in msg
+
+    def test_the_three_verifications_are_in_the_fail_closed_set(self):
+        """A check that is reported but not in the failure list is a comment."""
+        import inspect
+        src = inspect.getsource(sel.build_selection)
+        for key in ("species_set_is_the_frozen_one",
+                    "every_species_drew_its_frozen_count",
+                    "every_selected_file_rehashed_and_matching"):
+            assert f'"{key}"' in src, key
+        failures = src.split("failures = [")[1].split("]")[0]
+        for key in ("species_set_is_the_frozen_one",
+                    "every_species_drew_its_frozen_count",
+                    "every_selected_file_rehashed_and_matching"):
+            assert key in failures, key
