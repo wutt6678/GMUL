@@ -16,6 +16,7 @@ has never been observed to fire cannot be trusted to.
 
 from __future__ import annotations
 
+import hashlib
 import inspect
 import json
 import re
@@ -54,10 +55,12 @@ from power_analysis_confirmation import (  # noqa: E402
     CONFIRM_NEW_WORDING_PROBES_PER_PERSON,
     CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY,
     CONFIRM_RETENTION_ROUTE,
+    EXPLORATORY_IMAGE_MANIFEST,
     FAMILYWISE_ALPHA,
     HOLM_WORST_CASE_ALPHA,
     N_PERMUTATIONS,
     PERMUTATION_SEED,
+    PHOTO_SELECTION_RULE,
     PRIMARY_ESTIMAND,
     PRIMARY_ESTIMAND_STRATA,
     PRIMARY_FAMILY,
@@ -986,6 +989,437 @@ class TestTheSelectedSizeIsBoundNotAGrid:
         f = _freeze_over_mutated_power(monkeypatch, mutate)
         assert any("TARGET iNaturalist" in r for r in f["refusals"]), \
             f["refusals"]
+
+
+# ── which 12 of the 24 photographs, decided before the fetch ─────────
+
+class TestThePhotographSelectionRuleIsFrozenAndExecutable:
+    """Iteration 11C stage 3.
+
+    The fetch draws 24 photographs per species and the design keeps 12.  An
+    earlier revision specified WHICH 12 positionally, by claiming the seeded
+    shuffle nests so that the exploratory photographs come first and the rest
+    are new by construction.  Measured against ``fetch_inat_species.py`` that
+    is false twice over: ``rng`` is built once for the whole species walk and
+    ``--role target`` walks 30 species where ``pilot_v1`` walked 36, so the
+    draw differs for every species after the first dropped one; and
+    ``chosen.sort`` re-orders the accepted set before files are named, so
+    position on disk is canonical order and not draw order.
+
+    The frozen rule is therefore a hash rule, and "which 12" is sealed here
+    rather than left to whoever runs the selection over the pool that came
+    back.  Each refusal below was observed to fire.
+    """
+
+    def _photos(self, f=None):
+        return (f or _load())["confirmation_size"]["held_out_photographs"]
+
+    def test_the_frozen_rule_is_the_module_rule_and_names_a_hash(self):
+        ph = self._photos()
+        assert ph["selection_rule"] == PHOTO_SELECTION_RULE
+        assert "sha256" in ph["selection_rule"]
+        assert EXPLORATORY_IMAGE_MANIFEST in ph["selection_rule"]
+        assert "(observation_id, photo_id)" in ph["selection_rule"]
+        assert "refuse the species" in ph["selection_rule"]
+        assert ph["refuse_a_species_with_fewer_than_n_disjoint"] == \
+            CONFIRM_NEW_PHOTOS_PER_SPECIES == 12
+        # both copies of the rule are the same string, so a builder reading
+        # either one follows the frozen rule
+        supply = _load(POWER_PATH)["new_photograph_supply"]["seeded_refetch"]
+        assert supply["selection_rule"] == ph["selection_rule"]
+
+    def test_the_manifest_the_rule_is_disjoint_from_is_hashed(self):
+        """Naming the file is not binding it: the rule is disjointness against
+        its CONTENTS, so a manifest that changed would silently redefine what
+        counts as a new photograph."""
+        fn = _load()["confirmation_size"]["frozen_now"]
+        assert fn["exploratory_photograph_sha256_manifest"] == \
+            EXPLORATORY_IMAGE_MANIFEST
+        recorded = fn["exploratory_photograph_sha256_manifest_sha256"]
+        path = REPO_ROOT / EXPLORATORY_IMAGE_MANIFEST
+        if not path.exists():
+            pytest.skip(f"committed manifest not present: {path}")
+        assert recorded == fz.sha256_file(path)
+        assert len(recorded) == 64
+        bytes.fromhex(recorded)
+
+    def test_a_positional_selection_rule_refuses(self, monkeypatch):
+        """The mistake the correction exists to prevent, restated as a rule."""
+        def mutate(out):
+            out = dict(out)
+            cs = dict(out["confirmation_size"])
+            ph = dict(cs["held_out_photographs"])
+            ph["selection_rule"] = (
+                "take the last 12 of the seeded draw, which are new by "
+                "construction")
+            cs["held_out_photographs"] = ph
+            out["confirmation_size"] = cs
+            return out
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("POSITIONALLY" in r for r in f["refusals"]), f["refusals"]
+        assert any("not the rule the module declares" in r
+                   for r in f["refusals"]), f["refusals"]
+
+    def test_a_rule_that_names_no_content_hash_refuses(self, monkeypatch):
+        def mutate(out):
+            out = dict(out)
+            cs = dict(out["confirmation_size"])
+            ph = dict(cs["held_out_photographs"])
+            ph["selection_rule"] = (
+                "take the 12 highest-resolution photographs per species")
+            cs["held_out_photographs"] = ph
+            out["confirmation_size"] = cs
+            return out
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("does not name a content hash" in r
+                   for r in f["refusals"]), f["refusals"]
+
+    def test_two_differing_copies_of_the_rule_refuse(self, monkeypatch):
+        """The rule is published in the size block and in the supply block.  A
+        builder follows one and the freeze certifies the other unless a
+        disagreement is refused."""
+        def mutate(out):
+            out = dict(out)
+            supply = dict(out["new_photograph_supply"])
+            sr = dict(supply["seeded_refetch"])
+            sr["selection_rule"] = PHOTO_SELECTION_RULE + " (or any 12)"
+            supply["seeded_refetch"] = sr
+            out["new_photograph_supply"] = supply
+            return out
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("stated twice and the two copies differ" in r
+                   for r in f["refusals"]), f["refusals"]
+
+    def test_accepting_a_short_species_refuses(self, monkeypatch):
+        """A species yielding fewer than 12 disjoint photographs must refuse
+        rather than be padded from the exploratory pool, which is the one
+        thing the novelty invariant forbids."""
+        def mutate(out):
+            out = dict(out)
+            cs = dict(out["confirmation_size"])
+            ph = dict(cs["held_out_photographs"])
+            ph["refuse_a_species_with_fewer_than_n_disjoint"] = 6
+            cs["held_out_photographs"] = ph
+            out["confirmation_size"] = cs
+            return out
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("disjoint photographs where the design needs" in r
+                   for r in f["refusals"]), f["refusals"]
+
+    def test_the_withdrawn_claim_must_stay_recorded(self, monkeypatch):
+        """Deleting the refutation is how the claim comes back: the seed looks
+        like it ought to nest, and nothing in a freeze that only states the
+        rule says why the obvious argument fails."""
+        def mutate(out):
+            out = dict(out)
+            supply = dict(out["new_photograph_supply"])
+            sr = dict(supply["seeded_refetch"])
+            sr["draw_nesting_is_not_relied_on"] = {
+                "claim_an_earlier_revision_made":
+                    sr["draw_nesting_is_not_relied_on"][
+                        "claim_an_earlier_revision_made"]}
+            supply["seeded_refetch"] = sr
+            out["new_photograph_supply"] = supply
+            return out
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        missing = [r for r in f["refusals"]
+                   if "not recorded with its refutation" in r]
+        assert len(missing) == 3, missing
+
+    def test_a_drifted_exploratory_manifest_refuses(self, monkeypatch):
+        def mutate(out):
+            out = dict(out)
+            cs = dict(out["confirmation_size"])
+            fn = dict(cs["frozen_now"])
+            fn["exploratory_photograph_sha256_manifest_sha256"] = "0" * 64
+            cs["frozen_now"] = fn
+            out["confirmation_size"] = cs
+            return out
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("has DRIFTED" in r for r in f["refusals"]), f["refusals"]
+
+    def test_an_unhashable_manifest_record_fails_closed(self, monkeypatch):
+        """A report generated where the manifest is absent records a reason
+        string instead of a hash.  Freezing that would certify a novelty rule
+        with nothing to be disjoint from -- the same fail-open shape as the
+        empty adapter contract 11C-R1 found."""
+        def mutate(out):
+            out = dict(out)
+            cs = dict(out["confirmation_size"])
+            fn = dict(cs["frozen_now"])
+            fn["exploratory_photograph_sha256_manifest_sha256"] = \
+                "REFUSED-ABSENT: not there"
+            cs["frozen_now"] = fn
+            out["confirmation_size"] = cs
+            return out
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("is not a sha256" in r for r in f["refusals"]), \
+            f["refusals"]
+
+    def test_a_module_rule_that_disagrees_with_the_report_refuses(self,
+                                                                 monkeypatch):
+        """The check runs against the module, not against a copy of it, so
+        moving the rule in code without regenerating is caught."""
+        monkeypatch.setattr(fz, "PHOTO_SELECTION_RULE",
+                            PHOTO_SELECTION_RULE + " ")
+        f = build_freeze(REPO_ROOT, "pilot100")
+        assert any("not the rule the module declares" in r
+                   for r in f["refusals"]), f["refusals"]
+
+
+# ── the portrait exemption is a hash list, not a permission ────────
+
+def _mutate_portraits(out, **portraits):
+    """Rewrite fields of ``portrait_reuse_exemption.portraits``."""
+    out = dict(out)
+    block = dict(out["portrait_reuse_exemption"])
+    block["portraits"] = dict(block["portraits"], **portraits)
+    out["portrait_reuse_exemption"] = block
+    return out
+
+
+def _mutate_portrait_block(out, **fields):
+    """Rewrite top-level fields of ``portrait_reuse_exemption``."""
+    out = dict(out)
+    out["portrait_reuse_exemption"] = dict(
+        out["portrait_reuse_exemption"], **fields)
+    return out
+
+
+class TestThePortraitExemptionIsBoundedByAHashList:
+    """Iteration 11C stage 3.
+
+    As sealed at 11C-R2, invariants 2 and 3 required every confirmation
+    photograph sha256 to be new and no exploratory media to be reused.  The
+    frozen primary estimand pools over 72 entities across two IMAGE strata;
+    the wording stratum's 42 clusters are MLLMU persons with exactly one
+    portrait each; and a text-route probe carries ``image_split = None``, so
+    it is in neither stratum.  The rules as written therefore forbade the
+    design they were sealing.
+
+    The exemption that replaces them is granted as a list of 42 hashes rather
+    than as a category, so it cannot widen without a re-freeze -- and each
+    refusal below was observed to fire.
+    """
+
+    def test_the_exemption_is_the_measured_42_and_is_bound_by_hash(self):
+        f = _load()
+        pe = f["portrait_exemption"]
+        p = _load(POWER_PATH)["portrait_reuse_exemption"]
+        assert pe["exempted"] == p["portraits"]["count"] == 42
+        assert pe["target_persons"] == 42
+        assert pe["set_sha256"] == p["portraits"]["set_sha256"]
+        # the set hash must be recomputable from the list it claims to bind
+        assert hashlib.sha256(
+            "\n".join(pe["sha256"]).encode()).hexdigest() == pe["set_sha256"]
+        assert len(pe["sha256"]) == len(set(pe["sha256"])) == 42
+        assert len(pe["paths"]) == len(pe["image_ids"]) == 42
+        # and it must be the same set the size block binds
+        fn = f["confirmation_size"]["frozen_now"]
+        assert fn["required_repeat_portrait_set_sha256"] == pe["set_sha256"]
+        assert fn["required_repeat_portrait_count"] == 42
+
+    def test_every_exempted_hash_is_really_exploratory_media(self):
+        """An exemption for media the exploratory run never used would exempt
+        nothing and hide a mis-measured list."""
+        pe = _load()["portrait_exemption"]
+        man = REPO_ROOT / EXPLORATORY_IMAGE_MANIFEST
+        if not man.exists():
+            pytest.skip(f"committed manifest not present: {man}")
+        images = json.loads(man.read_text())["images"]
+        exploratory = {v["sha256"] for v in images.values()}
+        assert set(pe["sha256"]) <= exploratory
+        assert all(p in images for p in pe["paths"])
+        assert pe["photographs_per_target_person"] == {"1": 42}
+
+    def test_the_cost_is_disclosed_rather_than_argued_away(self):
+        """The gate scored all 42 portraits.  The freeze says so beside the
+        exemption, because an exemption that hid its own cost would read as a
+        reason the person-side result is not exploratory at all."""
+        f = _load()
+        pe = f["portrait_exemption"]
+        assert pe["the_exploratory_gate_exercised"] == 42
+        inv = f["sealed_split_invariants"][1]
+        assert "that cost is disclosed rather than argued away" in \
+            inv["why_the_exemption_does_not_give_up_the_novelty_argument"]
+        assert pe["what_is_still_new_on_an_exempted_probe"] == \
+            ["query_id", "template_id", "template text"]
+
+    def test_the_invariants_state_the_exception_instead_of_contradicting_it(
+            self):
+        inv = _load()["sealed_split_invariants"]
+        assert len(inv) == 8
+        assert "except the hashed target-person portraits" in inv[1][
+            "invariant"]
+        assert inv[1]["bound_by"]["exempted_portraits"] == 42
+        assert inv[1]["bound_by"]["exempted_portrait_set_sha256"]
+        assert "beyond the two required repeats" in inv[2]["invariant"]
+        # exactly two things may repeat, and they are named
+        may = inv[2]["bound_by"]["what_may_repeat"]
+        assert isinstance(may, list) and len(may) == 2
+        assert "target-association set" in may[0]
+        assert "42 target-person portraits" in may[1]
+        assert "360 new species photographs without exception" in \
+            inv[2]["bound_by"]["what_may_not"]
+        assert "unexecutable" in inv[2]["why"]
+
+    def test_the_exemption_does_not_reach_the_species_or_retention_probes(
+            self):
+        pe = _load()["portrait_exemption"]
+        assert "504" in pe["applies_to"]
+        assert "nothing else" in pe["applies_to"]
+        assert "360" in pe["does_not_apply_to"]
+        assert "hash-disjoint" in pe["does_not_apply_to"]
+        assert "345" in pe["does_not_apply_to"]
+        assert "text-only" in pe["does_not_apply_to"]
+
+    def test_the_measurement_that_forces_it_is_in_the_freeze(self):
+        m = _load()["portrait_exemption"]["measurement_it_rests_on"]
+        assert m["wording_stratum_probes"] == 180
+        assert m["wording_stratum_is_entirely_image_route"] is True
+        assert set(m["wording_stratum_routes"]) == \
+            {"image_text_to_text", "image_to_text"}
+        assert set(m["wording_stratum_families"]) == \
+            {"image_fine_direct", "image_target_direct",
+             "multimodal_image_text"}
+        assert m["every_target_person_has_exactly_one_photograph"] is True
+        assert m["text_route_image_split_values"] == ["None"]
+        assert m["text_route_probes_are_in_neither_primary_stratum"] is True
+        assert m["text_route_test_probes"] > 0
+
+    def test_the_rejected_alternatives_are_recorded(self):
+        rej = _load()["portrait_exemption"]["rejected_alternatives"]
+        assert len(rej) == 4
+        joined = " ".join(rej)
+        assert "text-route" in joined
+        assert "species only" in joined
+        assert "72 clusters to 30" in joined or "from 72" in joined
+        assert "no boundary" in joined
+
+    def test_a_missing_exemption_block_refuses(self, monkeypatch):
+        """Without it the novelty rules stand unqualified, and they forbid the
+        estimand -- which is the defect this block exists to close."""
+        def mutate(out):
+            out = dict(out)
+            out.pop("portrait_reuse_exemption")
+            return out
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("no portrait_reuse_exemption" in r
+                   for r in f["refusals"]), f["refusals"]
+
+    def test_an_exemption_wider_than_the_wording_stratum_refuses(self,
+                                                                monkeypatch):
+        """Exempting more portraits than there are target persons would exempt
+        media no confirmation probe needs."""
+        def mutate(out):
+            return _mutate_portraits(out, count=43)
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("sized over" in r for r in f["refusals"]), f["refusals"]
+
+    def test_a_set_hash_that_does_not_describe_its_list_refuses(self,
+                                                               monkeypatch):
+        def mutate(out):
+            return _mutate_portraits(out, set_sha256="a" * 64)
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("does not describe the bound list" in r
+                   for r in f["refusals"]), f["refusals"]
+
+    def test_a_duplicated_portrait_hash_refuses(self, monkeypatch):
+        def mutate(out):
+            p = out["portrait_reuse_exemption"]["portraits"]
+            dup = list(p["sha256"])
+            dup[1] = dup[0]
+            return _mutate_portraits(out, sha256=dup)
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("duplicate sha256" in r for r in f["refusals"]), \
+            f["refusals"]
+
+    def test_exempting_media_that_is_not_exploratory_refuses(self,
+                                                            monkeypatch):
+        def mutate(out):
+            p = out["portrait_reuse_exemption"]["portraits"]
+            hashes = list(p["sha256"])
+            hashes[0] = "b" * 64
+            return _mutate_portraits(
+                out, sha256=hashes,
+                set_sha256=hashlib.sha256(
+                    "\n".join(hashes).encode()).hexdigest())
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("are NOT in" in r for r in f["refusals"]), f["refusals"]
+
+    def test_the_two_bindings_disagreeing_refuses(self, monkeypatch):
+        def mutate(out):
+            out = _mutate_portraits(out, set_sha256="c" * 64)
+            cs = dict(out["confirmation_size"])
+            cs["frozen_now"] = dict(
+                cs["frozen_now"], required_repeat_portrait_set_sha256="d" * 64)
+            out["confirmation_size"] = cs
+            return out
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("would exempt different media" in r
+                   for r in f["refusals"]), f["refusals"]
+
+    def test_a_measurement_that_stopped_forcing_it_refuses(self, monkeypatch):
+        """If a target person ever had two photographs, or the wording stratum
+        stopped being image-route, the exemption would no longer be necessary
+        and the novelty rule should apply in full again."""
+        for field in ("every_target_person_has_exactly_one_photograph",
+                      "wording_stratum_is_entirely_image_route",
+                      "text_route_probes_are_in_neither_primary_stratum"):
+            f = _freeze_over_mutated_power(
+                monkeypatch,
+                lambda out, field=field: _mutate_portrait_block(
+                    out, **{field: False}))
+            assert any(field in r and "no longer forced" in r
+                       for r in f["refusals"]), (field, f["refusals"])
+
+    def test_a_wording_stratum_that_is_not_the_one_sized_refuses(self,
+                                                                monkeypatch):
+        f = _freeze_over_mutated_power(
+            monkeypatch,
+            lambda out: _mutate_portrait_block(
+                out, wording_stratum_num_families=2))
+        assert any("probe families" in r for r in f["refusals"]), \
+            f["refusals"]
+        f = _freeze_over_mutated_power(
+            monkeypatch,
+            lambda out: _mutate_portrait_block(
+                out, wording_stratum_clusters=30))
+        assert any("clusters but the size block budgets" in r
+                   for r in f["refusals"]), f["refusals"]
+
+    def test_a_collision_rule_that_hides_the_exception_refuses(self,
+                                                              monkeypatch):
+        """The rule a stage-3 builder reads and the exemption the freeze grants
+        must say the same thing, or the builder follows the stricter one and
+        the split cannot be built."""
+        def mutate(out):
+            out = dict(out)
+            cs = dict(out["confirmation_size"])
+            stage3 = dict(cs["frozen_at_stage_3_before_any_scoring"])
+            stage3["collision_rules"] = [
+                r for r in stage3["collision_rules"]
+                if "bounded exception" not in r]
+            cs["frozen_at_stage_3_before_any_scoring"] = stage3
+            out["confirmation_size"] = cs
+            return out
+
+        f = _freeze_over_mutated_power(monkeypatch, mutate)
+        assert any("no collision_rule states the portrait exception" in r
+                   for r in f["refusals"]), f["refusals"]
 
 
 # ── the retention intervals have probes behind them ────────────────

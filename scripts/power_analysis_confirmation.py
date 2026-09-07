@@ -293,12 +293,47 @@ WHAT_THE_CONFIRMATION_DOES_NOT_ESTABLISH = (
 #: claim, so its budget is set by the minimum detectable effect worth
 #: reporting rather than by a power target.
 CONFIRM_NEW_PHOTOS_PER_SPECIES = 12
-#: ``--images-per-species`` for the re-fetch.  The seeded shuffle is
-#: identical at the same seed, so drawing 24 makes the first 12 the
-#: already-allocated photographs and the remaining 12 new by construction.
+#: ``--images-per-species`` for the re-fetch.  24 is the SMALLEST draw that
+#: guarantees 12 photographs whose sha256 is disjoint from the 12 pilot100_v2
+#: already allocated for that species: only 12 exploratory photographs exist
+#: per species, so a 24-draw leaves at least 24 - 12 = 12 disjoint ones
+#: however many of the exploratory set it happens to re-draw.
+#:
+#: An earlier revision justified this number differently, and wrongly: it
+#: claimed the seeded shuffle nests, so that "the first 12 of the longer draw
+#: are the already-allocated photographs and the remainder are new BY
+#: CONSTRUCTION".  Two measured facts refute that.  (1) ``fetch_inat_species``
+#: builds ``rng`` ONCE outside the species loop, so the state shuffled into
+#: species i depends on the pool lengths of species 0..i-1; pilot_v1 walked 36
+#: species and ``--role target`` walks 30, so every species after the first
+#: dropped one draws a different order (verified: species 0 identical between
+#: the two walks, species 2 not).  (2) ``chosen`` is re-sorted by
+#: ``(observation_id, photo_id)`` before files are named, so a photograph's
+#: position on disk carries no information about its position in the draw.
+#: The shuffle does nest when the pool AND the rng state are both unchanged,
+#: which is why the claim looked plausible in isolation -- and why it must not
+#: be leaned on.  Novelty is established by content hash, never by position.
 CONFIRM_FETCH_IMAGES_PER_SPECIES = (
     CONFIRM_NEW_PHOTOS_PER_SPECIES + 12)
 CONFIRM_FETCH_SEED = 42
+#: The exploratory manifest every new photograph must be disjoint from.  It
+#: is committed, and its roll-up is inside the dataset fingerprint of every
+#: prediction sidecar, so it is the authoritative list of media the
+#: exploratory run actually saw.
+EXPLORATORY_IMAGE_MANIFEST = "data/mllmu_hier_pilot100/image_manifest.json"
+#: HOW the 12 new photographs per species are chosen out of the 24 drawn.
+#: Frozen before the fetch runs, because "which 12 of these 24" is a choice,
+#: and a choice made after seeing the pool is one the protocol never
+#: specified.  It is a hash rule and not a positional one for the two measured
+#: reasons recorded under
+#: ``new_photograph_supply.seeded_refetch.draw_nesting_is_not_relied_on``.
+PHOTO_SELECTION_RULE = (
+    "of the 24 photographs the fetch accepts for a species, take the "
+    f"{CONFIRM_NEW_PHOTOS_PER_SPECIES} whose sha256 appears nowhere in "
+    f"{EXPLORATORY_IMAGE_MANIFEST}, in the fetch's own canonical "
+    "(observation_id, photo_id) order; refuse the species rather than "
+    f"substitute if fewer than {CONFIRM_NEW_PHOTOS_PER_SPECIES} are "
+    "disjoint")
 #: A NEW pool.  The default ``pilot_v1`` is refused by
 #: ``fetch_inat_species.refuse_if_frozen_pool`` because the committed image
 #: manifest pins 432 photographs under it.
@@ -1105,14 +1140,59 @@ def new_photograph_supply(repo_root: Path, associations: list[Any]) -> dict:
                                               "ladder",
             "records_license_and_attribution": True,
             "disjointness_mechanism": (
-                "re-fetch at the SAME seed 42 with a larger "
-                "--images-per-species: the seeded shuffle over the pool is "
-                "then identical, so the first 12 of the longer draw are the "
-                "already-allocated photographs and the remainder are new BY "
-                "CONSTRUCTION. This must still be verified by content hash "
-                "after the fetch, because the resolution gate replaces a "
-                "rejected candidate with the next one in the seeded order "
-                "and that path depends on what S3 serves."),
+                "content-hash disjointness, never position in the draw: a "
+                "photograph is new iff its sha256 appears nowhere in "
+                f"{EXPLORATORY_IMAGE_MANIFEST}, which pins all 496 "
+                "exploratory photographs. Re-fetching at the same "
+                "seed 42 makes the draw reproducible, but it does NOT make "
+                "the exploratory 12 a subset of the new 24, so no superset "
+                "relation is assumed and none is needed."),
+            "selection_rule": PHOTO_SELECTION_RULE,
+            "why_the_draw_is_24": (
+                "the smallest draw that guarantees 12 disjoint photographs: "
+                "only 12 exploratory photographs exist per species, so a "
+                "24-draw leaves at least 24 - 12 = 12 disjoint however many "
+                "it re-draws. The bound is tight in the worst case and has "
+                "no slack for two photographs sharing bytes, which is why "
+                "the disjoint count is measured per species after the fetch "
+                "rather than assumed."),
+            "draw_nesting_is_not_relied_on": {
+                "claim_an_earlier_revision_made": (
+                    "the seeded shuffle is identical at the same seed, so "
+                    "the first 12 of the longer draw are the "
+                    "already-allocated photographs and the remainder are "
+                    "new by construction"),
+                "refutation_1_rng_state_advances_across_species": (
+                    "fetch_inat_species builds rng = random.Random(seed) "
+                    "ONCE outside the species loop and shuffles once per "
+                    "species, so the state reaching species i depends on "
+                    "the pool lengths of species 0..i-1. pilot_v1 walked 36 "
+                    "species; --role target walks 30, dropping the 6 "
+                    "retain-only ones at indices 1, 14, 16, 19, 22 and 28. "
+                    "Every species after the first dropped one therefore "
+                    "draws a different order: verified identical for the "
+                    "species at index 0 and different for the one at "
+                    "index 2."),
+                "refutation_2_the_accepted_set_is_re_sorted": (
+                    "chosen.sort(key=(observation_id, photo_id)) runs "
+                    "before files are named 000.jpg..., so even a nested "
+                    "draw would not put the exploratory 12 in the first 12 "
+                    "positions on disk"),
+                "what_is_true_and_why_it_is_not_enough": (
+                    "the shuffled ORDER of a single species does nest when "
+                    "the pool length and the rng state are both unchanged, "
+                    "because the shuffle runs over the whole pool and only "
+                    "the number TAKEN changes with --images-per-species. "
+                    "Neither precondition holds across a re-fetch weeks "
+                    "later with a different species list, and a changed "
+                    "pool length reorders the draw completely (verified), "
+                    "so nesting cannot carry a novelty argument"),
+            },
+            "verified_after_the_fetch_by": (
+                "per species: 24 accepted photographs, all sha256 distinct, "
+                ">= 12 disjoint from the exploratory image manifest; "
+                "overall: 360 selected photographs whose sha256 set has an "
+                "empty intersection with the 496 exploratory hashes"),
         },
         "achievable_ceilings_for_the_held_out_stratum": {
             "species_offline_with_auditable_provenance": (
@@ -1265,6 +1345,165 @@ def _grouped_row_diffs(
             continue
         groups.setdefault(ea, []).append(float(va - vb))
     return groups
+
+
+def image_stratum_query_ids(queries: list[Any]) -> dict[str, set[str]]:
+    """The two PRIMARY strata's query ids, by the definition the estimand uses.
+
+    Hoisted out of ``main`` because a second measurement now depends on the
+    same definition, and two copies of a stratum filter are two chances for
+    the estimand and its evidence to describe different query sets.
+
+    Both strata are IMAGE strata: each filters on ``image_split``, which is
+    ``None`` for every text-route query.  That single fact is what makes the
+    target-person portrait unavoidable -- see
+    :func:`wording_stratum_portrait_reuse`.
+    """
+    def _in(q: Any, image_split: str) -> bool:
+        return (q.split == "test" and q.image_split == image_split
+                and not (q.family or "").startswith("retain_")
+                and not q.adversarial)
+
+    return {
+        "held_out_photo": {q.query_id for q in queries
+                           if _in(q, "test")},
+        "seen_photo_unseen_wording": {q.query_id for q in queries
+                                      if _in(q, "train")},
+    }
+
+
+def wording_stratum_portrait_reuse(
+    queries: list[Any],
+    associations: list[Any],
+    census: dict[str, Any],
+    stratum_qids: dict[str, set[str]],
+    exploratory_images: dict[str, Any],
+) -> dict[str, Any]:
+    """Measure the one piece of exploratory MEDIA the confirmation must reuse.
+
+    The sealed split rules say every confirmation photograph sha256 must be
+    new and no exploratory media may be reused.  For the 30 target species
+    that is satisfiable: new photographs were fetched.  For the 42 target
+    persons it is not, and the reason is structural rather than a matter of
+    effort -- each person has exactly ONE portrait, so there is no second
+    photograph to fetch and no pool to fetch it from.
+
+    The wording stratum cannot sidestep the portrait either, because it is an
+    IMAGE stratum: every one of its exploratory probes carries a portrait, and
+    a text-route probe has ``image_split = None`` and so sits in neither
+    primary stratum.  Dropping the portrait therefore does not produce a
+    cheaper confirmation of the same estimand; it produces a different
+    estimand over 30 clusters instead of 72.
+
+    Everything here is measured from the frozen dataset so the exemption the
+    freeze grants is bounded by a hash list and not by a sentence.
+    """
+    by_qid = {q.query_id: q for q in queries}
+    entity_of = {a.association_id: a.entity_id for a in associations}
+    seen_ids = stratum_qids["seen_photo_unseen_wording"]
+    seen = [by_qid[i] for i in sorted(seen_ids)]
+
+    def _counts(items: list[Any], key) -> dict[str, int]:
+        out: dict[str, int] = {}
+        for it in items:
+            k = str(key(it))
+            out[k] = out.get(k, 0) + 1
+        return dict(sorted(out.items()))
+
+    #: The 42 target persons: the entities the wording stratum's clusters are.
+    target = census["by_role"]["target"]
+    person_ids = sorted(
+        e for e in target["entity_ids"]
+        if target["by_source"].get("mllmu_hier")
+        and any(a.entity_id == e and a.dataset == "mllmu_hier"
+                for a in associations))
+    portraits: dict[str, dict[str, str]] = {}
+    for a in associations:
+        if a.dataset != "mllmu_hier" or a.entity_id not in set(person_ids):
+            continue
+        for ref in a.images:
+            portraits.setdefault(a.entity_id, {
+                "image_id": ref.image_id, "path": ref.path,
+                "split_label": ref.split})
+    photos_per_person = _counts(
+        [len({r.path for a in associations
+              if a.entity_id == e and a.dataset == "mllmu_hier"
+              for r in a.images}) for e in person_ids], lambda n: n)
+    paths = sorted(p["path"] for p in portraits.values())
+    hashes = sorted(exploratory_images[p]["sha256"] for p in paths
+                    if p in exploratory_images)
+    gated = {i for q in seen for i in q.image_ids}
+    text_route = [q for q in queries
+                  if q.route == "text_to_text" and q.split == "test"
+                  and not (q.family or "").startswith("retain_")
+                  and not q.adversarial]
+    families = _counts(seen, lambda q: q.family)
+    return {
+        "wording_stratum_probes": len(seen),
+        "wording_stratum_routes": _counts(seen, lambda q: q.route),
+        "wording_stratum_is_entirely_image_route":
+            all(q.image_ids for q in seen),
+        "wording_stratum_image_seen_in_training":
+            _counts(seen, lambda q: q.image_seen_in_training),
+        "wording_stratum_families": families,
+        "wording_stratum_num_families": len(families),
+        "wording_stratum_exploratory_template_ids":
+            sorted({q.template_id for q in seen if q.template_id}),
+        "wording_stratum_clusters": len({entity_of[q.association_id]
+                                         for q in seen}),
+        "text_route_test_probes": len(text_route),
+        "text_route_image_split_values":
+            sorted({str(q.image_split) for q in text_route}),
+        "text_route_probes_are_in_neither_primary_stratum":
+            not ({q.query_id for q in text_route}
+                 & (seen_ids | stratum_qids["held_out_photo"])),
+        "why_that_decides_the_route": (
+            "a text-route probe carries image_split None, and both primary "
+            "strata filter on image_split, so making the 504 wording probes "
+            "text-route would not put them in seen_photo_unseen_wording at a "
+            "lower cost - it would leave the 42 persons with no probe in "
+            "either stratum and shrink the pooled estimand from 72 clusters "
+            "to 30"),
+        "target_persons": len(person_ids),
+        "target_person_ids": person_ids,
+        "photographs_per_target_person": photos_per_person,
+        "every_target_person_has_exactly_one_photograph":
+            photos_per_person == {"1": len(person_ids)},
+        "portraits": {
+            "count": len(paths),
+            "paths": paths,
+            "image_ids": sorted(p["image_id"] for p in portraits.values()),
+            "sha256": hashes,
+            "set_sha256": hashlib.sha256(
+                "\n".join(hashes).encode()).hexdigest(),
+        },
+        "portraits_that_are_exploratory_media":
+            sum(1 for p in paths if p in exploratory_images),
+        "portraits_the_exploratory_gate_exercised": len(gated),
+        "portraits_exercised_by_the_gate_are_all_of_them":
+            len(gated) == len(paths),
+        "what_must_repeat": (
+            "the 42 target-person portraits listed above, hashed. Like the "
+            "target-association set, this is a REQUIRED repeat and not a "
+            "leak: the adapters were trained with these portraits, each "
+            "person has exactly one, and the stratum that carries the effect "
+            "is an image stratum"),
+        "what_is_still_new_on_those_probes": [
+            "query_id", "template_id", "template text"],
+        "why_the_novelty_that_matters_survives": (
+            "what the reference-state gate was exposed to on the person side "
+            "was a PAIR of a portrait and a wording. The portrait cannot be "
+            "new, but the wording can, and the exposure argument is about the "
+            "probe the gate scored - a new query_id over a new template text "
+            "is a probe it never saw, which is exactly what the stratum's own "
+            "name says: seen photo, UNSEEN wording"),
+        "why_not_species_only": (
+            "dropping the 42 persons would leave 30 clusters, which still "
+            "clears the 5/4 cluster requirement, but it would confirm only "
+            "held_out_photo - the stratum where the exploratory comparison "
+            "measured an effect indistinguishable from zero - and drop the "
+            "stratum that carries it. See stratum_heterogeneity and notes"),
+    }
 
 
 def retention_media_supply(
@@ -1894,19 +2133,43 @@ def main() -> int:
         "achievable_ceilings_for_the_held_out_stratum"][
             "species_offline_any_provenance"]
 
+    # ---- the exploratory image manifest, and the one piece of exploratory
+    # MEDIA the confirmation cannot avoid reusing ----
+    # Hashed rather than only named: the photograph novelty rule is
+    # disjointness against this file's CONTENTS, so a manifest that changed
+    # between the freeze and the stage-3 selection would silently redefine
+    # what counts as a new photograph.
+    _manifest_rel = f"data/mllmu_hier_{args.tag}/image_manifest.json"
+    if _manifest_rel != EXPLORATORY_IMAGE_MANIFEST:
+        raise SystemExit(
+            f"REFUSED - --tag {args.tag} resolves the exploratory image "
+            f"manifest to {_manifest_rel}, but PHOTO_SELECTION_RULE and the "
+            f"freeze both name {EXPLORATORY_IMAGE_MANIFEST}. The novelty rule "
+            "is frozen against one manifest, so a different tag would produce "
+            "a report pointing at media this design never selected.")
+    _manifest_path = repo_root / _manifest_rel
+    if not _manifest_path.exists():
+        raise SystemExit(
+            f"REFUSED - {_manifest_path} is not there, so nothing can be "
+            "shown to be disjoint from exploratory media and the portrait "
+            "exemption cannot be bounded by a hash list")
+    _manifest_sha256_or_reason = hashlib.sha256(
+        _manifest_path.read_bytes()).hexdigest()
+    _exploratory_images = json.loads(_manifest_path.read_text())["images"]
+
+    #: One definition of the two primary strata, used both to size them and to
+    #: measure what media they force the confirmation to reuse.
+    strata_ids = image_stratum_query_ids(queries)
+    portrait_reuse = wording_stratum_portrait_reuse(
+        queries, associations, census, strata_ids, _exploratory_images)
+
     # ---- the batch-layout noise floor, from a committed measurement ----
     floor = batch_layout_floor(
         repo_root, args.tag,
         Path(args.layout_floor_report) if args.layout_floor_report else None)
 
-    held_out_qids = {
-        q.query_id for q in queries
-        if q.split == "test" and q.image_split == "test"
-        and not (q.family or "").startswith("retain_") and not q.adversarial}
-    seen_qids = {
-        q.query_id for q in queries
-        if q.split == "test" and q.image_split == "train"
-        and not (q.family or "").startswith("retain_") and not q.adversarial}
+    held_out_qids = strata_ids["held_out_photo"]
+    seen_qids = strata_ids["seen_photo_unseen_wording"]
     strata: dict[str, Any] = {}
     for stratum, qids in (("held_out_photo", held_out_qids),
                           ("seen_photo_unseen_wording", seen_qids)):
@@ -2549,6 +2812,14 @@ def main() -> int:
     #: decisions and the size block below quote its totals.
     retention_alloc = report["retention_probe_allocation"]
 
+    # ---- the one exploratory photograph set the confirmation MUST reuse ----
+    # Beside the retention allocation because both are forced by media supply
+    # rather than by design taste: a person has exactly one portrait, so an
+    # image-route probe on a person either reuses it or does not exist.  The
+    # retention route was omitted for that reason; the wording stratum cannot
+    # be, because it IS the image route and it carries the effect.
+    report["portrait_reuse_exemption"] = portrait_reuse
+
     # ---- the primary hypothesis test, read off its implementation ----
     report["primary_test"] = primary_test_specification(
         flags["B3"], flags["B0"], repo_root)
@@ -2664,6 +2935,44 @@ def main() -> int:
                     f"{CALIBRATION_REPLICATES} re-signings of the real 11R "
                     "differences are in achieved_level_under_the_real_null, "
                     "with their own Monte Carlo standard error beside each"],
+            },
+            {
+                "id": "portrait_reuse",
+                "question": "the 504 wording probes are image-route over "
+                            "persons who have one portrait each, which is "
+                            "exploratory media the sealed rules forbid "
+                            "reusing - exempt it, change the route, or drop "
+                            "the persons",
+                "chosen": (
+                    f"exempt exactly the {portrait_reuse['target_persons']} "
+                    "target-person portraits, listed and hashed in "
+                    f"portrait_reuse_exemption (set sha256 "
+                    f"{portrait_reuse['portraits']['set_sha256'][:16]}...), "
+                    "and record them as a REQUIRED repeat beside the target "
+                    "associations. Query ids, template ids, template texts "
+                    "and all 360 species photographs stay new"),
+                "evidence": "portrait_reuse_exemption",
+                "rejected": [
+                    "leave the invariants as written: they then forbid the "
+                    "frozen primary estimand, because a wording probe that "
+                    "may not show the portrait is a text-route probe, and "
+                    "text-route probes carry image_split None and sit in "
+                    "neither primary stratum",
+                    "make the 504 wording probes text-route: no media reused, "
+                    "but the 42 persons would have no probe in either "
+                    "stratum, so the pooled estimand would fall from 72 "
+                    "clusters to 30 and every variance component, mde and "
+                    "power figure in this report would describe a design that "
+                    "was not run",
+                    "confirm the species only: 30 clusters still clears the "
+                    "5/4 requirement, but it confirms held_out_photo - where "
+                    "the exploratory comparison measured an effect "
+                    "indistinguishable from zero - and drops the stratum that "
+                    "carries the effect",
+                    "exempt exploratory media generally rather than one "
+                    "hashed list of 42 portraits: an exemption with no "
+                    "boundary is not an exemption but the removal of the rule",
+                ],
             },
             {
                 "id": "retention_probe_allocation",
@@ -2881,6 +3190,26 @@ def main() -> int:
                 f"that command fetches 24 of the {held_ceiling} target "
                 "species and misses six. --role target derives the list from "
                 "manifest.json the same way this report does."),
+            "selection_rule": PHOTO_SELECTION_RULE,
+            "selection_is_by_hash_and_not_by_position": {
+                "why_it_matters": (
+                    "'which 12 of the 24' is a choice. Frozen here, before "
+                    "the fetch is run, so it cannot be made after seeing "
+                    "which photographs came back"),
+                "not_the_first_12_files": (
+                    "chosen.sort(key=(observation_id, photo_id)) runs before "
+                    "files are named 000.jpg..., so position on disk is "
+                    "canonical order and says nothing about the draw"),
+                "not_the_last_12_of_the_draw": (
+                    "the draw itself does not nest with pilot_v1's: rng is "
+                    "built once for the whole walk, and --role target walks "
+                    "30 species where pilot_v1 walked 36"),
+                "refutation_recorded_at": (
+                    "new_photograph_supply.seeded_refetch"
+                    ".draw_nesting_is_not_relied_on"),
+            },
+            "refuse_a_species_with_fewer_than_n_disjoint":
+                CONFIRM_NEW_PHOTOS_PER_SPECIES,
             "target_species_in_the_held_out_stratum": held_ceiling,
             "mde_at_the_selected_design_conservative_icc": sel_h.get(
                 held_mde_key),
@@ -2997,7 +3326,29 @@ def main() -> int:
             "exploratory_template_ids_sha256":
                 hashlib.sha256(template_blob).hexdigest(),
             "exploratory_photograph_sha256_manifest":
-                "data/mllmu_hier_pilot100/image_manifest.json",
+                EXPLORATORY_IMAGE_MANIFEST,
+            #: Hashed, not just named: the rule is disjointness against this
+            #: file's CONTENTS, so a manifest that changed between the freeze
+            #: and the selection would silently change what counts as new.
+            "exploratory_photograph_sha256_manifest_sha256":
+                _manifest_sha256_or_reason,
+            #: The OTHER required repeat.  The target associations are what the
+            #: adapters unlearned; these portraits are the only photograph each
+            #: target person has, so an image-route probe on a person either
+            #: shows one of them or does not exist.  Bounded by a hash list and
+            #: not by a sentence: see portrait_reuse_exemption for the
+            #: measurement that forces it.
+            "required_repeat_portrait_count":
+                portrait_reuse["portraits"]["count"],
+            "required_repeat_portrait_sha256":
+                portrait_reuse["portraits"]["sha256"],
+            "required_repeat_portrait_set_sha256":
+                portrait_reuse["portraits"]["set_sha256"],
+            "required_repeats_are": [
+                "the target-association set (invariant 1)",
+                f"the {portrait_reuse['portraits']['count']} target-person "
+                "portraits (hashed above)",
+            ],
         },
         "frozen_at_stage_3_before_any_scoring": {
             "confirmation_query_id_list_sha256": (
@@ -3035,14 +3386,28 @@ def main() -> int:
                 "no confirmation template TEXT may be a copy of an "
                 "exploratory template's text: a new id over the same wording "
                 "is the same probe with a new label",
-                "no confirmation photograph sha256 may appear in the frozen "
-                "exploratory image manifest",
+                f"no confirmation photograph sha256 may appear in the frozen "
+                f"exploratory image manifest, with ONE bounded exception: the "
+                f"{portrait_reuse['portraits']['count']} target-person "
+                f"portraits hashed above, set sha256 "
+                f"{portrait_reuse['portraits']['set_sha256'][:16]}... Each "
+                f"target person has exactly "
+                f"{sorted(portrait_reuse['photographs_per_target_person'])} "
+                f"photograph, the wording stratum is image-route by "
+                f"construction, and a text-route probe carries image_split "
+                f"None so it sits in neither primary stratum - without this "
+                f"exception the rule forbids the frozen estimand. All "
+                f"{n_photos} species photographs are still required to be "
+                f"new, and the exception is a list of hashes rather than a "
+                f"category, so it cannot grow",
                 "no confirmation query_id may appear in the exploratory "
                 "queries parquet",
-                "no exploratory query or media is reused: every confirmation "
-                "probe is a new query_id carrying a new template_id, and "
-                "every image-route probe carries a photograph whose sha256 "
-                "is not in the exploratory manifest",
+                "no exploratory query or media is reused beyond the two "
+                "required repeats above: every confirmation probe is a new "
+                "query_id carrying a new template_id and a new template TEXT, "
+                "and every image-route probe carries either a photograph "
+                "whose sha256 is not in the exploratory manifest or one of "
+                "the hashed target-person portraits",
                 "the confirmation split must not enter the reference-state "
                 "gate, candidate selection, or any go/no-go decision",
             ],

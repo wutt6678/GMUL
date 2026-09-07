@@ -219,10 +219,12 @@ class TestTheFetchSelectsSpeciesByRoleNotByCount:
                 assert s in fetch.SPECIES_LIST, (role, s)
 
     def test_the_order_follows_species_list_so_the_seed_is_stable(self):
-        """The seeded shuffle that makes the first 12 photographs the
-        already-allocated ones runs per species, but the ORDER species are
-        fetched in has to be reproducible too, or two runs of the same
-        command produce pools that differ in more than their bytes."""
+        """The seeded shuffle runs per species but draws from ONE rng built
+        for the whole walk, so the ORDER species are fetched in is part of
+        the draw: two runs of the same command must walk the same list, or
+        they produce pools that differ in more than their bytes.  (That the
+        walk differs from pilot_v1's is why the draw does not nest -- see
+        TestTheDrawDoesNotNestSoNoveltyIsAHashProperty.)"""
         self._require_dataset()
         a = fetch.species_for_role("target", "pilot100")
         b = fetch.species_for_role("target", "pilot100")
@@ -327,3 +329,194 @@ class TestTheFetchSelectsSpeciesByRoleNotByCount:
         i_session = src.index("session = _new_session()")
         assert i_amb < i_guard < i_fetch < i_session, \
             (i_amb, i_guard, i_fetch, i_session)
+
+
+def _fake_pool(n: int) -> list[dict]:
+    """A pool with the same shape and ordering contract the real
+    ``fetch_photo_pool`` returns: deduplicated, licence-filtered and sorted
+    by ``(observation_id, photo_id)``.
+
+    The observation ids are deliberately NOT monotone in the photo ids, so a
+    test that confuses draw order with canonical order fails instead of
+    passing by accident.
+    """
+    pool = [{
+        "observation_id": 100000 + (i * 37) % max(n, 1),
+        "photo_id": 900000 + i,
+        "license_code": "cc-by",
+        "attribution": "(c) test, some rights reserved (CC BY)",
+        "square_url": f"https://example.invalid/p/{900000 + i}/square.jpg",
+        "source_url": f"https://example.invalid/p/{900000 + i}/medium.jpg",
+    } for i in range(n)]
+    pool.sort(key=lambda p: (p["observation_id"], p["photo_id"]))
+    return pool
+
+
+def _run_fetch(monkeypatch, out: Path, species: list[str], pool_len: int,
+               k: int, seed: int = 42) -> dict[str, list[dict]]:
+    """Run the REAL fetch loop against fake pools and return its provenance.
+
+    ``--skip-download`` makes the loop accept candidates without touching
+    S3, so what gets measured is the fetcher's own selection behaviour: the
+    seeded shuffle, the single shared ``rng``, the resolution-gate slot
+    count and the canonical re-sort.  Nothing here is a model of the
+    fetcher; it is the fetcher, with only its two network calls replaced.
+    """
+    class _Session:
+        headers: dict = {}
+
+    idx = {s: i for i, s in enumerate(species)}
+    monkeypatch.setattr(fetch, "SPECIES_LIST", list(species))
+    monkeypatch.setattr(fetch, "_new_session", lambda: _Session())
+    monkeypatch.setattr(fetch, "fetch_taxon", lambda session, name: {
+        "taxon_id": idx[name],
+        "ranks": {r: f"{r}-of-{name}" for r in fetch.RANKS}})
+    monkeypatch.setattr(
+        fetch, "fetch_photo_pool",
+        lambda session, taxon_id, max_pages=3: (_fake_pool(pool_len), 0))
+    monkeypatch.setattr(sys, "argv", [
+        "fetch_inat_species.py", "--seed", str(seed),
+        "--images-per-species", str(k), "--skip-download",
+        "--out", str(out)])
+    fetch.main()
+    photos = json.loads((out / "PROVENANCE.json").read_text())["photos"]
+    by_species: dict[str, list[dict]] = {}
+    for rec in photos:
+        by_species.setdefault(rec["species"], []).append(rec)
+    return by_species
+
+
+class TestTheDrawDoesNotNestSoNoveltyIsAHashProperty:
+    """Iteration 11C stage 3.
+
+    The confirmation draws 24 photographs per species and keeps 12 new ones.
+    An earlier revision of the power report justified the split of 24 into
+    12 + 12 by claiming the seeded shuffle NESTS: "the first 12 of the longer
+    draw are the already-allocated photographs and the remainder are new BY
+    CONSTRUCTION".  If that were true, novelty would come free from the seed.
+
+    It is not true for this fetch, for two reasons that are properties of the
+    fetcher's code and not of the network, so both can be measured offline.
+    What survives is weaker and sufficient: 24 is the smallest draw that
+    guarantees 12 hash-disjoint photographs, and novelty is established by
+    comparing sha256 against the exploratory image manifest.
+    """
+
+    def test_one_species_draw_does_nest_when_nothing_else_changes(self,
+                                                                 monkeypatch,
+                                                                 tmp_path):
+        """Stated first so the correction does not overclaim in the other
+        direction.  The shuffle runs over the WHOLE pool, so changing
+        ``--images-per-species`` changes only how many are TAKEN from an
+        order that is a function of the pool and the seed."""
+        sp = ["Passer domesticus", "Corvus corax"]
+        a = _run_fetch(monkeypatch, tmp_path / "k12", sp, 327, 12)
+        b = _run_fetch(monkeypatch, tmp_path / "k24", sp, 327, 24)
+        for s in sp:
+            ids12 = {p["photo_id"] for p in a[s]}
+            ids24 = {p["photo_id"] for p in b[s]}
+            assert len(ids12) == 12 and len(ids24) == 24
+            assert ids12 <= ids24, s
+
+    def test_dropping_an_earlier_species_changes_every_later_draw(self,
+                                                                 monkeypatch,
+                                                                 tmp_path):
+        """Refutation 1, on the real loop.
+
+        ``rng = random.Random(args.seed)`` is built ONCE outside the species
+        loop and shuffled once per species, so the state reaching species i
+        depends on the pool lengths of species 0..i-1.  ``pilot_v1`` walked
+        all 36 species; ``--role target`` walks 30 and drops the one at index
+        1.  Every species after it therefore draws a different order, which
+        is exactly the situation the confirmation fetch is in.
+        """
+        real = list(fetch.SPECIES_LIST)
+        full = real[:5]
+        sub = [full[0]] + full[2:]
+        assert len(full) == 5 and len(sub) == 4
+        a = _run_fetch(monkeypatch, tmp_path / "walk36", full, 400, 24)
+        b = _run_fetch(monkeypatch, tmp_path / "walk30", sub, 400, 24)
+        # the species before the dropped one is unaffected: same state, same
+        # pool, same draw
+        assert {p["photo_id"] for p in a[real[0]]} == \
+            {p["photo_id"] for p in b[real[0]]}
+        # and every species after it is a different draw
+        for s in full[2:]:
+            assert {p["photo_id"] for p in a[s]} != \
+                {p["photo_id"] for p in b[s]}, s
+
+    def test_a_changed_pool_length_reorders_the_draw_completely(self,
+                                                               monkeypatch,
+                                                               tmp_path):
+        """The second way the nesting argument fails, and the silent one.
+
+        iNaturalist can re-grade an observation to research quality or change
+        a photo's licence between fetches, which changes how many candidates
+        survive the pool filter.  A shuffle's result depends on the LENGTH of
+        what it shuffles, so three extra observations weeks later produce a
+        different draw for every species -- with no error, and a pool that
+        still looks deep enough.
+        """
+        sp = ["Passer domesticus", "Corvus corax"]
+        a = _run_fetch(monkeypatch, tmp_path / "pool327", sp, 327, 24)
+        b = _run_fetch(monkeypatch, tmp_path / "pool330", sp, 330, 24)
+        for s in sp:
+            assert {p["photo_id"] for p in a[s]} != \
+                {p["photo_id"] for p in b[s]}, s
+
+    def test_the_files_on_disk_are_canonical_not_in_draw_order(self,
+                                                              monkeypatch,
+                                                              tmp_path):
+        """Refutation 2, and the reason even a nested draw would not help.
+
+        ``chosen.sort(key=(observation_id, photo_id))`` runs before files are
+        named ``000.jpg``, ``001.jpg``, ... so "the first 12" on disk means
+        the 12 smallest observation/photo ids, which is unrelated to where a
+        photograph sat in the draw.  Selection by position would keep
+        whatever the sort happened to put first.
+        """
+        sp = ["Passer domesticus", "Corvus corax"]
+        a = _run_fetch(monkeypatch, tmp_path / "k12", sp, 327, 12)
+        b = _run_fetch(monkeypatch, tmp_path / "k24", sp, 327, 24)
+        for s in sp:
+            exploratory = {p["photo_id"] for p in a[s]}
+            first_12_files = {p["photo_id"] for p in b[s][:12]}
+            # the SET nests ...
+            assert exploratory <= {p["photo_id"] for p in b[s]}
+            # ... but the first 12 FILES are not that set
+            assert first_12_files != exploratory, s
+            assert len(first_12_files & exploratory) < 12, s
+            # and the written order really is the canonical one
+            keys = [(p["observation_id"], p["photo_id"]) for p in b[s]]
+            assert keys == sorted(keys)
+            assert [p["file_name"] for p in b[s]] == \
+                sorted(p["file_name"] for p in b[s])
+
+    def test_24_always_leaves_12_disjoint_however_much_it_redraws(self,
+                                                                 monkeypatch,
+                                                                 tmp_path):
+        """The guarantee that replaces the nesting claim, measured on a real
+        draw rather than asserted as arithmetic.
+
+        Whatever the overlap with an exploratory 12 turns out to be -- all of
+        it if the pool and the walk are unchanged, none of it if either
+        drifted -- a 24-draw leaves at least 12 photographs whose identity is
+        not already allocated.  Only 12 exploratory photographs exist per
+        species, so the worst case is exactly 24 - 12.
+        """
+        sp = ["Passer domesticus"]
+        drawn = _run_fetch(monkeypatch, tmp_path / "k24", sp, 327, 24)[sp[0]]
+        assert len(drawn) == 24
+        assert len({p["photo_id"] for p in drawn}) == 24
+        for overlap in (0, 6, 12):
+            # the worst case for a given overlap: the exploratory set IS the
+            # first `overlap` photographs of the draw
+            exploratory = {p["photo_id"] for p in drawn[:overlap]}
+            disjoint = [p for p in drawn
+                        if p["photo_id"] not in exploratory]
+            assert len(disjoint) >= 12, (overlap, len(disjoint))
+        # and the bound is tight: at a full overlap exactly 12 remain
+        exploratory = {p["photo_id"] for p in drawn[:12]}
+        assert len([p for p in drawn
+                    if p["photo_id"] not in exploratory]) == 12
+

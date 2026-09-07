@@ -17,6 +17,7 @@ future re-run that moves them must be noticed rather than absorbed.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import sys
@@ -42,11 +43,14 @@ from power_analysis_confirmation import (  # noqa: E402
     CONFIRM_FETCH_SEED,
     CONFIRM_FETCH_TAG,
     CONFIRM_NEW_PHOTOS_PER_SPECIES,
+    CONFIRM_NEW_TEMPLATES_PER_FAMILY,
     CONFIRM_NEW_WORDING_PROBES_PER_PERSON,
     CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY,
     CONFIRM_RETENTION_REJECTED_PROBES_PER_ENTITY,
     CONFIRM_RETENTION_ROUTE,
+    CONFIRM_WORDING_FAMILIES,
     EQUIVALENCE_MARGIN,
+    EXPLORATORY_IMAGE_MANIFEST,
     FAMILYWISE_ALPHA,
     HOLM_WORST_CASE_ALPHA,
     METRIC_CLUSTER_ROLE,
@@ -1106,17 +1110,66 @@ class TestThePhotographSupplyIsMeasured:
             m["nested_sizing"]["achieved_at_cluster_ceiling"][0][
                 f"power_at_{c}_clusters_conservative_icc_upper"]
 
-    def test_the_refetch_route_is_declared_to_need_hash_verification(self):
-        """The superset argument is a claim about a seeded shuffle, but the
-        resolution gate replaces a rejected candidate with the next one in
-        that order and the rejection depends on what S3 serves — so
-        disjointness must be checked by hash after the fetch, not trusted."""
+    def test_the_refetch_route_selects_by_hash_and_not_by_position(self):
+        """Novelty is a content-hash property.  An earlier revision argued it
+        from the seeded shuffle instead ("the first 12 of the longer draw are
+        the already-allocated photographs"), which is false for this fetch, so
+        the report now states the selection rule and records why the shuffle
+        argument does not hold."""
         r = _load()
         s = r["new_photograph_supply"]["seeded_refetch"]
         assert s["network_required"] is True
         assert s["records_license_and_attribution"] is True
         assert s["species_covered"] == 36
-        assert "verified by content hash" in s["disjointness_mechanism"]
+        # the mechanism is a hash set difference against the exploratory
+        # manifest, and it must name that manifest
+        assert "content-hash disjointness" in s["disjointness_mechanism"]
+        assert "never position in the draw" in s["disjointness_mechanism"]
+        assert "image_manifest.json" in s["disjointness_mechanism"]
+        # a selection rule that can be executed, with a refusal in it
+        assert "sha256" in s["selection_rule"]
+        assert "fewer than 12 are disjoint" in s["selection_rule"]
+        assert "(observation_id, photo_id)" in s["selection_rule"]
+
+    def test_the_superset_claim_is_withdrawn_not_left_standing(self):
+        """The withdrawn claim has to stay visible with its refutation, or the
+        next reader re-derives it from the seed and believes it again."""
+        s = _load()["new_photograph_supply"]["seeded_refetch"]
+        assert "no superset relation is assumed" in \
+            s["disjointness_mechanism"]
+        d = s["draw_nesting_is_not_relied_on"]
+        assert "by construction" in d["claim_an_earlier_revision_made"]
+        # both refutations are recorded, and each names the code fact it rests
+        # on rather than asserting a conclusion
+        assert "ONCE outside the species loop" in \
+            d["refutation_1_rng_state_advances_across_species"]
+        assert "36" in d["refutation_1_rng_state_advances_across_species"]
+        assert "30" in d["refutation_1_rng_state_advances_across_species"]
+        assert "chosen.sort" in \
+            d["refutation_2_the_accepted_set_is_re_sorted"]
+        # and what IS true is stated, so the correction is not an overclaim in
+        # the other direction
+        assert "does nest" in d["what_is_true_and_why_it_is_not_enough"]
+        assert "cannot carry a novelty argument" in \
+            d["what_is_true_and_why_it_is_not_enough"]
+
+    def test_the_draw_size_is_justified_by_a_worst_case_not_by_nesting(self):
+        """24 = 12 + 12 survives the correction, but as a supply bound: only
+        12 exploratory photographs exist per species, so a 24-draw cannot be
+        short of 12 disjoint ones.  The bound is tight, which is why the
+        report also says the count gets measured."""
+        s = _load()["new_photograph_supply"]["seeded_refetch"]
+        w = s["why_the_draw_is_24"]
+        assert "smallest draw that guarantees 12 disjoint" in w
+        assert "24 - 12 = 12" in w
+        assert "no slack" in w
+        assert "measured per species after the fetch" in w
+        h = _load()["confirmation_size"]["held_out_photographs"]
+        assert h["fetch_images_per_species"] == \
+            h["already_allocated_per_species"] \
+            + h["new_photographs_per_species"] == 24
+        v = s["verified_after_the_fetch_by"]
+        assert "360" in v and "496" in v and "empty intersection" in v
 
 
 class TestTheProbeAxisIsLabelledPerStratum:
@@ -1282,7 +1335,8 @@ class TestThePreregistrationDecisionsAreRecorded:
             "B3_minus_B0:filr": "superiority"}
         by_id = {d["id"]: d for d in p["decisions"]}
         assert set(by_id) == {"primary_estimand", "confirmation_size",
-                              "primary_test", "retention_probe_allocation",
+                              "primary_test", "portrait_reuse",
+                              "retention_probe_allocation",
                               "familywise_alpha", "retention_margin",
                               "b3_vs_mg", "new_photograph_supply"}
         for d in p["decisions"]:
@@ -1425,8 +1479,11 @@ class TestTheConfirmationSizeIsSelected:
         assert "--limit-species" not in cmd
         assert "24 of the 30" in h[
             "why_the_command_names_a_role_and_not_a_count"]
-        # 24 drawn at the same seed makes the first 12 the already-allocated
-        # ones and the remaining 12 new
+        # 24 = 12 already allocated + 12 new.  This arithmetic is a SUPPLY
+        # bound (at most 12 exploratory photographs exist per species, so a
+        # 24-draw always leaves 12 disjoint), not the shuffle-nesting claim an
+        # earlier revision made here; see
+        # new_photograph_supply.seeded_refetch.why_the_draw_is_24.
         assert h["fetch_images_per_species"] == \
             h["already_allocated_per_species"] \
             + h["new_photographs_per_species"]
@@ -1678,6 +1735,153 @@ class TestTheRetentionAllocationIsMeasuredNotAsserted:
             ra["how_it_differs_from_the_exploratory_retention_number"]
         assert "must not be subtracted" in \
             ra["how_it_differs_from_the_exploratory_retention_number"]
+
+
+# ── the portrait reuse is measured, not assumed ─────────────────────
+
+class TestThePortraitReuseIsMeasuredNotAsserted:
+    """Iteration 11C stage 3.
+
+    The sealed rules required every confirmation photograph sha256 to be new.
+    For the 30 target species that is satisfiable, and the fetch satisfies it.
+    For the 42 target persons it is not: each has exactly one portrait, the
+    wording stratum is image-route, and a text-route probe carries
+    ``image_split = None`` so it is in neither primary stratum.  The exemption
+    the freeze grants is worth exactly as much as the measurement that forces
+    it, so the measurement is published beside it rather than summarised.
+    """
+
+    def test_the_wording_stratum_is_measured_to_be_image_route(self):
+        p = _load()["portrait_reuse_exemption"]
+        assert p["wording_stratum_probes"] == 180
+        assert p["wording_stratum_is_entirely_image_route"] is True
+        assert sum(p["wording_stratum_routes"].values()) == \
+            p["wording_stratum_probes"]
+        assert set(p["wording_stratum_routes"]) == \
+            {"image_text_to_text", "image_to_text"}
+        assert "text_to_text" not in p["wording_stratum_routes"]
+        assert p["wording_stratum_image_seen_in_training"] == {"True": 180}
+
+    def test_the_stratum_uses_the_families_the_design_mirrors(self):
+        """The 3 x 4 construction is not a free choice of shape: it mirrors the
+        3 families the exploratory stratum actually used, measured here."""
+        p = _load()["portrait_reuse_exemption"]
+        assert p["wording_stratum_num_families"] == \
+            CONFIRM_WORDING_FAMILIES == 3
+        assert sorted(p["wording_stratum_families"]) == [
+            "image_fine_direct", "image_target_direct",
+            "multimodal_image_text"]
+        assert len(p["wording_stratum_exploratory_template_ids"]) == \
+            CONFIRM_WORDING_FAMILIES * 3
+        for tid in p["wording_stratum_exploratory_template_ids"]:
+            fam, idx = tid.split(":")
+            assert fam in p["wording_stratum_families"], tid
+            assert idx.isdigit(), \
+                f"a non-numeric exploratory index would make the new ids " \
+                f"harder to keep disjoint: {tid}"
+        # and the confirmation builds 4 NEW templates on each of the 3
+        assert CONFIRM_NEW_WORDING_PROBES_PER_PERSON == \
+            CONFIRM_WORDING_FAMILIES * CONFIRM_NEW_TEMPLATES_PER_FAMILY == 12
+
+    def test_a_text_route_probe_would_be_in_neither_stratum(self):
+        """The rejected alternative, measured: text-route does not buy the same
+        stratum more cheaply, it leaves the 42 persons with no stratum."""
+        p = _load()["portrait_reuse_exemption"]
+        assert p["text_route_test_probes"] > 0
+        assert p["text_route_image_split_values"] == ["None"]
+        assert p["text_route_probes_are_in_neither_primary_stratum"] is True
+        w = p["why_that_decides_the_route"]
+        assert "no probe in either stratum" in w
+        assert "72 clusters to 30" in w
+
+    def test_every_target_person_has_exactly_one_photograph(self):
+        p = _load()["portrait_reuse_exemption"]
+        assert p["target_persons"] == 42
+        assert p["photographs_per_target_person"] == {"1": 42}
+        assert p["every_target_person_has_exactly_one_photograph"] is True
+        assert len(set(p["target_person_ids"])) == 42
+        # the wording stratum's clusters ARE those persons, and the size block
+        # budgets the same number
+        assert p["wording_stratum_clusters"] == p["target_persons"]
+        assert _load()["confirmation_size"]["new_wording_probes"][
+            "target_persons"] == p["target_persons"]
+
+    def test_the_exempted_portraits_are_the_exploratory_ones(self):
+        """An exemption that listed hashes the exploratory run never used would
+        exempt nothing, and would hide a mis-measured list behind a plausible
+        count."""
+        p = _load()["portrait_reuse_exemption"]
+        man = REPO_ROOT / EXPLORATORY_IMAGE_MANIFEST
+        if not man.exists():
+            pytest.skip(f"committed manifest not present: {man}")
+        images = json.loads(man.read_text())["images"]
+        ports = p["portraits"]
+        assert ports["count"] == len(ports["paths"]) == 42
+        assert len(set(ports["sha256"])) == len(ports["sha256"]) == 42
+        assert len(set(ports["image_ids"])) == 42
+        assert all(path in images for path in ports["paths"])
+        assert {images[path]["sha256"] for path in ports["paths"]} == \
+            set(ports["sha256"])
+        assert p["portraits_that_are_exploratory_media"] == 42
+
+    def test_the_set_hash_is_recomputable_from_its_own_list(self):
+        r = _load()
+        ports = r["portrait_reuse_exemption"]["portraits"]
+        assert hashlib.sha256(
+            "\n".join(ports["sha256"]).encode()).hexdigest() == \
+            ports["set_sha256"]
+        fn = r["confirmation_size"]["frozen_now"]
+        assert fn["required_repeat_portrait_set_sha256"] == \
+            ports["set_sha256"]
+        assert fn["required_repeat_portrait_sha256"] == ports["sha256"]
+        assert fn["required_repeat_portrait_count"] == ports["count"]
+        assert len(fn["required_repeats_are"]) == 2
+        assert "target-association set" in fn["required_repeats_are"][0]
+        assert "42" in fn["required_repeats_are"][1]
+
+    def test_the_gate_exposure_is_disclosed_not_hidden(self):
+        """All 42 portraits were in probes the reference-state gate scored.
+        The report says so next to the exemption instead of letting the reader
+        infer that the person side is now as clean as the species side."""
+        p = _load()["portrait_reuse_exemption"]
+        assert p["portraits_the_exploratory_gate_exercised"] == 42
+        assert p["portraits_exercised_by_the_gate_are_all_of_them"] is True
+        assert "REQUIRED repeat and not a leak" in p["what_must_repeat"]
+        assert p["what_is_still_new_on_those_probes"] == \
+            ["query_id", "template_id", "template text"]
+        assert "UNSEEN wording" in \
+            p["why_the_novelty_that_matters_survives"]
+        assert "indistinguishable from zero" in p["why_not_species_only"]
+
+    def test_the_collision_rule_states_the_exception_and_its_boundary(self):
+        rules = _load()["confirmation_size"][
+            "frozen_at_stage_3_before_any_scoring"]["collision_rules"]
+        hit = [r for r in rules if "bounded exception" in r]
+        assert len(hit) == 1, hit
+        r = hit[0]
+        assert "42 target-person portraits" in r
+        assert "360 species photographs are still required to be new" in r
+        assert "cannot grow" in r
+        assert "forbids the frozen estimand" in r
+        # and the general no-reuse rule names BOTH required repeats
+        gen = [x for x in rules if "beyond the two required repeats" in x]
+        assert len(gen) == 1
+        assert "new template TEXT" in gen[0]
+        assert "hashed target-person portraits" in gen[0]
+
+    def test_the_decision_records_what_it_rejected(self):
+        d = [x for x in _load()["preregistration_decisions"]["decisions"]
+             if x.get("id") == "portrait_reuse"]
+        assert len(d) == 1
+        assert d[0]["evidence"] == "portrait_reuse_exemption"
+        assert "42" in d[0]["chosen"]
+        assert "REQUIRED repeat" in d[0]["chosen"]
+        assert len(d[0]["rejected"]) == 4
+        joined = " ".join(d[0]["rejected"])
+        assert "text-route" in joined
+        assert "species only" in joined
+        assert "72 clusters to 30" in joined
+        assert "no boundary" in joined
 
 
 # ── the primary test is read off the code that implements it ────────

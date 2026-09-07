@@ -34,6 +34,16 @@ data/raw/inaturalist/*
 data/raw/inaturalist/pilot_v1/*
 !data/raw/inaturalist/pilot_v1/annotations.json
 !data/raw/inaturalist/pilot_v1/PROVENANCE.json
+# Iteration 11C confirmation pool: same treatment, and for the same reason.
+# The 720 CC-licensed photos stay ignored; PROVENANCE.json pins every source
+# URL + SHA-256, so the 360 selected photographs are re-fetchable and their
+# hashes are auditable from the commit.  Without it the confirmation pool has
+# exactly the unverifiable-bytes gap 11R1 closed for local_v1: the sealed
+# image manifest would assert hashes no one could check against a source.
+!data/raw/inaturalist/confirm_v1/
+data/raw/inaturalist/confirm_v1/*
+!data/raw/inaturalist/confirm_v1/annotations.json
+!data/raw/inaturalist/confirm_v1/PROVENANCE.json
 !data/interim/.gitkeep
 !data/processed/.gitkeep
 !data/generated/.gitkeep

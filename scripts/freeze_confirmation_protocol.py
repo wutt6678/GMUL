@@ -66,6 +66,7 @@ protocol that can be quietly re-frozen after inference is not a protocol.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import inspect
 import json
 import sys
@@ -115,10 +116,13 @@ from power_analysis_confirmation import (  # noqa: E402
     CONFIRM_NEW_WORDING_PROBES_PER_PERSON,
     CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY,
     CONFIRM_RETENTION_ROUTE,
+    CONFIRM_WORDING_FAMILIES,
+    EXPLORATORY_IMAGE_MANIFEST,
     FAMILYWISE_ALPHA,
     HOLM_WORST_CASE_ALPHA,
     N_PERMUTATIONS,
     PERMUTATION_SEED,
+    PHOTO_SELECTION_RULE,
     PRIMARY_ESTIMAND,
     PRIMARY_ESTIMAND_STRATA,
     PRIMARY_FAMILY,
@@ -518,6 +522,225 @@ def _fetch_role_refusals(power: dict[str, Any]) -> list[str]:
     return out
 
 
+def _photo_selection_refusals(power: dict[str, Any],
+                              repo_root: Path) -> list[str]:
+    """Refuse to freeze a photograph-novelty rule that cannot be executed.
+
+    Iteration 11C stage 3.  The confirmation keeps 12 of the 24 photographs
+    each species draws, and "which 12" is a choice -- so it has to be frozen
+    before the fetch runs, not made afterwards over the pool that came back.
+
+    An earlier revision specified it positionally: the seeded shuffle was
+    claimed to nest, making the last 12 of the longer draw new BY
+    CONSTRUCTION.  That is false for this fetch, for two reasons that are
+    properties of ``fetch_inat_species.py`` and were measured against it.
+    (1) ``rng`` is built once outside the species loop, so the state reaching
+    a species depends on the pool lengths before it; ``pilot_v1`` walked 36
+    species and ``--role target`` walks 30, so every species after the first
+    dropped one draws a different order.  (2) ``chosen.sort`` re-orders the
+    accepted set by ``(observation_id, photo_id)`` before files are named, so
+    position on disk is not position in the draw either.  What replaces it is
+    a hash rule against the exploratory image manifest -- which is why that
+    manifest's own contents are hashed and bound here.
+    """
+    out: list[str] = []
+    size = power.get("confirmation_size") or {}
+    photos = size.get("held_out_photographs") or {}
+    supply = (power.get("new_photograph_supply") or {}).get(
+        "seeded_refetch") or {}
+    rule = photos.get("selection_rule")
+    if rule != PHOTO_SELECTION_RULE:
+        out.append(
+            f"the frozen photograph selection rule is not the rule the module "
+            f"declares. Report: {rule!r}. Module: {PHOTO_SELECTION_RULE!r}")
+    if supply.get("selection_rule") != rule:
+        out.append(
+            "the selection rule is stated twice and the two copies differ "
+            "(confirmation_size.held_out_photographs vs "
+            "new_photograph_supply.seeded_refetch); a builder would follow "
+            "one and the freeze would certify the other")
+    if isinstance(rule, str):
+        if "sha256" not in rule:
+            out.append(
+                "the frozen selection rule does not name a content hash, so "
+                "it cannot establish that a photograph is new")
+        for positional in ("first 12", "last 12", "by construction",
+                           "by position"):
+            if positional in rule:
+                out.append(
+                    f"the frozen selection rule selects photographs "
+                    f"POSITIONALLY ({positional!r} appears in {rule!r}). "
+                    "Position carries no information here: the accepted set "
+                    "is re-sorted by (observation_id, photo_id) and the draw "
+                    "does not nest with pilot_v1's")
+    n_short = photos.get("refuse_a_species_with_fewer_than_n_disjoint")
+    if n_short != CONFIRM_NEW_PHOTOS_PER_SPECIES:
+        out.append(
+            f"the frozen rule would accept a species yielding "
+            f"{n_short} disjoint photographs where the design needs "
+            f"{CONFIRM_NEW_PHOTOS_PER_SPECIES}; a short species must refuse "
+            "rather than be padded from the exploratory pool")
+    withdrawn = supply.get("draw_nesting_is_not_relied_on") or {}
+    for key in ("claim_an_earlier_revision_made",
+                "refutation_1_rng_state_advances_across_species",
+                "refutation_2_the_accepted_set_is_re_sorted",
+                "what_is_true_and_why_it_is_not_enough"):
+        if not withdrawn.get(key):
+            out.append(
+                f"the withdrawn shuffle-nesting claim is not recorded with its "
+                f"refutation ({key!r} is missing), so nothing stops the next "
+                "revision re-deriving novelty from the seed")
+    frozen_now = size.get("frozen_now") or {}
+    if frozen_now.get("exploratory_photograph_sha256_manifest") != \
+            EXPLORATORY_IMAGE_MANIFEST:
+        out.append(
+            f"the novelty rule is disjointness against "
+            f"{frozen_now.get('exploratory_photograph_sha256_manifest')!r} "
+            f"but the module names {EXPLORATORY_IMAGE_MANIFEST!r}")
+    recorded = frozen_now.get("exploratory_photograph_sha256_manifest_sha256")
+    is_hex = isinstance(recorded, str) and len(recorded) == 64
+    if is_hex:
+        try:
+            bytes.fromhex(recorded)
+        except ValueError:
+            is_hex = False
+    path = repo_root / EXPLORATORY_IMAGE_MANIFEST
+    live = sha256_file(path) if path.exists() else None
+    if not is_hex:
+        # Fail CLOSED.  A report generated where the manifest is absent
+        # records a reason string instead of a hash, and freezing that would
+        # certify a novelty rule with nothing to be disjoint from.
+        out.append(
+            f"the exploratory image manifest's own hash is not a sha256 "
+            f"({recorded!r}), so the photograph novelty rule is bound to "
+            "nothing")
+    elif live is None:
+        out.append(
+            f"{EXPLORATORY_IMAGE_MANIFEST} is absent, so it cannot be shown "
+            "that any confirmation photograph is disjoint from exploratory "
+            "media")
+    elif recorded != live:
+        out.append(
+            f"the exploratory image manifest has DRIFTED: the report binds "
+            f"{recorded} but {EXPLORATORY_IMAGE_MANIFEST} now hashes to "
+            f"{live}. The set of media the confirmation must avoid has "
+            "changed since the rule was written")
+    return out
+
+
+def _portrait_exemption_refusals(power: dict[str, Any],
+                                 repo_root: Path) -> list[str]:
+    """Refuse to freeze a portrait exemption the measurement does not force.
+
+    Iteration 11C stage 3.  The sealed rules required every confirmation
+    photograph sha256 to be new and no exploratory media to be reused.  That
+    is satisfiable for the 30 target species, whose new photographs were
+    fetched, and unsatisfiable for the 42 target persons: each has exactly one
+    portrait, the wording stratum is image-route by construction, and a
+    text-route probe carries ``image_split = None`` so it sits in neither
+    primary stratum.  As written the rules therefore forbade the frozen
+    estimand -- the same shape of defect as 11C-R2's impossible
+    association-disjointness invariant.
+
+    The exemption is granted as a HASH LIST and not as a category, so what has
+    to be refused is any exemption that is not exactly the measured one: a
+    list that is not exploratory media, a list whose set hash does not match
+    its own contents, or a list granted while the measurement that forces it
+    has quietly stopped holding.
+    """
+    out: list[str] = []
+    block = power.get("portrait_reuse_exemption") or {}
+    if not block:
+        out.append(
+            "the power report carries no portrait_reuse_exemption, so the "
+            "sealed-split novelty rules forbid the frozen primary estimand: "
+            "the 504 wording probes are image-route over persons with one "
+            "portrait each")
+        return out
+    portraits = block.get("portraits") or {}
+    hashes = portraits.get("sha256") or []
+    n = portraits.get("count", 0)
+    words = (power.get("confirmation_size") or {}).get(
+        "new_wording_probes") or {}
+    persons = words.get("target_persons")
+    if n != len(hashes):
+        out.append(
+            f"the portrait exemption counts {n} portraits but lists "
+            f"{len(hashes)} hashes; an exemption whose size is not its own "
+            "list has no boundary")
+    if n != persons:
+        out.append(
+            f"the exemption covers {n} portraits but the wording stratum is "
+            f"sized over {persons} target persons; the exemption must be "
+            "exactly the persons the 504 probes sit on, or it exempts media "
+            "no confirmation probe needs")
+    if len(set(hashes)) != len(hashes):
+        out.append("the portrait exemption lists a duplicate sha256")
+    recomputed = hashlib.sha256("\n".join(hashes).encode()).hexdigest()
+    if portraits.get("set_sha256") != recomputed:
+        out.append(
+            f"the portrait set hashes to {portraits.get('set_sha256')} but its "
+            f"own list hashes to {recomputed}; the bound set hash does not "
+            "describe the bound list")
+    frozen_now = (power.get("confirmation_size") or {}).get(
+        "frozen_now") or {}
+    if frozen_now.get("required_repeat_portrait_set_sha256") != \
+            portraits.get("set_sha256"):
+        out.append(
+            "confirmation_size.frozen_now and portrait_reuse_exemption bind "
+            "different portrait set hashes, so the stage-3 builder and the "
+            "sealed invariant would exempt different media")
+    # An exemption must exempt something that IS exploratory media, checked
+    # against the live manifest rather than against the report's own claim.
+    manifest_path = repo_root / EXPLORATORY_IMAGE_MANIFEST
+    exploratory: set[str] = set()
+    if manifest_path.exists():
+        exploratory = {
+            (v or {}).get("sha256")
+            for v in (json.loads(manifest_path.read_text())
+                      .get("images") or {}).values()}
+    not_exploratory = sorted(set(hashes) - exploratory)
+    if exploratory and not_exploratory:
+        out.append(
+            f"{len(not_exploratory)} of the {len(hashes)} exempted portraits "
+            f"are NOT in {EXPLORATORY_IMAGE_MANIFEST} "
+            f"({', '.join(h[:12] for h in not_exploratory[:3])}...); an "
+            "exemption for media the exploratory run never used exempts "
+            "nothing and hides a mis-measured list")
+    # The three measurements that force the exemption.  If any stops holding,
+    # the exemption is no longer necessary and must not stay granted.
+    for key, want in (
+            ("wording_stratum_is_entirely_image_route", True),
+            ("every_target_person_has_exactly_one_photograph", True),
+            ("text_route_probes_are_in_neither_primary_stratum", True)):
+        if block.get(key) is not want:
+            out.append(
+                f"the portrait exemption rests on {key}={want} but the "
+                f"measurement says {block.get(key)!r}; if that changed the "
+                "exemption is no longer forced and the novelty rule should "
+                "apply in full again")
+    if block.get("wording_stratum_num_families") != CONFIRM_WORDING_FAMILIES:
+        out.append(
+            f"the exploratory wording stratum uses "
+            f"{block.get('wording_stratum_num_families')} probe families but "
+            f"the design mirrors {CONFIRM_WORDING_FAMILIES}; the confirmation "
+            "would not be re-measuring the stratum it is sized on")
+    if block.get("wording_stratum_clusters") != persons:
+        out.append(
+            f"the exploratory wording stratum has "
+            f"{block.get('wording_stratum_clusters')} clusters but the size "
+            f"block budgets {persons} target persons")
+    rules = ((power.get("confirmation_size") or {}).get(
+        "frozen_at_stage_3_before_any_scoring") or {}).get(
+        "collision_rules") or []
+    if not any("bounded exception" in r for r in rules):
+        out.append(
+            "no collision_rule states the portrait exception, so the rule a "
+            "stage-3 builder reads and the exemption the freeze grants "
+            "contradict each other")
+    return out
+
+
 def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
     reports = repo_root / "data" / "reports"
     data_dir = repo_root / "data" / f"mllmu_hier_{tag}"
@@ -571,6 +794,8 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
     refusals.extend(_primary_test_refusals(power, repo_root))
     refusals.extend(_retention_refusals(power))
     refusals.extend(_fetch_role_refusals(power))
+    refusals.extend(_photo_selection_refusals(power, repo_root))
+    refusals.extend(_portrait_exemption_refusals(power, repo_root))
 
     # The estimand and the selected size are checked against the module
     # rather than copied from it, because a freeze that restated them would
@@ -613,10 +838,20 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
     n_target_entity = len(frozen_now.get("target_entity_ids") or [])
     expl_templates_sha = frozen_now.get("exploratory_template_ids_sha256")
     expl_templates_n = len(frozen_now.get("exploratory_template_ids") or [])
+    #: The second REQUIRED repeat.  Refused rather than trusted if the
+    #: measurement that forces it does not hold: see
+    #: ``_portrait_exemption_refusals``.
+    portrait_block = power.get("portrait_reuse_exemption") or {}
+    portraits = portrait_block.get("portraits") or {}
+    portrait_set_sha = portraits.get("set_sha256")
+    n_portraits = portraits.get("count", 0)
+    n_gate_saw = portrait_block.get(
+        "portraits_the_exploratory_gate_exercised", 0)
     for label, value in (
             ("target_association_ids_sha256", target_assoc_sha),
             ("target_entity_ids_sha256", target_entity_sha),
-            ("exploratory_template_ids_sha256", expl_templates_sha)):
+            ("exploratory_template_ids_sha256", expl_templates_sha),
+            ("required_repeat_portrait_set_sha256", portrait_set_sha)):
         if not value:
             refusals.append(
                 f"the power report does not bind {label}, so the sealed-split "
@@ -1118,6 +1353,74 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
                 "probe budget behind them and the omission of the image "
                 "route is a recorded decision rather than an absence."),
         },
+        "portrait_exemption": {
+            "exempted": n_portraits,
+            "set_sha256": portrait_set_sha,
+            "sha256": portraits.get("sha256"),
+            "paths": portraits.get("paths"),
+            "image_ids": portraits.get("image_ids"),
+            "target_persons": portrait_block.get("target_persons"),
+            "target_person_ids": portrait_block.get("target_person_ids"),
+            "photographs_per_target_person":
+                portrait_block.get("photographs_per_target_person"),
+            "the_exploratory_gate_exercised": n_gate_saw,
+            "applies_to": (
+                f"the {(size.get('new_wording_probes') or {}).get('new_wording_probes_total')} "
+                "new wording probes on the target persons, and nothing else"),
+            "does_not_apply_to": (
+                f"the {(photos.get('new_photographs_total'))} new species "
+                "photographs, every one of which must be hash-disjoint from "
+                f"the exploratory manifest, or the "
+                f"{retention_alloc.get('new_retention_probes_total')} "
+                "retention probes, which are text-only and carry no image at "
+                "all"),
+            "what_is_still_new_on_an_exempted_probe":
+                portrait_block.get("what_is_still_new_on_those_probes"),
+            "measurement_it_rests_on": {
+                "wording_stratum_probes":
+                    portrait_block.get("wording_stratum_probes"),
+                "wording_stratum_routes":
+                    portrait_block.get("wording_stratum_routes"),
+                "wording_stratum_is_entirely_image_route":
+                    portrait_block.get(
+                        "wording_stratum_is_entirely_image_route"),
+                "wording_stratum_families":
+                    portrait_block.get("wording_stratum_families"),
+                "every_target_person_has_exactly_one_photograph":
+                    portrait_block.get(
+                        "every_target_person_has_exactly_one_photograph"),
+                "text_route_test_probes":
+                    portrait_block.get("text_route_test_probes"),
+                "text_route_image_split_values":
+                    portrait_block.get("text_route_image_split_values"),
+                "text_route_probes_are_in_neither_primary_stratum":
+                    portrait_block.get(
+                        "text_route_probes_are_in_neither_primary_stratum"),
+                "why_that_decides_the_route":
+                    portrait_block.get("why_that_decides_the_route"),
+            },
+            "rejected_alternatives": next(
+                (d.get("rejected") for d in
+                 (prereg.get("decisions") or [])
+                 if d.get("id") == "portrait_reuse"), []),
+            "read_from": "portrait_reuse_exemption in the power report bound "
+                         "above; refused rather than copied if the "
+                         "measurement that forces it does not hold",
+            "why_this_is_in_the_freeze": (
+                "As sealed at 11C-R2, invariants 2 and 3 required every "
+                "confirmation photograph sha256 to be new and no exploratory "
+                "media to be reused. Read against the frozen primary estimand "
+                "that is unsatisfiable: the estimand pools over 72 entities "
+                "across two IMAGE strata, the wording stratum's 42 clusters "
+                "are persons with one portrait each, and a text-route probe "
+                "has image_split None so it is in neither stratum. The rules "
+                "therefore forbade the design they were sealing - the same "
+                "defect 11C-R2 found in the impossible "
+                "association-disjointness invariant. The exemption is granted "
+                "as a hash list of exactly 42 portraits so it cannot widen "
+                "without a re-freeze, and the cost is recorded rather than "
+                "argued away: the gate scored all 42."),
+        },
         "claims": {
             "primary_family": list(PRIMARY_FAMILY),
             "primary_estimand": PRIMARY_ESTIMAND,
@@ -1218,8 +1521,10 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
                 "checked_at": "stage 3, before the stage-4 tag",
             },
             {
-                "invariant": "every confirmation query_id, template_id, "
-                             "template TEXT and photograph sha256 is NEW",
+                "invariant": "every confirmation query_id, template_id and "
+                             "template TEXT is NEW, and every photograph "
+                             "sha256 is new except the hashed target-person "
+                             "portraits",
                 "bound_by": {
                     "exploratory_template_ids_sha256": expl_templates_sha,
                     "exploratory_template_ids": expl_templates_n,
@@ -1227,6 +1532,13 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
                         "data/mllmu_hier_pilot100/image_manifest.json",
                     "exploratory_query_ids": "the exploratory queries "
                                              "parquet bound above",
+                    "exempted_portraits": n_portraits,
+                    "exempted_portrait_set_sha256": portrait_set_sha,
+                    "exemption_is_a_list_not_a_category": (
+                        "exactly these 42 hashes and no other photograph. An "
+                        "exemption stated as 'person portraits may repeat' "
+                        "could grow to any media; stated as a hash list it "
+                        "cannot"),
                 },
                 "why": "the reference-state gate inspected the exploratory "
                        "test split before candidate selection, which is why "
@@ -1238,24 +1550,61 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
                     "new label. Novelty is a property of the bytes shown to "
                     "the model, so the text is checked and not just the "
                     "identifier that names it"),
+                "why_the_portraits_are_exempt": (
+                    "each of the 42 target persons has exactly one "
+                    "photograph, so there is no second portrait to fetch and "
+                    "no pool to fetch it from. The wording stratum is "
+                    "image-route by construction - all 180 of its exploratory "
+                    "probes carry a portrait - and a text-route probe carries "
+                    "image_split None, so it sits in NEITHER primary stratum. "
+                    "Requiring a new portrait therefore does not make the "
+                    "confirmation stricter, it makes the frozen estimand "
+                    "unbuildable: the pooled 72-entity estimand would collapse "
+                    "to 30 species clusters"),
+                "why_the_exemption_does_not_give_up_the_novelty_argument": (
+                    f"what the gate was exposed to on the person side was a "
+                    f"PAIR of a portrait and a wording, and all "
+                    f"{n_gate_saw} of these portraits were in the probes it "
+                    f"scored - that cost is disclosed rather than argued "
+                    f"away. What stays new is the probe: a new query_id over "
+                    f"a new template text is a probe the gate never scored, "
+                    f"which is what the stratum is named for - seen photo, "
+                    f"UNSEEN wording"),
                 "enforced_by": "the stage-3 probe builder, by hash and by "
                                "query_id, before the split is written",
                 "checked_at": "stage 3, before the stage-4 tag",
             },
             {
-                "invariant": "no exploratory QUERY or MEDIA is reused",
+                "invariant": "no exploratory QUERY or MEDIA is reused beyond "
+                             "the two required repeats",
                 "bound_by": {
-                    "what_may_repeat": "the target-association set, invariant "
-                                       "1 above",
+                    "what_may_repeat": [
+                        "the target-association set, invariant 1 above",
+                        f"the {n_portraits} target-person portraits, set "
+                        f"sha256 {portrait_set_sha}",
+                    ],
                     "what_may_not": "query_ids, template ids, template "
-                                    "texts, and every photograph's sha256",
+                                    "texts, and every other photograph's "
+                                    "sha256 - including all 360 new species "
+                                    "photographs without exception",
+                    "why_exactly_two_things_may_repeat": (
+                        "both are what the adapters were trained on rather "
+                        "than what the gate measured: the target "
+                        "entity-attribute pairs, and the one portrait each "
+                        "target person has. Everything the gate scored that "
+                        "could be renewed was renewed"),
                 },
                 "why": "this is the invariant that used to be stated as "
                        "association-disjointness. Stated over queries and "
                        "media it is both satisfiable and the thing that "
                        "actually matters: it is the bytes the gate saw, not "
                        "the association they were about, that make the "
-                       "exploratory results exploratory.",
+                       "exploratory results exploratory. It is stated with "
+                       "its two exceptions because an invariant that forbids "
+                       "the design it is sealing is not a strict invariant, "
+                       "it is an unexecutable one - and the exception is "
+                       "bounded by a hash list, so it cannot be widened "
+                       "without a re-freeze.",
                 "enforced_by": "the stage-3 probe builder, by hash and by "
                                "query_id, before the split is written",
                 "checked_at": "stage 3, before the stage-4 tag",
@@ -1435,6 +1784,7 @@ def main() -> int:
           f"{freeze['retention_probes']['entities_covered']} entities), so "
           f"{pb['total_allocated']} allocated in all")
     print(f"  fetch        {cs['held_out_photographs']['fetch_command']}")
+    print(f"  select       {cs['held_out_photographs']['selection_rule']}")
     t = freeze["primary_test"]
     print(f"  test         {t['p_value_method']}, n={t['n_permutations']} "
           f"seed={t['permutation_seed']}, directions "
@@ -1454,6 +1804,10 @@ def main() -> int:
     print(f"  invariants   {len(inv)} sealed-split / score-once assertions "
           f"recorded, {sum(1 for i in inv if 'IDENTICAL' in i['invariant'])} "
           f"of them requiring identity rather than novelty")
+    pb = freeze["portrait_exemption"]
+    print(f"  portraits    {pb['exempted']} target-person portraits may "
+          f"repeat (set sha256 {str(pb['set_sha256'])[:16]}); the gate saw "
+          f"{pb['the_exploratory_gate_exercised']} of them, disclosed")
     return 0
 
 
