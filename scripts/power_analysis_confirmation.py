@@ -14,13 +14,19 @@ constraints:
 
 * **Entity-clustered claims** (all six paired metrics on the pooled target
   and retain probes).  The resampling unit is the entity, so the required
-  quantity is a number of ENTITIES.
+  quantity is a number of ENTITIES — and the ceiling on that number is per
+  CLAIM, not the entity total.  The four target metrics are defined on the
+  entities carrying a target association and the two retention metrics on
+  those carrying a retain association; ``entity_role_census`` measures both
+  from the frozen manifest, because sizing a claim against a pool of
+  entities it cannot be computed on makes an infeasible margin look
+  reachable.
 
 * **The held-out-photograph stratum**, which is nested: probes inside
   species.  11R held exactly 30 iNaturalist species x 3 held-out
-  photographs = 90 probes, and the dataset contains only 36 species in
-  total.  Adding probes to a cluster buys precision only up to the
-  between-cluster variance component, so a one-way variance decomposition
+  photographs = 90 probes, and only those 30 species carry a target
+  association at all.  Adding probes to a cluster buys precision only up to
+  the between-cluster variance component, so a one-way variance decomposition
   decides whether the binding constraint is probes per cluster or the
   cluster count itself — and whether the cluster ceiling makes the claim
   unreachable at any number of probes.
@@ -32,6 +38,15 @@ new PHOTOGRAPH.  The report records which is which per stratum, and measures
 how many genuinely new photographs exist to be had, so that the recommended
 size is one that can actually be built.
 
+It then SELECTS one size.  ``confirmation_size`` names a single row of each
+grid, the command line that builds it, and which identifiers are frozen now
+versus which stage 3 must commit before scoring; a report that lists every
+candidate and chooses none has sized nothing.
+
+Every alpha in this module is ONE-SIDED and derived from the declared
+``FAMILYWISE_ALPHA``, so Holm's thresholds and the sizing that quotes them
+cannot disagree about which quantile they mean.
+
 Nothing here scores anything or touches a GPU: it reads the committed
 provenance-validated test predictions and the frozen dataset.
 """
@@ -39,6 +54,7 @@ provenance-validated test predictions and the frozen dataset.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import random
@@ -68,10 +84,24 @@ from granunlearn.logging_utils import setup_logger
 
 log = setup_logger("power_analysis_confirmation")
 
-#: One-sided level for each arm of a TOST equivalence test, and for a
-#: non-inferiority test.  Two-sided 0.05 superiority uses alpha/2 = 0.025,
-#: which is the same quantile, so one constant serves both.
-ALPHA_ONE_SIDED = 0.025
+#: Familywise error rate for the declared primary family.  This is THE
+#: declared alpha; every other level in this module is derived from it.
+FAMILYWISE_ALPHA = 0.05
+
+#: One-sided level for a single unadjusted claim: each arm of a TOST
+#: equivalence test, a non-inferiority test, or a directional superiority
+#: test.  Derived from FAMILYWISE_ALPHA rather than set beside it, because
+#: the two are the same convention read two ways and a module that declares
+#: both independently can silently disagree with itself.
+ALPHA_ONE_SIDED = FAMILYWISE_ALPHA / 2
+
+#: EVERY ``alpha`` parameter in this module is ONE-SIDED.  There is no
+#: two-sided alpha argument anywhere: ``n_for_superiority`` takes the
+#: one-sided level of the directional test it sizes, exactly as
+#: ``n_for_one_sided_margin`` does.  A single mixed convention is how the
+#: Holm block came to size a 0.025 one-sided threshold as though it were
+#: two-sided, i.e. at one-sided 0.0125, and report 7/5 clusters where the
+#: declared threshold supports 5/4.
 POWER_TARGETS = (0.80, 0.90)
 #: The margin 11R prespecified for TGA equivalence against M_G.
 EQUIVALENCE_MARGIN = 0.05
@@ -128,11 +158,100 @@ CLAIM_KIND_VS_MG = {"tga": "descriptive", "filr": "descriptive",
                     "retain_same": "descriptive",
                     "retain_other": "descriptive"}
 
+#: Which entity ROLE a metric is defined on, and therefore which census row
+#: supplies its cluster ceiling.  The four target metrics measure what the
+#: adapters were trained to unlearn, so they exist only for entities with a
+#: target association; the two retention metrics measure collateral damage on
+#: associations that were kept, so they exist only for entities with a retain
+#: association.  The two sets overlap but neither is the entity total.
+METRIC_CLUSTER_ROLE = {
+    "tga": "target",
+    "filr": "target",
+    "wrong_branch": "target",
+    "over_forgetting": "target",
+    "retain_same": "retain",
+    "retain_other": "retain",
+}
+
 #: The declared primary family.  Two one-sided superiority claims, corrected
 #: by Holm.  Retention and the M_G comparisons were removed from it by the
 #: decisions recorded above, which is what makes the family small enough to
 #: correct without weakening the claims that remain.
 PRIMARY_FAMILY = ("B3_minus_B0:tga", "B3_minus_B0:filr")
+
+#: The PRIMARY ESTIMAND those two claims are about.  Declared explicitly
+#: because the family names are pooled while ``stratum_heterogeneity`` shows
+#: the effect living in one stratum, and a preregistration that leaves the
+#: reader to reconcile the two has not chosen an estimand.
+#:
+#: ``pooled_over_target_entities`` is the entity-macro average of the paired
+#: B3-B0 difference over EVERY target entity - every person and every species
+#: the preserved adapters were trained to unlearn - measured on that entity's
+#: own confirmation probes.  It is the endpoint 11R reported, it is the
+#: quantity the paper's sentence is about, and it does not discard the
+#: held-out-photograph stratum.  The per-stratum decomposition is a
+#: PRE-SPECIFIED SECONDARY DIAGNOSTIC: it is reported either way, it carries
+#: no hypothesis test, and it does not enter the Holm family.
+PRIMARY_ESTIMAND = "pooled_over_target_entities"
+#: The strata whose probes enter the primary estimand.  Both do; that is what
+#: makes it pooled rather than a stratum.
+PRIMARY_ESTIMAND_STRATA = ("seen_photo_unseen_wording", "held_out_photo")
+#: What the per-stratum numbers are, so no reader mistakes them for a second
+#: primary claim.
+STRATUM_ESTIMAND_STATUS = "prespecified_secondary_diagnostic_no_holm_entry"
+
+#: Stated once, here, because it is true of BOTH candidate estimands and
+#: therefore of whichever is declared primary.  The confirmation reuses the
+#: entities the preserved adapters already unlearned; only the PROBES are
+#: new.  A result on new probes over a fixed cohort is robustness to probe
+#: construction, and calling it replication would claim a population the
+#: design never sampled.
+WHAT_THE_CONFIRMATION_DOES_NOT_ESTABLISH = (
+    "Reusing the same entities with new probes confirms robustness on that "
+    "fixed cohort; it does not create new entity clusters and does not "
+    "establish independent population-level replication. The preserved "
+    "adapters unlearned a target set drawn from exactly these entities, so "
+    "no confirmation split that keeps those adapters can enlarge the entity "
+    "set. Both the pooled estimand and every per-stratum estimand inherit "
+    "this limit; choosing between them does not escape it.")
+
+# ---- the SELECTED confirmation size -------------------------------------
+# A power report that lists every candidate and selects none has not sized
+# anything: the grid is the input to a decision, not the decision.  These
+# constants ARE the decision, and the report block built from them names the
+# one row of the grid the confirmation will be built at.
+
+#: NEW photographs per species, over and above the 12 pilot100_v2 already
+#: allocated.  Selected, not derived: the held-out stratum carries no primary
+#: claim, so its budget is set by the minimum detectable effect worth
+#: reporting rather than by a power target.
+CONFIRM_NEW_PHOTOS_PER_SPECIES = 12
+#: ``--images-per-species`` for the re-fetch.  The seeded shuffle is
+#: identical at the same seed, so drawing 24 makes the first 12 the
+#: already-allocated photographs and the remaining 12 new by construction.
+CONFIRM_FETCH_IMAGES_PER_SPECIES = (
+    CONFIRM_NEW_PHOTOS_PER_SPECIES + 12)
+CONFIRM_FETCH_SEED = 42
+#: A NEW pool.  The default ``pilot_v1`` is refused by
+#: ``fetch_inat_species.refuse_if_frozen_pool`` because the committed image
+#: manifest pins 432 photographs under it.
+CONFIRM_FETCH_OUT = "data/raw/inaturalist/confirm_v1"
+
+#: NEW wording probes per target person.  The existing wording stratum is
+#: unbalanced (27 persons at 3 probes, 12 at 6, 3 at 9); the confirmation is
+#: balanced at 12 so the nested variance decomposition has equal cluster
+#: sizes, and so the two strata share a probes-per-cluster value and are
+#: directly comparable.  Power is not the binding constraint: at the
+#: 42-person ceiling the between-person variance floor is reached well below
+#: this, which the report states with its numbers rather than here.
+CONFIRM_NEW_WORDING_PROBES_PER_PERSON = 12
+#: The 12 are built as 3 probe families x 4 templates, mirroring the three
+#: families the exploratory wording stratum used.
+CONFIRM_WORDING_FAMILIES = 3
+CONFIRM_NEW_TEMPLATES_PER_FAMILY = (
+    CONFIRM_NEW_WORDING_PROBES_PER_PERSON // CONFIRM_WORDING_FAMILIES)
+
+#: Every ``alpha`` above is one-sided; see FAMILYWISE_ALPHA.
 
 #: Why a sizing question has NO ANSWER, by claim kind.  Kept distinct from
 #: "expensive" because the consequences differ: an expensive claim is a
@@ -198,11 +317,18 @@ def _chi2_quantile(df: int, p: float) -> float:
 
 def n_for_superiority(sd: float, theta: float, alpha: float,
                       power: float) -> float | None:
-    """Clusters needed for a two-sided test of theta != 0."""
+    """Clusters needed for a ONE-SIDED directional test of theta.
+
+    ``alpha`` is the one-sided level, matching every other sizing function
+    in this module; the critical value is ``z(1 - alpha)``.  Callers that
+    hold a two-sided level must halve it before calling, and the Holm block
+    passes ``FAMILYWISE_ALPHA / k``, which is the worst-case one-sided
+    threshold Holm applies to a single claim in a k-claim family.
+    """
     if sd <= 0 or theta == 0:
         return None
     d = abs(theta) / sd
-    return ((z(1 - alpha / 2) + z(power)) / d) ** 2
+    return ((z(1 - alpha) + z(power)) / d) ** 2
 
 
 def n_for_one_sided_margin(sd: float, theta: float, margin: float,
@@ -245,10 +371,11 @@ def usable_distance(kind: str, theta: float, margin: float) -> float | None:
     instead would read as "collect more data" when the honest answer is
     "this design cannot carry this claim".
 
-    The critical value is the SAME for all three: two-sided 0.05 superiority
-    uses z(1 - 0.05/2) = z(0.975), and one-sided 0.025 margin tests use
-    z(1 - 0.025) = z(0.975).  So one quantile serves every kind and only
-    the denominator moves.
+    The critical value is the SAME for all three, and in this module it is
+    always ``z(1 - ALPHA_ONE_SIDED) = z(0.975)``: a directional superiority
+    test at one-sided 0.025 and a one-sided margin test at 0.025 use the
+    same quantile.  So one critical value serves every kind and only the
+    denominator moves.
     """
     if kind == "superiority":
         return abs(theta) if theta != 0 else None
@@ -402,7 +529,9 @@ def margin_achievable(sd: float, theta: float, k: int, alpha: float,
 
 
 def summarize_pair(diffs: list[float], label: str,
-                   claim_kind: str = "superiority") -> dict[str, Any]:
+                   claim_kind: str = "superiority",
+                   cluster_ceiling: int | None = None,
+                   ceiling_is: str | None = None) -> dict[str, Any]:
     mu, sd, sd_ci = _mean_sd(diffs)
     k = len(diffs)
     out: dict[str, Any] = {
@@ -426,7 +555,7 @@ def summarize_pair(diffs: list[float], label: str,
         t = int(target * 100)
         cells = {
             "n_for_superiority_power{t}": n_for_superiority(
-                sd, mu, 2 * ALPHA_ONE_SIDED, target),
+                sd, mu, ALPHA_ONE_SIDED, target),
             "n_for_non_inferiority_delta{m}_power{t}": n_for_one_sided_margin(
                 sd, mu, EQUIVALENCE_MARGIN, ALPHA_ONE_SIDED, target,
                 "non_inferior"),
@@ -445,6 +574,25 @@ def summarize_pair(diffs: list[float], label: str,
             "power80": round(m80, 4) if m80 is not None else None,
             "power90": round(m90, 4) if m90 is not None else None,
         }
+    # The ceiling margin is reported BESIDE the observed one and each key
+    # names the cluster count it was computed at.  Quoting a margin at the
+    # observed count next to a field that says a larger count is "available"
+    # reads as a margin at that larger count, which is how a 45-cluster
+    # number came to be presented against a 100-entity ceiling.
+    if cluster_ceiling:
+        out["cluster_ceiling"] = cluster_ceiling
+        out["cluster_ceiling_is"] = ceiling_is
+        out["cluster_ceiling_saturated"] = cluster_ceiling == k
+        for kind in ("equivalence", "non_inferiority"):
+            c80 = margin_achievable(sd, mu, cluster_ceiling, ALPHA_ONE_SIDED,
+                                    0.80, kind)
+            c90 = margin_achievable(sd, mu, cluster_ceiling, ALPHA_ONE_SIDED,
+                                    0.90, kind)
+            out[f"min_margin_concludeable_at_the_{cluster_ceiling}"
+                f"_cluster_ceiling_{kind}"] = {
+                "power80": round(c80, 4) if c80 is not None else None,
+                "power90": round(c90, 4) if c90 is not None else None,
+            }
     return out
 
 
@@ -457,18 +605,24 @@ def _ceil_or_none(n: float | None) -> int | str | None:
 
 
 def variance_components(groups: dict[str, list[float]]) -> dict[str, Any]:
-    """One-way random-effects decomposition: probe level inside species.
+    """One-way random-effects decomposition: probe level inside cluster.
 
-    ``MSW`` estimates the within-species variance directly and ``MSB``
-    estimates it plus m x between-species variance, so
+    ``MSW`` estimates the within-cluster variance directly and ``MSB``
+    estimates it plus m x between-cluster variance, so
     sigma2_between = (MSB - MSW) / m.  A negative estimate means the data
-    show no detectable species-level clustering; it is floored at zero and
+    show no detectable cluster-level structure; it is floored at zero and
     flagged, because reporting a negative variance component as though it
-    were a measurement would understate the species count needed.
+    were a measurement would understate the cluster count needed.
+
+    The cluster is a SPECIES in the held-out stratum and a PERSON in the
+    wording stratum, so every key here says ``cluster``.  Calling them all
+    ``species`` is not a cosmetic slip: it is how a report came to size the
+    wording stratum against 64 MLLMU entities when only 42 of them can carry
+    a target metric.
     """
     ks = [k for k, v in groups.items() if v]
     if len(ks) < 2:
-        return {"estimable": False, "reason": "fewer than two species"}
+        return {"estimable": False, "reason": "fewer than two clusters"}
     sizes = {k: len(groups[k]) for k in ks}
     m_harmonic = len(ks) / sum(1.0 / n for n in sizes.values())
     grand = [v for k in ks for v in groups[k]]
@@ -478,7 +632,8 @@ def variance_components(groups: dict[str, list[float]]) -> dict[str, Any]:
     ssw = sum(sum((v - means[k]) ** 2 for v in groups[k]) for k in ks)
     dfb, dfw = len(ks) - 1, len(grand) - len(ks)
     if dfw <= 0:
-        return {"estimable": False, "reason": "no within-species replication"}
+        return {"estimable": False,
+                "reason": "no within-cluster replication"}
     msb, msw = ssb / dfb, ssw / dfw
     sigma2_w = msw
     sigma2_b_raw = (msb - msw) / m_harmonic
@@ -489,11 +644,18 @@ def variance_components(groups: dict[str, list[float]]) -> dict[str, Any]:
                                             m_harmonic)
     return {
         "estimable": True,
-        "num_species": len(ks),
+        "num_clusters": len(ks),
         "num_probes": len(grand),
-        "probes_per_species_min": min(sizes.values()),
-        "probes_per_species_max": max(sizes.values()),
-        "probes_per_species_harmonic_mean": round(m_harmonic, 3),
+        "probes_per_cluster_min": min(sizes.values()),
+        "probes_per_cluster_max": max(sizes.values()),
+        "probes_per_cluster_harmonic_mean": round(m_harmonic, 3),
+        #: Recorded because a harmonic mean below the arithmetic mean means
+        #: the clusters are UNEQUAL, and an unequal design is a confound the
+        #: between-cluster variance has to be read against.
+        "probes_per_cluster_distribution": dict(sorted(
+            {str(n): sum(1 for v in sizes.values() if v == n)
+             for n in sorted(set(sizes.values()))}.items())),
+        "probes_per_cluster_balanced": len(set(sizes.values())) == 1,
         "ms_between": round(msb, 6),
         "ms_within": round(msw, 6),
         "sigma2_between_raw": round(sigma2_b_raw, 6),
@@ -514,7 +676,7 @@ def nested_size_grid(vc: dict[str, Any], margin: float,
                      power: float = 0.80,
                      probe_options: tuple[int, ...] = PROBE_OPTIONS,
                      icc_overrides: tuple[float, ...] = (),
-                     species_ceiling: int | None = None) -> dict[str, Any]:
+                     cluster_ceiling: int | None = None) -> dict[str, Any]:
     """Clusters x probes-per-cluster needed for a nested CI half-width.
 
     The half-width of a cluster-averaged paired difference measured over m
@@ -546,37 +708,37 @@ def nested_size_grid(vc: dict[str, Any], margin: float,
     usable = usable_distance(claim_kind, theta, margin)
     zc = (z(1 - alpha) + z(power)) ** 2
 
-    def _species_for(var_species: float) -> Any:
+    def _clusters_for(var_cluster: float) -> Any:
         """Clusters needed, or the reason the question has no answer."""
         if usable is None:
             return _NOT_ANSWERABLE[claim_kind].format(theta=theta,
                                                       margin=margin)
-        if var_species <= 0:
+        if var_cluster <= 0:
             return 0
-        return _ceil_or_none(zc * var_species / usable ** 2)
+        return _ceil_or_none(zc * var_cluster / usable ** 2)
 
     def _probes(need: Any, m: int) -> int | None:
         return int(need) * m if isinstance(need, int) else None
 
     rows = []
     for m in probe_options:
-        var_species = s2b + s2w / m
-        need = _species_for(var_species)
+        var_cluster = s2b + s2w / m
+        need = _clusters_for(var_cluster)
         rows.append({
             "probes_per_entity": m,
-            "species_variance_at_this_m": round(var_species, 6),
+            "cluster_variance_at_this_m": round(var_cluster, 6),
             "design_effect_vs_independent_probes": round(
                 (s2b + s2w / m) / (total / m), 3) if total else None,
-            "species_required": need,
-            "total_probes_at_that_species_count": _probes(need, m),
+            "clusters_required": need,
+            "total_probes_at_that_cluster_count": _probes(need, m),
         })
-    asymp = _species_for(s2b)
+    asymp = _clusters_for(s2b)
     scenarios = []
     for icc in icc_overrides:
         scenarios.append({
             "assumed_icc": icc,
             "probes_per_entity": 12,
-            "species_required": _species_for(total * (icc + (1 - icc) / 12)),
+            "clusters_required": _clusters_for(total * (icc + (1 - icc) / 12)),
         })
 
     # The conservative plan sizes on the ICC UPPER confidence bound rather
@@ -587,20 +749,20 @@ def nested_size_grid(vc: dict[str, Any], margin: float,
                                         vc["icc_point_estimate"])))
     conservative = []
     for m in probe_options:
-        need = _species_for(total * (icc_plan + (1 - icc_plan) / m))
+        need = _clusters_for(total * (icc_plan + (1 - icc_plan) / m))
         conservative.append({
             "probes_per_entity": m,
-            "species_required": need,
-            "total_probes_at_that_species_count": _probes(need, m),
+            "clusters_required": need,
+            "total_probes_at_that_cluster_count": _probes(need, m),
         })
-    cons_asymptotic = _species_for(total * icc_plan)
+    cons_asymptotic = _clusters_for(total * icc_plan)
 
-    # The decision-ready table.  The species count is capped by how many
-    # species exist, so the negotiable quantity is photographs per species,
-    # and the question is not "how many species would I need" but "what
-    # power do I actually get at the ceiling".  Sizing at the ICC upper
-    # bound is the conservative column: a point estimate floored at zero
-    # cannot rule out real species-level clustering.
+    # The decision-ready table.  The cluster count is capped by how many
+    # entities can carry the metric, so the negotiable quantity is probes
+    # per cluster, and the question is not "how many clusters would I need"
+    # but "what power do I actually get at the ceiling".  Sizing at the ICC
+    # upper bound is the conservative column: a point estimate floored at
+    # zero cannot rule out real cluster-level structure.
     #
     # Three numbers per cell, because each answers a different question and
     # reporting only one has already produced a wrong conclusion here:
@@ -617,28 +779,30 @@ def nested_size_grid(vc: dict[str, Any], margin: float,
     #   target power.  This is the column that survives an effect estimate
     #   too loose to plan against, which is the situation on the held-out
     #   photograph stratum: 11R measured -0.0111 with an interval spanning
-    #   zero, so its power column is not answerable and its mde column is
-    #   the only honest thing to size photographs against.
+    #   zero, and that is the WRONG SIGN for a TGA superiority claim, so the
+    #   power column there is computed against |theta| and describes a claim
+    #   in the opposite direction.  The mde column is the only honest thing
+    #   to size photographs against.
     #
     # power_at_true_difference_zero is retained beside them for the margin
     # claims, where it is the optimistic bound a reader may expect; for a
     # superiority claim it would be the type-I error rate, so it is None.
     at_ceiling = []
-    if species_ceiling:
+    if cluster_ceiling:
         crit = z(1 - alpha)
         for m in probe_options:
             row: dict[str, Any] = {"probes_per_entity": m}
             for tag, icc_val in (("point_icc", vc["icc_point_estimate"]),
                                  ("conservative_icc_upper", icc_plan)):
-                var_species = total * (icc_val + (1 - icc_val) / m)
-                se = math.sqrt(var_species / species_ceiling)
+                var_cluster = total * (icc_val + (1 - icc_val) / m)
+                se = math.sqrt(var_cluster / cluster_ceiling)
                 pwr = power_at(se, claim_kind, theta, margin, alpha)
                 mde = mde_at(se, claim_kind, theta, alpha, power)
-                row[f"half_width_at_{species_ceiling}_species_{tag}"] = \
+                row[f"half_width_at_{cluster_ceiling}_clusters_{tag}"] = \
                     round(crit * se, 4)
-                row[f"power_at_{species_ceiling}_species_{tag}"] = \
+                row[f"power_at_{cluster_ceiling}_clusters_{tag}"] = \
                     (round(pwr, 3) if pwr is not None else None)
-                row[f"mde_at_{species_ceiling}_species_{tag}"] = \
+                row[f"mde_at_{cluster_ceiling}_clusters_{tag}"] = \
                     (round(mde, 4) if mde is not None else None)
                 row[f"power_ge_{int(power * 100)}_{tag}"] = \
                     (None if pwr is None else pwr >= power)
@@ -661,25 +825,31 @@ def nested_size_grid(vc: dict[str, Any], margin: float,
                                                     margin=margin)),
         "alpha_one_sided": alpha,
         "power": power,
-        "species_ceiling": species_ceiling,
-        "achieved_at_species_ceiling": at_ceiling,
+        "cluster_ceiling": cluster_ceiling,
+        "achieved_at_cluster_ceiling": at_ceiling,
         "grid": rows,
-        "asymptotic_species_floor_infinite_probes": asymp,
+        "asymptotic_cluster_floor_infinite_probes": asymp,
         "icc_sensitivity_at_12_probes": scenarios,
         "icc_planning_value_used_for_conservative_grid": round(icc_plan, 4),
         "conservative_grid_at_icc_upper_bound": conservative,
-        "conservative_species_floor_infinite_probes": cons_asymptotic,
+        "conservative_cluster_floor_infinite_probes": cons_asymptotic,
         "interpretation": (
-            "species_required stops falling as probes_per_entity grows "
-            "because only the within-species component is divided by m; the "
-            "asymptotic floor is what the between-species component alone "
-            "demands and no number of photographs per species can go below "
-            "it. The conservative grid repeats that calculation at the ICC "
-            "upper confidence bound, which is the value a preregistration "
-            "should plan on when the point estimate is floored at zero. "
-            "Both grids divide by the claim's usable distance, not by the "
-            "raw margin, so species_required is not comparable across rows "
-            "of different claim_kind."),
+            "clusters_required stops falling as probes_per_entity grows "
+            "because only the WITHIN-cluster component is divided by m; the "
+            "asymptotic floor is what the between-cluster component alone "
+            "demands and no number of probes per cluster can go below it. "
+            "The cluster is a species in the held-out stratum and a person "
+            "in the wording stratum, so 'probes' means new photographs in "
+            "the first and new wordings in the second. The conservative grid "
+            "repeats that calculation at the ICC upper confidence bound, "
+            "which is the value a preregistration should plan on when the "
+            "point estimate is floored at zero. Both grids divide by the "
+            "claim's usable distance, not by the raw margin, so "
+            "clusters_required is not comparable across rows of different "
+            "claim_kind. achieved_at_cluster_ceiling is read at "
+            f"{cluster_ceiling} clusters because that is how many entities "
+            "can carry this metric, not because that is how many the "
+            "dataset holds."),
     }
 
 
@@ -847,6 +1017,75 @@ def new_photograph_supply(repo_root: Path, associations: list[Any]) -> dict:
     return out
 
 
+def entity_role_census(data_dir: Path,
+                       associations: list[Any]) -> dict[str, Any]:
+    """Which entities can be a cluster for which metric, measured.
+
+    A cluster ceiling is NOT "how many entities the dataset has".  Each
+    paired metric is defined on a ROLE: the four target metrics need an
+    entity carrying a target association, the two retention metrics need one
+    carrying a retain association.  pilot100_v2 holds 100 entities, but only
+    72 are targets and only 70 carry a retain association, so 100 is the
+    ceiling of no claim at all.
+
+    Assigning 100 to every claim is what let the report quote a retention
+    margin computed at the 45 clusters ``retain_other`` actually observed
+    beside a ceiling more than twice that size.  Read from the frozen
+    manifest's own role lists rather than re-derived from query families,
+    because the manifest is what the dataset fingerprint binds.
+    """
+    manifest = json.loads((data_dir / "manifest.json").read_text())
+    roles = {"target": set(manifest.get("target_association_ids") or []),
+             "retain": set(manifest.get("retain_association_ids") or [])}
+    entity_source = {a.entity_id: a.dataset for a in associations}
+    by_role: dict[str, Any] = {}
+    for role, aids in roles.items():
+        ents = sorted({a.entity_id for a in associations
+                       if a.association_id in aids})
+        per_source: dict[str, int] = {}
+        for e in ents:
+            per_source[entity_source[e]] = per_source.get(
+                entity_source[e], 0) + 1
+        blob = "\n".join(ents).encode()
+        by_role[role] = {
+            "entity_ids": ents,
+            "total": len(ents),
+            "by_source": dict(sorted(per_source.items())),
+            "entity_ids_sha256": hashlib.sha256(blob).hexdigest(),
+            "associations": len(aids),
+        }
+    role_sets: dict[str, int] = {}
+    per_entity: dict[str, set] = {}
+    for a in associations:
+        s = per_entity.setdefault(a.entity_id, set())
+        for role, aids in roles.items():
+            if a.association_id in aids:
+                s.add(role)
+    for eid, s in per_entity.items():
+        key = f"{entity_source[eid]}/{'+'.join(sorted(s)) or 'none'}"
+        role_sets[key] = role_sets.get(key, 0) + 1
+    return {
+        "entities_total": len(per_entity),
+        "by_source": dict(sorted(
+            {src: len({a.entity_id for a in associations if a.dataset == src})
+             for src in {a.dataset for a in associations}}.items())),
+        "role_sets": dict(sorted(role_sets.items())),
+        "by_role": by_role,
+        "read_from": "manifest.json target_association_ids / "
+                     "retain_association_ids, joined to associations.parquet",
+        "why_100_is_not_a_claim_ceiling": (
+            "The dataset holds "
+            f"{len(per_entity)} entities, but a claim can only be clustered "
+            "over entities the metric is DEFINED on. The four target metrics "
+            f"are defined on the {by_role['target']['total']} entities "
+            "carrying a target association; the two retention metrics on the "
+            f"{by_role['retain']['total']} carrying a retain association. "
+            "Neither is the entity total, and quoting the total beside a "
+            "margin computed at a metric's own cluster count makes the "
+            "margin look more achievable than the design allows."),
+    }
+
+
 def batch_layout_floor(repo_root: Path, tag: str,
                        source: Path | None = None) -> dict[str, Any]:
     """The batch-layout noise floor, read from a committed report.
@@ -926,6 +1165,39 @@ def main() -> int:
                           split="test")
              for k, v in paths.items()}
 
+    # ---- cluster ceilings, measured per ROLE ----
+    # Needed before anything is sized, because the cluster count is bounded
+    # by how many entities can carry the metric and the sizing question is
+    # what half-width that bound permits, not how many clusters to wish for.
+    # The bound is NOT the entity total: the four target metrics exist only
+    # for entities carrying a target association, so the wording stratum's
+    # ceiling is the 42 TARGET persons rather than all 64 MLLMU entities and
+    # the held-out stratum's is the 30 TARGET species rather than all 36.
+    census = entity_role_census(data_dir, associations)
+    entities_by_source: dict[str, int] = {}
+    for a in associations:
+        entities_by_source.setdefault(a.dataset, set()).add(a.entity_id)
+    entities_by_source = {k: len(v) for k, v in entities_by_source.items()}
+    n_entities_total = census["entities_total"]
+    target_total = census["by_role"]["target"]["total"]
+    target_by_source = census["by_role"]["target"]["by_source"]
+    #: Which census row bounds each paired metric, and what that row counts.
+    cluster_ceiling_of = {
+        metric: {
+            "ceiling": census["by_role"][METRIC_CLUSTER_ROLE[metric]]["total"],
+            "ceiling_is": (
+                f"entities carrying a {METRIC_CLUSTER_ROLE[metric]} "
+                "association in the frozen pilot100_v2 manifest"),
+        }
+        for metric in METRIC_CLUSTER_ROLE
+    }
+    #: The strata are sized against the TARGET entities of their own source,
+    #: because both strata are decompositions of the target metrics.
+    stratum_cluster_ceiling = {
+        "seen_photo_unseen_wording": target_by_source.get("mllmu_hier", 0),
+        "held_out_photo": target_by_source.get("inaturalist", 0),
+    }
+
     # ---- entity-clustered claims ----
     entity_results: dict[str, Any] = {}
     for pair in (("B3", "B0"), ("B3", "MG")):
@@ -938,21 +1210,18 @@ def main() -> int:
             kind = (CLAIM_KIND[metric] if b == "B0"
                     else CLAIM_KIND_VS_MG[metric])
             entity_results[label] = summarize_pair(
-                d["diffs"], label, kind) | {
+                d["diffs"], label, kind,
+                cluster_ceiling=cluster_ceiling_of[metric]["ceiling"],
+                ceiling_is=cluster_ceiling_of[metric]["ceiling_is"]) | {
                 "num_paired_rows": d["num_rows"],
                 "row_micro_a": round(d["row_a"], 6),
                 "row_micro_b": round(d["row_b"], 6),
             }
 
     # ---- held-out photograph stratum, nested in species ----
-    # Cluster ceilings are needed BEFORE the strata are sized: the number of
-    # species is bounded by how many exist, so the sizing question is what
-    # half-width the ceiling permits, not how many species to wish for.
-    entities_by_source: dict[str, set] = {}
-    for a in associations:
-        entities_by_source.setdefault(a.dataset, set()).add(a.entity_id)
-    species_ceiling_by_source = {k: len(v)
-                                 for k, v in entities_by_source.items()}
+    # Cluster ceilings were measured above, per role: the number of species
+    # is bounded by how many TARGET species exist, so the sizing question is
+    # what half-width the ceiling permits, not how many species to wish for.
 
     # ---- how many NEW photographs the held-out stratum can be given ----
     # Computed before the strata are sized because it lowers the ceiling the
@@ -982,8 +1251,8 @@ def main() -> int:
                           ("seen_photo_unseen_wording", seen_qids)):
         block: dict[str, Any] = {
             "num_probes": len(qids),
-            "num_species": len({entity_of[by_qid[q].association_id]
-                                for q in qids if q in by_qid}),
+            "num_clusters": len({entity_of[by_qid[q].association_id]
+                                 for q in qids if q in by_qid}),
             "source_datasets": sorted({
                 source_of[by_qid[q].association_id]
                 for q in qids if q in by_qid}),
@@ -1014,6 +1283,19 @@ def main() -> int:
         block["probe_options_beyond_the_reachable_max"] = (
             [] if reachable is None
             else [m for m in PROBE_OPTIONS if m > reachable])
+        # The ceiling is the number of TARGET entities of this stratum's
+        # source, not the number of entities that source contributes to the
+        # dataset.  Both strata decompose the target metrics, so a
+        # retain-only person or species cannot add a cluster here however
+        # many probes it is given.
+        block["cluster_ceiling"] = stratum_cluster_ceiling.get(stratum)
+        block["cluster_ceiling_is"] = (
+            f"TARGET {block['nesting_cluster_is']} entities in the frozen "
+            f"pilot100_v2 manifest ({block['cluster_ceiling']} of the "
+            f"{entities_by_source.get(block['source_datasets'][0], 0)} "
+            f"{block['source_datasets'][0]} entities the dataset holds)")
+        block["cluster_ceiling_saturated"] = (
+            block["num_clusters"] == block["cluster_ceiling"])
         for pair in (("B3", "B0"), ("B3", "MG")):
             a, b = pair
             for metric in ("tga", "filr"):
@@ -1022,17 +1304,21 @@ def main() -> int:
                 d = _paired_unit_diffs(fa, fb)
                 if not d["keys"]:
                     continue
-                per_species: dict[str, list[float]] = {}
+                per_cluster: dict[str, list[float]] = {}
                 common = sorted(set(fa) & set(fb))
                 for qid in common:
                     sp = entity_of[by_qid[qid].association_id]
-                    per_species.setdefault(sp, []).append(
+                    per_cluster.setdefault(sp, []).append(
                         fa[qid][0] - fb[qid][0])
-                vc = variance_components(per_species)
+                vc = variance_components(per_cluster)
                 kind = (CLAIM_KIND[metric] if b == "B0"
                         else CLAIM_KIND_VS_MG[metric])
                 paired = summarize_pair(
-                    d["diffs"], f"{a}_minus_{b}:{metric}", kind)
+                    d["diffs"], f"{a}_minus_{b}:{metric}", kind,
+                    cluster_ceiling=stratum_cluster_ceiling.get(stratum),
+                    ceiling_is=(
+                        f"TARGET {block['nesting_cluster_is']} entities in "
+                        "the frozen pilot100_v2 manifest"))
                 metric_entry: dict[str, Any] = {
                     "paired": paired,
                     "variance_components": vc,
@@ -1045,22 +1331,19 @@ def main() -> int:
                         vc, EQUIVALENCE_MARGIN, claim_kind=kind,
                         theta=paired["mean_diff"],
                         icc_overrides=(0.0, 0.1, 0.2, 0.3, 0.5),
-                        species_ceiling=species_ceiling_by_source.get(
-                            block["source_datasets"][0]
-                            if block["source_datasets"] else "", None)),
+                        cluster_ceiling=stratum_cluster_ceiling.get(stratum)),
                 }
                 # The confirmation split cannot reuse ANY of these
-                # photographs, so the species ceiling that binds it is the
-                # number of species a NEW photograph can be sourced for —
-                # not the 36 the frozen dataset happens to contain.  Sized a
-                # second time at that ceiling so the two are read together.
+                # photographs, so a second ceiling binds it: the number of
+                # species a NEW photograph can be sourced for offline.  Sized
+                # again there so the two are read together.
                 if stratum == "held_out_photo" and supply_offline_species:
                     metric_entry[
                         "nested_sizing_at_offline_new_photo_ceiling"] = \
                         nested_size_grid(
                             vc, EQUIVALENCE_MARGIN, claim_kind=kind,
                             theta=paired["mean_diff"],
-                            species_ceiling=supply_offline_species)
+                            cluster_ceiling=supply_offline_species)
                 block["metrics"][f"{a}_minus_{b}:{metric}"] = metric_entry
         strata[stratum] = block
 
@@ -1073,19 +1356,34 @@ def main() -> int:
         "source_predictions": {k: str(v.relative_to(repo_root))
                                for k, v in paths.items()},
         "design": {
+            "familywise_alpha": FAMILYWISE_ALPHA,
             "alpha_one_sided": ALPHA_ONE_SIDED,
-            "alpha_two_sided_equivalent": 2 * ALPHA_ONE_SIDED,
+            "alpha_convention": (
+                f"FAMILYWISE alpha is {FAMILYWISE_ALPHA} and it is the only "
+                "alpha declared. Every claim is ONE-SIDED and directional, "
+                f"so a single unadjusted claim is tested at "
+                f"{ALPHA_ONE_SIDED} = familywise/2 and Holm's worst-case "
+                f"threshold for one claim in a k-claim family is "
+                f"familywise/k. Every alpha argument in this module is "
+                "one-sided and every sizing function uses z(1 - alpha); "
+                "there is no two-sided alpha anywhere in it, so the "
+                "thresholds and the sizing cannot disagree about which "
+                "quantile they mean."),
             "power_targets": list(POWER_TARGETS),
             "equivalence_margin": EQUIVALENCE_MARGIN,
             "resampling_unit": "entity (species or person) for pooled "
-                               "claims; species for the nested image strata",
+                               "claims; the stratum's own nesting cluster "
+                               "(species or person) for the nested strata",
             "multiplicity": (
-                "Holm over the declared primary family. The worst case for "
-                "any single claim is the smallest p, which Holm tests at "
-                "alpha/k; the n_for_* columns below are computed at the "
-                "UNADJUSTED alpha, so a k-claim family needs the "
-                "alpha/k column, recomputed in the holm block."),
+                "Holm over the declared primary family, applied to ONE-SIDED "
+                f"p-values at familywise alpha {FAMILYWISE_ALPHA}. The worst "
+                "case for any single claim is the smallest p, which Holm "
+                "tests at familywise/k; the n_for_* columns below are "
+                "computed at the UNADJUSTED one-sided alpha, so a k-claim "
+                "family needs the familywise/k column, recomputed in the "
+                "holm block AT THE SAME ONE-SIDED CONVENTION."),
         },
+        "entity_role_census": census,
         "entity_clustered_claims": entity_results,
         "image_strata": strata,
         "new_photograph_supply": supply,
@@ -1096,13 +1394,27 @@ def main() -> int:
     # ---- Holm budget over the declared primary family ----
     primary = list(PRIMARY_FAMILY)
     k = len(primary)
+    #: Holm's worst case for a single claim in a k-claim family.  This is a
+    #: ONE-SIDED threshold on a one-sided p-value, and it is the level the
+    #: sizing below uses, so the declared threshold and the reported cluster
+    #: requirement are the same test.
+    holm_alpha = FAMILYWISE_ALPHA / k
     holm: dict[str, Any] = {
         "primary_family": primary,
         "k": k,
-        "holm_thresholds": [round(ALPHA_ONE_SIDED * 2 / (k - i), 6)
+        "familywise_alpha": FAMILYWISE_ALPHA,
+        "holm_thresholds": [round(FAMILYWISE_ALPHA / (k - i), 6)
                             for i in range(k)],
-        "worst_case_alpha_for_a_single_claim": round(
-            ALPHA_ONE_SIDED * 2 / k, 6),
+        "thresholds_apply_to": "one-sided p-values",
+        "worst_case_alpha_for_a_single_claim": round(holm_alpha, 6),
+        "sizing_alpha_one_sided": round(holm_alpha, 6),
+        "critical_value_z": round(z(1 - holm_alpha), 6),
+        "thresholds_and_sizing_agree": (
+            "both use z(1 - familywise/k); the sizing function takes a "
+            "one-sided alpha like every other in this module, so the "
+            "declared threshold and the cluster requirement below are the "
+            "same test rather than one being a two-sided reading of the "
+            "other"),
         "per_claim": {},
     }
     for name in primary:
@@ -1110,32 +1422,38 @@ def main() -> int:
         if not res:
             continue
         sd, mu = res["sd_of_cluster_diffs"], res["mean_diff"]
-        # Retention claims are non-inferiority, so they are sized against
-        # their margin; TGA and FILR are one-sided superiority claims and
-        # are sized against zero. Mixing the two would report the retention
+        # Retention claims would be non-inferiority and sized against their
+        # margin; TGA and FILR are one-sided superiority claims and are
+        # sized against zero. Mixing the two would report the retention
         # requirement as unreachable (its mean difference is near zero by
         # design) and the superiority requirement as trivial.
         kind = res["claim_kind"]
-        entry = {"claim_kind": kind}
+        entry = {"claim_kind": kind,
+                 "clusters_available_ceiling": res.get("cluster_ceiling"),
+                 "clusters_observed_at_11r_size": res["num_clusters"]}
         for target in POWER_TARGETS:
             t = int(target * 100)
             if kind == "non_inferiority":
                 n = n_for_one_sided_margin(
                     sd, mu, EQUIVALENCE_MARGIN,
-                    ALPHA_ONE_SIDED / k, target, "non_inferior")
+                    holm_alpha, target, "non_inferior")
             else:
-                n = n_for_superiority(sd, mu, 2 * ALPHA_ONE_SIDED / k,
-                                      target)
+                n = n_for_superiority(sd, mu, holm_alpha, target)
             entry[f"n_at_holm_worst_case_alpha_power{t}"] = _ceil_or_none(n)
+            entry[f"feasible_at_holm_worst_case_alpha_power{t}"] = (
+                isinstance(entry[f"n_at_holm_worst_case_alpha_power{t}"], int)
+                and entry[f"n_at_holm_worst_case_alpha_power{t}"]
+                <= (res.get("cluster_ceiling") or 0))
         holm["per_claim"][name] = entry
     report["holm_primary_family"] = holm
 
     # ---- feasibility against the dataset's hard ceilings ----
     # The cluster count is not a free parameter: it is bounded by how many
-    # entities exist. A required n above that bound is not "collect more
-    # data", it is "this claim cannot be made on this dataset at this
-    # margin", which is a preregistration decision rather than a budget one.
-    n_entities_total = len({a.entity_id for a in associations})
+    # entities can carry the metric. A required n above that bound is not
+    # "collect more data", it is "this claim cannot be made on this dataset
+    # at this margin", which is a preregistration decision rather than a
+    # budget one. The bound is PER CLAIM, read off the role census: the
+    # entity total is the ceiling of no claim at all.
     # Interpolated, not restated: the ICC quoted in the explanation is the
     # one the wording stratum actually produced.
     _wording_icc = (strata.get("seen_photo_unseen_wording", {})
@@ -1145,20 +1463,30 @@ def main() -> int:
                     .get("icc_point_estimate"))
     ceilings = {
         "entities_total": n_entities_total,
-        "entities_by_source": species_ceiling_by_source,
+        "entities_by_source": entities_by_source,
+        "role_sets": census["role_sets"],
+        "cluster_ceiling_by_metric_role": {
+            role: {"total": census["by_role"][role]["total"],
+                   "by_source": census["by_role"][role]["by_source"],
+                   "metrics": sorted(m for m, r_ in
+                                     METRIC_CLUSTER_ROLE.items()
+                                     if r_ == role)}
+            for role in ("target", "retain")
+        },
         "why_the_entity_ceiling_is_hard": (
             "The confirmation phase preserves the SELECTED checkpoints, and "
             "those adapters unlearned a target set drawn from exactly these "
             f"{n_entities_total} entities. Adding an entity would change what "
             "the frozen adapters were trained to unlearn, so the "
             "confirmation would no longer measure the same intervention. A "
-            f"required cluster count above {n_entities_total} is therefore "
+            "required cluster count above a claim's own ceiling is therefore "
             "not 'collect more data' but 'this claim cannot be made on these "
             "checkpoints at this margin'. Only the PROBES per entity are a "
             "free parameter, and for a claim whose variance is dominated by "
             f"the between-entity component (ICC {_wording_icc} on the "
             "wording stratum) extra probes buy quickly diminishing "
             "precision."),
+        "why_the_ceiling_is_per_claim": census["why_100_is_not_a_claim_ceiling"],
         "what_is_a_free_parameter": (
             "probes per entity: new wording variants for the MLLMU persons, "
             "and new photographs for the iNaturalist species, bounded by "
@@ -1169,13 +1497,19 @@ def main() -> int:
         "photos_per_mllmu_person": sorted({
             len(a.images) for a in associations
             if a.dataset == "mllmu_hier" and a.images}),
-        "entity_clusters_available_for_pooled_claims": max(
-            (r["num_clusters"] for r in entity_results.values()), default=0),
+        "entity_clusters_available_for_pooled_target_claims": target_total,
+        "stratum_cluster_ceilings": stratum_cluster_ceiling,
     }
     feasibility: dict[str, Any] = {"ceilings": ceilings, "claims": {}}
     for name, r in entity_results.items():
-        k_avail = n_entities_total
-        entry: dict[str, Any] = {"clusters_available": k_avail}
+        metric = name.split(":", 1)[1]
+        k_avail = cluster_ceiling_of[metric]["ceiling"]
+        entry: dict[str, Any] = {
+            "clusters_observed_at_11r_size": r["num_clusters"],
+            "clusters_available_ceiling": k_avail,
+            "ceiling_is": cluster_ceiling_of[metric]["ceiling_is"],
+            "ceiling_saturated": r["num_clusters"] == k_avail,
+        }
         for col in ("n_for_superiority_power80",
                     "n_for_non_inferiority_delta0.05_power80",
                     "n_for_equivalence_delta0.05_power80"):
@@ -1187,10 +1521,92 @@ def main() -> int:
                     need.startswith("n/a")
                     else isinstance(need, int) and need <= k_avail),
             }
-        entry["min_margin_concludeable_at_11r_size"] = {
-            k: v for k, v in r.items() if k.startswith("min_margin_")}
+        # Split by the cluster count each was computed at.  Both live under
+        # one heading so neither can be read as the other: the observed-size
+        # margin is a measurement of 11R, the ceiling margin is what the
+        # confirmation could reach if every eligible entity were used.
+        entry["min_margin_concludeable"] = {
+            "at_11r_size": {k_: v for k_, v in r.items()
+                            if k_.startswith("min_margin_concludeable_at_")
+                            and "_cluster_ceiling_" not in k_},
+            "at_the_cluster_ceiling": {k_: v for k_, v in r.items()
+                                       if k_.startswith(
+                                           "min_margin_concludeable_at_the_")
+                                       and "_cluster_ceiling_" in k_},
+        }
         feasibility["claims"][name] = entry
     report["feasibility"] = feasibility
+
+    # ---- the declared primary estimand ----
+    # PRIMARY_FAMILY names pooled claims while the decomposition below shows
+    # the effect living in one stratum.  A preregistration that leaves the
+    # reader to reconcile those two has not chosen an estimand, so the choice
+    # is declared once, here, with what it does and does not establish.
+    pooled_ceiling = cluster_ceiling_of["tga"]["ceiling"]
+    wording_clusters = strata.get(
+        "seen_photo_unseen_wording", {}).get("num_clusters", 0)
+    report["primary_estimand"] = {
+        "declared": PRIMARY_ESTIMAND,
+        "definition": (
+            "the entity-macro average of the paired B3-B0 difference over "
+            f"all {pooled_ceiling} TARGET entities - every person and every "
+            "species the preserved adapters were trained to unlearn - each "
+            "entity measured on its own confirmation probes and weighted "
+            "equally regardless of how many probes it contributes"),
+        "unit_of_inference": "entity (person or species), percentile "
+                             "bootstrap over entities",
+        "entities_in_scope": pooled_ceiling,
+        "entities_in_scope_by_source": dict(sorted(
+            census["by_role"]["target"]["by_source"].items())),
+        "entity_ids_sha256":
+            census["by_role"]["target"]["entity_ids_sha256"],
+        "strata_whose_probes_enter_it": list(PRIMARY_ESTIMAND_STRATA),
+        "primary_family": list(PRIMARY_FAMILY),
+        "primary_claim_kinds": {
+            n: CLAIM_KIND[n.split(":")[1]] for n in PRIMARY_FAMILY},
+        "multiplicity": (
+            f"Holm over k = {len(PRIMARY_FAMILY)} at familywise alpha "
+            f"{FAMILYWISE_ALPHA}, one-sided p-values"),
+        "per_stratum_decomposition_status": STRATUM_ESTIMAND_STATUS,
+        "what_it_establishes": (
+            "that B3 changes the target metrics relative to B0 across the "
+            "target entity set as a whole, on probes the exploratory "
+            "pipeline never scored"),
+        "what_it_does_not_establish":
+            WHAT_THE_CONFIRMATION_DOES_NOT_ESTABLISH,
+        "why_pooled_rather_than_the_stratum_that_carries_the_effect": (
+            f"The {wording_clusters}-person wording stratum is where the 11R "
+            "effect lives, and the held-out stratum beside it measured an "
+            "effect indistinguishable from zero. Pooling therefore DILUTES "
+            "the estimate toward zero, so a rejection at the pooled level is "
+            "conservative with respect to the stratum that carries it, while "
+            "a rejection at the stratum level says nothing about the "
+            "entities outside it. The pooled estimand is also the one 11R "
+            "reported and the one the paper's sentence is about. Restricting "
+            "the primary family to the favourable stratum after seeing the "
+            "heterogeneity would be choosing the estimand the data favour, "
+            "which is the same error as choosing a margin after seeing that "
+            "the declared one cannot be reached."),
+        "rejected": [
+            {
+                "estimand": "seen_photo_unseen_wording only",
+                "entities_in_scope": wording_clusters,
+                "why_rejected": (
+                    "homogeneous effect and no dilution, but it discards the "
+                    f"{pooled_ceiling - wording_clusters} target species from "
+                    "the primary endpoint and it is the stratum selected "
+                    "after the heterogeneity was measured"),
+            },
+            {
+                "estimand": "both, as two Holm families",
+                "why_rejected": (
+                    f"doubles the multiplicity burden to k = "
+                    f"{2 * len(PRIMARY_FAMILY)} over two estimands that are "
+                    "not independent - the stratum is a subset of the pooled "
+                    "one, computed from overlapping probes"),
+            },
+        ],
+    }
 
     # ---- which stratum carries the primary claims ----
     # The pooled B3-vs-B0 effect is not the average of two similar strata,
@@ -1215,7 +1631,7 @@ def main() -> int:
             hw = p["achieved_half_width_at_11r_size"]
             lo, hi = p["mean_diff"] - hw, p["mean_diff"] + hw
             per_stratum[stratum] = {
-                "num_species": p["num_clusters"],
+                "num_clusters": p["num_clusters"],
                 "mean_diff": p["mean_diff"],
                 "ci95": [round(lo, 4), round(hi, 4)],
                 "ci_excludes_zero": lo > 0 or hi < 0,
@@ -1223,7 +1639,7 @@ def main() -> int:
                     p["mean_diff"] > 0 if metric == "tga"
                     else p["mean_diff"] < 0),
                 "claim_answerable_at_this_effect": g["claim_answerable"],
-                "species_ceiling": g["species_ceiling"],
+                "cluster_ceiling": g["cluster_ceiling"],
             }
         carrying = sorted(
             s for s, v in per_stratum.items()
@@ -1249,11 +1665,21 @@ def main() -> int:
     # infeasibility is the measurement that justified it.  Dropping the claim
     # must not drop the evidence, or a future reader cannot tell whether
     # retention was demoted for want of interest or for want of power.
-    def _min_margin(res: dict[str, Any], kind: str) -> float | None:
-        """Smallest concludeable margin recorded for this claim, at 80%."""
-        col = next((k for k in res
-                    if k.startswith("min_margin_concludeable_at_")
-                    and k.endswith(kind)), None)
+    def _min_margin(res: dict[str, Any], kind: str,
+                    at: str = "observed") -> float | None:
+        """Smallest concludeable margin recorded for this claim, at 80%.
+
+        ``at='observed'`` reads the margin computed at the cluster count 11R
+        actually produced; ``at='ceiling'`` the one computed at this claim's
+        own cluster ceiling.  Selecting by the full suffix rather than by
+        ``endswith(kind)`` because both keys are now present and a match on
+        the kind alone would silently pick whichever came first.
+        """
+        frag = ("_cluster_ceiling_" if at == "ceiling"
+                else "_clusters_")
+        col = next((k_ for k_ in res
+                    if k_.startswith("min_margin_concludeable_at")
+                    and frag in k_ and k_.endswith(kind)), None)
         return res[col]["power80"] if col else None
 
     retain_floor = floor.get("max_abs_retain_delta")
@@ -1261,27 +1687,65 @@ def main() -> int:
     per_margin_claim: dict[str, Any] = {}
     for name in margin_claims:
         res = entity_results.get(name, {})
+        ceiling = res.get("cluster_ceiling") or 0
         need = _ceil_or_none(n_for_one_sided_margin(
             res["sd_of_cluster_diffs"], res["mean_diff"],
             EQUIVALENCE_MARGIN, ALPHA_ONE_SIDED, 0.80, "non_inferior"))
         per_margin_claim[name] = {
             "claim_kind_now": res.get("claim_kind"),
             "clusters_needed_at_delta0.05_power80_had_it_stayed_primary": need,
-            "clusters_available": n_entities_total,
+            "clusters_observed_at_11r_size": res.get("num_clusters"),
+            "clusters_available_ceiling": ceiling,
+            "ceiling_is": res.get("cluster_ceiling_is"),
+            "ceiling_saturated": res.get("cluster_ceiling_saturated"),
             "feasible_at_delta0.05": isinstance(need, int)
-            and need <= n_entities_total,
-            "smallest_concludeable_margin_power80": _min_margin(
+            and need <= ceiling,
+            "smallest_concludeable_margin_power80_at_11r_size": _min_margin(
                 res, "non_inferiority"),
+            "smallest_concludeable_margin_power80_at_the_ceiling":
+                _min_margin(res, "non_inferiority", "ceiling"),
+            "smallest_concludeable_margin_power80_at_the_entity_total": (
+                round(margin_achievable(
+                    res["sd_of_cluster_diffs"], res["mean_diff"],
+                    n_entities_total, ALPHA_ONE_SIDED, 0.80,
+                    "non_inferiority"), 4)),
             "batch_layout_floor_on_retain_metrics": retain_floor,
         }
-    precision_bounds = [v["smallest_concludeable_margin_power80"]
-                        for v in per_margin_claim.values()]
-    precision_bound = max((b for b in precision_bounds if b is not None),
+    #: The binding precision bound is the WORST claim measured at ITS OWN
+    #: ceiling, not at the observed count and not at the entity total.
+    #: retain_same's ceiling is saturated - every entity that carries a
+    #: retain association already contributes a cluster - so its observed
+    #: margin cannot be improved by any confirmation split on these
+    #: adapters, and it is the honest number to decide against.
+    ceiling_bounds = [v["smallest_concludeable_margin_power80_at_the_ceiling"]
+                      for v in per_margin_claim.values()]
+    precision_bound = max((b for b in ceiling_bounds if b is not None),
                           default=None)
+    observed_bounds = [
+        v["smallest_concludeable_margin_power80_at_11r_size"]
+        for v in per_margin_claim.values()]
+    total_bounds = [
+        v["smallest_concludeable_margin_power80_at_the_entity_total"]
+        for v in per_margin_claim.values()]
     bounds = [b for b in (precision_bound, retain_floor) if b is not None]
     smallest = round(max(bounds), 4) if bounds else None
     infeasible = all(v["feasible_at_delta0.05"] is False
                      for v in per_margin_claim.values())
+    #: The decision must survive the ceiling it is justified at.  Quoting a
+    #: margin computed at one cluster count beside a ceiling naming another
+    #: is how the previous version of this report justified a demotion with
+    #: numbers that did not belong to it, so the same bound is recomputed at
+    #: all three candidate counts and the verdict is read off the worst.
+    sensitivity = {
+        "at_the_11r_observed_counts": max(
+            (b for b in observed_bounds if b is not None), default=None),
+        "at_each_claim_own_ceiling": precision_bound,
+        "at_the_entity_total": max(
+            (b for b in total_bounds if b is not None), default=None),
+        "independent_of_any_ceiling": retain_floor,
+    }
+    sensitivity["delta0.05_infeasible_under_every_candidate"] = all(
+        b is None or b > EQUIVALENCE_MARGIN for b in sensitivity.values())
     report["retention_claim_decision"] = {
         "decision": "demoted_to_descriptive",
         "declared_margin": None,
@@ -1290,16 +1754,31 @@ def main() -> int:
             "retain_other with both averaging units, and their half-widths; "
             "no non-inferiority test and no entry in the Holm family"),
         "per_claim": per_margin_claim,
-        "lower_bound_from_precision_at_available_clusters": precision_bound,
+        "binding_argument": (
+            f"The batch-layout noise floor on the retain metrics is "
+            f"{retain_floor}, measured by scoring ONE checkpoint under two "
+            f"batch layouts, and it already exceeds the declared "
+            f"{EQUIVALENCE_MARGIN} margin. That bound does not depend on any "
+            f"cluster count, so it holds before precision is even "
+            f"considered; precision at each claim's own ceiling is the "
+            f"second and weaker of the two."),
+        "lower_bound_from_precision_at_the_cluster_ceilings": precision_bound,
         "lower_bound_from_batch_layout_noise": retain_floor,
         "smallest_margin_that_would_have_satisfied_both": smallest,
         "margin_that_would_have_been_declared": (
             math.ceil(smallest * 10) / 10 if smallest is not None else None),
+        "sensitivity_to_the_ceiling_choice": sensitivity,
         "delta0.05_verdict": (
-            "infeasible for both retention claims: the cluster counts above "
-            "exceed every entity this dataset contains, and the entity "
-            "ceiling is hard because the preserved adapters unlearned a "
-            "target set drawn from exactly these entities"
+            f"infeasible for both retention claims at delta = "
+            f"{EQUIVALENCE_MARGIN}: they would need "
+            + ", ".join(
+                f"{per_margin_claim[n]['clusters_needed_at_delta0.05_power80_had_it_stayed_primary']}"
+                f" clusters against a ceiling of "
+                f"{per_margin_claim[n]['clusters_available_ceiling']}"
+                for n in margin_claims)
+            + ", and the smallest margin either could conclude at its own "
+              "ceiling still exceeds both the declared margin and the "
+              "batch-layout noise floor"
             if infeasible
             else "feasible for at least one retention claim"),
         "rejected_alternative": (
@@ -1318,21 +1797,30 @@ def main() -> int:
     per_mg: dict[str, Any] = {}
     for name in ("B3_minus_MG:tga", "B3_minus_MG:filr"):
         res = entity_results.get(name, {})
+        ceiling = res.get("cluster_ceiling") or 0
         need = _ceil_or_none(n_for_one_sided_margin(
             res["sd_of_cluster_diffs"], res["mean_diff"],
             EQUIVALENCE_MARGIN, ALPHA_ONE_SIDED, 0.80, "equivalence"))
         per_mg[name] = {
             "claim_kind_now": res.get("claim_kind"),
             "clusters_needed_at_delta0.05_power80_had_it_been_tested": need,
-            "clusters_available": n_entities_total,
+            "clusters_observed_at_11r_size": res.get("num_clusters"),
+            "clusters_available_ceiling": ceiling,
+            "ceiling_is": res.get("cluster_ceiling_is"),
+            "ceiling_saturated": res.get("cluster_ceiling_saturated"),
             "feasible_at_delta0.05": isinstance(need, int)
-            and need <= n_entities_total,
-            "smallest_concludeable_margin_power80": _min_margin(
+            and need <= ceiling,
+            "smallest_concludeable_margin_power80_at_11r_size": _min_margin(
                 res, "equivalence"),
+            "smallest_concludeable_margin_power80_at_the_ceiling":
+                _min_margin(res, "equivalence", "ceiling"),
             "observed_effect": res.get("mean_diff"),
             "achieved_half_width_at_11r_size": res.get(
                 "achieved_half_width_at_11r_size"),
         }
+    mg_ceiling = cluster_ceiling_of["tga"]["ceiling"]
+    mg_needs = [v["clusters_needed_at_delta0.05_power80_had_it_been_tested"]
+                for v in per_mg.values()]
     mgdec = report["mg_equivalence_decision"] = {
         "decision": "secondary_descriptive_only",
         "equivalence_test_run": False,
@@ -1343,11 +1831,11 @@ def main() -> int:
             "NOT concluded"),
         "per_claim": per_mg,
         "reason": (
-            f"at delta = {EQUIVALENCE_MARGIN} the required cluster count is "
-            f"several times the hard entity ceiling of {n_entities_total}, so "
-            "a TOST could only ever return NOT CONCLUDED. Preregistering a "
-            "test that cannot succeed spends Holm budget and weakens the "
-            "thresholds for the claims that can."),
+            f"at delta = {EQUIVALENCE_MARGIN} the required cluster counts are "
+            f"{', '.join(str(n) for n in mg_needs)} against a hard ceiling of "
+            f"{mg_ceiling} target entities, so a TOST could only ever return "
+            "NOT CONCLUDED. Preregistering a test that cannot succeed spends "
+            "Holm budget and weakens the thresholds for the claims that can."),
     }
 
     # ---- the preregistration decisions this analysis produced ----
@@ -1355,17 +1843,62 @@ def main() -> int:
     # stage 3 read them from one place, and so a later reader can see which
     # numbers were measured and which were chosen.
     chosen_supply = supply["seeded_refetch"]
-    held_tga = (strata.get("held_out_photo", {}).get("metrics", {})
-                .get("B3_minus_B0:tga", {}))
+    held_block = strata.get("held_out_photo", {})
+    held_tga = held_block.get("metrics", {}).get("B3_minus_B0:tga", {})
     held_rows = {r["probes_per_entity"]: r for r in
                  held_tga.get("nested_sizing", {})
-                 .get("achieved_at_species_ceiling", [])}
+                 .get("achieved_at_cluster_ceiling", [])}
+    #: Read the ceiling out of the block instead of naming it, so the key
+    #: cannot keep pointing at a ceiling the analysis stopped using.
+    held_ceiling = held_tga.get("nested_sizing", {}).get("cluster_ceiling")
+    held_mde_key = f"mde_at_{held_ceiling}_clusters_conservative_icc_upper"
+    held_out_mde_by_candidate = {
+        m: row.get(held_mde_key) for m, row in sorted(held_rows.items())}
     report["preregistration_decisions"] = {
+        "primary_estimand": PRIMARY_ESTIMAND,
         "primary_family": list(PRIMARY_FAMILY),
         "primary_claim_kinds": {
             n: CLAIM_KIND[n.split(":")[1]] for n in PRIMARY_FAMILY},
-        "multiplicity": f"Holm over k = {len(PRIMARY_FAMILY)}",
+        "multiplicity": (
+            f"Holm over k = {len(PRIMARY_FAMILY)} at familywise alpha "
+            f"{FAMILYWISE_ALPHA}, one-sided p-values"),
         "decisions": [
+            {
+                "id": "primary_estimand",
+                "question": "pooled over target entities, or the stratum "
+                            "that carries the effect",
+                "chosen": report["primary_estimand"]["definition"],
+                "evidence": "primary_estimand",
+                "rejected": [r_["estimand"]
+                             for r_ in report["primary_estimand"]["rejected"]],
+            },
+            {
+                "id": "confirmation_size",
+                "question": "how many new probes, of each kind, per entity",
+                "chosen": "see confirmation_size: it selects one row of each "
+                          "grid and names the command line that builds it",
+                "evidence": "confirmation_size",
+                "rejected": [f"{m} new photographs per species" for m in
+                             sorted(held_rows)
+                             if m != CONFIRM_NEW_PHOTOS_PER_SPECIES],
+            },
+            {
+                "id": "familywise_alpha",
+                "question": "is familywise alpha 0.05 or 0.025",
+                "chosen": (
+                    f"{FAMILYWISE_ALPHA}, applied to one-sided p-values; a "
+                    f"single unadjusted claim sits at {ALPHA_ONE_SIDED} and "
+                    f"Holm's worst case for one of {len(PRIMARY_FAMILY)} "
+                    f"claims is {FAMILYWISE_ALPHA / len(PRIMARY_FAMILY)}"),
+                "evidence": "holm_primary_family",
+                "rejected": [
+                    "familywise 0.025",
+                    "declaring a one-sided 0.025 threshold while sizing at a "
+                    "two-sided 0.025, i.e. one-sided 0.0125, which is what "
+                    "the previous revision did and which reported "
+                    "requirements about 21% larger than the declared "
+                    "threshold supports"],
+            },
             {
                 "id": "retention_margin",
                 "question": "what margin for retention non-inferiority",
@@ -1400,7 +1933,8 @@ def main() -> int:
                 "route": chosen_supply,
                 "species_covered": chosen_supply["species_covered"],
                 "verification_required_before_freeze": (
-                    "the frozen 432 photographs must be a subset of the "
+                    f"the {supply['pools']['pilot_v1']['num_photos']} "
+                    "photographs pilot100_v2 uses must be a subset of the "
                     "re-fetched set by SHA-256, and the remainder must be "
                     "disjoint from them; the seeded-superset argument is "
                     "defeated if the API's pool has grown or the resolution "
@@ -1417,11 +1951,194 @@ def main() -> int:
                     "primary claim: neither B3-vs-B0 claim is carried by this "
                     "stratum, so the budget is set by the minimum detectable "
                     "effect worth reporting"),
-                "held_out_mde_at_the_chosen_ceiling": {
-                    m: row.get("mde_at_36_species_conservative_icc_upper")
-                    for m, row in sorted(held_rows.items())},
+                "held_out_mde_by_candidate_probes_per_species":
+                    held_out_mde_by_candidate,
+                "held_out_mde_at_the_selected_design":
+                    held_out_mde_by_candidate.get(
+                        CONFIRM_NEW_PHOTOS_PER_SPECIES),
+                "note_on_the_former_key_name": (
+                    "this used to be held_out_mde_at_the_chosen_ceiling and "
+                    "held every candidate at once; a field named for a choice "
+                    "that lists all the alternatives has not recorded a "
+                    "choice, so the grid is named as a grid and the selected "
+                    "value is named beside it"),
             },
         ],
+    }
+
+    # ---- the SELECTED confirmation size ----
+    # The grids above are the INPUT to a decision; this block is the
+    # decision.  One row of each grid, the command line that builds it, the
+    # totals it implies, and an explicit split between the identifiers that
+    # can be frozen now and the ones stage 3 has to produce before they can
+    # be.  A report that lists 3/6/9/12/24 photographs per species and
+    # selects none has not sized anything, and the probe-construction stage
+    # would then be free to pick a size after seeing the confirmation data.
+    wording_block = strata.get("seen_photo_unseen_wording", {})
+    wording_tga = wording_block.get("metrics", {}).get("B3_minus_B0:tga", {})
+    wording_filr = wording_block.get("metrics", {}).get(
+        "B3_minus_B0:filr", {})
+    wording_ceiling = stratum_cluster_ceiling["seen_photo_unseen_wording"]
+    wording_rows = {r["probes_per_entity"]: r for r in
+                    wording_tga.get("nested_sizing", {})
+                    .get("achieved_at_cluster_ceiling", [])}
+    w_key = (f"mde_at_{wording_ceiling}_clusters_conservative_icc_upper")
+    w_pow = (f"power_at_{wording_ceiling}_clusters_conservative_icc_upper")
+    sel_w = wording_rows.get(CONFIRM_NEW_WORDING_PROBES_PER_PERSON, {})
+    sel_h = held_rows.get(CONFIRM_NEW_PHOTOS_PER_SPECIES, {})
+    target_ids = census["by_role"]["target"]["entity_ids"]
+    retain_ids = census["by_role"]["retain"]["entity_ids"]
+    exploratory_templates = sorted({q.template_id for q in queries
+                                    if q.template_id})
+    template_blob = "\n".join(exploratory_templates).encode()
+    already_allocated = supply["pools"]["pilot_v1"]["photos_per_species"][0] \
+        if supply["pools"]["pilot_v1"]["photos_per_species"] else 0
+    report["confirmation_size"] = {
+        "selected": True,
+        "what_this_block_is": (
+            "the single design the confirmation split will be built at. "
+            "Every other row of every grid in this report is a rejected "
+            "candidate, not an option left open"),
+        "held_out_photographs": {
+            "new_photographs_per_species": CONFIRM_NEW_PHOTOS_PER_SPECIES,
+            "species_covered": chosen_supply["species_covered"],
+            "new_photographs_total": (
+                CONFIRM_NEW_PHOTOS_PER_SPECIES
+                * chosen_supply["species_covered"]),
+            "why_every_species_and_not_only_the_target_ones": (
+                f"the target metrics only need the "
+                f"{held_ceiling} TARGET species, but the retain_*_image "
+                f"families probe the "
+                f"{census['role_sets'].get('inaturalist/retain', 0)} "
+                "retain-only species too, and a confirmation probe may not "
+                "reuse any photograph pilot100_v2 already used"),
+            "already_allocated_per_species": already_allocated,
+            "fetch_images_per_species": CONFIRM_FETCH_IMAGES_PER_SPECIES,
+            "fetch_seed": CONFIRM_FETCH_SEED,
+            "fetch_out": CONFIRM_FETCH_OUT,
+            "fetch_command": (
+                f"python scripts/fetch_inat_species.py"
+                f" --seed {CONFIRM_FETCH_SEED}"
+                f" --images-per-species {CONFIRM_FETCH_IMAGES_PER_SPECIES}"
+                f" --out {CONFIRM_FETCH_OUT}"),
+            "target_species_in_the_held_out_stratum": held_ceiling,
+            "mde_at_the_selected_design_conservative_icc": sel_h.get(
+                held_mde_key),
+            "power_at_the_selected_design_conservative_icc": sel_h.get(
+                f"power_at_{held_ceiling}_clusters_conservative_icc_upper"),
+            "what_the_power_number_means_here": (
+                "low, and expected to be: this stratum carries no primary "
+                "claim because 11R measured its effect as indistinguishable "
+                "from zero, so the budget is set by the mde above rather "
+                "than by a power target"),
+            "rejected_candidates": {
+                str(m): {"mde_conservative_icc": row.get(held_mde_key)}
+                for m, row in sorted(held_rows.items())
+                if m != CONFIRM_NEW_PHOTOS_PER_SPECIES},
+        },
+        "new_wording_probes": {
+            "new_probes_per_target_person":
+                CONFIRM_NEW_WORDING_PROBES_PER_PERSON,
+            "target_persons": wording_ceiling,
+            "new_wording_probes_total": (
+                CONFIRM_NEW_WORDING_PROBES_PER_PERSON * wording_ceiling),
+            "construction": (
+                f"{CONFIRM_WORDING_FAMILIES} probe families x "
+                f"{CONFIRM_NEW_TEMPLATES_PER_FAMILY} new templates each, "
+                "every template new relative to pilot100_v2"),
+            "exploratory_probes_per_person": wording_tga.get(
+                "variance_components", {}).get(
+                "probes_per_cluster_distribution"),
+            "exploratory_design_was_balanced": wording_tga.get(
+                "variance_components", {}).get("probes_per_cluster_balanced"),
+            "balanced": True,
+            "why_balanced": (
+                "the exploratory wording stratum allocates different numbers "
+                "of probes to different persons, so its harmonic-mean cluster "
+                "size is below its arithmetic mean and its between-person "
+                "variance estimate carries that imbalance; a balanced "
+                "confirmation design removes a confound the variance "
+                "decomposition would otherwise have to be read against"),
+            "power_at_the_selected_design_tga_conservative_icc":
+                sel_w.get(w_pow),
+            "mde_at_the_selected_design_tga_conservative_icc":
+                sel_w.get(w_key),
+            "mde_at_the_selected_design_filr_conservative_icc": next(
+                (r.get(f"mde_at_{wording_ceiling}_clusters_conservative_icc"
+                        "_upper")
+                 for r in wording_filr.get("nested_sizing", {})
+                 .get("achieved_at_cluster_ceiling", [])
+                 if r["probes_per_entity"]
+                 == CONFIRM_NEW_WORDING_PROBES_PER_PERSON), None),
+            "why_not_fewer": (
+                "power is not the binding constraint at this ceiling: the "
+                f"between-person variance floor is "
+                f"{wording_tga.get('nested_sizing', {}).get('conservative_cluster_floor_infinite_probes')}"
+                f" persons for TGA and "
+                f"{wording_filr.get('nested_sizing', {}).get('conservative_cluster_floor_infinite_probes')}"
+                f" for FILR against {wording_ceiling} available, so the count "
+                "is chosen for design balance and comparability with the "
+                "held-out stratum, not for power"),
+            "rejected_candidates": {
+                str(m): {"mde_conservative_icc": row.get(w_key),
+                         "power_conservative_icc": row.get(w_pow)}
+                for m, row in sorted(wording_rows.items())
+                if m != CONFIRM_NEW_WORDING_PROBES_PER_PERSON},
+        },
+        "totals": {
+            "new_target_probes": (
+                CONFIRM_NEW_WORDING_PROBES_PER_PERSON * wording_ceiling
+                + CONFIRM_NEW_PHOTOS_PER_SPECIES
+                * chosen_supply["species_covered"]),
+            "of_which_new_photographs": (
+                CONFIRM_NEW_PHOTOS_PER_SPECIES
+                * chosen_supply["species_covered"]),
+            "of_which_new_wordings": (
+                CONFIRM_NEW_WORDING_PROBES_PER_PERSON * wording_ceiling),
+            "scored_states": 3,
+            "entity_clusters": target_total,
+        },
+        "frozen_now": {
+            "target_entity_ids": target_ids,
+            "target_entity_ids_sha256":
+                census["by_role"]["target"]["entity_ids_sha256"],
+            "retain_entity_ids": retain_ids,
+            "retain_entity_ids_sha256":
+                census["by_role"]["retain"]["entity_ids_sha256"],
+            "exploratory_template_ids": exploratory_templates,
+            "exploratory_template_ids_sha256":
+                hashlib.sha256(template_blob).hexdigest(),
+            "exploratory_photograph_sha256_manifest":
+                "data/mllmu_hier_pilot100/image_manifest.json",
+        },
+        "frozen_at_stage_3_before_any_scoring": {
+            "confirmation_query_id_list_sha256": (
+                "to be committed: the exact query_id list of the "
+                "confirmation split"),
+            "confirmation_template_ids_and_file_sha256": (
+                "to be committed: the new template ids and the hash of the "
+                "file that defines them"),
+            "confirmation_photograph_sha256_manifest": (
+                "to be committed: the hash of every new photograph, plus the "
+                "licence and attribution the re-fetch records"),
+            "collision_rules": [
+                f"no confirmation template_id may appear among the "
+                f"{len(exploratory_templates)} exploratory template ids "
+                f"hashed above",
+                "no confirmation photograph sha256 may appear in the frozen "
+                "exploratory image manifest",
+                "no confirmation query_id may appear in the exploratory "
+                "queries parquet",
+                "the confirmation split must not enter the reference-state "
+                "gate, candidate selection, or any go/no-go decision",
+            ],
+            "why_these_cannot_be_frozen_here": (
+                "they do not exist yet. Freezing a size and the entity set "
+                "now, and binding the obligation to commit the identifiers "
+                "before scoring, is what keeps the size a preregistration "
+                "rather than a description of whatever stage 3 happens to "
+                "build"),
+        },
     }
 
     # ---- notes: every figure interpolated, never restated ----
@@ -1450,45 +2167,85 @@ def main() -> int:
             "which does exclude zero, so this stratum carries a measurable "
             "effect and the probe count is set by its power columns")
         notes.append(
-            f"{claim} of B3 over B0 is carried by "
+            f"{claim} of B3 over B0: the PRIMARY estimand is "
+            f"{report['primary_estimand']['declared']} over "
+            f"{report['primary_estimand']['entities_in_scope']} entities. As "
+            f"a pre-specified secondary diagnostic, the effect is carried by "
             f"{', '.join(h['strata_that_carry_the_claim']) or 'NO stratum'}. "
             f"On held-out photographs the same comparison measured "
             f"{held.get('mean_diff', 0.0):+.4f} over "
-            f"{held.get('num_species')} species with a 95% interval of "
+            f"{held.get('num_clusters')} clusters with a 95% interval of "
             f"[{ci[0]:+.4f}, {ci[1]:+.4f}], {verdict}.")
     mdec = report["retention_claim_decision"]
+    sens = mdec["sensitivity_to_the_ceiling_choice"]
     notes.append(
-        f"Retention is DESCRIPTIVE, with no declared margin. Had it stayed a "
-        f"primary non-inferiority claim, delta = {EQUIVALENCE_MARGIN} would "
-        f"be {mdec['delta0.05_verdict']}; the smallest margin this design "
-        f"could conclude is "
-        f"{mdec['lower_bound_from_precision_at_available_clusters']} and the "
-        f"batch-layout noise floor on retain metrics is "
-        f"{mdec['lower_bound_from_batch_layout_noise']}, so the narrowest "
-        f"margin satisfying both would have been "
+        f"Retention is DESCRIPTIVE, with no declared margin. "
+        f"{mdec['binding_argument']} Had retention stayed a primary "
+        f"non-inferiority claim, the verdict would be "
+        f"{mdec['delta0.05_verdict']}. The "
+        f"smallest concludeable margin is "
+        f"{mdec['lower_bound_from_precision_at_the_cluster_ceilings']} at "
+        f"each claim's OWN cluster ceiling, "
+        f"{sens['at_the_11r_observed_counts']} at 11R's observed counts, and "
+        f"{sens['at_the_entity_total']} at the {n_entities_total}-entity "
+        f"total an earlier revision of this report wrongly used as every "
+        f"claim's ceiling. All three exceed {EQUIVALENCE_MARGIN}, so the "
+        f"demotion does not depend on which ceiling is quoted "
+        f"(infeasible_under_every_candidate="
+        f"{sens['delta0.05_infeasible_under_every_candidate']}); the "
+        f"narrowest margin satisfying both bounds at the correct ceilings "
+        f"would have been "
         f"{mdec['smallest_margin_that_would_have_satisfied_both']}. Widening "
         f"the margin to fit the design was rejected; the intervals are "
         f"published instead, with no non-inferiority test and no Holm entry.")
     for name in ("B3_minus_MG:tga", "B3_minus_MG:filr"):
         res = entity_results.get(name, {})
-        need = mgdec["per_claim"][name][
+        mg_entry = mgdec["per_claim"][name]
+        need = mg_entry[
             "clusters_needed_at_delta0.05_power80_had_it_been_tested"]
         notes.append(
             f"{name}: DESCRIPTIVE only, no equivalence test. Equivalence to "
             f"M_G at delta = {EQUIVALENCE_MARGIN} would need {need} entity "
-            f"clusters against a hard ceiling of {n_entities_total}, and the "
-            f"smallest margin concludeable at 11R's "
+            f"clusters against a hard ceiling of "
+            f"{mg_entry['clusters_available_ceiling']}, and the smallest "
+            f"margin concludeable at 11R's "
             f"{res.get('num_clusters')} clusters is "
             f"{_min_margin(res, 'equivalence')}. This is the power analysis "
             f"the preregistration asked for before treating the claim as "
             f"anything but secondary; the interval and its half-width are "
             f"published and equivalence is stated as NOT concluded.")
+    cs = report["confirmation_size"]
+    holm_n = {n_: v["n_at_holm_worst_case_alpha_power80"]
+              for n_, v in holm["per_claim"].items()}
     notes.append(
         f"Primary family is {', '.join(PRIMARY_FAMILY)} under Holm with k = "
-        f"{len(PRIMARY_FAMILY)}. Both are carried by the "
-        f"seen_photo_unseen_wording stratum, whose probes are new WORDING "
-        f"variants over the same persons, so the primary claims require no "
-        f"new photographs and no new entities.")
+        f"{len(PRIMARY_FAMILY)} at familywise alpha {FAMILYWISE_ALPHA} on "
+        f"ONE-SIDED p-values, so the worst-case threshold and the sizing "
+        f"level are both {FAMILYWISE_ALPHA / len(PRIMARY_FAMILY)} and both "
+        f"use z = {holm['critical_value_z']}. At that level the family needs "
+        f"{holm_n} clusters against "
+        f"{report['primary_estimand']['entities_in_scope']} available. An "
+        f"earlier revision sized the 0.025 threshold as though it were "
+        f"two-sided, i.e. one-sided 0.0125 at z = {round(z(1 - FAMILYWISE_ALPHA / len(PRIMARY_FAMILY) / 2), 4)}, "
+        f"which is conservative but not the declared test; the preregistration "
+        f"now states the convention and the sizing obeys it.")
+    notes.append(
+        f"SELECTED confirmation size: "
+        f"{cs['new_wording_probes']['new_probes_per_target_person']} new "
+        f"wording probes on each of "
+        f"{cs['new_wording_probes']['target_persons']} target persons "
+        f"({cs['new_wording_probes']['new_wording_probes_total']} probes) and "
+        f"{cs['held_out_photographs']['new_photographs_per_species']} new "
+        f"photographs on each of "
+        f"{cs['held_out_photographs']['species_covered']} species "
+        f"({cs['held_out_photographs']['new_photographs_total']} photographs), "
+        f"fetched by `{cs['held_out_photographs']['fetch_command']}`. The "
+        f"primary claims are carried by the wording probes; the photographs "
+        f"are for the secondary held-out measurement and for the retain "
+        f"image families, not for a primary claim. Every other row of every "
+        f"grid in this report is a rejected candidate.")
+    notes.append(
+        f"{report['primary_estimand']['what_it_does_not_establish']}")
     notes.append(
         "This report is committed; the photographs it measures in "
         "new_photograph_supply mostly are not. pilot_v1 is re-fetchable and "
@@ -1505,9 +2262,10 @@ def main() -> int:
     log.info("wrote %s", out)
 
     # ---- console summary ----
-    print(f"\n{'claim':34s} {'kind':16s} {'k':>4s} {'mean':>8s} {'sd':>7s} "
+    print(f"\n{'claim':34s} {'kind':16s} {'k':>4s} {'ceil':>5s} "
+          f"{'mean':>8s} {'sd':>7s} "
           f"{'hw@11R':>7s} {'sup80':>6s} {'NI80':>6s} {'equiv80':>8s} "
-          f"{'minNI@k':>8s}")
+          f"{'minNI@k':>8s} {'minNI@ceil':>10s}")
 
     def _s(v: Any) -> str:
         if v is None:
@@ -1524,16 +2282,24 @@ def main() -> int:
         r = entity_results[name]
         ni = r["min_margin_concludeable_at_%d_clusters_non_inferiority"
               % r["num_clusters"]]["power80"]
+        nic = r["min_margin_concludeable_at_the_%d_cluster_ceiling_"
+                "non_inferiority" % r["cluster_ceiling"]]["power80"] \
+            if r.get("cluster_ceiling") else None
         print(f"{name:34s} {r['claim_kind']:16s} {r['num_clusters']:>4d} "
+              f"{_s(r.get('cluster_ceiling')):>5s} "
               f"{r['mean_diff']:>8.4f} {r['sd_of_cluster_diffs']:>7.4f} "
               f"{r['achieved_half_width_at_11r_size']:>7.4f} "
               f"{_s(r['n_for_superiority_power80']):>6s} "
               f"{_s(r['n_for_non_inferiority_delta0.05_power80']):>6s} "
               f"{_s(r['n_for_equivalence_delta0.05_power80']):>8s} "
-              f"{str(ni):>8s}")
+              f"{str(ni):>8s} {_s(nic):>10s}")
     print(f"\nentity ceilings: "
           f"{json.dumps(ceilings['entities_by_source'])}, total "
           f"{ceilings['entities_total']}")
+    print(f"CLAIM cluster ceilings (the entity total is the ceiling of no "
+          f"claim): "
+          f"{json.dumps({role: v['total'] for role, v in ceilings['cluster_ceiling_by_metric_role'].items()})}")
+    print(f"role sets: {json.dumps(ceilings['role_sets'])}")
     off = supply["offline_pool"]
     ach = supply["achievable_ceilings_for_the_held_out_stratum"]
     print(f"new held-out photographs: the frozen pool contributes "
@@ -1550,8 +2316,10 @@ def main() -> int:
           f"seeded-refetch={ach['species_via_seeded_refetch']}")
     for stratum, block in strata.items():
         print(f"\n--- {stratum}: {block['num_probes']} probes over "
-              f"{block['num_species']} clusters "
+              f"{block['num_clusters']} clusters "
               f"(one cluster = {block['nesting_cluster_is']}; "
+              f"ceiling {block['cluster_ceiling']}, "
+              f"saturated={block['cluster_ceiling_saturated']}; "
               f"{', '.join(block['source_datasets'])}) ---")
         print(f"    one probe = {block['probes_per_entity_axis_is']}")
         print(f"    max reachable probes/entity="
@@ -1575,49 +2343,59 @@ def main() -> int:
             for row, cons in zip(g["grid"],
                                  g["conservative_grid_at_icc_upper_bound"]):
                 print(f"      m={row['probes_per_entity']:>3d} -> "
-                      f"species point-ICC="
-                      f"{_s(row['species_required']):>5s} "
-                      f"conservative={_s(cons['species_required']):>5s} "
-                      f"probes={_s(cons['total_probes_at_that_species_count'])}")
-            print(f"      asymptotic species floor: point-ICC="
-                  f"{_s(g['asymptotic_species_floor_infinite_probes'])} "
+                      f"clusters point-ICC="
+                      f"{_s(row['clusters_required']):>5s} "
+                      f"conservative={_s(cons['clusters_required']):>5s} "
+                      f"probes={_s(cons['total_probes_at_that_cluster_count'])}")
+            print(f"      asymptotic cluster floor: point-ICC="
+                  f"{_s(g['asymptotic_cluster_floor_infinite_probes'])} "
                   f"conservative="
-                  f"{_s(g['conservative_species_floor_infinite_probes'])}")
-            if g.get("achieved_at_species_ceiling"):
-                sc = g["species_ceiling"]
-                print(f"      at the {sc}-species ceiling, for a "
+                  f"{_s(g['conservative_cluster_floor_infinite_probes'])}")
+            if g.get("achieved_at_cluster_ceiling"):
+                sc = g["cluster_ceiling"]
+                print(f"      at the {sc}-cluster ceiling, for a "
                       f"{g['claim_kind']} claim at theta="
                       f"{g['theta_used']:+.4f}:")
-                for row in g["achieved_at_species_ceiling"]:
+                for row in g["achieved_at_cluster_ceiling"]:
                     print(
                         f"        m={row['probes_per_entity']:>3d} "
-                        f"hw={row[f'half_width_at_{sc}_species_point_icc']:.4f}"
-                        f"/{row[f'half_width_at_{sc}_species_conservative_icc_upper']:.4f} "
-                        f"power={_s(row[f'power_at_{sc}_species_point_icc'])}"
-                        f"/{_s(row[f'power_at_{sc}_species_conservative_icc_upper'])} "
-                        f"mde={_s(row[f'mde_at_{sc}_species_point_icc'])}"
-                        f"/{_s(row[f'mde_at_{sc}_species_conservative_icc_upper'])} "
+                        f"hw={row[f'half_width_at_{sc}_clusters_point_icc']:.4f}"
+                        f"/{row[f'half_width_at_{sc}_clusters_conservative_icc_upper']:.4f} "
+                        f"power={_s(row[f'power_at_{sc}_clusters_point_icc'])}"
+                        f"/{_s(row[f'power_at_{sc}_clusters_conservative_icc_upper'])} "
+                        f"mde={_s(row[f'mde_at_{sc}_clusters_point_icc'])}"
+                        f"/{_s(row[f'mde_at_{sc}_clusters_conservative_icc_upper'])} "
                         f"(point/conservative) "
                         f"conservative_power_ge_80="
                         f"{_s(row['power_ge_80_conservative_icc_upper'])}")
             off_g = m.get("nested_sizing_at_offline_new_photo_ceiling")
-            if off_g and off_g.get("achieved_at_species_ceiling"):
-                osc = off_g["species_ceiling"]
-                print(f"      at the {osc}-species OFFLINE new-photo "
+            if off_g and off_g.get("achieved_at_cluster_ceiling"):
+                osc = off_g["cluster_ceiling"]
+                print(f"      at the {osc}-cluster OFFLINE new-photo "
                       f"ceiling, same claim (conservative ICC only):")
-                for row in off_g["achieved_at_species_ceiling"]:
+                for row in off_g["achieved_at_cluster_ceiling"]:
                     print(
                         f"        m={row['probes_per_entity']:>3d} "
-                        f"hw={row[f'half_width_at_{osc}_species_conservative_icc_upper']:.4f} "
-                        f"power={_s(row[f'power_at_{osc}_species_conservative_icc_upper'])} "
-                        f"mde={_s(row[f'mde_at_{osc}_species_conservative_icc_upper'])}")
+                        f"hw={row[f'half_width_at_{osc}_clusters_conservative_icc_upper']:.4f} "
+                        f"power={_s(row[f'power_at_{osc}_clusters_conservative_icc_upper'])} "
+                        f"mde={_s(row[f'mde_at_{osc}_clusters_conservative_icc_upper'])}")
+    print("\n=== the declared primary estimand ===")
+    pe = report["primary_estimand"]
+    print(f"  {pe['declared']}: {pe['definition']}")
+    print(f"  entities in scope {pe['entities_in_scope']} "
+          f"{json.dumps(pe['entities_in_scope_by_source'])}, "
+          f"ids sha256 {pe['entity_ids_sha256'][:16]}...")
+    print(f"  family {pe['primary_family']}; {pe['multiplicity']}")
+    print(f"  per-stratum decomposition: "
+          f"{pe['per_stratum_decomposition_status']}")
+    print(f"  does NOT establish: {pe['what_it_does_not_establish']}")
     print("\n=== which stratum carries each B3-vs-B0 primary claim ===")
     for name, h in hetero.items():
         print(f"  {name} ({h['claim']}), pooled "
               f"{h['pooled_mean_diff']:+.4f} over "
               f"{h['pooled_num_clusters']} clusters")
         for st, v in h["per_stratum"].items():
-            print(f"      {st:26s} k={v['num_species']:>3d} "
+            print(f"      {st:26s} k={v['num_clusters']:>3d} "
                   f"theta={v['mean_diff']:+.4f} "
                   f"ci=[{v['ci95'][0]:+.4f},{v['ci95'][1]:+.4f}] "
                   f"excludes_zero={str(v['ci_excludes_zero']):5s} "
@@ -1631,16 +2409,50 @@ def main() -> int:
     for name, v in mdec["per_claim"].items():
         print(f"  {name}: would need "
               f"{_s(v['clusters_needed_at_delta0.05_power80_had_it_stayed_primary'])}"
-              f" clusters at delta=0.05 (available "
-              f"{v['clusters_available']}), smallest concludeable margin "
-              f"{_s(v['smallest_concludeable_margin_power80'])}")
+              f" clusters at delta={EQUIVALENCE_MARGIN} (ceiling "
+              f"{v['clusters_available_ceiling']}, observed "
+              f"{v['clusters_observed_at_11r_size']}, saturated="
+              f"{v['ceiling_saturated']}), smallest concludeable margin "
+              f"at 11R's size "
+              f"{_s(v['smallest_concludeable_margin_power80_at_11r_size'])} "
+              f"and at the ceiling "
+              f"{_s(v['smallest_concludeable_margin_power80_at_the_ceiling'])}")
     print(f"  batch-layout noise floor on retain metrics: "
           f"{_s(mdec['lower_bound_from_batch_layout_noise'])} "
-          f"(from {floor.get('source', 'n/a')})")
+          f"(from {floor.get('source', 'n/a')}) - the ceiling-independent "
+          f"bound")
+    print(f"  sensitivity to the ceiling choice: {json.dumps(sens)}")
     print(f"  -> decision {mdec['decision']}, declared margin "
           f"{_s(mdec['declared_margin'])}; the narrowest margin that would "
           f"have satisfied both bounds was "
           f"{_s(mdec['smallest_margin_that_would_have_satisfied_both'])}")
+    print("\n=== SELECTED confirmation size ===")
+    hp, nw = cs["held_out_photographs"], cs["new_wording_probes"]
+    print(f"  {hp['new_photographs_per_species']} new photographs x "
+          f"{hp['species_covered']} species = "
+          f"{hp['new_photographs_total']} photographs")
+    print(f"    fetch: {hp['fetch_command']}")
+    print(f"    target species in the held-out stratum: "
+          f"{hp['target_species_in_the_held_out_stratum']}; mde at the "
+          f"selected design (conservative ICC) "
+          f"{_s(hp['mde_at_the_selected_design_conservative_icc'])}")
+    print(f"  {nw['new_probes_per_target_person']} new wording probes x "
+          f"{nw['target_persons']} target persons = "
+          f"{nw['new_wording_probes_total']} probes")
+    print(f"    construction: {nw['construction']}")
+    print(f"    exploratory design was balanced="
+          f"{nw['exploratory_design_was_balanced']} "
+          f"{json.dumps(nw['exploratory_probes_per_person'])}")
+    print(f"    mde at the selected design (conservative ICC) tga="
+          f"{_s(nw['mde_at_the_selected_design_tga_conservative_icc'])} "
+          f"filr={_s(nw['mde_at_the_selected_design_filr_conservative_icc'])}")
+    print(f"  totals: {json.dumps(cs['totals'])}")
+    print(f"  frozen now: {len(cs['frozen_now']['target_entity_ids'])} target "
+          f"+ {len(cs['frozen_now']['retain_entity_ids'])} retain entity ids, "
+          f"{len(cs['frozen_now']['exploratory_template_ids'])} exploratory "
+          f"template ids")
+    print(f"  frozen at stage 3: "
+          f"{', '.join(k for k in cs['frozen_at_stage_3_before_any_scoring'])}")
     print("\n=== notes ===")
     for n in notes:
         print(f"  * {n}")

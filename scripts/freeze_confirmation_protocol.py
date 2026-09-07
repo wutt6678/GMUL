@@ -18,6 +18,17 @@ the confirmatory claims depend on:
 * delta = 0.05 AND ITS ROLE, which the 11C-2a decisions changed;
 * the CI unit, bootstrap size and seed, read from the function signature
   rather than written down beside it;
+* the familywise alpha and the ONE-SIDED convention that makes the Holm
+  threshold and the cluster requirement the same test instead of one being a
+  two-sided reading of the other (Iteration 11C-R1's finding #4);
+* the PRIMARY ESTIMAND, named once, with the per-stratum decomposition
+  demoted to a pre-specified secondary and the fixed-cohort limit recorded,
+  because "pooled" and "the stratum that carries the effect" are different
+  quantities and a preregistration that names both claims neither
+  (finding #3);
+* the SELECTED confirmation size — ONE row of the power grid, the command
+  line that fetches it, and the identifiers frozen now versus the ones stage
+  3 is obliged to commit before scoring (finding #1);
 * the sealed-split and score-exactly-once invariants, as assertions with a
   named enforcement point, because an invariant nobody is obliged to check
   is a comment.
@@ -69,7 +80,18 @@ from power_analysis_confirmation import (  # noqa: E402
     BOOTSTRAP_SEED,
     CLAIM_KIND,
     CLAIM_KIND_VS_MG,
+    CONFIRM_FETCH_IMAGES_PER_SPECIES,
+    CONFIRM_FETCH_OUT,
+    CONFIRM_FETCH_SEED,
+    CONFIRM_NEW_PHOTOS_PER_SPECIES,
+    CONFIRM_NEW_WORDING_PROBES_PER_PERSON,
+    FAMILYWISE_ALPHA,
+    PRIMARY_ESTIMAND,
+    PRIMARY_ESTIMAND_STRATA,
     PRIMARY_FAMILY,
+    STRATUM_ESTIMAND_STATUS,
+    WHAT_THE_CONFIRMATION_DOES_NOT_ESTABLISH,
+    z,
 )
 
 log = setup_logger("freeze_confirmation_protocol")
@@ -190,6 +212,79 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
             f"the power report's primary family {prereg['primary_family']} "
             f"does not match the module's {list(PRIMARY_FAMILY)}")
 
+    # The declared threshold and the sizing level must be the SAME test.
+    # Iteration 11C-R1's finding #4: the report declared a one-sided Holm
+    # worst case of familywise/k but the sizing function halved its alpha
+    # again, so the cluster requirement was computed at one-sided 0.0125
+    # while the preregistration said 0.025.  Conservative, but it meant the
+    # published requirement was not the requirement of the published test.
+    holm = power.get("holm_primary_family") or {}
+    k = len(PRIMARY_FAMILY)
+    want_alpha = FAMILYWISE_ALPHA / k
+    if holm.get("familywise_alpha") != FAMILYWISE_ALPHA:
+        refusals.append(
+            f"the power report declares familywise alpha "
+            f"{holm.get('familywise_alpha')} but the module declares "
+            f"{FAMILYWISE_ALPHA}; the preregistration must state ONE "
+            f"familywise error rate")
+    if holm.get("sizing_alpha_one_sided") != round(want_alpha, 6):
+        refusals.append(
+            f"the power report sized the primary claims at a one-sided alpha "
+            f"of {holm.get('sizing_alpha_one_sided')} while its own Holm "
+            f"worst-case threshold is {round(want_alpha, 6)} = familywise/k; "
+            f"the threshold and the sizing are not the same test")
+    if holm.get("critical_value_z") != round(z(1 - want_alpha), 6):
+        refusals.append(
+            f"the power report's sizing critical value "
+            f"{holm.get('critical_value_z')} is not z(1 - familywise/k) = "
+            f"{round(z(1 - want_alpha), 6)}, so the cluster requirement was "
+            f"computed at a different alpha than the one declared")
+
+    # The estimand and the selected size are checked against the module
+    # rather than copied from it, because a freeze that restated them would
+    # bind its own copy and the sizing code could move underneath.  A
+    # disagreement is a protocol contradiction, not a preference.
+    estimand = power.get("primary_estimand") or {}
+    if estimand.get("declared") != PRIMARY_ESTIMAND:
+        refusals.append(
+            f"the power report declares the primary estimand as "
+            f"{estimand.get('declared')!r} but the module declares "
+            f"{PRIMARY_ESTIMAND!r}")
+    if estimand.get("strata_whose_probes_enter_it") != \
+            list(PRIMARY_ESTIMAND_STRATA):
+        refusals.append(
+            f"the power report's primary estimand draws on "
+            f"{estimand.get('strata_whose_probes_enter_it')} but the module "
+            f"declares {list(PRIMARY_ESTIMAND_STRATA)}")
+    size = power.get("confirmation_size") or {}
+    photos = size.get("held_out_photographs") or {}
+    words = size.get("new_wording_probes") or {}
+    for field, want in (
+            ("new_photographs_per_species", CONFIRM_NEW_PHOTOS_PER_SPECIES),
+            ("new_photographs_total",
+             CONFIRM_NEW_PHOTOS_PER_SPECIES
+             * photos.get("species_covered", 0)),
+            ("fetch_images_per_species", CONFIRM_FETCH_IMAGES_PER_SPECIES),
+            ("fetch_seed", CONFIRM_FETCH_SEED),
+            ("fetch_out", CONFIRM_FETCH_OUT)):
+        if photos.get(field) != want:
+            refusals.append(
+                f"the power report's selected confirmation size sets "
+                f"{field} = {photos.get(field)!r} but the module declares "
+                f"{want!r}, so the size the analysis selected is not the "
+                "size the sizing code would build")
+    for field, want in (
+            ("new_probes_per_target_person",
+             CONFIRM_NEW_WORDING_PROBES_PER_PERSON),
+            ("new_wording_probes_total",
+             CONFIRM_NEW_WORDING_PROBES_PER_PERSON
+             * words.get("target_persons", 0))):
+        if words.get(field) != want:
+            refusals.append(
+                f"the power report's selected confirmation size sets "
+                f"{field} = {words.get(field)!r} but the module declares "
+                f"{want!r}")
+
     # ---- checkpoints, bound by full adapter contract ----
     selected_ids = dict(selection["selected"])
     by_ckpt = {r["checkpoint_id"]: r for r in manifest["predictions"]}
@@ -213,19 +308,31 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
         }
         # The freeze must bind the SAME bytes 11R scored, not merely some
         # adapter that happens to be sitting in the expected directory.
+        #
+        # The ORDER of these checks is load-bearing.  An ABSENT adapter
+        # directory still produces a contract: no files hashed, both listed
+        # as missing, and a roll-up sha256 that is an ordinary-looking hash
+        # of the empty map.  Comparing that against the sidecars first would
+        # report "the checkpoint has moved since the results being confirmed
+        # were produced" — a confident diagnosis of the wrong thing, in the
+        # one environment (a fresh clone, where the adapters are gitignored)
+        # where it is most likely to be read.
         if contract is None:
             refusals.append(f"{state}: no adapter contract could be resolved "
                             f"for checkpoint_id {ckpt_id}")
+        elif contract.get("missing_files"):
+            refusals.append(
+                f"{state}: adapter contract is missing "
+                f"{contract['missing_files']} under {entry['adapter_dir']}; "
+                f"the adapters are gitignored, so a checkout without them "
+                f"cannot be frozen, and this is NOT evidence that the "
+                f"checkpoint moved")
         elif recorded_contract and contract["sha256"] != recorded_contract:
             refusals.append(
                 f"{state}: adapter contract {contract['sha256'][:16]} does "
                 f"not match the {recorded_contract[:16]} the 11R sidecars "
                 f"recorded for {ckpt_id}; the checkpoint has moved since the "
                 f"results being confirmed were produced")
-        elif contract.get("missing_files"):
-            refusals.append(
-                f"{state}: adapter contract is missing "
-                f"{contract['missing_files']}")
         cand = selection["candidates"].get(ckpt_id)
         if cand:
             cfg = cand["config"]
@@ -253,10 +360,25 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
     # proved the two produce identical OUTPUTS on the exploratory test split,
     # but that is a consequence of identical weights under an identical batch
     # layout, and the confirmation gets a new split.
-    b0 = (checkpoints["B0"]["adapter_contract"] or {}).get("sha256")
-    mf = (checkpoints["MF"]["adapter_contract"] or {}).get("sha256")
-    b0_is_noop = bool(b0) and b0 == mf
-    if not b0_is_noop:
+    b0c = checkpoints["B0"]["adapter_contract"] or {}
+    mfc = checkpoints["MF"]["adapter_contract"] or {}
+    b0, mf = b0c.get("sha256"), mfc.get("sha256")
+    # Two contracts that hashed NO files roll up to the same sha256, so
+    # without this guard a checkout holding no adapters at all would "prove"
+    # B0 is a byte-identical copy of M_F and exclude M_F on the strength of
+    # nothing.  Measured equality of two empty maps is not a measurement.
+    hashed_no_files = sorted(n for n, c in (("B0", b0c), ("MF", mfc))
+                             if not c.get("files"))
+    both_complete = not hashed_no_files
+    b0_is_noop = both_complete and b0 == mf
+    if not both_complete:
+        refusals.append(
+            f"the B0/M_F no-op check could not be performed: "
+            f"{hashed_no_files} hashed no adapter files at all, and an empty "
+            f"file map compares equal to every other empty file map, so "
+            f"absence would otherwise count as proof that B0 is the no-op "
+            f"copy of M_F")
+    elif not b0_is_noop:
         refusals.append(
             f"B0's adapter contract ({str(b0)[:16]}) is not identical to "
             f"MF's ({str(mf)[:16]}), so MF is a distinct state and cannot be "
@@ -352,12 +474,18 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
             "measured": True,
             "b0_adapter_contract_sha256": b0,
             "mf_adapter_contract_sha256": mf,
+            "both_contracts_hashed_real_files": both_complete,
             "identical": b0_is_noop,
             "how": "adapter_contract() over weights AND adapter_config.json",
             "consequence": (
                 "MF is excluded from the confirmation because B0 is a "
                 "byte-identical copy of it, measured here rather than "
                 "inherited from 11R's output comparison"),
+            "why_completeness_is_part_of_the_measurement": (
+                "an adapter directory that is absent hashes zero files, and "
+                "the roll-up of an empty file map equals the roll-up of every "
+                "other empty file map; equality of two such contracts would "
+                "look like a measurement and be nothing"),
         },
         "states": {
             "scored": list(CONFIRMATION_STATES),
@@ -404,25 +532,86 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
             "bootstrap": _ci_parameters(),
             "icc_bootstrap_seed": BOOTSTRAP_SEED,
             "paired_metrics": list(PAIRED_METRICS),
+            "familywise_alpha": FAMILYWISE_ALPHA,
             "alpha_one_sided": ALPHA_ONE_SIDED,
+            "alpha_convention": (
+                f"familywise alpha is {FAMILYWISE_ALPHA}, applied to "
+                f"ONE-SIDED p-values; a single unadjusted claim sits at "
+                f"{ALPHA_ONE_SIDED} = familywise/2 and Holm's worst case for "
+                f"one of {len(PRIMARY_FAMILY)} claims is familywise/k = "
+                f"{FAMILYWISE_ALPHA / len(PRIMARY_FAMILY)}. Every sizing "
+                "function in the power module takes a one-sided alpha and "
+                "uses z(1 - alpha), so the declared threshold and the "
+                "reported cluster requirement are the same test."),
+        },
+        "primary_estimand": {
+            "declared": PRIMARY_ESTIMAND,
+            "definition": estimand.get("definition"),
+            "unit_of_inference": estimand.get("unit_of_inference"),
+            "entities_in_scope": estimand.get("entities_in_scope"),
+            "entities_in_scope_by_source":
+                estimand.get("entities_in_scope_by_source"),
+            "entity_ids_sha256": estimand.get("entity_ids_sha256"),
+            "strata_whose_probes_enter_it": list(PRIMARY_ESTIMAND_STRATA),
+            "per_stratum_decomposition_status": STRATUM_ESTIMAND_STATUS,
+            "what_it_establishes": estimand.get("what_it_establishes"),
+            "what_it_does_not_establish":
+                WHAT_THE_CONFIRMATION_DOES_NOT_ESTABLISH,
+            "read_from": "primary_estimand in the power report bound above; "
+                         "the declaration itself is the module constant, so "
+                         "a disagreement refuses rather than picks one",
+        },
+        "confirmation_size": {
+            "selected": size.get("selected"),
+            "held_out_photographs": photos,
+            "new_wording_probes": words,
+            "totals": size.get("totals"),
+            "frozen_now": size.get("frozen_now"),
+            "frozen_at_stage_3_before_any_scoring":
+                size.get("frozen_at_stage_3_before_any_scoring"),
+            "read_from": "confirmation_size in the power report bound above, "
+                         "cross-checked against the CONFIRM_* module "
+                         "constants in build_freeze",
+            "why_the_size_is_in_the_freeze": (
+                "stage 3 builds probes and stage 5 scores them once. If the "
+                "size were only in the power report, a builder could pick a "
+                "different row of the grid and nothing would notice until "
+                "after scoring; bound here, the split that gets built has to "
+                "match a number committed before any inference ran."),
         },
         "claims": {
             "primary_family": list(PRIMARY_FAMILY),
+            "primary_estimand": PRIMARY_ESTIMAND,
             "primary_claim_kinds": {
                 n: CLAIM_KIND[n.split(":")[1]] for n in PRIMARY_FAMILY},
             "k": len(PRIMARY_FAMILY),
             "multiplicity": "Holm",
+            "familywise_alpha": FAMILYWISE_ALPHA,
             "holm_thresholds": [
-                round(2 * ALPHA_ONE_SIDED / (len(PRIMARY_FAMILY) - i), 6)
+                round(FAMILYWISE_ALPHA / (len(PRIMARY_FAMILY) - i), 6)
                 for i in range(len(PRIMARY_FAMILY))],
+            "thresholds_apply_to": "one-sided p-values",
             "worst_case_alpha_for_a_single_claim": round(
-                2 * ALPHA_ONE_SIDED / len(PRIMARY_FAMILY), 6),
+                FAMILYWISE_ALPHA / len(PRIMARY_FAMILY), 6),
+            "sizing_alpha_one_sided": holm.get("sizing_alpha_one_sided"),
+            "sizing_critical_value_z": holm.get("critical_value_z"),
+            "thresholds_and_sizing_agree":
+                holm.get("thresholds_and_sizing_agree"),
+            "clusters_required_at_that_threshold": {
+                n: v["n_at_holm_worst_case_alpha_power80"]
+                for n, v in (holm.get("per_claim") or {}).items()},
+            "cluster_ceiling_of_the_primary_claims": (
+                power.get("feasibility", {}).get("ceilings", {})
+                .get("entity_clusters_available_for_pooled_target_claims")),
             "descriptive_and_why": {
                 "B3_minus_B0:retain_same": ret["decision"],
                 "B3_minus_B0:retain_other": ret["decision"],
                 "B3_minus_MG:tga": mgd["decision"],
                 "B3_minus_MG:filr": mgd["decision"],
             },
+            "retention_justification_is_ceiling_independent": (
+                ret.get("sensitivity_to_the_ceiling_choice", {})
+                .get("delta0.05_infeasible_under_every_candidate")),
             "mg_claim_kinds": dict(CLAIM_KIND_VS_MG),
             "evidence": "preregistration_decisions in the power report bound "
                         "above",
@@ -503,6 +692,28 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
                 "enforced_by": "this freeze, plus the analysis-script hashes "
                                "bound above: a retune changes those hashes",
                 "checked_at": "stage 5, at reporting",
+            },
+            {
+                "invariant": f"the split stage 3 builds is the size frozen "
+                             f"here: "
+                             f"{CONFIRM_NEW_WORDING_PROBES_PER_PERSON} new "
+                             f"wording probes per target person and "
+                             f"{CONFIRM_NEW_PHOTOS_PER_SPECIES} new "
+                             f"photographs per species, fetched by the named "
+                             f"command line and no other",
+                "why": "the size was selected from a grid before any "
+                       "confirmation probe existed. Building a different row "
+                       "of that grid would make the reported power and mde "
+                       "describe a design that was not run, and choosing the "
+                       "row after seeing the data is the same error as "
+                       "choosing a margin after seeing that the declared one "
+                       "cannot be reached",
+                "enforced_by": "confirmation_size above, cross-checked "
+                               "against the CONFIRM_* module constants at "
+                               "freeze time and against the built split's "
+                               "committed query and photograph hashes at "
+                               "stage 4",
+                "checked_at": "stage 4, before scoring",
             },
         ],
         "environment": environment_fingerprint(),
@@ -595,9 +806,25 @@ def main() -> int:
           f"level={a['bootstrap']['ci_level']} seed={a['bootstrap']['seed']}"
           f" | ICC seed={a['icc_bootstrap_seed']}")
     c = freeze["claims"]
+    print(f"  estimand     {freeze['primary_estimand']['declared']} over "
+          f"{freeze['primary_estimand']['entities_in_scope']} entities "
+          f"(ids {str(freeze['primary_estimand']['entity_ids_sha256'])[:16]})")
     print(f"  primary      {', '.join(c['primary_family'])} "
-          f"({c['multiplicity']} k={c['k']}, worst-case alpha "
+          f"({c['multiplicity']} k={c['k']}, familywise alpha "
+          f"{c['familywise_alpha']}, worst-case one-sided "
           f"{c['worst_case_alpha_for_a_single_claim']})")
+    print(f"  sized at     one-sided alpha {c['sizing_alpha_one_sided']}, "
+          f"z={c['sizing_critical_value_z']} — the same test the threshold "
+          f"declares, applied to {c['thresholds_apply_to']}")
+    print(f"  needs        {c['clusters_required_at_that_threshold']} "
+          f"clusters at that threshold, against a ceiling of "
+          f"{c['cluster_ceiling_of_the_primary_claims']}")
+    cs = freeze["confirmation_size"]
+    print(f"  size         {cs['new_wording_probes']['new_wording_probes_total']}"
+          f" new wording probes + "
+          f"{cs['held_out_photographs']['new_photographs_total']} new "
+          f"photographs = {cs['totals']['new_target_probes']} target probes")
+    print(f"  fetch        {cs['held_out_photographs']['fetch_command']}")
     print(f"  invariants   {len(freeze['sealed_split_invariants'])} sealed-split"
           f" / score-once assertions recorded")
     return 0

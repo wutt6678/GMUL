@@ -1,5 +1,6 @@
 {
   "analysis": {
+    "alpha_convention": "familywise alpha is 0.05, applied to ONE-SIDED p-values; a single unadjusted claim sits at 0.025 = familywise/2 and Holm's worst case for one of 2 claims is familywise/k = 0.025. Every sizing function in the power module takes a one-sided alpha and uses z(1 - alpha), so the declared threshold and the reported cluster requirement are the same test.",
     "alpha_one_sided": 0.025,
     "averaging_units": {
       "entity_macro": "the statistic the CI is built for and the one the interval covers",
@@ -13,6 +14,7 @@
     },
     "ci_method": "paired percentile bootstrap",
     "ci_unit": "entity - the iNaturalist species or the MLLMU person - which is the unit the bootstrap resamples",
+    "familywise_alpha": 0.05,
     "icc_bootstrap_seed": 20260907,
     "paired_metrics": [
       "filr",
@@ -25,11 +27,13 @@
   },
   "b0_is_the_no_op": {
     "b0_adapter_contract_sha256": "ab25b620a25a9cd03280def621216d590fe41b39e1fd888e56aada3a442b6d3b",
+    "both_contracts_hashed_real_files": true,
     "consequence": "MF is excluded from the confirmation because B0 is a byte-identical copy of it, measured here rather than inherited from 11R's output comparison",
     "how": "adapter_contract() over weights AND adapter_config.json",
     "identical": true,
     "measured": true,
-    "mf_adapter_contract_sha256": "ab25b620a25a9cd03280def621216d590fe41b39e1fd888e56aada3a442b6d3b"
+    "mf_adapter_contract_sha256": "ab25b620a25a9cd03280def621216d590fe41b39e1fd888e56aada3a442b6d3b",
+    "why_completeness_is_part_of_the_measurement": "an adapter directory that is absent hashes zero files, and the roll-up of an empty file map equals the roll-up of every other empty file map; equality of two such contracts would look like a measurement and be nothing"
   },
   "checkpoints": {
     "B0": {
@@ -159,6 +163,11 @@
     }
   },
   "claims": {
+    "cluster_ceiling_of_the_primary_claims": 72,
+    "clusters_required_at_that_threshold": {
+      "B3_minus_B0:filr": 4,
+      "B3_minus_B0:tga": 5
+    },
     "descriptive_and_why": {
       "B3_minus_B0:retain_other": "demoted_to_descriptive",
       "B3_minus_B0:retain_same": "demoted_to_descriptive",
@@ -166,6 +175,7 @@
       "B3_minus_MG:tga": "secondary_descriptive_only"
     },
     "evidence": "preregistration_decisions in the power report bound above",
+    "familywise_alpha": 0.05,
     "holm_thresholds": [
       0.025,
       0.05
@@ -184,17 +194,23 @@
       "B3_minus_B0:filr": "superiority",
       "B3_minus_B0:tga": "superiority"
     },
+    "primary_estimand": "pooled_over_target_entities",
     "primary_family": [
       "B3_minus_B0:tga",
       "B3_minus_B0:filr"
     ],
+    "retention_justification_is_ceiling_independent": true,
+    "sizing_alpha_one_sided": 0.025,
+    "sizing_critical_value_z": 1.959964,
+    "thresholds_and_sizing_agree": "both use z(1 - familywise/k); the sizing function takes a one-sided alpha like every other in this module, so the declared threshold and the cluster requirement below are the same test rather than one being a two-sided reading of the other",
+    "thresholds_apply_to": "one-sided p-values",
     "worst_case_alpha_for_a_single_claim": 0.025
   },
   "code": {
     "analysis_scripts_sha256": {
       "scripts/evaluate_pilot100_final.py": "508354306410a0e60917ff267470f07a8ff5cc0fe3f11e54a960513f2949e14f",
-      "scripts/freeze_confirmation_protocol.py": "9480d93b14f3e372fec6b2ffc7f096f32312246d92e33e4cce51b274b6470d19",
-      "scripts/power_analysis_confirmation.py": "b621714e7bd0caecf3e25d9945e02bd4fb373737bbb0739b14c77ecb1f8ca84a",
+      "scripts/freeze_confirmation_protocol.py": "bb375db572fbd3a9a8165f808e1465c6b3506d865928a1f249992328f7c0aa58",
+      "scripts/power_analysis_confirmation.py": "67980415e6dc3861035d3f37f8d9cc308e1afe7ecebcf4869c6b00ba5acedade",
       "scripts/select_unlearning_checkpoints.py": "ecacee99a9dd52cba7c419081e11a628f931fc40e8300b45b489946e6da25f2d"
     },
     "fingerprinted_module_list": [
@@ -222,6 +238,306 @@
       "src/granunlearn/schema/query.py": "4b6b4cc9ce18c8e04871f24714ffcf3a922b8bb18068794992f224c6ddfd699e"
     },
     "why_analysis_scripts_are_bound_separately": "CODE_FINGERPRINT_MODULES binds the modules that turn queries into scores. These turn scores into claims, and an edit to either would change what the frozen protocol means without changing a single prediction - so the sidecars would still verify while the conclusion moved."
+  },
+  "confirmation_size": {
+    "frozen_at_stage_3_before_any_scoring": {
+      "collision_rules": [
+        "no confirmation template_id may appear among the 57 exploratory template ids hashed above",
+        "no confirmation photograph sha256 may appear in the frozen exploratory image manifest",
+        "no confirmation query_id may appear in the exploratory queries parquet",
+        "the confirmation split must not enter the reference-state gate, candidate selection, or any go/no-go decision"
+      ],
+      "confirmation_photograph_sha256_manifest": "to be committed: the hash of every new photograph, plus the licence and attribution the re-fetch records",
+      "confirmation_query_id_list_sha256": "to be committed: the exact query_id list of the confirmation split",
+      "confirmation_template_ids_and_file_sha256": "to be committed: the new template ids and the hash of the file that defines them",
+      "why_these_cannot_be_frozen_here": "they do not exist yet. Freezing a size and the entity set now, and binding the obligation to commit the identifiers before scoring, is what keeps the size a preregistration rather than a description of whatever stage 3 happens to build"
+    },
+    "frozen_now": {
+      "exploratory_photograph_sha256_manifest": "data/mllmu_hier_pilot100/image_manifest.json",
+      "exploratory_template_ids": [
+        "fine_contextual:0",
+        "fine_contextual:1",
+        "fine_contextual:2",
+        "fine_contrastive:0",
+        "fine_contrastive:1",
+        "fine_contrastive:2",
+        "fine_descriptive:0",
+        "fine_descriptive:1",
+        "fine_descriptive:2",
+        "fine_direct:0",
+        "fine_direct:1",
+        "fine_direct:2",
+        "fine_paraphrase:0",
+        "fine_paraphrase:1",
+        "fine_paraphrase:2",
+        "fine_verification:0",
+        "fine_verification:1",
+        "fine_verification:2",
+        "granular_coarse:0",
+        "granular_coarse:1",
+        "granular_coarse:2",
+        "granular_fine:0",
+        "granular_fine:1",
+        "granular_fine:2",
+        "granular_intermediate:0",
+        "granular_intermediate:1",
+        "granular_intermediate:2",
+        "image_fine_direct:0",
+        "image_fine_direct:1",
+        "image_fine_direct:2",
+        "image_target_direct:0",
+        "image_target_direct:1",
+        "image_target_direct:2",
+        "multimodal_image_text:0",
+        "multimodal_image_text:1",
+        "multimodal_image_text:2",
+        "negation_correction:0",
+        "negation_correction:1",
+        "negation_correction:2",
+        "negation_direct:0",
+        "negation_direct:1",
+        "negation_direct:2",
+        "negation_disambiguation:0",
+        "negation_disambiguation:1",
+        "negation_disambiguation:2",
+        "retain_other_entity:0",
+        "retain_other_entity:1",
+        "retain_other_entity:2",
+        "retain_other_entity_image:0",
+        "retain_other_entity_image:1",
+        "retain_other_entity_image:2",
+        "retain_same_entity:0",
+        "retain_same_entity:1",
+        "retain_same_entity:2",
+        "retain_same_entity_image:0",
+        "retain_same_entity_image:1",
+        "retain_same_entity_image:2"
+      ],
+      "exploratory_template_ids_sha256": "ecd95c11097b2518f23bbb551cea615739763587a6258b7318bf302afec2d5b0",
+      "retain_entity_ids": [
+        "Anas crecca",
+        "Anthocharis cardamines",
+        "Branta leucopsis",
+        "Carduelis carduelis",
+        "Erithacus rubecula",
+        "Passer montanus",
+        "mllmu_005",
+        "mllmu_006",
+        "mllmu_007",
+        "mllmu_047",
+        "mllmu_054",
+        "mllmu_057",
+        "mllmu_060",
+        "mllmu_066",
+        "mllmu_072",
+        "mllmu_078",
+        "mllmu_089",
+        "mllmu_090",
+        "mllmu_094",
+        "mllmu_096",
+        "mllmu_103",
+        "mllmu_104",
+        "mllmu_108",
+        "mllmu_117",
+        "mllmu_131",
+        "mllmu_133",
+        "mllmu_141",
+        "mllmu_142",
+        "mllmu_151",
+        "mllmu_159",
+        "mllmu_182",
+        "mllmu_187",
+        "mllmu_191",
+        "mllmu_222",
+        "mllmu_224",
+        "mllmu_239",
+        "mllmu_244",
+        "mllmu_250",
+        "mllmu_252",
+        "mllmu_258",
+        "mllmu_259",
+        "mllmu_272",
+        "mllmu_282",
+        "mllmu_289",
+        "mllmu_291",
+        "mllmu_307",
+        "mllmu_308",
+        "mllmu_318",
+        "mllmu_327",
+        "mllmu_332",
+        "mllmu_341",
+        "mllmu_354",
+        "mllmu_356",
+        "mllmu_360",
+        "mllmu_361",
+        "mllmu_369",
+        "mllmu_405",
+        "mllmu_422",
+        "mllmu_424",
+        "mllmu_432",
+        "mllmu_435",
+        "mllmu_437",
+        "mllmu_438",
+        "mllmu_442",
+        "mllmu_443",
+        "mllmu_453",
+        "mllmu_462",
+        "mllmu_465",
+        "mllmu_481",
+        "mllmu_482"
+      ],
+      "retain_entity_ids_sha256": "6702bbfaadb32d5681689b1171f1fac86faeff755c5e45e33ac22b6096a86b08",
+      "target_entity_ids": [
+        "Anas platyrhynchos",
+        "Branta canadensis",
+        "Canis lupus",
+        "Chloris chloris",
+        "Coloeus monedula",
+        "Corvus corax",
+        "Corvus corone",
+        "Cyanistes caeruleus",
+        "Felis catus",
+        "Gonepteryx rhamni",
+        "Mareca strepera",
+        "Mustela erminea",
+        "Mustela nivalis",
+        "Papilio machaon",
+        "Parus major",
+        "Passer domesticus",
+        "Passer hispaniolensis",
+        "Periparus ater",
+        "Pieris brassicae",
+        "Pieris napi",
+        "Pieris rapae",
+        "Poecile montanus",
+        "Poecile palustris",
+        "Sturnus vulgaris",
+        "Turdus merula",
+        "Turdus philomelos",
+        "Turdus pilaris",
+        "Vanessa atalanta",
+        "Vanessa cardui",
+        "Vulpes vulpes",
+        "mllmu_005",
+        "mllmu_054",
+        "mllmu_057",
+        "mllmu_060",
+        "mllmu_066",
+        "mllmu_078",
+        "mllmu_089",
+        "mllmu_090",
+        "mllmu_094",
+        "mllmu_103",
+        "mllmu_117",
+        "mllmu_131",
+        "mllmu_159",
+        "mllmu_182",
+        "mllmu_187",
+        "mllmu_191",
+        "mllmu_222",
+        "mllmu_239",
+        "mllmu_244",
+        "mllmu_252",
+        "mllmu_258",
+        "mllmu_259",
+        "mllmu_272",
+        "mllmu_289",
+        "mllmu_291",
+        "mllmu_308",
+        "mllmu_318",
+        "mllmu_327",
+        "mllmu_332",
+        "mllmu_354",
+        "mllmu_356",
+        "mllmu_360",
+        "mllmu_405",
+        "mllmu_424",
+        "mllmu_432",
+        "mllmu_435",
+        "mllmu_437",
+        "mllmu_438",
+        "mllmu_442",
+        "mllmu_462",
+        "mllmu_465",
+        "mllmu_481"
+      ],
+      "target_entity_ids_sha256": "acbf30d42b461a5c08a9d8d5fc6d4f12ed03043a92fbee9fdb03a1b2e0606225"
+    },
+    "held_out_photographs": {
+      "already_allocated_per_species": 12,
+      "fetch_command": "python scripts/fetch_inat_species.py --seed 42 --images-per-species 24 --out data/raw/inaturalist/confirm_v1",
+      "fetch_images_per_species": 24,
+      "fetch_out": "data/raw/inaturalist/confirm_v1",
+      "fetch_seed": 42,
+      "mde_at_the_selected_design_conservative_icc": 0.0287,
+      "new_photographs_per_species": 12,
+      "new_photographs_total": 432,
+      "power_at_the_selected_design_conservative_icc": 0.191,
+      "rejected_candidates": {
+        "24": {
+          "mde_conservative_icc": 0.0215
+        },
+        "3": {
+          "mde_conservative_icc": 0.0547
+        },
+        "6": {
+          "mde_conservative_icc": 0.0393
+        },
+        "9": {
+          "mde_conservative_icc": 0.0326
+        }
+      },
+      "species_covered": 36,
+      "target_species_in_the_held_out_stratum": 30,
+      "what_the_power_number_means_here": "low, and expected to be: this stratum carries no primary claim because 11R measured its effect as indistinguishable from zero, so the budget is set by the mde above rather than by a power target",
+      "why_every_species_and_not_only_the_target_ones": "the target metrics only need the 30 TARGET species, but the retain_*_image families probe the 6 retain-only species too, and a confirmation probe may not reuse any photograph pilot100_v2 already used"
+    },
+    "new_wording_probes": {
+      "balanced": true,
+      "construction": "3 probe families x 4 new templates each, every template new relative to pilot100_v2",
+      "exploratory_design_was_balanced": false,
+      "exploratory_probes_per_person": {
+        "3": 27,
+        "6": 12,
+        "9": 3
+      },
+      "mde_at_the_selected_design_filr_conservative_icc": 0.1511,
+      "mde_at_the_selected_design_tga_conservative_icc": 0.144,
+      "new_probes_per_target_person": 12,
+      "new_wording_probes_total": 504,
+      "power_at_the_selected_design_tga_conservative_icc": 1.0,
+      "rejected_candidates": {
+        "24": {
+          "mde_conservative_icc": 0.14,
+          "power_conservative_icc": 1.0
+        },
+        "3": {
+          "mde_conservative_icc": 0.1662,
+          "power_conservative_icc": 0.996
+        },
+        "6": {
+          "mde_conservative_icc": 0.1517,
+          "power_conservative_icc": 0.999
+        },
+        "9": {
+          "mde_conservative_icc": 0.1466,
+          "power_conservative_icc": 1.0
+        }
+      },
+      "target_persons": 42,
+      "why_balanced": "the exploratory wording stratum allocates different numbers of probes to different persons, so its harmonic-mean cluster size is below its arithmetic mean and its between-person variance estimate carries that imbalance; a balanced confirmation design removes a confound the variance decomposition would otherwise have to be read against",
+      "why_not_fewer": "power is not the binding constraint at this ceiling: the between-person variance floor is 11 persons for TGA and 14 for FILR against 42 available, so the count is chosen for design balance and comparability with the held-out stratum, not for power"
+    },
+    "read_from": "confirmation_size in the power report bound above, cross-checked against the CONFIRM_* module constants in build_freeze",
+    "selected": true,
+    "totals": {
+      "entity_clusters": 72,
+      "new_target_probes": 936,
+      "of_which_new_photographs": 432,
+      "of_which_new_wordings": 504,
+      "scored_states": 3
+    },
+    "why_the_size_is_in_the_freeze": "stage 3 builds probes and stage 5 scores them once. If the size were only in the power report, a builder could pick a different row of the grid and nothing would notice until after scoring; bound here, the split that gets built has to match a number committed before any inference ran."
   },
   "environment": {
     "package_versions": {
@@ -253,7 +569,7 @@
     "version": "pilot100_v2"
   },
   "freeze": "iteration_11c_confirmation_protocol",
-  "frozen_at_utc": "2026-09-06T21:30:06+00:00",
+  "frozen_at_utc": "2026-09-07T01:32:19+00:00",
   "generation": {
     "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
     "batch_layout": "ONE uniform layout for every scored state: all confirmation queries in a single pass, same batch_size and image_batch_size for B3, B0 and MG. Batched greedy decoding is not bit-stable across batch compositions, so two layouts would put decoding noise inside the paired difference itself.",
@@ -271,7 +587,7 @@
     "module_defaults_match": true,
     "source": "the single generation_config shared by all 30 committed 11R predictions"
   },
-  "git_commit": "401d52267b294fe32a11359b0b4beae389ce0b80",
+  "git_commit": "d770b14a170dc2f62d9c8f7ceb1cbdffcbcc9760",
   "git_dirty": true,
   "inputs_bound": {
     "final_evaluation": {
@@ -280,7 +596,7 @@
     },
     "power_analysis": {
       "path": "data/reports/mllmu_pilot100_confirmation_power.json",
-      "sha256": "15ee862364aea937a7309ee2a520754a23aa57317a19a188d6c94469c22b360b"
+      "sha256": "7cd70ee43288e3ec6477bcf82c6dc84f0171b63592d9107e4bd10317aedf61ff"
     },
     "prediction_manifest": {
       "path": "data/reports/mllmu_pilot100_prediction_manifest.json",
@@ -292,6 +608,25 @@
     }
   },
   "iteration": "11C",
+  "primary_estimand": {
+    "declared": "pooled_over_target_entities",
+    "definition": "the entity-macro average of the paired B3-B0 difference over all 72 TARGET entities - every person and every species the preserved adapters were trained to unlearn - each entity measured on its own confirmation probes and weighted equally regardless of how many probes it contributes",
+    "entities_in_scope": 72,
+    "entities_in_scope_by_source": {
+      "inaturalist": 30,
+      "mllmu_hier": 42
+    },
+    "entity_ids_sha256": "acbf30d42b461a5c08a9d8d5fc6d4f12ed03043a92fbee9fdb03a1b2e0606225",
+    "per_stratum_decomposition_status": "prespecified_secondary_diagnostic_no_holm_entry",
+    "read_from": "primary_estimand in the power report bound above; the declaration itself is the module constant, so a disagreement refuses rather than picks one",
+    "strata_whose_probes_enter_it": [
+      "seen_photo_unseen_wording",
+      "held_out_photo"
+    ],
+    "unit_of_inference": "entity (person or species), percentile bootstrap over entities",
+    "what_it_does_not_establish": "Reusing the same entities with new probes confirms robustness on that fixed cohort; it does not create new entity clusters and does not establish independent population-level replication. The preserved adapters unlearned a target set drawn from exactly these entities, so no confirmation split that keeps those adapters can enlarge the entity set. Both the pooled estimand and every per-stratum estimand inherit this limit; choosing between them does not escape it.",
+    "what_it_establishes": "that B3 changes the target metrics relative to B0 across the target entity set as a whole, on probes the exploratory pipeline never scored"
+  },
   "provenance_contract_version": 2,
   "purpose": "Bind every parameter the confirmatory claims depend on before any confirmation probe is built or scored, so that a result produced afterwards cannot be explained by a parameter that moved beforehand.",
   "refusals": [],
@@ -343,6 +678,12 @@
       "enforced_by": "this freeze, plus the analysis-script hashes bound above: a retune changes those hashes",
       "invariant": "a failed primary claim is reported as failed",
       "why": "retuning on confirmation data converts a confirmatory result back into an exploratory one"
+    },
+    {
+      "checked_at": "stage 4, before scoring",
+      "enforced_by": "confirmation_size above, cross-checked against the CONFIRM_* module constants at freeze time and against the built split's committed query and photograph hashes at stage 4",
+      "invariant": "the split stage 3 builds is the size frozen here: 12 new wording probes per target person and 12 new photographs per species, fetched by the named command line and no other",
+      "why": "the size was selected from a grid before any confirmation probe existed. Building a different row of that grid would make the reported power and mde describe a design that was not run, and choosing the row after seeing the data is the same error as choosing a margin after seeing that the declared one cannot be reached"
     }
   ],
   "states": {
