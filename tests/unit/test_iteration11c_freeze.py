@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import inspect
 import json
+import re
 import shlex
 import sys
 from pathlib import Path
@@ -38,6 +39,7 @@ from freeze_confirmation_protocol import (  # noqa: E402
     CONFIRMATION_STATES,
     VOLATILE_FREEZE_FIELDS,
     build_freeze,
+    drift_keys,
 )
 from power_analysis_confirmation import (  # noqa: E402
     ALPHA_ONE_SIDED,
@@ -852,10 +854,7 @@ class TestTheAnalysisCodeIsBound:
             fz, "ANALYSIS_SCRIPTS",
             tuple(ANALYSIS_SCRIPTS) + ("scripts/write_provenance.py",))
         fresh = build_freeze(REPO_ROOT, "pilot100")
-        drift = [k for k in set(committed) | set(fresh)
-                 if k not in VOLATILE_FREEZE_FIELDS
-                 and json.dumps(committed.get(k), sort_keys=True)
-                 != json.dumps(fresh.get(k), sort_keys=True)]
+        drift = drift_keys(committed, fresh)
         assert "code" in drift, drift
 
 
@@ -962,13 +961,10 @@ class TestTheFreezeIsWrittenOnce:
         resolve them differs from the committed freeze in exactly the block
         this compares."""
         _require_adapters()
-        committed = _load()
-        fresh = build_freeze(REPO_ROOT, "pilot100")
-        for k in sorted(set(committed) | set(fresh)):
-            if k in VOLATILE_FREEZE_FIELDS:
-                continue
-            assert json.dumps(committed.get(k), sort_keys=True) == \
-                json.dumps(fresh.get(k), sort_keys=True), k
+        # drift_keys is the script's own comparison, imported rather than
+        # restated: a test that reimplemented it could pass while --check-only
+        # disagreed
+        assert drift_keys(_load(), build_freeze(REPO_ROOT, "pilot100")) == []
 
     def test_the_drift_check_excludes_only_what_it_documents(self):
         """Every excluded field is a hole in the drift check, so the set must
@@ -992,15 +988,52 @@ class TestTheFreezeIsWrittenOnce:
         unimportable, so environment_fingerprint() reports null versions and
         cannot match a freeze written on a GPU machine.  The block is
         diagnostic for exactly that reason — which is also why it must not be
-        allowed to fail the drift check."""
+        allowed to fail the drift check.
+
+        So the property is NOT that the recorded interpreter matches the one
+        running this test, and asserting that was a bug: the freeze was
+        written under 3.10.20 with torch 2.8.0+cu128 while the GitHub runner
+        is 3.10.21 with no torch installed at all, so equality fails on every
+        machine except the one that wrote the freeze.  That is the reason the
+        field is excluded, not a defect in the exclusion.  What IS assertable
+        anywhere is that a difference in this block does not register as
+        drift - so the difference is MANUFACTURED here rather than inherited
+        from whichever two interpreters happen to be in play.
+        """
         from granunlearn.evaluation.prediction_provenance import (
             environment_fingerprint)
         assert "environment" in VOLATILE_FREEZE_FIELDS
         live = environment_fingerprint()
+        committed = _load()
+        recorded = committed["environment"]
         assert set(live) == {"python_executable", "python_version",
                              "package_versions"}
-        assert _load()["environment"]["python_version"] == \
-            live["python_version"]
+        # same SHAPE whatever the values.  The probed package list is a fixed
+        # tuple inside environment_fingerprint(), so its KEYS are
+        # machine-independent even though its versions are not.
+        assert set(recorded) == set(live)
+        assert set(recorded["package_versions"]) == \
+            set(live["package_versions"])
+        assert re.fullmatch(r"\d+\.\d+\.\d+", recorded["python_version"])
+        assert recorded["python_executable"]
+
+        # a different interpreter, different versions, no torch at all: the
+        # block differs and the drift check must not care
+        elsewhere = dict(
+            recorded,
+            python_executable="/opt/hostedtoolcache/Python/3.10.21/x64/bin/"
+                              "python",
+            python_version="9.99.99",
+            package_versions={k: None for k in recorded["package_versions"]})
+        assert elsewhere != recorded
+        assert drift_keys(committed, dict(committed,
+                                          environment=elsewhere)) == []
+
+        # and the comparison is not simply blind: a BINDING block still
+        # flags, so the empty result above is the exclusion doing its job
+        retuned = dict(committed, analysis=dict(committed["analysis"],
+                                                icc_bootstrap_seed=999))
+        assert drift_keys(committed, retuned) == ["analysis"]
 
     def test_a_moved_margin_is_detected_as_drift(self, monkeypatch):
         """The clearest failure the freeze exists to prevent: delta changing

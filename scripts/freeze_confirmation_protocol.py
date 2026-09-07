@@ -157,6 +157,21 @@ VOLATILE_FREEZE_FIELDS = frozenset({
     "frozen_at_utc", "git_commit", "git_dirty", "environment"})
 
 
+def drift_keys(committed: dict[str, Any], fresh: dict[str, Any]) -> list[str]:
+    """Top-level blocks that differ once :data:`VOLATILE_FREEZE_FIELDS` goes.
+
+    ONE definition, used by ``--check-only`` and imported by the tests that
+    assert what does and does not count as drift.  The same reasoning that
+    made the exclusion set a module constant applies to the comparison: two
+    copies is two chances for the tool and its tests to disagree about the
+    exact thing the tests exist to check.
+    """
+    return [k for k in sorted(set(committed) | set(fresh))
+            if k not in VOLATILE_FREEZE_FIELDS
+            and json.dumps(committed.get(k), sort_keys=True)
+            != json.dumps(fresh.get(k), sort_keys=True)]
+
+
 def _utcnow() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
@@ -757,13 +772,7 @@ def main() -> int:
             print(f"REFUSED — no freeze to check at {out}")
             return 1
         committed = json.loads(out.read_text())
-        diffs = []
-        for k in sorted(set(committed) | set(freeze)):
-            if k in volatile:
-                continue
-            a, b = committed.get(k), freeze.get(k)
-            if json.dumps(a, sort_keys=True) != json.dumps(b, sort_keys=True):
-                diffs.append(k)
+        diffs = drift_keys(committed, freeze)
         if diffs:
             print("DRIFT — the freeze no longer matches the repository:")
             for k in diffs:

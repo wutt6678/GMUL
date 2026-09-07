@@ -209,7 +209,7 @@
   "code": {
     "analysis_scripts_sha256": {
       "scripts/evaluate_pilot100_final.py": "508354306410a0e60917ff267470f07a8ff5cc0fe3f11e54a960513f2949e14f",
-      "scripts/freeze_confirmation_protocol.py": "bb375db572fbd3a9a8165f808e1465c6b3506d865928a1f249992328f7c0aa58",
+      "scripts/freeze_confirmation_protocol.py": "bd55da5ac30e9409d922b042f2f7c119d7b45053002598901008a41afe146068",
       "scripts/power_analysis_confirmation.py": "67980415e6dc3861035d3f37f8d9cc308e1afe7ecebcf4869c6b00ba5acedade",
       "scripts/select_unlearning_checkpoints.py": "ecacee99a9dd52cba7c419081e11a628f931fc40e8300b45b489946e6da25f2d"
     },
@@ -569,7 +569,7 @@
     "version": "pilot100_v2"
   },
   "freeze": "iteration_11c_confirmation_protocol",
-  "frozen_at_utc": "2026-09-07T01:32:19+00:00",
+  "frozen_at_utc": "2026-09-07T02:45:36+00:00",
   "generation": {
     "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
     "batch_layout": "ONE uniform layout for every scored state: all confirmation queries in a single pass, same batch_size and image_batch_size for B3, B0 and MG. Batched greedy decoding is not bit-stable across batch compositions, so two layouts would put decoding noise inside the paired difference itself.",
@@ -587,7 +587,7 @@
     "module_defaults_match": true,
     "source": "the single generation_config shared by all 30 committed 11R predictions"
   },
-  "git_commit": "d770b14a170dc2f62d9c8f7ceb1cbdffcbcc9760",
+  "git_commit": "3bfaf477f0b3e58a5e7f7805ccafe6b68a4d273a",
   "git_dirty": true,
   "inputs_bound": {
     "final_evaluation": {
