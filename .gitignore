@@ -81,6 +81,12 @@ data/raw/inaturalist/confirm_v1/*
 # scorer, margin role, CI unit and analysis-code hashes. If this is not in
 # git then "frozen before inference" is an unverifiable claim.
 !data/reports/mllmu_pilot100_confirmation_freeze.json
+# 11C stage 3c: WHICH 360 of the 720 drawn photographs the confirmation uses,
+# selected under the frozen hash rule.  The photographs themselves are
+# gitignored, so this is the committed record of their sha256, licence,
+# attribution, observation id and source URL - and the evidence that none of
+# them is exploratory media.
+!data/reports/mllmu_confirm100_photograph_selection.json
 # Frozen sha256s for every image the dataset references; binds the photographs
 # the predictions were actually generated over.
 !data/mllmu_hier_pilot100/image_manifest.json

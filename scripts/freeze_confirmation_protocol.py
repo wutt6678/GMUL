@@ -179,6 +179,12 @@ ANALYSIS_SCRIPTS = (
     "scripts/power_analysis_confirmation.py",
     "scripts/select_unlearning_checkpoints.py",
     "scripts/freeze_confirmation_protocol.py",
+    # Iteration 11C stage 3c.  The freeze binds PHOTO_SELECTION_RULE, but a
+    # rule with no bound executor is a rule anyone can implement differently:
+    # the script that turns the 24 drawn photographs per species into the 12
+    # kept ones decides which photographs the confirmation actually scores, so
+    # its bytes are bound beside the rule it executes.
+    "scripts/select_confirmation_photographs.py",
 )
 
 

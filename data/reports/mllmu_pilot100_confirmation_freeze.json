@@ -211,8 +211,9 @@
   "code": {
     "analysis_scripts_sha256": {
       "scripts/evaluate_pilot100_final.py": "508354306410a0e60917ff267470f07a8ff5cc0fe3f11e54a960513f2949e14f",
-      "scripts/freeze_confirmation_protocol.py": "1b2c40aff05af5d5766e98a2e84a959ae93e54d68118deef1f172d74ec5a40b2",
+      "scripts/freeze_confirmation_protocol.py": "5aca7cba94059faf7bf169bd65493e7b3d2167a914944079c0933ed539c00af5",
       "scripts/power_analysis_confirmation.py": "69ea998bd83e3c8aae0080267fd92d4fdd7a9a18920785a9eeac910efa1bb479",
+      "scripts/select_confirmation_photographs.py": "ec8edd91bc95e661dabc6d2273e59e52a2e9925772b55946fd51823b985482e2",
       "scripts/select_unlearning_checkpoints.py": "ecacee99a9dd52cba7c419081e11a628f931fc40e8300b45b489946e6da25f2d"
     },
     "fingerprinted_module_list": [
@@ -746,7 +747,7 @@
     "version": "pilot100_v2"
   },
   "freeze": "iteration_11c_confirmation_protocol",
-  "frozen_at_utc": "2026-09-07T07:06:58+00:00",
+  "frozen_at_utc": "2026-09-07T07:35:46+00:00",
   "generation": {
     "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
     "batch_layout": "ONE uniform layout for every scored state: all confirmation queries in a single pass, same batch_size and image_batch_size for B3, B0 and MG. Batched greedy decoding is not bit-stable across batch compositions, so two layouts would put decoding noise inside the paired difference itself.",
@@ -764,7 +765,7 @@
     "module_defaults_match": true,
     "source": "the single generation_config shared by all 30 committed 11R predictions"
   },
-  "git_commit": "726288c01dacc5bbb142530aa05128a346ef85a5",
+  "git_commit": "977319a70c85ed737ada1f935f2af93e34cf2af3",
   "git_dirty": true,
   "inputs_bound": {
     "final_evaluation": {
