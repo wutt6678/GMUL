@@ -211,8 +211,8 @@
   "code": {
     "analysis_scripts_sha256": {
       "scripts/evaluate_pilot100_final.py": "508354306410a0e60917ff267470f07a8ff5cc0fe3f11e54a960513f2949e14f",
-      "scripts/freeze_confirmation_protocol.py": "5948ffda0c5c8a0e9d128a16aa4262516faf7aa593f4cdd73812410b8c3b4969",
-      "scripts/power_analysis_confirmation.py": "78e33df53d29fc87808f8293aa6aec1f85a39e2a31d4c907be7139da08b8cb96",
+      "scripts/freeze_confirmation_protocol.py": "b9aa7130b709df6fc138d2bd47408c874e4ea52881dc7629c359bfbb21fb0c62",
+      "scripts/power_analysis_confirmation.py": "6b1ba007ea654db1517eb212b0f46846246feaa2c15fc294bb64b26e6fafa4d4",
       "scripts/select_confirmation_photographs.py": "30d33ce91a2aa1b15522d0b1eba3f00720d9c63b56ae805bf4cb3a97481f1bde",
       "scripts/select_unlearning_checkpoints.py": "ecacee99a9dd52cba7c419081e11a628f931fc40e8300b45b489946e6da25f2d"
     },
@@ -253,10 +253,56 @@
         "no exploratory query or media is reused beyond the two required repeats above: every confirmation probe is a new query_id carrying a new template_id and a new template TEXT, and every image-route probe carries either a photograph whose sha256 is not in the exploratory manifest or one of the hashed target-person portraits",
         "the confirmation split must not enter the reference-state gate, candidate selection, or any go/no-go decision"
       ],
-      "confirmation_photograph_sha256_manifest": "to be committed: the hash of every new photograph, plus the licence and attribution the re-fetch records",
-      "confirmation_query_id_list_sha256": "to be committed: the exact query_id list of the confirmation split",
-      "confirmation_template_ids_and_file_sha256": "to be committed: the new template ids and the hash of the file that defines them",
-      "why_these_cannot_be_frozen_here": "they do not exist yet. Freezing a size and the entity set now, and binding the obligation to commit the identifiers before scoring, is what keeps the size a preregistration rather than a description of whatever stage 3 happens to build"
+      "confirmation_photograph_sha256_manifest": {
+        "images_pinned": 402,
+        "licence_and_attribution_are_recorded_by": "data/reports/mllmu_confirm100_photograph_selection.json",
+        "licence_and_attribution_sha256": "c4ee282865124abf36cbb9e4d53924e5eef4e1640952fee7fccf5383bad3cd19",
+        "manifest": "data/mllmu_hier_confirm100/image_manifest.json",
+        "manifest_file_sha256": "8a00e5ec252f4a62fb48a60b718218ae8b60ba6cfb6fed1116574eb7bc489dce",
+        "manifest_rollup_sha256": "5821b5b0002db1cd02a1dcd515df2711fa0b323056995135b0b8dba4c3892623",
+        "new_photographs_pinned": 360,
+        "unresolved_paths": [],
+        "why_licence_lives_in_the_selection_report": "the manifest binds bytes and the selection binds provenance; the freeze already hashes the selection report, so the licence and attribution of every new photograph are bound once and not copied into a second place that could drift"
+      },
+      "confirmation_query_id_list_is_sorted_because": "the list identifies a set of probes; the parquet's row order is a build detail, so hashing it unsorted would make two builds of the same split seal differently",
+      "confirmation_query_id_list_sha256": "05025c40e876aa8d705d134845503b66886f7196bb0f3f3f9a618dfdfc44fdc1",
+      "confirmation_query_ids": 1209,
+      "confirmation_template_ids_and_file_sha256": {
+        "family_order_bound_by_that_hash": [
+          "image_fine_direct",
+          "image_target_direct",
+          "multimodal_image_text"
+        ],
+        "ids_colliding_with_an_exploratory_index": [],
+        "ids_the_hashed_file_does_not_define": [],
+        "new_template_ids": [
+          "image_fine_direct:3",
+          "image_fine_direct:4",
+          "image_fine_direct:5",
+          "image_fine_direct:6",
+          "image_target_direct:3",
+          "image_target_direct:4",
+          "image_target_direct:5",
+          "image_target_direct:6",
+          "multimodal_image_text:3",
+          "multimodal_image_text:4",
+          "multimodal_image_text:5",
+          "multimodal_image_text:6",
+          "retain_other_entity:3",
+          "retain_other_entity:4",
+          "retain_other_entity:5",
+          "retain_same_entity:3",
+          "retain_same_entity:4",
+          "retain_same_entity:5"
+        ],
+        "new_template_ids_sha256": "8f0aabbbff9f5870f808e9834755d8bfb34c4f0466f6be9b9d487106123fa1d4",
+        "template_file": "src/granunlearn/evaluation/confirmation_templates.py",
+        "template_file_sha256": "57f844b3d4df0b5416f037828ce2c7e702d4e265af34a77289ed33daeebd787d",
+        "why_the_FILE_is_hashed_and_not_only_the_ids": "CONFIRM_IMAGE_FAMILIES in that file supplies the f in A_e[(j + f) mod |A_e|], so reordering it changes which target association every probe asks while all 18 ids stay identical; only the file's bytes can pin the order"
+      },
+      "sealed": true,
+      "sealed_by": "confirmation_split_seal, recomputed in build_freeze rather than copied from the report",
+      "why_the_size_was_frozen_before_these_were": "the size and the entity set were frozen first and these three identifiers were committed afterwards, which is what keeps the size a preregistration rather than a description of whatever stage 3 happens to build; stage 3 has run, so the three above are measured hashes of the split that was built and sealed is true"
     },
     "frozen_now": {
       "exploratory_photograph_sha256_manifest": "data/mllmu_hier_pilot100/image_manifest.json",
@@ -747,7 +793,7 @@
     "version": "pilot100_v2"
   },
   "freeze": "iteration_11c_confirmation_protocol",
-  "frozen_at_utc": "2026-09-07T11:17:48+00:00",
+  "frozen_at_utc": "2026-09-07T13:02:48+00:00",
   "generation": {
     "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
     "batch_layout": "ONE uniform layout for every scored state: all confirmation queries in a single pass, same batch_size and image_batch_size for B3, B0 and MG. Batched greedy decoding is not bit-stable across batch compositions, so two layouts would put decoding noise inside the paired difference itself.",
@@ -765,7 +811,7 @@
     "module_defaults_match": true,
     "source": "the single generation_config shared by all 30 committed 11R predictions"
   },
-  "git_commit": "c8d13cbfe3cc31f766ab83341e5ce8279ae73986",
+  "git_commit": "5b7424b896de5f6b86d66e191c80ae37a52de9d3",
   "git_dirty": true,
   "inputs_bound": {
     "final_evaluation": {
@@ -774,7 +820,7 @@
     },
     "power_analysis": {
       "path": "data/reports/mllmu_pilot100_confirmation_power.json",
-      "sha256": "1db41453e61a4f5b7cafe20b6ac96e47bd8e2f1c0d107cf1e4c00c4c7e828238"
+      "sha256": "1395a5097b90cfeef97e876a9ba67966ba4a9ceb06a6a2325d8b04a5b7e1c4f8"
     },
     "prediction_manifest": {
       "path": "data/reports/mllmu_pilot100_prediction_manifest.json",

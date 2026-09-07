@@ -87,6 +87,11 @@ data/raw/inaturalist/confirm_v1/*
 # attribution, observation id and source URL - and the evidence that none of
 # them is exploratory media.
 !data/reports/mllmu_confirm100_photograph_selection.json
+# 11C stage 3d: the built 1,209-query confirmation split.  The dataset itself
+# is committed beside this, so what this records is the build's own evidence:
+# which exploratory validator errors were tolerated and why, and that the four
+# measurable sealed invariants held BEFORE anything was written.
+!data/reports/mllmu_confirm100_split_report.json
 # Frozen sha256s for every image the dataset references; binds the photographs
 # the predictions were actually generated over.
 !data/mllmu_hier_pilot100/image_manifest.json

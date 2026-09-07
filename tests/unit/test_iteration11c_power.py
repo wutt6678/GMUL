@@ -20,6 +20,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import re
 import sys
 from pathlib import Path
 
@@ -1573,21 +1574,32 @@ class TestTheConfirmationSizeIsSelected:
         assert f["exploratory_photograph_sha256_manifest"].endswith(
             "image_manifest.json")
 
-    def test_the_identifiers_that_do_not_exist_yet_are_bound_as_obligations(
-            self):
+    def test_the_identifiers_stage_3_owed_are_bound_as_measurements(self):
+        """These three could not be hashed before stage 3 built them, so the
+        OBLIGATION was bound first and the artifacts committed after.  Stage 3
+        has run, so each is now a hash of the thing it names -- and the prose
+        beside them has to say which of the two states the block is in, or it
+        contradicts the values it annotates."""
         r = _load()
         s = r["confirmation_size"]["frozen_at_stage_3_before_any_scoring"]
-        for key in ("confirmation_query_id_list_sha256",
-                    "confirmation_template_ids_and_file_sha256",
-                    "confirmation_photograph_sha256_manifest"):
-            assert "to be committed" in s[key], key
+        assert s["sealed"] is True
+        sha = r"[0-9a-f]{64}"
+        assert re.fullmatch(sha, s["confirmation_query_id_list_sha256"])
+        assert re.fullmatch(sha, s["confirmation_template_ids_and_file_sha256"]
+                            ["template_file_sha256"])
+        assert re.fullmatch(sha, s["confirmation_photograph_sha256_manifest"]
+                            ["manifest_rollup_sha256"])
+        #: Nothing may still promise what has been delivered.
+        assert "to be committed" not in json.dumps(s)
+        assert "OUTSTANDING" not in json.dumps(s)
         rules = " ".join(s["collision_rules"])
         assert "template_id" in rules and "sha256" in rules
         assert "query_id" in rules
         assert "go/no-go" in rules
         assert str(len(r["confirmation_size"]["frozen_now"][
             "exploratory_template_ids"])) in rules
-        assert "do not exist yet" in s["why_these_cannot_be_frozen_here"]
+        assert "stage 3 has run" in \
+            s["why_the_size_was_frozen_before_these_were"]
 
     def test_the_selected_size_appears_in_the_notes(self):
         """The notes are what a reader reads.  A selection that lives only in

@@ -67,6 +67,15 @@ from statistics import NormalDist
 from typing import Any
 
 from granunlearn.config import _find_repo_root
+#: Imported for the stage-3 seal, which hashes the module that defines the
+#: confirmation templates and has to name the family order that module binds.
+#: Importing it installs nothing: ``install_confirmation_templates`` is a
+#: separate call, so reading these two constants has no side effect on
+#: ``FAMILY_TEMPLATES``.
+from granunlearn.evaluation.confirmation_templates import (
+    CONFIRM_IMAGE_FAMILIES,
+    EXPLORATORY_TEMPLATES_PER_FAMILY,
+)
 from granunlearn.evaluation.paired_ci import (
     CLAIM_DIRECTION,
     PAIRED_METRICS,
@@ -1947,6 +1956,132 @@ def protocol_amendments(repo_root: Path) -> dict:
     }
 
 
+#: The three artifacts stage 3 promised to commit.  Named here so the seal
+#: below and the freeze's refusal of an unsealed placeholder read the same
+#: paths rather than two spellings of them.
+CONFIRM_QUERIES_PARQUET = f"{CONFIRM_DATASET_DIR}/queries.parquet"
+CONFIRM_IMAGE_MANIFEST = f"{CONFIRM_DATASET_DIR}/image_manifest.json"
+CONFIRM_TEMPLATE_MODULE = \
+    "src/granunlearn/evaluation/confirmation_templates.py"
+
+
+def confirmation_split_seal(repo_root: Path) -> dict[str, Any]:
+    """What stage 3 promised to commit, measured on the split it built.
+
+    ``frozen_at_stage_3_before_any_scoring`` named three artifacts that did
+    not exist when the protocol was frozen: the confirmation's query_id list,
+    the file defining its new templates, and the manifest hashing its new
+    photographs.  While they did not exist the only honest value was a
+    statement that they were outstanding.  Now that the split is built,
+    leaving that statement in place would mean the freeze binds a dataset by
+    DESCRIPTION and not by hash: nothing would notice a rebuilt
+    ``queries.parquet``, a reordered ``CONFIRM_IMAGE_FAMILIES`` or a
+    re-encoded photograph, and each of those silently changes what the
+    confirmation asks or what it shows.
+
+    Hashing the template MODULE rather than only its 18 ids is what pins the
+    family ORDER.  ``CONFIRM_IMAGE_FAMILIES`` supplies the ``f`` in
+    ``A_e[(j + f) mod |A_e|]``, so reordering it moves which target
+    association every probe asks while leaving all 18 ids exactly as they
+    were -- a change an id list cannot see and a file hash cannot miss.
+
+    Returns an explicit unsealed record while the split is absent, because
+    this report has to be generatable BEFORE stage 3 for the freeze to exist
+    at all.  The freeze refuses the placeholder once the split is on disk, so
+    the two states cannot be confused for each other.
+    """
+    q_path = repo_root / CONFIRM_QUERIES_PARQUET
+    t_path = repo_root / CONFIRM_TEMPLATE_MODULE
+    m_path = repo_root / CONFIRM_IMAGE_MANIFEST
+    missing = sorted(str(p.relative_to(repo_root))
+                     for p in (q_path, t_path, m_path) if not p.exists())
+    if missing:
+        return {
+            "sealed": False,
+            "confirmation_query_id_list_sha256": (
+                "OUTSTANDING, not committed: the confirmation split has not "
+                "been built, so there is no query_id list to hash"),
+            "confirmation_template_ids_and_file_sha256": (
+                "OUTSTANDING, not committed: the new template ids and the "
+                "hash of the file that defines them"),
+            "confirmation_photograph_sha256_manifest": (
+                "OUTSTANDING, not committed: the hash of every new "
+                "photograph, plus the licence and attribution the re-fetch "
+                "records"),
+            "absent_inputs": missing,
+            "what_would_make_these_measurements": (
+                "scripts/build_confirmation_split.py, then "
+                "scripts/build_image_manifest.py --tag confirm100"),
+        }
+
+    #: Sorted, because a query_id list identifies a SET of probes while the
+    #: parquet's row order is a build detail: two builds emitting the same
+    #: probes in a different order are the same split and must seal alike.
+    queries = load_queries_parquet(q_path)
+    query_ids = sorted(q.query_id for q in queries)
+    template_ids = sorted({q.template_id for q in queries})
+    #: Every confirmation template index has to be a NEW one, so an id whose
+    #: index is below the exploratory count would be a collision the freeze's
+    #: novelty invariant was written to prevent.
+    collided = sorted(
+        t for t in template_ids
+        if int(t.rsplit(":", 1)[1]) < EXPLORATORY_TEMPLATES_PER_FAMILY)
+    template_src = t_path.read_text()
+    undefined = sorted(t for t in template_ids
+                       if t.rsplit(":", 1)[0] not in template_src)
+    manifest = json.loads(m_path.read_text())
+    new_photographs = sorted(
+        rel for rel in manifest["images"] if rel.startswith(CONFIRM_FETCH_OUT))
+    selection_path = repo_root / CONFIRM_SELECTION_REPORT
+    return {
+        "sealed": True,
+        "confirmation_query_id_list_sha256": hashlib.sha256(
+            json.dumps(query_ids, separators=(",", ":")).encode()
+        ).hexdigest(),
+        "confirmation_query_ids": len(query_ids),
+        "confirmation_query_id_list_is_sorted_because": (
+            "the list identifies a set of probes; the parquet's row order is "
+            "a build detail, so hashing it unsorted would make two builds of "
+            "the same split seal differently"),
+        "confirmation_template_ids_and_file_sha256": {
+            "template_file": CONFIRM_TEMPLATE_MODULE,
+            "template_file_sha256": hashlib.sha256(
+                template_src.encode("utf-8")).hexdigest(),
+            "new_template_ids": template_ids,
+            "new_template_ids_sha256": hashlib.sha256(
+                json.dumps(template_ids, separators=(",", ":")).encode()
+            ).hexdigest(),
+            "why_the_FILE_is_hashed_and_not_only_the_ids": (
+                "CONFIRM_IMAGE_FAMILIES in that file supplies the f in "
+                "A_e[(j + f) mod |A_e|], so reordering it changes which "
+                "target association every probe asks while all 18 ids stay "
+                "identical; only the file's bytes can pin the order"),
+            "family_order_bound_by_that_hash": list(CONFIRM_IMAGE_FAMILIES),
+            "ids_colliding_with_an_exploratory_index": collided,
+            "ids_the_hashed_file_does_not_define": undefined,
+        },
+        "confirmation_photograph_sha256_manifest": {
+            "manifest": CONFIRM_IMAGE_MANIFEST,
+            "manifest_file_sha256": hashlib.sha256(
+                m_path.read_bytes()).hexdigest(),
+            "manifest_rollup_sha256": manifest.get("manifest_sha256"),
+            "images_pinned": manifest.get("num_images"),
+            "new_photographs_pinned": len(new_photographs),
+            "unresolved_paths": manifest.get("unresolved_paths"),
+            "licence_and_attribution_are_recorded_by":
+                CONFIRM_SELECTION_REPORT,
+            "licence_and_attribution_sha256": (
+                hashlib.sha256(selection_path.read_bytes()).hexdigest()
+                if selection_path.exists() else None),
+            "why_licence_lives_in_the_selection_report": (
+                "the manifest binds bytes and the selection binds provenance; "
+                "the freeze already hashes the selection report, so the "
+                "licence and attribution of every new photograph are bound "
+                "once and not copied into a second place that could drift"),
+        },
+    }
+
+
 def retention_media_supply(
     associations: list[Any],
     census: dict[str, Any],
@@ -2724,6 +2859,13 @@ def main() -> int:
                             cluster_ceiling=supply_offline_species)
                 block["metrics"][f"{a}_minus_{b}:{metric}"] = metric_entry
         strata[stratum] = block
+
+    #: Computed once and used twice: the block below publishes it, and the
+    #: prose beside it has to agree with the state it is in.  A sentence
+    #: saying these identifiers "do not exist yet" sitting next to their
+    #: hashes would be the same class of stale copy the amendment sweep
+    #: exists to catch.
+    _stage_3 = confirmation_split_seal(repo_root)
 
     report = {
         "analysis": "iteration_11c_confirmation_power",
@@ -3845,15 +3987,12 @@ def main() -> int:
             ],
         },
         "frozen_at_stage_3_before_any_scoring": {
-            "confirmation_query_id_list_sha256": (
-                "to be committed: the exact query_id list of the "
-                "confirmation split"),
-            "confirmation_template_ids_and_file_sha256": (
-                "to be committed: the new template ids and the hash of the "
-                "file that defines them"),
-            "confirmation_photograph_sha256_manifest": (
-                "to be committed: the hash of every new photograph, plus the "
-                "licence and attribution the re-fetch records"),
+            #: These three were promises while the split did not exist, and
+            #: are measurements now that it does.  ``confirmation_split_seal``
+            #: returns the same three keys either way, so a reader can tell an
+            #: outstanding obligation from a discharged one by ``sealed``
+            #: rather than by recognising a sentence.
+            **_stage_3,
             "collision_rules": [
                 # Finding #1 of Iteration 11C-R2: an earlier revision forbade
                 # any confirmation "association" from appearing in the
@@ -3905,12 +4044,20 @@ def main() -> int:
                 "the confirmation split must not enter the reference-state "
                 "gate, candidate selection, or any go/no-go decision",
             ],
-            "why_these_cannot_be_frozen_here": (
-                "they do not exist yet. Freezing a size and the entity set "
-                "now, and binding the obligation to commit the identifiers "
-                "before scoring, is what keeps the size a preregistration "
-                "rather than a description of whatever stage 3 happens to "
-                "build"),
+            #: State-aware, because one fixed sentence here would contradict
+            #: the values beside it the moment stage 3 ran.  What is true in
+            #: BOTH states is the ORDER: the size and the entity set were
+            #: frozen first and these identifiers were committed after.
+            "why_the_size_was_frozen_before_these_were": (
+                "the size and the entity set were frozen first and these "
+                "three identifiers were committed afterwards, which is what "
+                "keeps the size a preregistration rather than a description "
+                "of whatever stage 3 happens to build"
+                + ("; stage 3 has run, so the three above are measured hashes "
+                   "of the split that was built and sealed is true"
+                   if _stage_3["sealed"] else
+                   "; stage 3 has not run, so the three above are still the "
+                   "obligation and not a measurement, and sealed is false")),
         },
     }
 

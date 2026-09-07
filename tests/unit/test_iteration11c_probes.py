@@ -25,17 +25,19 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RAW = REPO_ROOT / "data" / "raw" / "inaturalist"
 MANIFEST = REPO_ROOT / "data" / "mllmu_hier_pilot100" / "image_manifest.json"
+CONFIRM_MANIFEST = (REPO_ROOT / "data" / "mllmu_hier_confirm100"
+                    / "image_manifest.json")
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import fetch_inat_species as fetch  # noqa: E402
 from fetch_inat_species import refuse_if_frozen_pool  # noqa: E402
 
 
-def _pinned_under(root: Path) -> int:
+def _pinned_under(root: Path, manifest: Path = MANIFEST) -> int:
     """How many manifest-pinned photographs live under ``root``."""
-    if not MANIFEST.exists():
-        pytest.skip(f"frozen image manifest not present: {MANIFEST}")
-    images = json.loads(MANIFEST.read_text())["images"]
+    if not manifest.exists():
+        pytest.skip(f"frozen image manifest not present: {manifest}")
+    images = json.loads(manifest.read_text())["images"]
     return sum(1 for rel in images
                if (REPO_ROOT / rel) == root or root in (REPO_ROOT / rel).parents)
 
@@ -64,11 +66,52 @@ class TestTheFetchRefusesToOverwriteFrozenEvidence:
         assert "committed evidence certifies" in str(exc.value)
 
     def test_a_new_directory_is_allowed(self):
-        """The confirmation fetch goes somewhere new, so the guard must not
-        fire in normal use — a guard that blocks the intended path gets
-        passed --force out of habit, which is how guards die."""
-        for name in ("confirm_v1", "local_v1", "pilot_v2"):
+        """A fetch into a directory nothing has sealed yet must not fire — a
+        guard that blocks the intended path gets passed --force out of habit,
+        which is how guards die.
+
+        ``confirm_v1`` is NOT in this list.  It was, until the confirmation
+        photographs were sealed into their own manifest; a directory is "new"
+        only until something binds its bytes.  See
+        ``test_the_confirmation_pool_became_frozen_when_it_was_sealed``.
+        """
+        for name in ("local_v1", "pilot_v2", "confirm_v2"):
             assert refuse_if_frozen_pool(RAW / name, False) == [], name
+
+    def test_the_confirmation_pool_became_frozen_when_it_was_sealed(self):
+        """Sealing the confirmation manifest made its pool frozen evidence.
+
+        ``build_image_manifest.py --tag confirm100`` pinned the 360 selected
+        photographs, so the guard now refuses a re-fetch into ``confirm_v1``
+        exactly as it refuses one into ``pilot_v1``.  This is the guard
+        earning its keep on a second pool without being extended to cover it:
+        it globs ``data/mllmu_hier_*/image_manifest.json``, so a new dataset's
+        manifest is bound the moment it is written.
+        """
+        n = _pinned_under(RAW / "confirm_v1", CONFIRM_MANIFEST)
+        assert n == 360, n
+        with pytest.raises(SystemExit) as exc:
+            refuse_if_frozen_pool(RAW / "confirm_v1", False)
+        msg = str(exc.value)
+        assert "REFUSED" in msg
+        assert str(n) in msg
+        assert "data/raw/inaturalist/confirm_v1/images/" in msg
+
+    def test_a_refusal_over_two_manifests_names_the_dataset_that_binds(self):
+        """Which dataset pins a byte decides what re-freezing it costs, so the
+        report has to say.  ``image_manifest.json`` is the filename in EVERY
+        dataset directory, so naming only the file leaves the two pools'
+        refusals indistinguishable."""
+        bound = refuse_if_frozen_pool(RAW / "confirm_v1", True)
+        assert bound
+        assert all(entry.startswith(
+            "mllmu_hier_confirm100/image_manifest.json -> ")
+            for entry in bound), bound[:2]
+        exploratory = refuse_if_frozen_pool(RAW / "pilot_v1", True)
+        assert exploratory
+        assert all(entry.startswith(
+            "mllmu_hier_pilot100/image_manifest.json -> ")
+            for entry in exploratory), exploratory[:2]
 
     def test_the_override_reports_rather_than_hides_the_exposure(self):
         """--allow-overwrite-frozen is an escape hatch for a deliberate
@@ -76,7 +119,8 @@ class TestTheFetchRefusesToOverwriteFrozenEvidence:
         the caller has to be able to say what it is about to invalidate."""
         bound = refuse_if_frozen_pool(RAW / "pilot_v1", True)
         assert len(bound) == _pinned_under(RAW / "pilot_v1")
-        assert all(entry.startswith("image_manifest.json -> ")
+        assert all(entry.startswith(
+            "mllmu_hier_pilot100/image_manifest.json -> ")
                    for entry in bound)
 
     def test_a_directory_with_no_manifest_is_allowed(self):

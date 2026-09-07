@@ -133,6 +133,7 @@ from power_analysis_confirmation import (  # noqa: E402
     STRATUM_ESTIMAND_STATUS,
     TARGET_ASSOCIATION_ALLOCATION_RULE,
     WHAT_THE_CONFIRMATION_DOES_NOT_ESTABLISH,
+    confirmation_split_seal,
     z,
 )
 
@@ -978,6 +979,109 @@ def _protocol_amendment_refusals(power: dict[str, Any]) -> list[str]:
     return out
 
 
+def _stage_3_seal_refusals(power: dict[str, Any], fresh: dict[str, Any]) -> list[str]:
+    """Refuse a freeze that DESCRIBES the built split instead of binding it.
+
+    Iteration 11C stage 4.  ``frozen_at_stage_3_before_any_scoring`` named
+    three artifacts that did not exist when the protocol was frozen, and while
+    they did not exist a promise was the only honest value to record.  The
+    split is built now, so a promise left standing would bind the confirmation
+    by description: a rebuilt ``queries.parquet``, a reordered
+    ``CONFIRM_IMAGE_FAMILIES`` or a re-encoded photograph would each still
+    satisfy this freeze, and each silently changes what the confirmation asks
+    or what it shows.
+
+    The seal is RECOMPUTED here rather than trusted from the report, for the
+    reason ``primary_test.implementation.sha256`` is recomputed: a hash copied
+    from a report generated before an edit freezes the stale hash and certifies
+    a file that no longer exists.
+
+    The unsealed state is checked too, and in the opposite direction.  A hash
+    left behind by a split that was since removed is worse than a promise,
+    because it certifies bytes nobody can inspect.
+    """
+    out: list[str] = []
+    size = power.get("confirmation_size") or {}
+    block = size.get("frozen_at_stage_3_before_any_scoring") or {}
+    if not block:
+        return [
+            "the power report carries no "
+            "confirmation_size.frozen_at_stage_3_before_any_scoring block, so "
+            "nothing states what stage 3 had to commit"]
+
+    #: ``fresh`` is a derivation computed by the caller, which is also how the
+    #: caller knows whether the split exists: the seal reports the inputs it
+    #: could not find.
+    built = fresh.get("sealed") is True
+
+    if not built:
+        if block.get("sealed") is not False:
+            out.append(
+                f"the power report claims the stage-3 obligations are sealed "
+                f"but {fresh.get('absent_inputs')} are not on disk, so the "
+                "report certifies a split that does not exist")
+        return out
+
+    #: Same keys, recomputed.  ``collision_rules`` is prose the freeze checks
+    #: elsewhere and is not part of the seal, so it is not compared here.
+    drift = sorted(k for k in fresh if block.get(k) != fresh[k])
+    if drift:
+        out.append(
+            f"the stage-3 seal does not reproduce: {drift} differ between the "
+            f"committed power report and a fresh derivation, so the freeze "
+            f"would bind hashes that no longer describe the split on disk")
+
+    tmpl = fresh.get("confirmation_template_ids_and_file_sha256") or {}
+    photos = fresh.get("confirmation_photograph_sha256_manifest") or {}
+    if tmpl.get("ids_colliding_with_an_exploratory_index"):
+        out.append(
+            f"{len(tmpl['ids_colliding_with_an_exploratory_index'])} "
+            f"confirmation template_id(s) reuse an exploratory index "
+            f"({tmpl['ids_colliding_with_an_exploratory_index'][:3]}), so the "
+            "probes would not be new wordings")
+    if tmpl.get("ids_the_hashed_file_does_not_define"):
+        out.append(
+            f"{len(tmpl['ids_the_hashed_file_does_not_define'])} "
+            f"template_id(s) in the built split are not defined by the file "
+            f"the seal hashes, so the hash does not pin the probes it claims "
+            f"to: {tmpl['ids_the_hashed_file_does_not_define'][:3]}")
+    if not tmpl.get("family_order_bound_by_that_hash"):
+        out.append(
+            "the seal binds no family order, so the f in "
+            "A_e[(j + f) mod |A_e|] is unpinned and a reordering of "
+            "CONFIRM_IMAGE_FAMILIES would change which association every "
+            "probe asks without failing anything")
+    if photos.get("unresolved_paths"):
+        out.append(
+            f"the sealed image manifest leaves "
+            f"{len(photos['unresolved_paths'])} path(s) unresolved, so it "
+            f"pins photographs that are not there")
+
+    held = size.get("held_out_photographs") or {}
+    want_photos = (CONFIRM_NEW_PHOTOS_PER_SPECIES
+                   * held.get("species_covered", 0))
+    if photos.get("new_photographs_pinned") != want_photos:
+        out.append(
+            f"the sealed manifest pins "
+            f"{photos.get('new_photographs_pinned')} new photographs but the "
+            f"frozen size budgets {want_photos} "
+            f"({CONFIRM_NEW_PHOTOS_PER_SPECIES} x "
+            f"{held.get('species_covered')} species)")
+    if not photos.get("licence_and_attribution_sha256"):
+        out.append(
+            "the seal records no hash for the licence and attribution of the "
+            "new photographs, so their provenance is bound by nothing")
+
+    want_queries = (power.get("probe_allocation") or {}).get(
+        "confirmation_probes_total")
+    if fresh.get("confirmation_query_ids") != want_queries:
+        out.append(
+            f"the built split carries {fresh.get('confirmation_query_ids')} "
+            f"queries but the frozen allocation totals {want_queries}, so the "
+            f"split is not the size the protocol committed to")
+    return out
+
+
 def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
     reports = repo_root / "data" / "reports"
     data_dir = repo_root / "data" / f"mllmu_hier_{tag}"
@@ -1035,6 +1139,11 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
     refusals.extend(_portrait_exemption_refusals(power, repo_root))
     refusals.extend(_probe_allocation_refusals(power))
     refusals.extend(_protocol_amendment_refusals(power))
+    #: Computed once here and handed to the refusal check, because the freeze
+    #: also WRITES it: the value refused-on and the value bound have to be the
+    #: same derivation or the freeze could bind a seal it never checked.
+    stage_3_seal = confirmation_split_seal(repo_root)
+    refusals.extend(_stage_3_seal_refusals(power, stage_3_seal))
 
     # The estimand and the selected size are checked against the module
     # rather than copied from it, because a freeze that restated them would
@@ -1537,8 +1646,26 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
             "new_wording_probes": words,
             "totals": size.get("totals"),
             "frozen_now": size.get("frozen_now"),
-            "frozen_at_stage_3_before_any_scoring":
-                size.get("frozen_at_stage_3_before_any_scoring"),
+            #: The RECOMPUTED seal, not the power report's copy of it: the
+            #: report may have been generated before the split was rebuilt, and
+            #: a freeze that copied it would bind a stale hash while the refusal
+            #: above was checking a fresh one.  ``collision_rules`` is the
+            #: report's prose and stays the report's.
+            "frozen_at_stage_3_before_any_scoring": {
+                **stage_3_seal,
+                "collision_rules": (size.get(
+                    "frozen_at_stage_3_before_any_scoring") or {}).get(
+                    "collision_rules"),
+                #: The report's prose, carried not restated: it is generated
+                #: state-aware, so a copy here could only drift from it.  If
+                #: the report is stale the seal-drift refusal above has already
+                #: fired, so this cannot annotate a state the hashes deny.
+                "why_the_size_was_frozen_before_these_were": (size.get(
+                    "frozen_at_stage_3_before_any_scoring") or {}).get(
+                    "why_the_size_was_frozen_before_these_were"),
+                "sealed_by": "confirmation_split_seal, recomputed in "
+                             "build_freeze rather than copied from the report",
+            },
             "read_from": "confirmation_size in the power report bound above, "
                          "cross-checked against the CONFIRM_* module "
                          "constants in build_freeze",

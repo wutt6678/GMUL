@@ -51,6 +51,7 @@ from power_analysis_confirmation import (  # noqa: E402
     CONFIRM_FETCH_ROLE,
     CONFIRM_FETCH_SEED,
     CONFIRM_FETCH_TAG,
+    CONFIRM_IMAGE_FAMILIES,
     CONFIRM_NEW_PHOTOS_PER_SPECIES,
     CONFIRM_NEW_WORDING_PROBES_PER_PERSON,
     CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY,
@@ -70,6 +71,7 @@ from power_analysis_confirmation import (  # noqa: E402
     STRATUM_ESTIMAND_STATUS,
     TARGET_ASSOCIATION_ALLOCATION_RULE,
     WHAT_THE_CONFIRMATION_DOES_NOT_ESTABLISH,
+    confirmation_split_seal,
     z,
 )
 
@@ -897,19 +899,27 @@ class TestTheSelectedSizeIsBoundNotAGrid:
         assert (REPO_ROOT
                 / fn["exploratory_photograph_sha256_manifest"]).exists()
 
-    def test_the_identifiers_that_do_not_exist_yet_are_a_named_obligation(
-            self):
-        """Query ids, template ids and photograph hashes cannot be frozen
-        before stage 3 builds them.  Binding the OBLIGATION is what keeps the
-        size a preregistration instead of a description of whatever stage 3
-        happens to produce."""
+    def test_the_identifiers_stage_3_owed_are_now_bound_by_hash(self):
+        """Query ids, template ids and photograph hashes could not be frozen
+        before stage 3 built them, so binding the OBLIGATION first is what kept
+        the size a preregistration instead of a description of whatever stage 3
+        happened to produce.  Stage 3 has run, so the freeze now binds a hash of
+        each artifact instead of a promise about it."""
         s3 = _load()["confirmation_size"][
             "frozen_at_stage_3_before_any_scoring"]
-        for key in ("confirmation_query_id_list_sha256",
-                    "confirmation_template_ids_and_file_sha256",
-                    "confirmation_photograph_sha256_manifest"):
-            assert s3[key].startswith("to be committed"), (key, s3[key])
-        assert "do not exist yet" in s3["why_these_cannot_be_frozen_here"]
+        assert s3["sealed"] is True
+        sha = r"[0-9a-f]{64}"
+        assert re.fullmatch(sha, s3["confirmation_query_id_list_sha256"])
+        assert re.fullmatch(sha, s3["confirmation_template_ids_and_file_sha256"]
+                            ["template_file_sha256"])
+        assert re.fullmatch(sha, s3["confirmation_photograph_sha256_manifest"]
+                            ["manifest_rollup_sha256"])
+        #: No promise may survive the delivery it promised, in the freeze or
+        #: in the prose annotating it.
+        assert "to be committed" not in json.dumps(s3)
+        assert "do not exist yet" not in json.dumps(s3)
+        assert "stage 3 has run" in \
+            s3["why_the_size_was_frozen_before_these_were"]
         rules = " ".join(s3["collision_rules"])
         for needle in ("template_id", "photograph sha256", "query_id",
                        "reference-state gate"):
@@ -2624,3 +2634,206 @@ class TestTheAmendmentIsDisclosedInTheFreeze:
         #: non-vacuous: if the retraction stopped naming it, the sweep would be
         #: searching for a claim the repository no longer retracts.
         assert upper in _load()["protocol_amendment"]["retracted_claim"]
+
+
+class TestTheStage3SealBindsTheBuiltSplit:
+    """Stage 3's three promises are measurements now that the split exists.
+
+    ``frozen_at_stage_3_before_any_scoring`` named the query_id list, the file
+    defining the new templates and the manifest hashing the new photographs.
+    Recorded as prose they bound the confirmation by DESCRIPTION, so a rebuilt
+    ``queries.parquet``, a reordered ``CONFIRM_IMAGE_FAMILIES`` or a re-encoded
+    photograph would each still have satisfied the freeze -- and each silently
+    changes what the confirmation asks or shows.
+
+    Every refusal below was observed to fire.
+    """
+
+    @staticmethod
+    def _seal() -> dict:
+        s = confirmation_split_seal(REPO_ROOT)
+        if s.get("sealed") is not True:
+            pytest.skip(f"confirmation split not built: {s['absent_inputs']}")
+        return s
+
+    @staticmethod
+    def _power_with_seal(**seal_overrides) -> dict:
+        out = dict(_load(POWER_PATH))
+        size = dict(out["confirmation_size"])
+        size["frozen_at_stage_3_before_any_scoring"] = dict(
+            size["frozen_at_stage_3_before_any_scoring"], **seal_overrides)
+        out["confirmation_size"] = size
+        return out
+
+    def _seal_with(self, key: str, **overrides) -> dict:
+        s = dict(self._seal())
+        s[key] = dict(s[key], **overrides)
+        return s
+
+    # ── the committed state ───────────────────────────────────────
+
+    def test_the_real_report_produces_no_refusal(self):
+        assert fz._stage_3_seal_refusals(
+            _load(POWER_PATH), self._seal()) == []
+
+    def test_the_freeze_binds_a_recomputation_and_says_so(self):
+        s = _load()["confirmation_size"][
+            "frozen_at_stage_3_before_any_scoring"]
+        assert s["sealed"] is True
+        #: Recomputed rather than copied, so a report generated before a
+        #: rebuild cannot freeze a hash that no longer describes anything.
+        assert "recomputed" in s["sealed_by"]
+        assert s["confirmation_query_ids"] == 1209
+        assert len(s["confirmation_template_ids_and_file_sha256"][
+            "new_template_ids"]) == 18
+        #: The report's prose survives beside the measurements.
+        assert len(s["collision_rules"]) >= 1
+
+    def test_the_bound_hashes_are_the_artifacts_own(self):
+        """Recomputed from the bytes here, not read back out of the report."""
+        s = _load()["confirmation_size"][
+            "frozen_at_stage_3_before_any_scoring"]
+        tmpl = s["confirmation_template_ids_and_file_sha256"]
+        photos = s["confirmation_photograph_sha256_manifest"]
+
+        src = (REPO_ROOT / tmpl["template_file"]).read_text()
+        assert tmpl["template_file_sha256"] == hashlib.sha256(
+            src.encode("utf-8")).hexdigest()
+
+        m_path = REPO_ROOT / photos["manifest"]
+        manifest = json.loads(m_path.read_text())
+        assert photos["manifest_rollup_sha256"] == manifest["manifest_sha256"]
+        assert photos["manifest_file_sha256"] == hashlib.sha256(
+            m_path.read_bytes()).hexdigest()
+        assert photos["images_pinned"] == manifest["num_images"]
+
+        split = json.loads(
+            (REPO_ROOT / "data" / "mllmu_hier_confirm100" / "manifest.json")
+            .read_text())
+        assert s["confirmation_query_ids"] == split["num_queries"]
+
+    def test_the_family_order_bound_is_the_module_order(self):
+        """The point of hashing the FILE: ``CONFIRM_IMAGE_FAMILIES`` is the f
+        in ``A_e[(j + f) mod |A_e|]``, so reordering it moves which target
+        association every probe asks while all 18 ids stay identical."""
+        tmpl = _load()["confirmation_size"][
+            "frozen_at_stage_3_before_any_scoring"][
+            "confirmation_template_ids_and_file_sha256"]
+        assert tmpl["family_order_bound_by_that_hash"] == \
+            list(CONFIRM_IMAGE_FAMILIES)
+        assert tmpl["ids_colliding_with_an_exploratory_index"] == []
+        assert tmpl["ids_the_hashed_file_does_not_define"] == []
+
+    def test_the_new_photograph_count_is_the_frozen_budget(self):
+        photos = _load()["confirmation_size"][
+            "frozen_at_stage_3_before_any_scoring"][
+            "confirmation_photograph_sha256_manifest"]
+        species = _load(POWER_PATH)["confirmation_size"][
+            "held_out_photographs"]["species_covered"]
+        assert photos["new_photographs_pinned"] == \
+            CONFIRM_NEW_PHOTOS_PER_SPECIES * species == 360
+        assert photos["unresolved_paths"] == []
+
+    # ── every refusal, observed to fire ───────────────────────────
+
+    def test_the_check_is_in_the_freezes_failure_path(self):
+        """A refusal computed but never extended into ``refusals`` is a
+        comment, so assert the call site and not only the function."""
+        src = inspect.getsource(fz.build_freeze)
+        assert "refusals.extend(_stage_3_seal_refusals" in src
+
+    def test_a_placeholder_left_standing_after_the_build_refuses(self):
+        out = self._power_with_seal(
+            sealed=False,
+            confirmation_query_id_list_sha256=(
+                "to be committed: the exact query_id list of the "
+                "confirmation split"))
+        r = fz._stage_3_seal_refusals(out, self._seal())
+        assert any("does not reproduce" in x for x in r), r
+
+    def test_a_stale_hash_refuses(self):
+        """The case the recomputation exists for: a report generated before a
+        rebuild, freezing a hash of bytes that are no longer there."""
+        out = self._power_with_seal(
+            confirmation_query_id_list_sha256="0" * 64)
+        r = fz._stage_3_seal_refusals(out, self._seal())
+        assert any("does not reproduce" in x
+                   and "confirmation_query_id_list_sha256" in x
+                   for x in r), r
+
+    def test_a_seal_claimed_while_the_split_is_absent_refuses(self):
+        """The opposite direction.  A hash left behind by a split that was
+        since removed is worse than a promise: it certifies bytes nobody can
+        inspect, and a clean clone would carry it."""
+        absent = {"sealed": False,
+                  "absent_inputs": ["data/mllmu_hier_confirm100/"
+                                    "queries.parquet"]}
+        r = fz._stage_3_seal_refusals(_load(POWER_PATH), absent)
+        assert any("certifies a split that does not exist" in x
+                   for x in r), r
+
+    def test_a_missing_seal_block_refuses(self):
+        out = dict(_load(POWER_PATH))
+        size = dict(out["confirmation_size"])
+        size.pop("frozen_at_stage_3_before_any_scoring")
+        out["confirmation_size"] = size
+        assert fz._stage_3_seal_refusals(out, self._seal())
+
+    def test_a_template_id_colliding_with_an_exploratory_index_refuses(self):
+        s = self._seal_with(
+            "confirmation_template_ids_and_file_sha256",
+            ids_colliding_with_an_exploratory_index=["image_fine_direct:0"])
+        r = fz._stage_3_seal_refusals(_load(POWER_PATH), s)
+        assert any("reuse an exploratory index" in x for x in r), r
+
+    def test_an_id_the_hashed_file_does_not_define_refuses(self):
+        s = self._seal_with(
+            "confirmation_template_ids_and_file_sha256",
+            ids_the_hashed_file_does_not_define=["image_fine_direct:9"])
+        r = fz._stage_3_seal_refusals(_load(POWER_PATH), s)
+        assert any("not defined by the file" in x for x in r), r
+
+    def test_an_unbound_family_order_refuses(self):
+        s = self._seal_with("confirmation_template_ids_and_file_sha256",
+                            family_order_bound_by_that_hash=[])
+        r = fz._stage_3_seal_refusals(_load(POWER_PATH), s)
+        assert any("binds no family order" in x for x in r), r
+
+    def test_an_unresolved_photograph_path_refuses(self):
+        s = self._seal_with("confirmation_photograph_sha256_manifest",
+                            unresolved_paths=["data/raw/inaturalist/x.jpg"])
+        r = fz._stage_3_seal_refusals(_load(POWER_PATH), s)
+        assert any("unresolved" in x for x in r), r
+
+    def test_a_photograph_count_off_the_frozen_budget_refuses(self):
+        s = self._seal_with("confirmation_photograph_sha256_manifest",
+                            new_photographs_pinned=359)
+        r = fz._stage_3_seal_refusals(_load(POWER_PATH), s)
+        assert any("frozen size budgets 360" in x for x in r), r
+
+    def test_a_missing_licence_hash_refuses(self):
+        s = self._seal_with("confirmation_photograph_sha256_manifest",
+                            licence_and_attribution_sha256=None)
+        r = fz._stage_3_seal_refusals(_load(POWER_PATH), s)
+        assert any("licence and attribution" in x for x in r), r
+
+    def test_a_split_that_is_not_the_frozen_size_refuses(self):
+        s = dict(self._seal(), confirmation_query_ids=1208)
+        r = fz._stage_3_seal_refusals(_load(POWER_PATH), s)
+        assert any("not the size the protocol committed to" in x
+                   for x in r), r
+
+    def test_an_absent_split_reports_what_is_missing_rather_than_guessing(
+            self, tmp_path):
+        """The clean-clone path: the report has to be generatable BEFORE stage
+        3 for the freeze to exist at all, so absence is a state with its own
+        honest value and not an error."""
+        s = confirmation_split_seal(tmp_path)
+        assert s["sealed"] is False
+        assert len(s["absent_inputs"]) == 3, s["absent_inputs"]
+        for key in ("confirmation_query_id_list_sha256",
+                    "confirmation_template_ids_and_file_sha256",
+                    "confirmation_photograph_sha256_manifest"):
+            assert "OUTSTANDING" in s[key], key
+        assert "build_confirmation_split.py" in \
+            s["what_would_make_these_measurements"]

@@ -27,10 +27,55 @@
         "no exploratory query or media is reused beyond the two required repeats above: every confirmation probe is a new query_id carrying a new template_id and a new template TEXT, and every image-route probe carries either a photograph whose sha256 is not in the exploratory manifest or one of the hashed target-person portraits",
         "the confirmation split must not enter the reference-state gate, candidate selection, or any go/no-go decision"
       ],
-      "confirmation_photograph_sha256_manifest": "to be committed: the hash of every new photograph, plus the licence and attribution the re-fetch records",
-      "confirmation_query_id_list_sha256": "to be committed: the exact query_id list of the confirmation split",
-      "confirmation_template_ids_and_file_sha256": "to be committed: the new template ids and the hash of the file that defines them",
-      "why_these_cannot_be_frozen_here": "they do not exist yet. Freezing a size and the entity set now, and binding the obligation to commit the identifiers before scoring, is what keeps the size a preregistration rather than a description of whatever stage 3 happens to build"
+      "confirmation_photograph_sha256_manifest": {
+        "images_pinned": 402,
+        "licence_and_attribution_are_recorded_by": "data/reports/mllmu_confirm100_photograph_selection.json",
+        "licence_and_attribution_sha256": "c4ee282865124abf36cbb9e4d53924e5eef4e1640952fee7fccf5383bad3cd19",
+        "manifest": "data/mllmu_hier_confirm100/image_manifest.json",
+        "manifest_file_sha256": "8a00e5ec252f4a62fb48a60b718218ae8b60ba6cfb6fed1116574eb7bc489dce",
+        "manifest_rollup_sha256": "5821b5b0002db1cd02a1dcd515df2711fa0b323056995135b0b8dba4c3892623",
+        "new_photographs_pinned": 360,
+        "unresolved_paths": [],
+        "why_licence_lives_in_the_selection_report": "the manifest binds bytes and the selection binds provenance; the freeze already hashes the selection report, so the licence and attribution of every new photograph are bound once and not copied into a second place that could drift"
+      },
+      "confirmation_query_id_list_is_sorted_because": "the list identifies a set of probes; the parquet's row order is a build detail, so hashing it unsorted would make two builds of the same split seal differently",
+      "confirmation_query_id_list_sha256": "05025c40e876aa8d705d134845503b66886f7196bb0f3f3f9a618dfdfc44fdc1",
+      "confirmation_query_ids": 1209,
+      "confirmation_template_ids_and_file_sha256": {
+        "family_order_bound_by_that_hash": [
+          "image_fine_direct",
+          "image_target_direct",
+          "multimodal_image_text"
+        ],
+        "ids_colliding_with_an_exploratory_index": [],
+        "ids_the_hashed_file_does_not_define": [],
+        "new_template_ids": [
+          "image_fine_direct:3",
+          "image_fine_direct:4",
+          "image_fine_direct:5",
+          "image_fine_direct:6",
+          "image_target_direct:3",
+          "image_target_direct:4",
+          "image_target_direct:5",
+          "image_target_direct:6",
+          "multimodal_image_text:3",
+          "multimodal_image_text:4",
+          "multimodal_image_text:5",
+          "multimodal_image_text:6",
+          "retain_other_entity:3",
+          "retain_other_entity:4",
+          "retain_other_entity:5",
+          "retain_same_entity:3",
+          "retain_same_entity:4",
+          "retain_same_entity:5"
+        ],
+        "new_template_ids_sha256": "8f0aabbbff9f5870f808e9834755d8bfb34c4f0466f6be9b9d487106123fa1d4",
+        "template_file": "src/granunlearn/evaluation/confirmation_templates.py",
+        "template_file_sha256": "57f844b3d4df0b5416f037828ce2c7e702d4e265af34a77289ed33daeebd787d",
+        "why_the_FILE_is_hashed_and_not_only_the_ids": "CONFIRM_IMAGE_FAMILIES in that file supplies the f in A_e[(j + f) mod |A_e|], so reordering it changes which target association every probe asks while all 18 ids stay identical; only the file's bytes can pin the order"
+      },
+      "sealed": true,
+      "why_the_size_was_frozen_before_these_were": "the size and the entity set were frozen first and these three identifiers were committed afterwards, which is what keeps the size a preregistration rather than a description of whatever stage 3 happens to build; stage 3 has run, so the three above are measured hashes of the split that was built and sealed is true"
     },
     "frozen_now": {
       "exploratory_photograph_sha256_manifest": "data/mllmu_hier_pilot100/image_manifest.json",
@@ -2193,7 +2238,7 @@
       }
     }
   },
-  "generated_utc": "2026-09-07T11:17:34+00:00",
+  "generated_utc": "2026-09-07T12:57:47+00:00",
   "holm_primary_family": {
     "critical_value_z": 1.959964,
     "familywise_alpha": 0.05,

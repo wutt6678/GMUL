@@ -94,23 +94,35 @@ def refuse_if_frozen_pool(out: Path, force: bool) -> list[str]:
     keep verifying against a manifest that no longer describes anything on
     disk, which is worse than failing loudly.
 
-    A confirmation fetch goes to a NEW directory, so this never fires in
-    normal use.  It exists because the default is one omitted flag away from
-    destroying frozen evidence.  Returns the bound paths so a caller can
-    report them.
+    A fetch into a directory nothing has sealed yet does not fire, so the
+    guard never blocks the intended path.  It exists because the default is
+    one omitted flag away from destroying frozen evidence.  Returns the bound
+    paths so a caller can report them.
+
+    Both pools are bound now: ``pilot_v1`` by the exploratory manifest and
+    ``confirm_v1`` by ``data/mllmu_hier_confirm100/image_manifest.json``,
+    which the Iteration-11C stage-4 tag sealed over the 360 selected
+    photographs.  A directory stops being "new" the moment something binds
+    its bytes, so the refusal names the DATASET that binds each path -- with
+    two manifests in the glob, ``image_manifest.json`` alone no longer says
+    which evidence a re-fetch would invalidate, and the two cost different
+    amounts to re-freeze.
     """
     bound: list[str] = []
     unreadable: list[str] = []
     for mp in sorted(REPO_ROOT.glob("data/mllmu_hier_*/image_manifest.json")):
+        #: The dataset directory, so a refusal over two manifests says which
+        #: one is holding the bytes.
+        which = f"{mp.parent.name}/{mp.name}"
         try:
             images = json.loads(mp.read_text()).get("images") or {}
         except (OSError, ValueError) as exc:
-            unreadable.append(f"{mp.name}: {exc}")
+            unreadable.append(f"{which}: {exc}")
             continue
         for rel in images:
             p = REPO_ROOT / rel
             if p == out or out in p.parents:
-                bound.append(f"{mp.name} -> {rel}")
+                bound.append(f"{which} -> {rel}")
     # Fail CLOSED.  The guard's job is to show that the target is unbound,
     # and a manifest that cannot be read cannot show anything; treating it as
     # "nothing pinned" would let a corrupt manifest quietly authorise exactly

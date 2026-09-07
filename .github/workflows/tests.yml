@@ -75,6 +75,16 @@ jobs:
               # their sha256, licence, attribution and source URL, and the
               # evidence that none of them is exploratory media.
               "data/reports/mllmu_confirm100_photograph_selection.json",
+              # 11C stage 3d: the built 1,209-query confirmation split, and
+              # the evidence that the four measurable sealed invariants held
+              # before anything was written and that every tolerated
+              # exploratory-validator error is a named class with a reason.
+              "data/reports/mllmu_confirm100_split_report.json",
+              # The 402 photographs the confirmation is scored over, sealed by
+              # hash: 360 selected plus the 42 exempted target-person
+              # portraits, and nothing else.  This is the artifact the
+              # prediction sidecars will bind as dataset.image_manifest_sha256.
+              "data/mllmu_hier_confirm100/image_manifest.json",
               # 11C preregistration evidence: the power analysis that sizes
               # the confirmation split and derives the retention margin.  It
               # reads the gitignored prediction parquets and photographs, so

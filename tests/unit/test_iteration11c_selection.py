@@ -606,14 +606,21 @@ class TestTheSelectorVerifiesTheSetAndTheBytesNotTheCounts:
             sel.verify_selected_bytes(selected, POOL)
         assert "do not hash to what the pool recorded" in str(exc.value)
 
-    def test_a_missing_file_refuses_without_hashing_anything(self):
+    def test_a_missing_file_refuses_without_hashing_anything(self, tmp_path):
         """Exists is the weakest check and it is the one that used to be the
         only one; a file recorded in provenance but absent from disk cannot be
-        the bytes the manifest would pin."""
-        selected = [dict(r) for r in _selection()["selected"]]
-        selected[2]["pool_file_name"] = "images/Not_a_species/999.jpg"
+        the bytes the manifest would pin.
+
+        Driven against an EMPTY pool directory and a single record, so it needs
+        no photograph bytes and so the refusal can only be about the file named
+        here.  Against the real pool this asserts nothing in a checkout without
+        the gitignored photographs: all 360 are missing at once there, and the
+        message names the first of them rather than the injected one.
+        """
+        rec = dict(_selection()["selected"][2])
+        rec["pool_file_name"] = "images/Not_a_species/999.jpg"
         with pytest.raises(SystemExit) as exc:
-            sel.verify_selected_bytes(selected, POOL)
+            sel.verify_selected_bytes([rec], tmp_path)
         msg = str(exc.value)
         assert "are not on disk" in msg
         assert "images/Not_a_species/999.jpg" in msg
