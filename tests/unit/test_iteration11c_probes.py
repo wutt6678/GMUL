@@ -85,14 +85,18 @@ class TestTheFetchRefusesToOverwriteFrozenEvidence:
     def test_the_guard_runs_before_any_network_access(self, monkeypatch):
         """The point of the ordering: a refusal that happened after the API
         had been queried would still have spent the fetch, and one that
-        happened after a download would still have written bytes."""
+        happened after a download would still have written bytes.
 
-        class NoNetwork:
-            def __init__(self, *a, **k):
-                raise AssertionError("the fetcher reached the network before "
-                                     "the frozen-pool guard refused")
+        ``_new_session`` is patched rather than ``requests.Session`` because
+        it is the single named call that reaches the network - and because
+        patching it needs no HTTP client installed, which the minimal CI
+        environment does not have."""
 
-        monkeypatch.setattr(fetch.requests, "Session", NoNetwork)
+        def no_network():
+            raise AssertionError("the fetcher reached the network before "
+                                 "the frozen-pool guard refused")
+
+        monkeypatch.setattr(fetch, "_new_session", no_network)
         monkeypatch.setattr(sys, "argv", ["fetch_inat_species.py"])
         with pytest.raises(SystemExit) as exc:
             fetch.main()
@@ -102,11 +106,10 @@ class TestTheFetchRefusesToOverwriteFrozenEvidence:
         """Passing the frozen path explicitly is the same act as letting the
         default supply it, so it must refuse identically."""
 
-        class NoNetwork:
-            def __init__(self, *a, **k):
-                raise AssertionError("reached the network")
+        def no_network():
+            raise AssertionError("reached the network")
 
-        monkeypatch.setattr(fetch.requests, "Session", NoNetwork)
+        monkeypatch.setattr(fetch, "_new_session", no_network)
         monkeypatch.setattr(
             sys, "argv",
             ["fetch_inat_species.py", "--out",

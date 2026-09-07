@@ -49,8 +49,26 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import requests
+if TYPE_CHECKING:               # annotations only; never executed at runtime
+    import requests
+
+# ``requests`` is deliberately NOT imported at runtime here.
+#
+# The reason is the guard below.  ``refuse_if_frozen_pool`` is pure
+# filesystem logic and the unit tests that pin it run in the minimal
+# CPU-only CI environment, which installs no HTTP client - so a module-level
+# ``import requests`` made those tests fail at COLLECTION, which aborts the
+# whole run.  More than an inconvenience: the tests in question assert that
+# the fetcher never reaches the network, and requiring a network library to
+# be installed in order to run them is backwards.  Same convention the repo
+# already states in requirements/ci-unit.txt for torch and friends - import
+# it on the path that uses it, which is _new_session() and _get().  The
+# TYPE_CHECKING block above keeps the ``requests.Session`` annotations
+# resolvable for linters without importing anything.
+# tests/unit/test_ci_dependency_closure.py fails if this ever moves back to
+# module level.
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -156,8 +174,20 @@ RANKS = ("kingdom", "phylum", "class", "order", "family", "genus",
          "species")
 
 
+def _new_session():
+    """Create the HTTP session — the one call that reaches the network.
+
+    A named function rather than an inline ``requests.Session()`` so the
+    ordering tests can replace exactly this call and prove the frozen-pool
+    guard refused before it, without an HTTP client being installed.
+    """
+    import requests
+    return requests.Session()
+
+
 def _get(session: requests.Session, url: str, params: dict | None,
          retries: int = 4, timeout: int = 60) -> requests.Response:
+    import requests
     last = None
     for attempt in range(retries):
         try:
@@ -320,7 +350,7 @@ def main() -> None:
     species = SPECIES_LIST[:args.limit_species] \
         if args.limit_species else SPECIES_LIST
     rng = random.Random(args.seed)
-    session = requests.Session()
+    session = _new_session()
     session.headers["User-Agent"] = \
         "granunlearn-pilot100-fetch/1.0 (research; contact: repo)"
 
