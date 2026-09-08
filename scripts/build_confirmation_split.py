@@ -226,7 +226,8 @@ def read_frozen_design(repo_root: Path) -> dict[str, Any]:
             got = (fn(power, repo_root)
                    if fn in (fz._primary_test_refusals,
                              fz._photo_selection_refusals,
-                             fz._portrait_exemption_refusals) else fn(power))
+                             fz._portrait_exemption_refusals,
+                             fz._protocol_amendment_refusals) else fn(power))
         except TypeError:
             got = fn(power)
         refusals.extend(f"{fn.__name__}: {r}" for r in got)
@@ -943,7 +944,16 @@ def build_split(repo_root: Path) -> dict:
                 design["selection_hash"]
                 == "c794162cbe393521e19f4485713ebdfc9917e97dbfefa5f50f97146bd85ed744",
         },
-        "next_step": (
+        #: Renamed from ``next_step`` for the reason given at the same field in
+        #: select_confirmation_photographs.py, and with more force here: this
+        #: report is REBUILT by ``--allow-rebuild``, so a field claiming to
+        #: describe the present is wrong again every time the freeze runs over
+        #: it.  Naming the time it describes is the version that stays true.
+        "stage_at_generation_time": (
+            "stage 3 of 5 (build genuinely new probes): queries and "
+            "associations written, the photographs not yet sealed into a "
+            "manifest and the protocol not yet re-frozen over them"),
+        "next_step_at_generation_time": (
             "python scripts/build_image_manifest.py --tag confirm100 to seal "
             "the photographs, then stage 4: commit the query, image and "
             "checkpoint hashes and tag the freeze before any inference"),
@@ -1067,7 +1077,7 @@ def main() -> int:
         return 0
     write_split(REPO_ROOT, built)
     print(f"\nwrote {out} and {SPLIT_REPORT}")
-    print(f"  next: {r['next_step']}")
+    print(f"  next: {r['next_step_at_generation_time']}")
     return 0
 
 

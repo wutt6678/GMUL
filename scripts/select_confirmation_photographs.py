@@ -559,7 +559,17 @@ def build_selection(repo_root: Path) -> dict[str, Any]:
         "selected": selected,
         "selected_sha256_list_sha256": hashlib.sha256(
             "\n".join(hashes).encode()).hexdigest(),
-        "next_step": (
+        #: Renamed from ``next_step``, which read as a statement about the
+        #: present and so went stale the moment the next stage ran: this report
+        #: is a committed artifact that outlives the selection it records, and
+        #: it kept pointing at a split build and a manifest seal that had both
+        #: happened and been frozen over.  Updating the TEXT would not fix that
+        #: -- the following stage would age it again -- so the field is named
+        #: after the time it describes, which makes it permanently true.
+        "stage_at_generation_time": (
+            "stage 3 of 5 (build genuinely new probes): the 360 photographs "
+            "are selected and byte-verified, the split is not yet built"),
+        "next_step_at_generation_time": (
             "scripts/build_confirmation_split.py attaches these photographs to "
             "the target species' associations, then "
             "scripts/build_image_manifest.py --tag confirm100 seals them into "

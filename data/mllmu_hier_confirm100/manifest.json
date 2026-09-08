@@ -125,7 +125,7 @@
   },
   "frozen_artifact_sha256": {
     "associations.parquet": "7726bdebaf5b893517070b82ae442ccd6acf6633136678473f37583e344ceb39",
-    "queries.parquet": "c5ed5b6d33a1d088756ea4386f8f636f3dbbd5d01588617767827e74fd8b43a4",
+    "queries.parquet": "2bbf6350f210ac202277468afbcdb7ca42b85cd6f3943e22d61175d5da0f6678",
     "manifest_pre_hash_note": "hashes computed over the final parquet artifacts"
   }
 }

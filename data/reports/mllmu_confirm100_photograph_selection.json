@@ -44,7 +44,7 @@
   "manifest_sha256_bound_by_the_freeze": "ccbf4ab4fb2faf3d3ead4736bb7527a01efb1a43a5a4d3d74deb4ab4071c82a6"
  },
  "generated_utc": "2026-09-07T11:17:31.360125+00:00",
- "next_step": "scripts/build_confirmation_split.py attaches these photographs to the target species' associations, then scripts/build_image_manifest.py --tag confirm100 seals them into a manifest dataset_fingerprint binds",
+ "next_step_at_generation_time": "scripts/build_confirmation_split.py attaches these photographs to the target species' associations, then scripts/build_image_manifest.py --tag confirm100 seals them into a manifest dataset_fingerprint binds",
  "per_species": {
   "Anas platyrhynchos": {
    "disjoint_available": 24,
@@ -6191,5 +6191,6 @@
   "why_a_count_is_not_enough": "30 species is also satisfied by a --limit-species 30 pool, which holds 24 of the target species plus the 6 retain-only ones and silently drops 6 target ones"
  },
  "stage": "11C-3c",
+ "stage_at_generation_time": "stage 3 of 5 (build genuinely new probes): the 360 photographs are selected and byte-verified, the split is not yet built",
  "what_this_is": "the committed record of WHICH 360 photographs the confirmation uses. The photographs are gitignored; this report plus the pool's committed PROVENANCE.json is what makes them auditable"
 }

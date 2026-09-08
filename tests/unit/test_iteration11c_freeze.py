@@ -2280,11 +2280,46 @@ def _mutate_retention(out, **fields):
     return out
 
 
+def _amendment_refusals(power) -> list[str]:
+    """``fz._protocol_amendment_refusals`` with the repo root supplied.
+
+    The wrapper-repair check hashes ``confirmation_templates.py`` LIVE, so a
+    freeze cannot certify a module that changed between the power report and
+    the freeze -- which costs the function a second argument.  Supplying it
+    once here keeps the twenty-odd refusal tests below reading as refusals
+    rather than as path plumbing, and keeps them all pointed at the same root.
+    """
+    return fz._protocol_amendment_refusals(power, REPO_ROOT)
+
+
 def _mutate_amendment(out, **fields):
-    """Rewrite the single disclosed amendment."""
+    """Rewrite the photograph-selection amendment, keeping the other one.
+
+    Found by identity rather than taken as ``[0]``: dropping the second
+    amendment as a side effect of mutating the first would make every test
+    below fail on the missing disclosure instead of on the field it changed,
+    which reports the wrong thing.
+    """
     out = dict(out)
     block = dict(out["protocol_amendments"])
-    block["amendments"] = [dict(block["amendments"][0], **fields)]
+    ams = list(block["amendments"])
+    i = next(i for i, a in enumerate(ams)
+             if "PHOTO_SELECTION_RULE" in (a.get("what") or ""))
+    ams[i] = dict(ams[i], **fields)
+    block["amendments"] = ams
+    out["protocol_amendments"] = block
+    return out
+
+
+def _mutate_wrapper_amendment(out, **fields):
+    """Rewrite the second (wrapper-repair) amendment, keeping the first."""
+    out = dict(out)
+    block = dict(out["protocol_amendments"])
+    ams = list(block["amendments"])
+    i = next(i for i, a in enumerate(ams)
+             if "CONFIRM_NEW_TEMPLATES" in (a.get("what") or ""))
+    ams[i] = dict(ams[i], **fields)
+    block["amendments"] = ams
     out["protocol_amendments"] = block
     return out
 
@@ -2508,50 +2543,95 @@ class TestTheAmendmentIsDisclosedInTheFreeze:
     """
 
     def test_the_real_report_produces_no_refusal(self):
-        assert fz._protocol_amendment_refusals(_load(POWER_PATH)) == []
+        assert _amendment_refusals(_load(POWER_PATH)) == []
 
     def test_the_freeze_carries_the_amendment_and_the_retraction(self):
-        am = _load()["protocol_amendment"]
+        am = _load()["protocol_amendments"]["by_identity"][
+            "PHOTO_SELECTION_RULE"]
         assert am["kind"] == "outcome-blind protocol amendment"
         assert "PHOTO_SELECTION_RULE" in am["what"]
         assert am["prior_freeze"]["contained_the_rule"] is False
         assert am["amending_freeze"]["contained_the_rule"] is True
         assert am["confirmation_prediction_files"] == 0
-        assert "BEFORE the fetch" in am["retracted_claim"]
+        assert "BEFORE the fetch" in \
+            _load()["protocol_amendments"]["retracted_claim"]
         assert am["ordering"]["every_ordering_claim_is_measured"] is True
         assert "independent seed" in \
             am["if_literal_pre_fetch_preregistration_is_required"]
 
     def test_the_disclosed_timeline_is_ordered(self):
-        am = _load()["protocol_amendment"]
+        am = _load()["protocol_amendments"]["by_identity"][
+            "PHOTO_SELECTION_RULE"]
         assert am["prior_freeze"]["frozen_at_utc"] \
             < am["pool_acquired_at_utc"] \
             < am["amending_freeze"]["frozen_at_utc"] \
             < am["subset_selected_at_utc"]
 
-    def test_a_second_amendment_refuses(self):
-        """An amendment list that can silently grow is not a disclosure."""
+    def test_an_undisclosed_extra_amendment_refuses(self):
+        """An amendment list that can silently grow is not a disclosure.
+
+        Duplicated rather than merely appended, so what is refused is an entry
+        that names no expected identity -- which is what an undisclosed
+        amendment looks like.  The OLD check refused any second amendment by
+        count; that was right when one was expected and would be wrong now
+        that two are, so the check is on identity instead.
+        """
         out = dict(_load(POWER_PATH))
         block = dict(out["protocol_amendments"])
-        block["amendments"] = list(block["amendments"]) * 2
+        block["amendments"] = list(block["amendments"]) + [
+            {"what": "the retention rule (SOME_NEW_RULE)",
+             "kind": "outcome-blind protocol amendment"}]
         out["protocol_amendments"] = block
-        refusals = fz._protocol_amendment_refusals(out)
-        assert any("2 protocol amendments" in r for r in refusals), refusals
+        refusals = _amendment_refusals(out)
+        assert any("names none of the expected amendments" in r
+                   for r in refusals), refusals
+
+    def test_dropping_one_of_the_two_disclosed_amendments_refuses(self):
+        """The list may not shrink either.  Losing a disclosure is the same
+        defect as never making one, and a count-based check would have passed
+        the two-entry list and failed the one-entry one for the wrong reason.
+        """
+        out = dict(_load(POWER_PATH))
+        block = dict(out["protocol_amendments"])
+        block["amendments"] = [
+            a for a in block["amendments"]
+            if "CONFIRM_NEW_TEMPLATES" not in (a.get("what") or "")]
+        out["protocol_amendments"] = block
+        refusals = _amendment_refusals(out)
+        assert any("undisclosed amendment" in r for r in refusals), refusals
+
+    def test_a_report_that_declares_no_expected_amendments_refuses(self):
+        """Without a declared expectation there is nothing to check
+        completeness against, so the disclosure would be unauditable."""
+        out = dict(_load(POWER_PATH))
+        out["protocol_amendments"] = dict(out["protocol_amendments"],
+                                          amendments_expected=[])
+        assert any("does not declare which amendments it expects" in r
+                   for r in _amendment_refusals(out))
 
     def test_a_missing_disclosure_refuses(self):
         out = dict(_load(POWER_PATH))
         out.pop("protocol_amendments")
-        assert fz._protocol_amendment_refusals(out)
+        assert _amendment_refusals(out)
 
     def test_calling_it_preregistration_refuses(self):
         out = _mutate_amendment(_load(POWER_PATH), kind="preregistration")
         assert any("only label the timestamps support" in r
-                   for r in fz._protocol_amendment_refusals(out))
+                   for r in _amendment_refusals(out))
 
     def test_an_amendment_that_does_not_name_the_rule_refuses(self):
+        """Renaming what an amendment is about leaves the expected identity
+        undisclosed and the new one unrecognised, so BOTH halves refuse: the
+        entry names nothing expected, and the identity the protocol carries is
+        missing.  The pre-identity version of this check could only report the
+        first, and would have passed a report that swapped one amendment for
+        another of the same length."""
         out = _mutate_amendment(_load(POWER_PATH), what="the retention rule")
-        assert any("does not name the photograph selection rule" in r
-                   for r in fz._protocol_amendment_refusals(out))
+        refusals = _amendment_refusals(out)
+        assert any("names none of the expected amendments" in r
+                   for r in refusals), refusals
+        assert any("undisclosed amendment" in r and "PHOTO_SELECTION_RULE" in r
+                   for r in refusals), refusals
 
     @pytest.mark.parametrize("key", [
         "rule_was_absent_when_the_pool_was_fetched",
@@ -2565,7 +2645,7 @@ class TestTheAmendmentIsDisclosedInTheFreeze:
         ordering = dict(power["protocol_amendments"]["amendments"][0]
                         ["ordering"], **{key: False})
         out = _mutate_amendment(power, ordering=ordering)
-        refusals = fz._protocol_amendment_refusals(out)
+        refusals = _amendment_refusals(out)
         assert any(key in r for r in refusals), refusals
 
     def test_claiming_the_prior_freeze_had_the_rule_refuses(self):
@@ -2575,7 +2655,7 @@ class TestTheAmendmentIsDisclosedInTheFreeze:
                               ["amendments"][0]["prior_freeze"],
                               contained_the_rule=True))
         assert any("contradicts its own claim" in r
-                   for r in fz._protocol_amendment_refusals(out))
+                   for r in _amendment_refusals(out))
 
     def test_scoring_before_amending_refuses(self):
         """Once a confirmation prediction exists the amendment is no longer
@@ -2583,7 +2663,7 @@ class TestTheAmendmentIsDisclosedInTheFreeze:
         out = _mutate_amendment(_load(POWER_PATH),
                                 confirmation_prediction_files=3)
         assert any("no longer outcome-blind" in r
-                   for r in fz._protocol_amendment_refusals(out))
+                   for r in _amendment_refusals(out))
 
     def test_dropping_the_retraction_refuses(self):
         """Leaving a false timeline in the prose beside a true one is worse
@@ -2592,7 +2672,7 @@ class TestTheAmendmentIsDisclosedInTheFreeze:
         out["protocol_amendments"] = dict(out["protocol_amendments"],
                                           retracted_claim="")
         assert any("does not retract" in r
-                   for r in fz._protocol_amendment_refusals(out))
+                   for r in _amendment_refusals(out))
 
     def test_the_refusals_are_wired_into_the_freeze(self, monkeypatch):
         f = _freeze_over_mutated_power(
@@ -2633,7 +2713,197 @@ class TestTheAmendmentIsDisclosedInTheFreeze:
         #: The fragment all four phrases share is what makes the sweep
         #: non-vacuous: if the retraction stopped naming it, the sweep would be
         #: searching for a claim the repository no longer retracts.
-        assert upper in _load()["protocol_amendment"]["retracted_claim"]
+        assert upper in _load()["protocol_amendments"]["retracted_claim"]
+
+
+class TestTheSecondAmendmentIsDisclosedAndRefusable:
+    """Iteration 11C-4R.
+
+    The wrapper repair amends wording that was already SEALED, so its
+    disclosure has to carry more than the first one's: the seal's own hash has
+    to bind the defective bytes, the module has to hash differently now, the
+    neutrality bound has to refuse what it replaced and pass what shipped, and
+    the exploratory result that was in hand has to be named rather than left
+    to be inferred from "outcome-blind".
+    """
+
+    IDENT = "CONFIRM_NEW_TEMPLATES[image_fine_direct]"
+
+    @classmethod
+    def _a2(cls, power: dict) -> dict:
+        """The second amendment, found by identity rather than by position."""
+        return next(x for x in power["protocol_amendments"]["amendments"]
+                    if cls.IDENT in (x.get("what") or ""))
+
+    def test_the_real_report_produces_no_refusal(self):
+        assert _amendment_refusals(_load(POWER_PATH)) == []
+
+    def test_the_freeze_carries_the_second_amendment_by_identity(self):
+        """Keyed by the declared identity rather than by list position, so
+        reordering the power report's amendments cannot change what the freeze
+        certifies."""
+        ams = _load()["protocol_amendments"]
+        assert ams["amendments_expected"] == ["PHOTO_SELECTION_RULE",
+                                              self.IDENT]
+        assert set(ams["by_identity"]) == set(ams["amendments_expected"])
+        a = ams["by_identity"][self.IDENT]
+        assert a["kind"] == "outcome-blind protocol amendment"
+        assert a["confirmation_prediction_files"] == 0
+        assert a["exploratory_prediction_files"] > 0
+        assert a["prior_seal"]["sealed_the_defective_wording"] is True
+        assert a["template_file_sha256_now"] != \
+            a["prior_seal"]["template_file_sha256"]
+        assert a["repair"]["probes_behind_an_entity_specific_wrapper"] == 168
+        assert a["ordering"]["every_ordering_claim_is_measured"] is True
+        assert "EXPLORATORY result was in hand" in a["the_defensible_claim"]
+
+    def test_the_two_amendments_are_not_swapped_in_the_freeze(self):
+        """Each carries fields the other does not, so a swap is visible: the
+        first has ``prior_freeze`` and no ``prior_seal``, the second the
+        reverse.  Asserting that is what makes the identity lookup mean
+        something rather than merely look careful."""
+        ams = _load()["protocol_amendments"]["by_identity"]
+        assert "prior_freeze" in ams["PHOTO_SELECTION_RULE"]
+        assert "prior_seal" not in ams["PHOTO_SELECTION_RULE"]
+        assert "prior_seal" in ams[self.IDENT]
+        assert "prior_freeze" not in ams[self.IDENT]
+
+    @pytest.mark.parametrize("key", [
+        "the_seal_bound_the_defective_wording",
+        "the_repair_was_made_before_any_confirmation_prediction",
+        "the_repair_achieves_what_it_states",
+        "the_exploratory_result_was_available_and_is_disclosed",
+        "every_ordering_claim_is_measured",
+    ])
+    def test_any_ordering_claim_that_stops_holding_refuses(self, key):
+        power = _load(POWER_PATH)
+        out = _mutate_wrapper_amendment(
+            power, ordering=dict(self._a2(power)["ordering"], **{key: False}))
+        refusals = _amendment_refusals(out)
+        assert any(key in r for r in refusals), refusals
+
+    def test_a_report_that_claims_a_module_hash_the_disk_contradicts_refuses(
+            self):
+        """The report's ``template_file_sha256_now`` is checked against the
+        module hashed live, so a report written before a later edit cannot
+        certify the module as it now stands."""
+        power = _load(POWER_PATH)
+        out = _mutate_wrapper_amendment(
+            power, template_file_sha256_now=self._a2(power)["prior_seal"][
+                "template_file_sha256"])
+        refusals = _amendment_refusals(out)
+        assert any("but it is now" in r for r in refusals), refusals
+
+    def test_a_module_that_still_hashes_to_the_sealed_value_refuses(
+            self, monkeypatch):
+        """The real "no repair happened" case, distinct from the one above.
+
+        Here the report is self-consistent and the MODULE is what fails: it
+        still hashes to the value the seal bound, so nothing was repaired and
+        the ordering boolean derived from the two hashes flips.  Driven by
+        making the live hash return the sealed value, because the alternative
+        -- reverting the repair to observe the guard -- would leave the
+        repository defective if the test then failed.
+        """
+        power = _load(POWER_PATH)
+        a = self._a2(power)
+        sealed = a["prior_seal"]["template_file_sha256"]
+        real = fz.sha256_file
+
+        def unchanged_module(path):
+            if str(path).endswith("confirmation_templates.py"):
+                return sealed
+            return real(path)
+
+        monkeypatch.setattr(fz, "sha256_file", unchanged_module)
+        #: The report is made consistent with the faked disk state, so the only
+        #: thing left to catch is that the two hashes are equal.
+        out = _mutate_wrapper_amendment(power,
+                                       template_file_sha256_now=sealed)
+        refusals = _amendment_refusals(out)
+        assert any("no repair has been made" in r for r in refusals), refusals
+        assert any("the_seal_bound_the_defective_wording" in r
+                   for r in refusals), refusals
+        #: And the summary boolean is refused too, since re-deriving it from
+        #: the hashes now gives False while the report records True.
+        assert any("every_ordering_claim_is_measured" in r
+                   for r in refusals), refusals
+
+    def test_a_bound_that_refuses_nothing_refuses(self):
+        """The vacuous-bound case: a banned-word list shortened to nothing
+        passes the module it ships with, so the freeze checks the bound
+        against the wordings it replaced and not only against the repair."""
+        power = _load(POWER_PATH)
+        out = _mutate_wrapper_amendment(
+            power, repair=dict(self._a2(power)["repair"],
+                               bound_refuses_the_retired_wordings=False))
+        assert any("not evidence that the repair removed anything" in r
+                   for r in _amendment_refusals(out))
+
+    def test_a_bound_that_still_refuses_the_repaired_module_refuses(self):
+        power = _load(POWER_PATH)
+        out = _mutate_wrapper_amendment(
+            power,
+            repair=dict(self._a2(power)["repair"],
+                        bound_passes_the_repaired_module=False,
+                        bound_passes_the_repaired_module_refusals=[
+                            "image_target_direct:4 says ['rank']"]))
+        assert any("still refuses the repaired module" in r
+                   for r in _amendment_refusals(out))
+
+    def test_probe_counts_that_do_not_add_up_refuse(self):
+        """168 + 126 = 294.  Three numbers stated independently can disagree
+        without any of them looking wrong, so the sum is checked."""
+        power = _load(POWER_PATH)
+        out = _mutate_wrapper_amendment(
+            power,
+            repair=dict(self._a2(power)["repair"],
+                        probes_behind_any_defective_wrapper=168))
+        assert any("do not add up" in r
+                   for r in _amendment_refusals(out))
+
+    def test_scoring_before_the_wrapper_repair_refuses(self):
+        out = _mutate_wrapper_amendment(_load(POWER_PATH),
+                                       confirmation_prediction_files=3)
+        assert any("wrapper-repair amendment is no longer outcome-blind" in r
+                   for r in _amendment_refusals(out))
+
+    def test_omitting_the_exploratory_disclosure_refuses(self):
+        """The one disclosure that weakens the claim is the one most worth
+        omitting, so its absence is refused rather than unnoticed.
+
+        "Outcome-blind" is true of the CONFIRMATION and not of the
+        exploratory result, which was in hand and is what led anyone to read
+        the person-stratum prompts at all.
+
+        Only the count is mutated here and the ordering claim is left True,
+        which is the point: the two are checked independently, so dropping the
+        number without also flipping the claim still refuses.  A check that
+        only read the claim would have passed this.
+        """
+        power = _load(POWER_PATH)
+        assert self._a2(power)["ordering"][
+            "the_exploratory_result_was_available_and_is_disclosed"] is True
+        out = _mutate_wrapper_amendment(power, exploratory_prediction_files=0)
+        refusals = _amendment_refusals(out)
+        assert any("does not disclose that the exploratory result was "
+                   "available" in r for r in refusals), refusals
+
+    def test_an_amendment_that_lists_nothing_it_left_frozen_refuses(self):
+        out = _mutate_wrapper_amendment(
+            _load(POWER_PATH),
+            what_changed_and_what_did_not={"changed": ["the wording"],
+                                          "did_not_change": []})
+        assert any("has to enumerate what stayed frozen" in r
+                   for r in _amendment_refusals(out))
+
+    def test_the_wrapper_refusals_are_wired_into_the_freeze(self, monkeypatch):
+        f = _freeze_over_mutated_power(
+            monkeypatch,
+            lambda out: _mutate_wrapper_amendment(
+                out, confirmation_prediction_files=1))
+        assert any("no longer outcome-blind" in r for r in f["refusals"]), \
+            f["refusals"]
 
 
 class TestTheStage3SealBindsTheBuiltSplit:

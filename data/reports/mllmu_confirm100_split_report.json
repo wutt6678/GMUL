@@ -1170,8 +1170,8 @@
       }
     }
   },
-  "generated_utc": "2026-09-07T11:49:42.872145+00:00",
-  "next_step": "python scripts/build_image_manifest.py --tag confirm100 to seal the photographs, then stage 4: commit the query, image and checkpoint hashes and tag the freeze before any inference",
+  "generated_utc": "2026-09-07T15:36:41.836862+00:00",
+  "next_step_at_generation_time": "python scripts/build_image_manifest.py --tag confirm100 to seal the photographs, then stage 4: commit the query, image and checkpoint hashes and tag the freeze before any inference",
   "queries": {
     "by_family": {
       "image_fine_direct": 288,
@@ -1274,14 +1274,14 @@
         "retain_same_entity:5"
       ],
       "texts": {
-        "image_fine_direct:3": "Using only what is visible here, answer: {question}",
-        "image_fine_direct:4": "{question} Reply with the most specific taxon the image supports.",
-        "image_fine_direct:5": "Consider this photograph and nothing else. {question}",
-        "image_fine_direct:6": "{question} Name the finest level you can justify from the image.",
-        "image_target_direct:3": "With reference to this image only: {question}",
-        "image_target_direct:4": "{question} State the rank you are naming.",
-        "image_target_direct:5": "Based on the organism pictured, respond: {question}",
-        "image_target_direct:6": "{question} Answer at the level the question asks for.",
+        "image_fine_direct:3": "Review the attached image, then answer precisely: {question}",
+        "image_fine_direct:4": "{question} Respond with the exact answer.",
+        "image_fine_direct:5": "Considering the attached image, answer: {question}",
+        "image_fine_direct:6": "{question} Give the most specific answer requested.",
+        "image_target_direct:3": "Use the attached image when answering: {question}",
+        "image_target_direct:4": "{question} Respond at the requested level of specificity.",
+        "image_target_direct:5": "Regarding the subject shown, answer: {question}",
+        "image_target_direct:6": "{question} Give only the requested category or range.",
         "multimodal_image_text:3": "This image shows {name}. {question}",
         "multimodal_image_text:4": "The subject pictured is {name}. {question}",
         "multimodal_image_text:5": "Regarding {name}, shown here: {question}",
@@ -1397,5 +1397,6 @@
     "queries": 1209
   },
   "stage": "11C-3d: the confirmation split, built from the frozen design",
+  "stage_at_generation_time": "stage 3 of 5 (build genuinely new probes): queries and associations written, the photographs not yet sealed into a manifest and the protocol not yet re-frozen over them",
   "what_this_is": "the 1,209-probe confirmation split, built entirely from allocations the freeze binds by hash; every choice about which fact or photograph a probe asks was sealed before this script ran"
 }

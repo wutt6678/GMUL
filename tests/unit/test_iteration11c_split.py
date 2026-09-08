@@ -44,17 +44,37 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 import build_confirmation_split as bcs  # noqa: E402
+from power_analysis_confirmation import (  # noqa: E402
+    CONFIRM_NEW_PHOTOS_PER_SPECIES,
+)
 from granunlearn.evaluation.confirmation_templates import (  # noqa: E402
     CONFIRM_IMAGE_FAMILIES,
     CONFIRM_NEW_TEMPLATES,
     CONFIRM_RETENTION_FAMILIES,
     CONFIRM_TEMPLATE_IDS,
+    CONFIRM_TEMPLATE_INDICES,
     EXPLORATORY_TEMPLATES_PER_FAMILY,
+    RETIRED_WRAPPER_WORDINGS,
     install_confirmation_templates,
     validate_confirmation_templates,
+    wrapper_neutrality_refusals,
+)
+#: The module's banned-wording tuples are imported ALIASED, because the test
+#: keeps its own copies of both under the plain names: shortening the module's
+#: list must fail a test rather than silently pass every prompt.  See the
+#: comment above those tuples.
+from granunlearn.evaluation.confirmation_templates import (  # noqa: E402
+    ENTITY_SPECIFIC_VOCABULARY as MODULE_ENTITY_VOCABULARY,
+    EVIDENCE_RESTRICTING_PHRASES as MODULE_EVIDENCE_PHRASES,
 )
 from granunlearn.evaluation.image_splits import image_stratum  # noqa: E402
-from granunlearn.evaluation.query_generation import FAMILY_TEMPLATES  # noqa: E402
+from granunlearn.evaluation.query_generation import (  # noqa: E402
+    FAMILY_TEMPLATES,
+    IMAGE_ONLY_FAMILIES,
+    _make_query,
+    answer_level_for_family,
+    level_question,
+)
 
 
 def _load(path: Path) -> dict:
@@ -795,3 +815,322 @@ class TestTheProbesCarryTheFieldsTheScorerReads:
             assert q.prompt not in f, q.query_id
             assert q.expected_answer not in f, q.query_id
         assert checked == 864
+
+
+# ── the shared wrappers are neutral about which stratum they render on ──
+
+#: What survives this is the wrapper's OWN contribution to a prompt, which is
+#: the only part of the prompt this module chooses.
+_SENTINEL = "\x00"
+
+#: --------------------------------------------------------------------------
+#: The two tuples below are the TEST's own, written out independently of the
+#: ones in ``confirmation_templates``.  That is deliberate.  A test that
+#: imports the banned-vocabulary list from the module it is checking cannot
+#: notice the list being shortened, which is the one way this bound fails
+#: silently: delete a word and every prompt passes.  So the test pins a floor
+#: and ``test_the_module_bans_at_least_everything_this_test_bans`` asserts the
+#: module covers it.  Weakening the module then fails here; weakening the test
+#: does not help, because the module is what the builder enforces.
+#:
+#: What the bound is for: all twelve image-family templates render on BOTH
+#: strata -- 42 MLLMU persons, whose seven attributes are salary, birthplace,
+#: date of birth, residence, occupation, education and height, and 30
+#: iNaturalist species, whose only attribute is taxonomic_classification.  A
+#: word belonging to one stratum contradicts the question in the other, and the
+#: person stratum carried the exploratory effect, so the contradiction lands on
+#: the primary claims.
+#: --------------------------------------------------------------------------
+ENTITY_SPECIFIC_VOCABULARY = (
+    "taxon", "taxa", "taxonomic", "taxonomy", "rank", "organism", "species",
+    "person", "people", "human", "animal", "plant", "bird", "insect",
+    "portrait", "face",
+    #: The taxonomic idiom for "most specific taxon".  ``level`` alone is NOT
+    #: banned and must not be -- the sanctioned neutral wording says "the
+    #: requested level of specificity".
+    "finest level",
+)
+
+#: Nor may a wrapper say which CHANNEL of evidence to answer from.  These are
+#: not domain words, so a vocabulary-only repair would have kept every one of
+#: them, and they are just as wrong: none of the seven person attributes is a
+#: visible property of a portrait, while the species attribute IS visible -- so
+#: the same instruction is harmless on one stratum and unanswerable on the
+#: other, which is exactly what a SHARED wrapper may not be.
+EVIDENCE_RESTRICTING_PHRASES = (
+    "only what is visible", "nothing else", "from the image",
+    "the image supports", "justify from", "visible", "as seen",
+    #: ``image only`` was added by running the bound over the eight retired
+    #: wordings: without it "With reference to this image only" passed, because
+    #: it restricts the channel without saying "visible" or "nothing else".
+    "image only", "only the image", "image alone", "based on the image",
+)
+
+
+def _wrapper_words(text: str) -> list[str]:
+    """A template's own words, with every substitution removed."""
+    for field in ("question", "name", "attr", "answer", "distractor"):
+        text = text.replace("{" + field + "}", _SENTINEL)
+    return [p.strip() for p in text.split(_SENTINEL) if p.strip()]
+
+
+def _offending_vocabulary(fragments) -> list[str]:
+    """Which banned words or phrases appear in the wrapper's own words.
+
+    Word-bounded, so "most specific" does not match "species" and "answer
+    precisely" does not match "rank".
+    """
+    joined = " ".join(fragments).lower()
+    hits = [w for w in ENTITY_SPECIFIC_VOCABULARY
+            if re.search(r"\b" + re.escape(w) + r"\b", joined)]
+    hits += [p for p in EVIDENCE_RESTRICTING_PHRASES if p in joined]
+    return hits
+
+
+def _prompt_minus_the_question(q, assoc) -> list[str]:
+    """The wrapper's contribution to a REAL rendered prompt.
+
+    Scanning the prompt whole would flag the question, which the fingerprinted
+    exploratory module generates and which legitimately says "the person shown
+    in this image" for a person.  The question is removed first so that the
+    entity name inside it goes with it, and only then the wrapper's own
+    ``{name}``.
+    """
+    answer_idx = answer_level_for_family(assoc, q.family)
+    question = level_question(assoc, answer_idx,
+                              nameless=q.family in IMAGE_ONLY_FAMILIES)
+    left = q.prompt.replace(question, _SENTINEL)
+    left = left.replace(assoc.entity_name or assoc.entity_id, _SENTINEL)
+    return [p.strip() for p in left.split(_SENTINEL) if p.strip()]
+
+
+class TestTheSharedWrappersAreNeutralAboutWhichStratumTheyRenderOn:
+    """Iteration 11C-4R.
+
+    The first revision of the eight ``image_fine_direct`` and
+    ``image_target_direct`` wrappers was written for the taxonomic stratum and
+    then rendered on the MLLMU persons as well, because every image-family
+    template is shared by both strata.  Four named a taxon, a rank, an
+    organism or a taxonomic level outright -- "Reply with the most specific
+    taxon the image supports" on a salary question, "State the rank you are
+    naming" on a birth-decade question -- which is 4 x 42 = 168 of the person
+    stratum's 504 probes, exactly one third.  Three more restricted the answer
+    to what the image shows, which no person attribute is, adding 126.
+
+    The defect is only visible by RENDERING: nothing in the module says which
+    stratum a template will be applied to, and each text reads sensibly
+    against the species it was written for.
+    """
+
+    @staticmethod
+    def _one_of_each_kind():
+        """A real association of each kind, both carrying an image.
+
+        The species has to be a TARGET one: the 6 retain-only species are in
+        this split's associations but carry no photograph, since the image
+        route was omitted from retention and their photographs were never
+        fetched.  Picking one of those would render an image family with no
+        image and test nothing about the shared wrapper.
+        """
+        assocs = _associations()
+        person = next(a for a in assocs if a.dataset == "mllmu_hier"
+                      and a.attribute_name == "salary" and a.images)
+        species = next(a for a in assocs
+                       if a.dataset == "inaturalist" and a.images)
+        assert len(species.images) == CONFIRM_NEW_PHOTOS_PER_SPECIES, \
+            (species.association_id, len(species.images))
+        return person, species
+
+    def test_no_wrapper_names_a_kind_of_entity_or_a_channel_of_evidence(self):
+        for fam, texts in CONFIRM_NEW_TEMPLATES.items():
+            for idx, text in zip(CONFIRM_TEMPLATE_INDICES[fam], texts):
+                assert _offending_vocabulary(_wrapper_words(text)) == [], \
+                    (f"{fam}:{idx}", text)
+        #: And the module's own enforcement agrees, since the builder calls
+        #: that one and not this test.
+        assert wrapper_neutrality_refusals() == []
+
+    def test_the_module_bans_at_least_everything_this_test_bans(self):
+        """The floor is pinned HERE, not in the module.
+
+        ``wrapper_neutrality_refusals`` is what the builder enforces, so it is
+        the module's list that decides what gets refused -- and a list nobody
+        re-derives can be shortened until it is vacuous while every test that
+        imports it still passes.  The test therefore keeps its own tuples and
+        requires the module to cover them.
+        """
+        assert set(MODULE_ENTITY_VOCABULARY) >= set(ENTITY_SPECIFIC_VOCABULARY)
+        assert set(MODULE_EVIDENCE_PHRASES) >= set(EVIDENCE_RESTRICTING_PHRASES)
+
+    def test_the_bound_refuses_the_retired_wordings_it_was_written_for(self):
+        """A bound that passes on the module it ships with proves nothing until
+        it is shown to fail on what it replaced.
+
+        Seven of the eight retired wordings must be refused.  The eighth,
+        ``image_target_direct:6`` "Answer at the level the question asks for",
+        is genuinely neutral and was rewritten for uniformity rather than
+        because it leaked; asserting 8 of 8 here would force a fabricated
+        finding into the banned list to make the count come out.
+        """
+        caught, neutral = [], []
+        for fam, texts in RETIRED_WRAPPER_WORDINGS.items():
+            for idx, text in zip(CONFIRM_TEMPLATE_INDICES[fam], texts):
+                tid = f"{fam}:{idx}"
+                (caught if _offending_vocabulary(_wrapper_words(text))
+                 else neutral).append(tid)
+        assert len(caught) == 7, (caught, neutral)
+        assert neutral == ["image_target_direct:6"], neutral
+        #: The four the review counted by name are all in the caught set, and
+        #: each was caught for the domain word it carries and not only for an
+        #: incidental evidence phrase.
+        for tid, word in (("image_fine_direct:4", "taxon"),
+                          ("image_fine_direct:6", "finest level"),
+                          ("image_target_direct:4", "rank"),
+                          ("image_target_direct:5", "organism")):
+            fam, idx = tid.rsplit(":", 1)
+            text = RETIRED_WRAPPER_WORDINGS[fam][int(idx) -
+                                                 EXPLORATORY_TEMPLATES_PER_FAMILY]
+            hits = _offending_vocabulary(_wrapper_words(text))
+            assert word in hits, (tid, word, hits)
+            assert tid in caught
+        #: 4 entity-specific x 42 persons is the review's 168, one third of the
+        #: 504 person-stratum image probes.
+        assert 4 * 42 == 168 and 168 * 3 == 504
+
+    def test_the_builder_refuses_a_leaking_wrapper_before_writing_a_split(self):
+        """Fail closed at the point of use, not only in a test.
+
+        A test that fails after a leaking wrapper is committed still leaves a
+        built ``queries.parquet`` on disk carrying 168 contradictory prompts;
+        a refusal inside ``validate_confirmation_templates`` means the builder
+        never writes it.  Both are wanted, and this is the one that stops the
+        artifact rather than describing it.
+        """
+        exp_ids = {q.template_id for q in _exploratory_queries()}
+        exp_texts = {t for f in FAMILY_TEMPLATES
+                     for t in FAMILY_TEMPLATES[f][:3]}
+        saved = dict(CONFIRM_NEW_TEMPLATES)
+        try:
+            #: A wording that is entity-specific but NOT evidence-restricting,
+            #: so it can only be caught by the vocabulary half of the bound.
+            CONFIRM_NEW_TEMPLATES["image_target_direct"] = (
+                "{question} State the rank you are naming.",
+                *saved["image_target_direct"][1:])
+            refusals = validate_confirmation_templates(exp_ids, exp_texts)
+            assert any("shared by the person and the species stratum" in r
+                       for r in refusals), refusals
+            #: And a wording that restricts the channel without naming any
+            #: domain, which is the half a vocabulary-only repair misses.
+            CONFIRM_NEW_TEMPLATES["image_target_direct"] = (
+                "With reference to this image only: {question}",
+                *saved["image_target_direct"][1:])
+            refusals = validate_confirmation_templates(exp_ids, exp_texts)
+            assert any("image_target_direct:3" in r for r in refusals), \
+                refusals
+        finally:
+            CONFIRM_NEW_TEMPLATES.clear()
+            CONFIRM_NEW_TEMPLATES.update(saved)
+        #: Restored, and installable again.
+        assert validate_confirmation_templates(exp_ids, exp_texts) == []
+
+    def test_all_eight_wrappers_were_replaced_and_not_only_the_four(self):
+        """"Only what is visible here" and "consider this photograph and
+        nothing else" name no domain, so a repair aimed at the vocabulary
+        alone would have left them and fixed the count without fixing the
+        defect: a salary is not visible either."""
+        retired = ("taxon", "the rank you are naming", "organism pictured",
+                   "finest level", "only what is visible", "nothing else",
+                   "with reference to this image only")
+        for fam in ("image_fine_direct", "image_target_direct"):
+            texts = CONFIRM_NEW_TEMPLATES[fam]
+            assert len(texts) == 4, fam
+            for text in texts:
+                for phrase in retired:
+                    assert phrase not in text.lower(), (fam, text, phrase)
+
+    def test_the_replacement_still_asks_for_specificity(self):
+        """Neutrality is not the only property that matters: ``image_fine_direct``
+        and ``image_target_direct`` exist to ask for a particular level of
+        detail, and a wrapper reduced to "answer this" would stop testing what
+        the family tests."""
+        for fam in ("image_fine_direct", "image_target_direct"):
+            joined = " ".join(CONFIRM_NEW_TEMPLATES[fam]).lower()
+            assert any(w in joined for w in
+                       ("precisely", "exact", "specific", "category",
+                        "range", "level")), fam
+
+    def test_every_shared_template_renders_on_both_entity_kinds(self):
+        """The real rendering path, on a real association of each kind.
+
+        The assertion that decides it is the last one: the wrapper's
+        contribution is IDENTICAL across the two strata, which is what
+        "entity-neutral" has to mean operationally.  A wrapper that merely
+        avoided the banned words could still vary by entity kind some other
+        way, and only rendering both can show that it does not.
+        """
+        install_confirmation_templates()
+        person, species = self._one_of_each_kind()
+        rendered = 0
+        for fam in CONFIRM_IMAGE_FAMILIES:
+            for idx in CONFIRM_TEMPLATE_INDICES[fam]:
+                contributions = []
+                for assoc in (person, species):
+                    q = _make_query(
+                        assoc, fam, "test", idx, 42,
+                        f"{assoc.association_id}__{fam}__c{idx}__test", True)
+                    answer_idx = answer_level_for_family(assoc, fam)
+                    question = level_question(
+                        assoc, answer_idx,
+                        nameless=fam in IMAGE_ONLY_FAMILIES)
+                    #: The wrapper really did wrap that entity's own question.
+                    assert question in q.prompt, (fam, idx, q.prompt)
+                    fragments = _prompt_minus_the_question(q, assoc)
+                    assert fragments, (fam, idx)
+                    assert _offending_vocabulary(fragments) == [], \
+                        (fam, idx, assoc.association_id, q.prompt)
+                    contributions.append(fragments)
+                    rendered += 1
+                assert contributions[0] == contributions[1], \
+                    (fam, idx, contributions)
+        #: 12 shared image templates x 2 entity kinds.
+        assert rendered == 24
+
+    def test_no_person_stratum_prompt_in_the_built_split_carries_them(self):
+        """The end state, measured over the artifact that will be scored
+        rather than over the module: the 168 contradictory prompts are gone,
+        and so are the 126 that only restricted the evidence channel."""
+        pw = _load(POWER_PATH)
+        persons = set(pw["portrait_reuse_exemption"]["target_person_ids"])
+        assoc = {a.association_id: a for a in _associations()}
+        probes = [q for q in _queries()
+                  if q.family in set(CONFIRM_IMAGE_FAMILIES)
+                  and assoc[q.association_id].entity_id in persons]
+        assert len(probes) == 504, len(probes)
+        bad = [(q.query_id, _offending_vocabulary(
+            _prompt_minus_the_question(q, assoc[q.association_id])))
+            for q in probes]
+        bad = [b for b in bad if b[1]]
+        assert bad == [], bad[:3]
+
+    def test_the_species_stratum_is_unchanged_in_kind_by_the_repair(self):
+        """The repair must not buy person-stratum neutrality by emptying the
+        species prompts: the species probes still ask their own taxonomic
+        question, they merely are not TOLD to answer with a taxon by a wrapper
+        that would be nonsense one stratum over."""
+        pw = _load(POWER_PATH)
+        persons = set(pw["portrait_reuse_exemption"]["target_person_ids"])
+        assoc = {a.association_id: a for a in _associations()}
+        probes = [q for q in _queries()
+                  if q.family in set(CONFIRM_IMAGE_FAMILIES)
+                  and assoc[q.association_id].entity_id not in persons]
+        assert len(probes) == 360, len(probes)
+        #: Every species question is a taxonomic one, so the question still
+        #: carries the domain even though the wrapper no longer does.
+        assert all("taxonomic" in q.prompt.lower() or "species" in
+                   q.prompt.lower() or "genus" in q.prompt.lower()
+                   or "family" in q.prompt.lower()
+                   or "order" in q.prompt.lower() for q in probes), \
+            [q.prompt for q in probes
+             if not any(w in q.prompt.lower() for w in
+                        ("taxonomic", "species", "genus", "family",
+                         "order"))][:2]

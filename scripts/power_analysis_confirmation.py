@@ -68,13 +68,22 @@ from typing import Any
 
 from granunlearn.config import _find_repo_root
 #: Imported for the stage-3 seal, which hashes the module that defines the
-#: confirmation templates and has to name the family order that module binds.
+#: confirmation templates and has to name the family order that module binds,
+#: and for the SECOND amendment, which measures the wrapper-neutrality bound
+#: against both the retired wordings and the repaired module.
 #: Importing it installs nothing: ``install_confirmation_templates`` is a
-#: separate call, so reading these two constants has no side effect on
+#: separate call, so reading these constants has no side effect on
 #: ``FAMILY_TEMPLATES``.
 from granunlearn.evaluation.confirmation_templates import (
     CONFIRM_IMAGE_FAMILIES,
+    CONFIRM_TEMPLATE_INDICES,
+    ENTITY_SPECIFIC_VOCABULARY,
+    EVIDENCE_RESTRICTING_PHRASES,
     EXPLORATORY_TEMPLATES_PER_FAMILY,
+    RETIRED_WRAPPER_WORDINGS,
+    offending_wrapper_vocabulary,
+    wrapper_fragments,
+    wrapper_neutrality_refusals,
 )
 from granunlearn.evaluation.paired_ci import (
     CLAIM_DIRECTION,
@@ -416,6 +425,36 @@ CONFIRM_SELECTION_REPORT = (
 #: ``data/`` follows).  Its absence is the evidence that no confirmation model
 #: output exists yet - which is what makes the amendment outcome-blind.
 CONFIRM_DATASET_DIR = "data/mllmu_hier_confirm100"
+#: The exploratory dataset.  Named because the SECOND amendment has to state
+#: how many exploratory prediction files existed when it was written: that
+#: result was in hand, and an amendment recorded as outcome-blind without
+#: saying which outcomes were available is a disclosure in name only.
+EXPLORATORY_DATASET_DIR = "data/mllmu_hier_pilot100"
+#: --------------------------------------------------------------------------
+#: The second amendment: the shared image wrappers.
+#:
+#: Pinned the same way the first amendment pins its two ``frozen_at`` values --
+#: as facts about the repository history, each reproducible by command.  The
+#: seal commit is the one that recorded ``sealed: true`` over a
+#: ``queries.parquet`` whose prompts were built from the defective wordings, so
+#: its ``template_file_sha256`` IS the hash of the defective module:
+#:
+#:   git show 18fd88d:data/reports/mllmu_pilot100_confirmation_power.json \
+#:     -> confirmation_size.frozen_at_stage_3_before_any_scoring
+#:        .confirmation_template_ids_and_file_sha256.template_file_sha256
+#:   git show 18fd88d:data/reports/mllmu_pilot100_confirmation_freeze.json \
+#:     -> frozen_at_utc
+#:   git show 18fd88d:src/granunlearn/evaluation/confirmation_templates.py \
+#:     | sha256sum        # == the sealed hash, so the seal bound these bytes
+#:
+#: What is MEASURED at report time and needs no git: the current module's hash
+#: differs from the pinned one, the bound refuses the retired wordings, the
+#: bound passes the repaired module, and no confirmation prediction exists.
+#: --------------------------------------------------------------------------
+AMENDMENT_2_SEAL_COMMIT = "18fd88d"
+AMENDMENT_2_SEALED_AT_UTC = "2026-09-07T13:02:48+00:00"
+AMENDMENT_2_SEALED_TEMPLATE_FILE_SHA256 = (
+    "57f844b3d4df0b5416f037828ce2c7e702d4e265af34a77289ed33daeebd787d")
 #: A NEW pool.  The default ``pilot_v1`` is refused by
 #: ``fetch_inat_species.refuse_if_frozen_pool`` because the committed image
 #: manifest pins 432 photographs under it.
@@ -1846,14 +1885,226 @@ def retention_allocation(
     }
 
 
-def protocol_amendments(repo_root: Path) -> dict:
-    """The one amendment this protocol carries, with its timeline MEASURED.
+def _retired_wrapper_census() -> dict[str, Any]:
+    """Classify the eight retired wordings by running the bound over them.
+
+    Derived rather than typed, for the reason the allocation counts are: a
+    number written into prose is a claim, and the same number computed from
+    the module is a measurement.  Running the bound over what it replaced is
+    also the only check that the bound is not vacuous -- a list of banned
+    words that refuses nothing passes every test that imports it.
+
+    The two classes are counted separately because they are different defects
+    needing different repairs.  A wording carrying both is counted once, under
+    the entity-specific class, since that is the one the review identified by
+    name; ``channel_only`` is then the residue.
+    """
+    entity, channel_only, neutral = [], [], []
+    for fam, texts in RETIRED_WRAPPER_WORDINGS.items():
+        for idx, text in zip(CONFIRM_TEMPLATE_INDICES[fam], texts):
+            hits = offending_wrapper_vocabulary(wrapper_fragments(text))
+            tid = f"{fam}:{idx}"
+            if any(h in ENTITY_SPECIFIC_VOCABULARY for h in hits):
+                entity.append(tid)
+            elif any(h in EVIDENCE_RESTRICTING_PHRASES for h in hits):
+                channel_only.append(tid)
+            else:
+                neutral.append(tid)
+    return {
+        "entity_specific": sorted(entity),
+        "channel_restricting_only": sorted(channel_only),
+        "already_neutral": sorted(neutral),
+        "retired_total": (len(RETIRED_WRAPPER_WORDINGS["image_fine_direct"])
+                          + len(RETIRED_WRAPPER_WORDINGS["image_target_direct"])),
+        "refused_by_the_bound": len(entity) + len(channel_only),
+        "why_the_eighth_was_replaced_anyway": (
+            "the one wording the bound passes was already neutral; it is "
+            "rewritten with the other seven so that no wrapper in a family is "
+            "distinguishable from its siblings by vintage, which would "
+            "otherwise let a reader infer which stratum a probe was written "
+            "for from its template index alone"),
+    }
+
+
+def _wrapper_repair_amendment(repo_root: Path,
+                             n_persons: int) -> dict[str, Any]:
+    """The second outcome-blind amendment, with its timeline MEASURED.
+
+    What makes this one different from the first is that the thing being
+    amended was already SEALED.  The stage-3 seal recorded
+    ``template_file_sha256`` over the module that defined the defective
+    wrappers, so the seal is evidence that the defect was committed, not a
+    claim about it.  The ordering is then: seal binds hash H, the module now
+    hashes to something else, and no confirmation prediction exists in
+    between.  That is a repair made against a sealed artifact and before any
+    confirmation scoring, which is the only window in which it can still be
+    called outcome-blind.
+
+    It is blind to the CONFIRMATION outcome and it is NOT blind to the
+    exploratory one, and the report says so: the exploratory predictions are
+    counted here rather than left unmentioned, because the defect was found by
+    reading prompts from the stratum that carried the exploratory effect.
+    """
+    census = _retired_wrapper_census()
+    module_now = sha256_file(repo_root / CONFIRM_TEMPLATE_MODULE)
+    ds_dir = repo_root / CONFIRM_DATASET_DIR
+    confirm_predictions = sorted(ds_dir.glob("predictions/*")) \
+        if ds_dir.exists() else []
+    exp_dir = repo_root / EXPLORATORY_DATASET_DIR
+    exploratory_predictions = sorted(exp_dir.glob("predictions/*")) \
+        if exp_dir.exists() else []
+    refusals_now = wrapper_neutrality_refusals()
+    #: 42 persons x 3 image families x 4 templates each.
+    probes_per_person = len(CONFIRM_IMAGE_FAMILIES) * \
+        len(CONFIRM_TEMPLATE_INDICES[CONFIRM_IMAGE_FAMILIES[0]])
+    person_probes = n_persons * probes_per_person
+    sealed = AMENDMENT_2_SEALED_TEMPLATE_FILE_SHA256
+    return {
+        "what": "the shared image wrapper wordings "
+                "(CONFIRM_NEW_TEMPLATES[image_fine_direct] and "
+                "[image_target_direct])",
+        "kind": "outcome-blind protocol amendment",
+        "why_it_was_needed": (
+            "all twelve image-family templates are shared by both strata, and "
+            "these eight were written for the taxonomic one; rendered on the "
+            "MLLMU persons they asked for a taxon, a rank, an organism or the "
+            "finest taxonomic level in reply to a question about a salary or a "
+            "birth decade, and three more told the model to answer only from "
+            "what the image shows when no person attribute in this split is a "
+            "visible property of a portrait"),
+        "how_it_was_found": (
+            "by rendering the shared templates against a person association "
+            "and reading the result, not by reading the module: nothing in the "
+            "module says which stratum a template will be applied to, and each "
+            "wording reads sensibly against the species it was written for"),
+        "prior_seal": {
+            "commit": AMENDMENT_2_SEAL_COMMIT,
+            "frozen_at_utc": AMENDMENT_2_SEALED_AT_UTC,
+            "template_file_sha256": sealed,
+            "sealed_the_defective_wording": True,
+        },
+        "template_file_sha256_now": module_now,
+        "repair": {
+            "retired_wordings": census,
+            "person_stratum_image_probes": person_probes,
+            "probes_behind_an_entity_specific_wrapper":
+                n_persons * len(census["entity_specific"]),
+            "probes_behind_a_channel_restricting_wrapper":
+                n_persons * len(census["channel_restricting_only"]),
+            "probes_behind_any_defective_wrapper":
+                n_persons * census["refused_by_the_bound"],
+            "fraction_of_the_person_stratum": (
+                f"{n_persons * len(census['entity_specific'])}/{person_probes}"
+                " = one third behind an entity-specific wrapper, which is the "
+                "count the review identified"),
+            "bound_refuses_the_retired_wordings":
+                census["refused_by_the_bound"] == census["retired_total"] - 1,
+            "bound_passes_the_repaired_module": refusals_now == [],
+            "bound_passes_the_repaired_module_refusals": refusals_now,
+            "where_the_bound_is_enforced": (
+                "confirmation_templates.wrapper_neutrality_refusals, called by "
+                "validate_confirmation_templates, which the builder calls "
+                "before writing queries.parquet -- so a leaking wrapper stops "
+                "the build rather than being reported after it"),
+        },
+        "confirmation_prediction_files": len(confirm_predictions),
+        "confirmation_dataset_dir": CONFIRM_DATASET_DIR,
+        "exploratory_prediction_files": len(exploratory_predictions),
+        "ordering": {
+            "the_seal_bound_the_defective_wording":
+                module_now != sealed,
+            "the_repair_was_made_before_any_confirmation_prediction":
+                not confirm_predictions,
+            "the_repair_achieves_what_it_states":
+                refusals_now == [] and
+                census["refused_by_the_bound"] == census["retired_total"] - 1,
+            "the_exploratory_result_was_available_and_is_disclosed":
+                bool(exploratory_predictions),
+            "measured_from": [
+                f"git show {AMENDMENT_2_SEAL_COMMIT}:"
+                "data/reports/mllmu_pilot100_confirmation_freeze.json "
+                "-> frozen_at_utc",
+                f"git show {AMENDMENT_2_SEAL_COMMIT}:"
+                "data/reports/mllmu_pilot100_confirmation_power.json -> "
+                "confirmation_size.frozen_at_stage_3_before_any_scoring"
+                ".confirmation_template_ids_and_file_sha256"
+                ".template_file_sha256",
+                f"git show {AMENDMENT_2_SEAL_COMMIT}:{CONFIRM_TEMPLATE_MODULE}"
+                " | sha256sum, which equals that sealed hash",
+                f"sha256sum {CONFIRM_TEMPLATE_MODULE} -> the value now",
+                f"{CONFIRM_DATASET_DIR}/predictions/ -> absent",
+                f"{EXPLORATORY_DATASET_DIR}/predictions/ -> present",
+            ],
+            "every_ordering_claim_is_measured": all([
+                module_now != sealed,
+                not confirm_predictions,
+                refusals_now == [],
+                census["refused_by_the_bound"] == census["retired_total"] - 1,
+                bool(exploratory_predictions)]),
+        },
+        "the_defensible_claim": (
+            "the wording was sealed, then found defective by rendering it "
+            "against the other stratum, then replaced and the split rebuilt -- "
+            "all before a single confirmation prediction existed, so no "
+            "confirmation result could have shaped the repair. The "
+            "EXPLORATORY result was in hand and is not claimed away: the "
+            "defect was found in the stratum that carried the exploratory "
+            "effect. What that licenses is a repair of wording that "
+            "contradicted its own question; what it does not license is any "
+            "change to the estimand, the entity set, the allocation, the "
+            "primary test or the decision rule, and none of those moved"),
+        "what_changed_and_what_did_not": {
+            "changed": [
+                "the eight image_fine_direct and image_target_direct wrapper "
+                "texts",
+                "the template_file_sha256 the stage-3 seal binds",
+                "the rendered prompt string of every image-route probe",
+            ],
+            "did_not_change": [
+                "the 1,209 probe count and the per-family allocation",
+                "the 72 target entities and the 42 person / 30 species split",
+                "the association rotation A_e[(j + f) mod |A_e|]",
+                "the 360 selected photographs or their sha256 values",
+                "the TGA and FILR estimands, the sign-flip test, the Holm "
+                "family, the bootstrap seeds or any decision threshold",
+                "template IDS: the eight keep their indices, so the rotation "
+                "and the id-set hash are untouched",
+            ],
+        },
+        "what_was_available_when_the_repair_was_written": [
+            "every rendered confirmation prompt, since the split was built",
+            "the exploratory predictions and the exploratory effect they show",
+        ],
+        "what_was_not_available": [
+            "any B3, B0 or M_G prediction on a confirmation query",
+            "any confirmation TGA, FILR, p-value or interval",
+        ],
+        "if_a_sealed_protocol_may_not_be_amended_at_all": (
+            "then the confirmation cannot be run on this split: the sealed "
+            "wording asks a person-stratum model to name a taxon in reply to "
+            "a salary question on one third of its probes, and scoring that "
+            "measures compliance with a contradiction rather than granularity "
+            "retention. The alternative is to discard the sealed split and "
+            "re-derive it under neutral wording frozen first, which costs a "
+            "rebuild and not a redesign, because nothing the repair touched "
+            "is an input to the allocation"),
+    }
+
+
+def protocol_amendments(repo_root: Path, n_target_persons: int) -> dict:
+    """The two amendments this protocol carries, each with its timeline
+    MEASURED.
 
     A preregistration that is amended after the fact is still usable, but only
     if the amendment says when it happened and what could have informed it.
-    The ordering here is computed from three timestamps that exist as
-    artifacts - two committed freezes and the pool's own provenance - so it
+    The ordering is computed from timestamps and hashes that exist as
+    artifacts - two committed freezes, the pool's own provenance, the seal's
+    template hash and the presence or absence of prediction files - so it
     cannot drift from the repository history it describes.
+
+    ``n_target_persons`` is passed in rather than re-derived because it is the
+    same 42 the allocation and the portrait exemption use, and a second
+    derivation is how one number quietly becomes two.
     """
     path = repo_root / CONFIRM_FETCH_PROVENANCE
     retrieved_at = None
@@ -1945,7 +2196,24 @@ def protocol_amendments(repo_root: Path) -> dict:
                 "independent seed, with the rule frozen first; the rule as "
                 "written does not depend on the pool it is applied to, so "
                 "re-drawing costs a fetch and not a redesign"),
-        }],
+        },
+                       _wrapper_repair_amendment(repo_root,
+                                                 n_target_persons)],
+        #: Named here, and checked by the freeze against the identities it
+        #: finds, so the list can neither grow silently nor lose an entry
+        #: silently.  A count alone would permit swapping one amendment for
+        #: another.
+        "amendments_expected": [
+            "PHOTO_SELECTION_RULE",
+            "CONFIRM_NEW_TEMPLATES[image_fine_direct]",
+        ],
+        "why_a_second_amendment_is_not_a_second_excuse": (
+            "both were made before any confirmation prediction existed, which "
+            "is the only property that makes an amendment outcome-blind, and "
+            "each is checked for it separately against its own artifacts; the "
+            "second one is stricter than the first, because it amends wording "
+            "that was already sealed and so has to show the seal bound the "
+            "defective bytes and that they have since changed"),
         "retracted_claim": (
             "an earlier revision of this analysis and its commit message "
             "stated the rule was 'sealed BEFORE the fetch was run'. It was "
@@ -3450,7 +3718,11 @@ def main() -> int:
             "entity-macro statistic averages; a builder that chose them would "
             "be choosing the estimand"),
     }
-    report["protocol_amendments"] = protocol_amendments(repo_root)
+    #: The person count is passed rather than re-derived: it is the same 42 the
+    #: portrait exemption and the allocation use, and the second amendment
+    #: multiplies it by the number of defective wrappers to get the 168.
+    report["protocol_amendments"] = protocol_amendments(
+        repo_root, len(portrait_reuse["target_person_ids"]))
 
     # ---- the primary hypothesis test, read off its implementation ----
     report["primary_test"] = primary_test_specification(

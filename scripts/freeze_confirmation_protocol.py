@@ -117,6 +117,7 @@ from power_analysis_confirmation import (  # noqa: E402
     CONFIRM_NEW_WORDING_PROBES_PER_PERSON,
     CONFIRM_RETENTION_NEW_TEMPLATES_PER_ENTITY,
     CONFIRM_RETENTION_ROUTE,
+    CONFIRM_TEMPLATE_MODULE,
     CONFIRM_WORDING_FAMILIES,
     EXPLORATORY_IMAGE_MANIFEST,
     FAMILYWISE_ALPHA,
@@ -913,38 +914,42 @@ def _probe_allocation_refusals(power: dict[str, Any]) -> list[str]:
     return out
 
 
-def _protocol_amendment_refusals(power: dict[str, Any]) -> list[str]:
-    """Refuse to freeze an amendment that does not disclose when it happened.
+def _amendment_identity(what: Any, expected: list[str]) -> str | None:
+    """Which expected amendment an entry is, by the symbol it names.
 
-    The photograph-selection rule was NOT preregistered before the fetch: the
-    repository's own timestamps show the pool was acquired first, and the rule
-    was written once the pool made the nesting defect it replaces measurable.
-    That is defensible -- no model output existed, so nothing about the rule
-    could have been shaped by a result -- but only if the freeze says so.
-    Presenting an amended protocol as a preregistered one is a worse artifact
-    than an honestly amended one, so a freeze that omits the disclosure is
-    refused rather than merely weakened.
+    Matched by substring of the declared identities rather than by position,
+    because position is not an identity: a list reordered, or an entry
+    replaced by a different one, would pass a positional check and silently
+    certify the wrong disclosure.
+    """
+    text = what or ""
+    hits = [e for e in expected if e in text]
+    return hits[0] if len(hits) == 1 else None
+
+
+def _selection_rule_amendment_refusals(a: dict[str, Any]) -> list[str]:
+    """The first amendment: the photograph-selection rule.
+
+    The rule was NOT preregistered before the fetch -- the repository's own
+    timestamps show the pool was acquired first, and the rule was written once
+    the pool made the nesting defect it replaces measurable.  That is
+    defensible, because no model output existed, but only if the freeze says
+    so.
+
+    There is no "does this name the selection rule" check here, and that is not
+    an omission: ``_protocol_amendment_refusals`` routes an amendment to this
+    function only after ``_amendment_identity`` has matched
+    ``PHOTO_SELECTION_RULE`` inside its ``what``, so the check could not fail.
+    A guard that cannot fire reports coverage it does not provide, and the
+    missing-identity case is refused by the dispatcher instead, where it is
+    actually reachable.
     """
     out: list[str] = []
-    block = power.get("protocol_amendments") or {}
-    amendments = block.get("amendments") or []
-    if len(amendments) != 1:
-        out.append(
-            f"the power report discloses {len(amendments)} protocol "
-            "amendments where exactly one is expected (the photograph "
-            "selection rule); an amendment list that can silently grow is "
-            "not a disclosure")
-        return out
-    a = amendments[0]
-    if "PHOTO_SELECTION_RULE" not in (a.get("what") or ""):
-        out.append(
-            f"the disclosed amendment is {a.get('what')!r}, which does not "
-            "name the photograph selection rule it is about")
     if a.get("kind") != "outcome-blind protocol amendment":
         out.append(
-            f"the amendment is labelled {a.get('kind')!r} rather than "
-            "'outcome-blind protocol amendment', which is the only label the "
-            "timestamps support")
+            f"the selection-rule amendment is labelled {a.get('kind')!r} "
+            "rather than 'outcome-blind protocol amendment', which is the "
+            "only label the timestamps support")
     ordering = a.get("ordering") or {}
     for key in ("rule_was_absent_when_the_pool_was_fetched",
                 "rule_was_published_after_the_pool",
@@ -953,7 +958,7 @@ def _protocol_amendment_refusals(power: dict[str, Any]) -> list[str]:
                 "every_ordering_claim_is_measured"):
         if ordering.get(key) is not True:
             out.append(
-                f"the amendment's ordering claim {key!r} is "
+                f"the selection-rule amendment's ordering claim {key!r} is "
                 f"{ordering.get(key)!r}; the amendment is only defensible if "
                 "every one of them holds")
     prior = a.get("prior_freeze") or {}
@@ -969,13 +974,213 @@ def _protocol_amendment_refusals(power: dict[str, Any]) -> list[str]:
     if a.get("confirmation_prediction_files"):
         out.append(
             f"{a.get('confirmation_prediction_files')} confirmation "
-            "prediction file(s) already exist, so the amendment is no longer "
-            "outcome-blind and this freeze cannot claim it is")
+            "prediction file(s) already exist, so the selection-rule "
+            "amendment is no longer outcome-blind and this freeze cannot "
+            "claim it is")
+    return out
+
+
+def _wrapper_repair_amendment_refusals(a: dict[str, Any],
+                                      repo_root: Path) -> list[str]:
+    """The second amendment: the shared image wrapper wordings.
+
+    Stricter than the first, because it amends wording that was already
+    SEALED.  A seal is a hash, so "the defective wording was sealed and has
+    since changed" is checkable rather than assertable.
+
+    The module is hashed HERE rather than read from the report, for the reason
+    ``_primary_test_refusals`` hashes ``paired_ci`` live: a freeze that trusted
+    the report's ``template_file_sha256_now`` would certify a module that
+    changed between the report and the freeze, and the ordering booleans are
+    RE-DERIVED from the two hashes and compared against the recorded ones, so
+    a boolean cannot sit beside values that contradict it.
+
+    It also has to refuse a repair that does not repair.  A bound that passes
+    on the module it ships with proves nothing, so both directions are
+    checked: the bound refuses the retired wordings, and it passes the
+    repaired module.
+    """
+    out: list[str] = []
+    if a.get("kind") != "outcome-blind protocol amendment":
+        out.append(
+            f"the wrapper-repair amendment is labelled {a.get('kind')!r} "
+            "rather than 'outcome-blind protocol amendment', which is the "
+            "only label its artifacts support")
+    prior = a.get("prior_seal") or {}
+    if not prior.get("commit"):
+        out.append(
+            "the wrapper-repair amendment does not name the seal commit it "
+            "amends, so there is nothing to compare the wording against")
+    if prior.get("sealed_the_defective_wording") is not True:
+        out.append(
+            "the wrapper-repair amendment does not record the seal as having "
+            "bound the defective wording, which is the claim that makes this "
+            "an amendment of a sealed protocol rather than an edit")
+    sealed = prior.get("template_file_sha256")
+    if not sealed:
+        out.append(
+            "the wrapper-repair amendment pins no sealed template_file_sha256, "
+            "so 'the wording changed after the seal' cannot be checked")
+    #: Hashed live, and the report's own value checked against it.
+    module = repo_root / CONFIRM_TEMPLATE_MODULE
+    live = sha256_file(module) if module.exists() else None
+    if not module.exists():
+        out.append(
+            f"{CONFIRM_TEMPLATE_MODULE} does not exist, so the repaired "
+            "wording the amendment describes cannot be hashed")
+    else:
+        if a.get("template_file_sha256_now") != live:
+            out.append(
+                f"the power report hashes {CONFIRM_TEMPLATE_MODULE} as "
+                f"{a.get('template_file_sha256_now')} but it is now {live}; "
+                "the module holding the repaired wording changed after the "
+                "analysis that described the repair")
+        if sealed and live == sealed:
+            out.append(
+                f"{CONFIRM_TEMPLATE_MODULE} still hashes to {live}, the value "
+                "the seal bound, so no repair has been made and the amendment "
+                "describes an edit that did not happen")
+    repair = a.get("repair") or {}
+    if repair.get("bound_refuses_the_retired_wordings") is not True:
+        out.append(
+            "the neutrality bound does not refuse the wordings it was written "
+            "for, so it is not evidence that the repair removed anything")
+    if repair.get("bound_passes_the_repaired_module") is not True:
+        out.append(
+            f"the neutrality bound still refuses the repaired module: "
+            f"{repair.get('bound_passes_the_repaired_module_refusals')!r}")
+    if repair.get("probes_behind_any_defective_wrapper") != (
+            repair.get("probes_behind_an_entity_specific_wrapper", 0)
+            + repair.get("probes_behind_a_channel_restricting_wrapper", 0)):
+        out.append(
+            "the wrapper-repair amendment's probe counts do not add up: the "
+            "entity-specific and channel-restricting totals must sum to the "
+            "total behind any defective wrapper")
+    ordering = a.get("ordering") or {}
+    #: Re-derived from the hashes rather than read, then compared.  A recorded
+    #: ``True`` beside two equal hashes is exactly the failure this catches.
+    derived = {
+        "the_seal_bound_the_defective_wording":
+            bool(sealed) and live is not None and live != sealed,
+        "the_repair_was_made_before_any_confirmation_prediction":
+            not a.get("confirmation_prediction_files"),
+        "the_repair_achieves_what_it_states": (
+            repair.get("bound_passes_the_repaired_module") is True
+            and repair.get("bound_refuses_the_retired_wordings") is True),
+        "the_exploratory_result_was_available_and_is_disclosed":
+            bool(a.get("exploratory_prediction_files")),
+    }
+    for key, want in derived.items():
+        if ordering.get(key) is not want:
+            out.append(
+                f"the wrapper-repair amendment records the ordering claim "
+                f"{key!r} as {ordering.get(key)!r} but the artifacts beside it "
+                f"derive {want}; a recorded boolean that disagrees with the "
+                "values it summarizes is a claim, not a measurement")
+    if ordering.get("every_ordering_claim_is_measured") is not all(
+            derived.values()):
+        out.append(
+            "the wrapper-repair amendment's "
+            f"every_ordering_claim_is_measured is "
+            f"{ordering.get('every_ordering_claim_is_measured')!r} but "
+            f"re-deriving its own claims gives {all(derived.values())}")
+    if a.get("confirmation_prediction_files"):
+        out.append(
+            f"{a.get('confirmation_prediction_files')} confirmation "
+            "prediction file(s) already exist, so the wrapper-repair "
+            "amendment is no longer outcome-blind and this freeze cannot "
+            "claim it is")
+    #: The exploratory result WAS available and the amendment has to say so.
+    #: An amendment recorded as outcome-blind without naming which outcomes
+    #: were in hand is a disclosure in name only, and this is the one that is
+    #: easiest to omit because it is the one that weakens the claim.
+    if not a.get("exploratory_prediction_files"):
+        out.append(
+            "the wrapper-repair amendment records no exploratory prediction "
+            "files, so it does not disclose that the exploratory result was "
+            "available when the wording was rewritten; the defect was found in "
+            "the stratum that carried that result, and omitting it would make "
+            "'outcome-blind' mean more than the artifacts support")
+    unchanged = (a.get("what_changed_and_what_did_not") or {}).get(
+        "did_not_change") or []
+    if len(unchanged) < 5:
+        out.append(
+            f"the wrapper-repair amendment lists {len(unchanged)} things it "
+            "did not change; an amendment to a sealed protocol has to "
+            "enumerate what stayed frozen, or 'only the wording changed' is "
+            "an assertion")
+    return out
+
+
+_AMENDMENT_CHECKS = {
+    "PHOTO_SELECTION_RULE":
+        lambda a, repo_root: _selection_rule_amendment_refusals(a),
+    "CONFIRM_NEW_TEMPLATES[image_fine_direct]":
+        _wrapper_repair_amendment_refusals,
+}
+
+
+def _protocol_amendment_refusals(power: dict[str, Any],
+                                repo_root: Path) -> list[str]:
+    """Refuse to freeze an amendment that does not disclose when it happened.
+
+    Presenting an amended protocol as a preregistered one is a worse artifact
+    than an honestly amended one, so a freeze that omits a disclosure is
+    refused rather than merely weakened.
+
+    The set of amendments is checked by IDENTITY against the identities the
+    report itself declares, not by count.  A count refuses a second amendment
+    outright, which was right when there was one and is wrong now that there
+    are two: what has to be true is that every amendment the protocol carries
+    is disclosed, and that no undisclosed one has been added.  Identity
+    checking refuses both a missing and an unexpected entry, and it refuses a
+    duplicate, which a count of two would have accepted.
+    """
+    out: list[str] = []
+    block = power.get("protocol_amendments") or {}
+    amendments = block.get("amendments") or []
+    expected = block.get("amendments_expected") or []
+    if not expected:
+        out.append(
+            "the power report does not declare which amendments it expects, "
+            "so the disclosed list cannot be checked for completeness; an "
+            "amendment list nobody enumerates is not a disclosure")
+        return out
+    if not amendments:
+        out.append(
+            f"the power report declares {len(expected)} expected amendments "
+            "and discloses none")
+        return out
+    found: dict[str, dict[str, Any]] = {}
+    for a in amendments:
+        ident = _amendment_identity(a.get("what"), expected)
+        if ident is None:
+            out.append(
+                f"an amendment is disclosed as {a.get('what')!r}, which names "
+                f"none of the expected amendments {expected} or names more "
+                "than one of them")
+            continue
+        if ident in found:
+            out.append(
+                f"the amendment {ident!r} is disclosed twice, so one of the "
+                "two entries is not the amendment it claims to be")
+            continue
+        found[ident] = a
+    missing = sorted(set(expected) - set(found))
+    if missing:
+        out.append(
+            f"the protocol carries an undisclosed amendment: {missing} "
+            f"is expected but not disclosed, and an amendment that is not "
+            "disclosed is the one kind that cannot be repaired by reading "
+            "the freeze")
+    for ident, a in sorted(found.items()):
+        out.extend(_AMENDMENT_CHECKS[ident](a, repo_root))
     if not (block.get("retracted_claim") or ""):
         out.append(
-            "the report does not retract the earlier claim that the rule was "
-            "sealed before the fetch; leaving a false timeline in the prose "
-            "beside a true one is worse than either alone")
+            "the report does not retract the earlier claim that the "
+            "photograph-selection rule was sealed before the fetch; leaving a "
+            "false timeline in the prose beside a true one is worse than "
+            "either alone")
     return out
 
 
@@ -1082,6 +1287,37 @@ def _stage_3_seal_refusals(power: dict[str, Any], fresh: dict[str, Any]) -> list
     return out
 
 
+def _repo_relative(p: Path | str | None, repo_root: Path) -> str | None:
+    """A repository-relative path, or the original if it is not under the repo.
+
+    Committed provenance that records ``/scratch/<user>/...`` binds the
+    artifact to one machine's filesystem and tells a reader nothing they can
+    check: nobody who clones this repository elsewhere has that directory.
+    Every adapter these checkpoints name lives under ``data/checkpoints``, so
+    the relative form is strictly more portable and gives nothing up.
+
+    Normalizing here cannot change what the freeze VERIFIES, and that is why it
+    is safe to do after the fact: the binding is the contract's per-file
+    hashes and their roll-up, and every comparison below reads
+    ``contract["sha256"]`` and ``contract["files"]``.  The path is a label.
+    The 30 committed exploratory sidecars still record it absolutely, and they
+    still verify, which is the demonstration that it was never load-bearing.
+
+    A path genuinely NOT under the repository is left absolute rather than
+    mangled: a relative path that escapes the repo would be a worse record
+    than an honest absolute one.
+    """
+    if p is None:
+        return None
+    path = Path(p)
+    if not path.is_absolute():
+        return str(path)
+    try:
+        return str(path.relative_to(repo_root))
+    except ValueError:
+        return str(path)
+
+
 def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
     reports = repo_root / "data" / "reports"
     data_dir = repo_root / "data" / f"mllmu_hier_{tag}"
@@ -1138,7 +1374,7 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
     refusals.extend(_photo_selection_refusals(power, repo_root))
     refusals.extend(_portrait_exemption_refusals(power, repo_root))
     refusals.extend(_probe_allocation_refusals(power))
-    refusals.extend(_protocol_amendment_refusals(power))
+    refusals.extend(_protocol_amendment_refusals(power, repo_root))
     #: Computed once here and handed to the refusal check, because the freeze
     #: also WRITES it: the value refused-on and the value bound have to be the
     #: same derivation or the freeze could bind a seal it never checked.
@@ -1204,7 +1440,19 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
     alloc_mix = retention_sample.get(
         "attribute_mix_over_retain_same_probes") or {}
     amendment_block = power.get("protocol_amendments") or {}
-    amendment = (amendment_block.get("amendments") or [{}])[0]
+    #: Looked up BY IDENTITY rather than taken as ``amendments[0]``.  Position
+    #: is not identity: with two amendments disclosed, ``[0]`` silently
+    #: certifies whichever the report happens to list first, and reordering a
+    #: list is the one edit that changes what a freeze means without changing
+    #: anything a reader would notice.
+    amendments_by_identity = {
+        ident: next((a for a in (amendment_block.get("amendments") or [])
+                     if _amendment_identity(a.get("what"), [ident])), {})
+        for ident in (amendment_block.get("amendments_expected") or [])
+    }
+    amendment = amendments_by_identity.get("PHOTO_SELECTION_RULE") or {}
+    wrapper_amendment = amendments_by_identity.get(
+        "CONFIRM_NEW_TEMPLATES[image_fine_direct]") or {}
     #: The allocation rows are bound by hash rather than copied into the
     #: freeze, so the freeze stays readable and the rows stay checkable: a
     #: builder that allocated differently would not match the hash.
@@ -1300,14 +1548,20 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
                    else state)          # reference states are their own id
         adapter_dir = resolve_adapter_dir(ckpt_id, repo_root, tag)
         contract = adapter_contract(adapter_dir)
+        #: The contract's own ``adapter_dir`` is normalized on the way into the
+        #: freeze.  ``adapter_contract`` is shared with the sidecar writer, and
+        #: rewriting it there would leave the 30 committed exploratory sidecars
+        #: recording a form nothing produces any more; the roll-up they are
+        #: verified by does not read the path, so normalizing at the point of
+        #: recording is both sufficient and the smaller change.
+        if contract is not None:
+            contract = dict(contract, adapter_dir=_repo_relative(
+                contract.get("adapter_dir"), repo_root))
         recorded = by_ckpt.get(ckpt_id, {})
         recorded_contract = recorded.get("adapter_contract_sha256")
         entry: dict[str, Any] = {
             "checkpoint_id": ckpt_id,
-            "adapter_dir": (str(adapter_dir.relative_to(repo_root))
-                            if adapter_dir and
-                            adapter_dir.is_relative_to(repo_root)
-                            else str(adapter_dir) if adapter_dir else None),
+            "adapter_dir": _repo_relative(adapter_dir, repo_root),
             "adapter_contract": contract,
             "base_model_revision": recorded.get("base_model_revision"),
             "role": STATE_ROLE.get(state, EXCLUDED_STATES.get(state)),
@@ -1345,7 +1599,8 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
             recipe = dict(cfg.get("recipe") or {})
             entry["recipe"] = recipe
             entry["num_optimizer_steps"] = cfg.get("num_optimizer_steps")
-            entry["init_adapter_dir"] = cfg.get("init_adapter_dir")
+            entry["init_adapter_dir"] = _repo_relative(
+                cfg.get("init_adapter_dir"), repo_root)
             entry["unlearning_groups"] = cfg.get("groups")
             entry["noop"] = cfg.get("noop", False)
             entry["distance_to_mg_on_the_exploratory_split"] = \
@@ -1889,31 +2144,80 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
                 "in sorted order would have asked no salary fact at all, one "
                 "residence fact and six occupation facts."),
         },
-        "protocol_amendment": {
-            "what": amendment.get("what"),
-            "kind": amendment.get("kind"),
-            "prior_freeze": amendment.get("prior_freeze"),
-            "pool_acquired_at_utc": amendment.get("pool_acquired_at_utc"),
-            "amending_freeze": amendment.get("amending_freeze"),
-            "subset_selected_at_utc": amendment.get("subset_selected_at_utc"),
-            "confirmation_prediction_files":
-                amendment.get("confirmation_prediction_files"),
-            "ordering": amendment.get("ordering"),
-            "the_defensible_claim": amendment.get("the_defensible_claim"),
-            "what_was_not_available": amendment.get("what_was_not_available"),
-            "if_literal_pre_fetch_preregistration_is_required":
-                amendment.get(
-                    "if_literal_pre_fetch_preregistration_is_required"),
+        "protocol_amendments": {
+            "amendments_expected":
+                list(amendment_block.get("amendments_expected") or []),
+            "by_identity": {
+                "PHOTO_SELECTION_RULE": {
+                    "what": amendment.get("what"),
+                    "kind": amendment.get("kind"),
+                    "prior_freeze": amendment.get("prior_freeze"),
+                    "pool_acquired_at_utc":
+                        amendment.get("pool_acquired_at_utc"),
+                    "amending_freeze": amendment.get("amending_freeze"),
+                    "subset_selected_at_utc":
+                        amendment.get("subset_selected_at_utc"),
+                    "confirmation_prediction_files":
+                        amendment.get("confirmation_prediction_files"),
+                    "ordering": amendment.get("ordering"),
+                    "the_defensible_claim":
+                        amendment.get("the_defensible_claim"),
+                    "what_was_not_available":
+                        amendment.get("what_was_not_available"),
+                    "if_literal_pre_fetch_preregistration_is_required":
+                        amendment.get(
+                            "if_literal_pre_fetch_preregistration_is_required"),
+                },
+                "CONFIRM_NEW_TEMPLATES[image_fine_direct]": {
+                    "what": wrapper_amendment.get("what"),
+                    "kind": wrapper_amendment.get("kind"),
+                    "why_it_was_needed":
+                        wrapper_amendment.get("why_it_was_needed"),
+                    "how_it_was_found":
+                        wrapper_amendment.get("how_it_was_found"),
+                    "prior_seal": wrapper_amendment.get("prior_seal"),
+                    "template_file_sha256_now":
+                        wrapper_amendment.get("template_file_sha256_now"),
+                    "repair": wrapper_amendment.get("repair"),
+                    "confirmation_prediction_files":
+                        wrapper_amendment.get("confirmation_prediction_files"),
+                    "exploratory_prediction_files":
+                        wrapper_amendment.get("exploratory_prediction_files"),
+                    "ordering": wrapper_amendment.get("ordering"),
+                    "the_defensible_claim":
+                        wrapper_amendment.get("the_defensible_claim"),
+                    "what_changed_and_what_did_not":
+                        wrapper_amendment.get("what_changed_and_what_did_not"),
+                    "what_was_available_when_the_repair_was_written":
+                        wrapper_amendment.get(
+                            "what_was_available_when_the_repair_was_written"),
+                    "what_was_not_available":
+                        wrapper_amendment.get("what_was_not_available"),
+                    "if_a_sealed_protocol_may_not_be_amended_at_all":
+                        wrapper_amendment.get(
+                            "if_a_sealed_protocol_may_not_be_amended_at_all"),
+                },
+            },
             "retracted_claim": amendment_block.get("retracted_claim"),
-            "why_this_is_in_the_freeze": (
+            "why_a_second_amendment_is_not_a_second_excuse":
+                amendment_block.get(
+                    "why_a_second_amendment_is_not_a_second_excuse"),
+            "why_these_are_in_the_freeze": (
                 "A preregistration amended after the fact is still usable, but "
-                "only if it says when. The photograph-selection rule was NOT "
-                "sealed before the fetch, and an earlier revision of this "
-                "repository said it was. The freeze records the ordering as "
-                "measured from artifacts -- two committed freezes, the pool's "
-                "own provenance and the selection report -- and refuses to "
-                "freeze if any of it stops holding, so the disclosure cannot "
-                "quietly become a claim of preregistration."),
+                "only if it says when. Both of these were made before any "
+                "confirmation prediction existed, and each records the "
+                "ordering as measured from artifacts rather than asserted: "
+                "the first from two committed freezes, the pool's own "
+                "provenance and the selection report, the second from the "
+                "sealed template hash and the module's current one. The "
+                "freeze refuses if any of it stops holding, so neither "
+                "disclosure can quietly become a claim of preregistration. "
+                "The second is the stricter of the two, because it amends "
+                "wording that was already sealed and so has to show the seal "
+                "bound the defective bytes and that they have since "
+                "changed -- and it discloses that the EXPLORATORY result was "
+                "in hand, since the defect was found in the stratum that "
+                "carried it."),
         },
         "claims": {
             "primary_family": list(PRIMARY_FAMILY),
@@ -2318,14 +2622,28 @@ def main() -> int:
           f"kept {mix['attributes_this_rule_covers']} of "
           f"{mix['attributes_in_the_population']} attributes; the hash rank "
           f"keeps all {mix['attributes_this_rule_covers']}")
-    am = freeze["protocol_amendment"]
-    print(f"  amendment    {am['kind']}: {am['what']}")
+    ams = freeze["protocol_amendments"]["by_identity"]
+    am = ams["PHOTO_SELECTION_RULE"]
+    print(f"  amendment 1  {am['kind']}: {am['what']}")
     print(f"               pool {str(am['pool_acquired_at_utc'])[:19]}Z, "
           f"rule {str((am['amending_freeze'] or {}).get('frozen_at_utc'))[:19]}"
           f"Z, subset {str(am['subset_selected_at_utc'])[:19]}Z, "
           f"{am['confirmation_prediction_files']} prediction file(s) -> "
           f"outcome-blind: "
           f"{(am['ordering'] or {}).get('every_ordering_claim_is_measured')}")
+    wam = ams["CONFIRM_NEW_TEMPLATES[image_fine_direct]"]
+    rep = wam["repair"] or {}
+    print(f"  amendment 2  {wam['kind']}: {wam['what']}")
+    print(f"               sealed at "
+          f"{(wam['prior_seal'] or {}).get('commit')} "
+          f"{str((wam['prior_seal'] or {}).get('frozen_at_utc'))[:19]}Z over "
+          f"{str((wam['prior_seal'] or {}).get('template_file_sha256'))[:12]}, "
+          f"now {str(wam['template_file_sha256_now'])[:12]}; "
+          f"{rep.get('probes_behind_any_defective_wrapper')} person-stratum "
+          f"probes affected, {wam['confirmation_prediction_files']} "
+          f"confirmation and {wam['exploratory_prediction_files']} "
+          f"exploratory prediction file(s) -> outcome-blind: "
+          f"{(wam['ordering'] or {}).get('every_ordering_claim_is_measured')}")
     return 0
 
 

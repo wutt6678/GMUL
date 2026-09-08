@@ -60,6 +60,7 @@ use only ``{name}`` and ``{attr}``; the three image families may use
 
 from __future__ import annotations
 
+import re
 from collections import Counter
 from typing import Any
 
@@ -94,17 +95,33 @@ CONFIRM_RETENTION_FAMILIES = (
 #: species), three for the retention families (the frozen 3 probes per
 #: entity).
 CONFIRM_NEW_TEMPLATES = {
+    #: ENTITY-NEUTRAL, and neutral about what the image can show.  The first
+    #: revision of these eight wrappers was written for the taxonomic stratum
+    #: and then applied to the MLLMU persons as well, because all twelve image
+    #: templates are shared by both strata.  Four of them named a taxon, a
+    #: rank or an organism outright, and two more instructed the model to use
+    #: "only what is visible here" -- which is not answerable for a salary, a
+    #: birthplace or a birth date, none of which is a visible property of a
+    #: portrait.  On the person stratum that put 168 of its 504 probes, exactly
+    #: one third, behind a wrapper that contradicted the question it wrapped,
+    #: and the person stratum is the one that carried the exploratory effect.
+    #: See protocol_amendments in the power report.
+    #:
+    #: What a wrapper may say is therefore bounded: it may refer to the image
+    #: and to the act of answering, and it may ask for precision or for the
+    #: requested specificity.  It may not name a kind of entity, a level of a
+    #: taxonomy, or a channel of evidence the question does not use.
     "image_fine_direct": (
-        "Using only what is visible here, answer: {question}",
-        "{question} Reply with the most specific taxon the image supports.",
-        "Consider this photograph and nothing else. {question}",
-        "{question} Name the finest level you can justify from the image.",
+        "Review the attached image, then answer precisely: {question}",
+        "{question} Respond with the exact answer.",
+        "Considering the attached image, answer: {question}",
+        "{question} Give the most specific answer requested.",
     ),
     "image_target_direct": (
-        "With reference to this image only: {question}",
-        "{question} State the rank you are naming.",
-        "Based on the organism pictured, respond: {question}",
-        "{question} Answer at the level the question asks for.",
+        "Use the attached image when answering: {question}",
+        "{question} Respond at the requested level of specificity.",
+        "Regarding the subject shown, answer: {question}",
+        "{question} Give only the requested category or range.",
     ),
     # Entity-neutral on purpose: see the module docstring.
     "multimodal_image_text": (
@@ -140,6 +157,142 @@ CONFIRM_TEMPLATE_IDS = tuple(
     f"{fam}:{idx}"
     for fam in (*CONFIRM_IMAGE_FAMILIES, *CONFIRM_RETENTION_FAMILIES)
     for idx in CONFIRM_TEMPLATE_INDICES[fam])
+
+
+#: --------------------------------------------------------------------------
+#: The bound on what a SHARED wrapper may say.
+#:
+#: Every template in ``CONFIRM_IMAGE_FAMILIES`` renders on BOTH strata: the 42
+#: MLLMU persons and the 30 iNaturalist species.  Nothing in this module says
+#: which, so a wrapper written with one stratum in mind is silently applied to
+#: the other, and the only way to see that is to render it and read the result.
+#:
+#: The first revision of the eight ``image_fine_direct`` /
+#: ``image_target_direct`` wrappers was written for the taxonomic stratum.  On
+#: the person stratum that put 168 of its 504 probes -- exactly one third --
+#: behind a wrapper that contradicted the question it wrapped, and the person
+#: stratum is the one that carried the exploratory effect.  Two classes of
+#: wording are therefore refused, and they are refused SEPARATELY because they
+#: are different defects:
+#:
+#: 1. ``ENTITY_SPECIFIC_VOCABULARY`` -- naming a kind of entity or a level of a
+#:    taxonomy asserts something about the subject.  "Reply with the most
+#:    specific taxon" has no answer for a salary; "State the rank you are
+#:    naming" has none for a birth date.
+#: 2. ``EVIDENCE_RESTRICTING_PHRASES`` -- limiting the model to what the image
+#:    shows.  This is NOT domain vocabulary, so a vocabulary-only repair would
+#:    have kept it, and it is just as wrong: none of the seven person
+#:    attributes in this split (salary, birthplace, date of birth, residence,
+#:    occupation, education, height) is a visible property of a portrait.
+#:
+#: What a wrapper MAY do is refer to the image and to the act of answering, and
+#: ask for precision or for the requested specificity.
+#: --------------------------------------------------------------------------
+ENTITY_SPECIFIC_VOCABULARY = (
+    "taxon", "taxa", "taxonomic", "taxonomy", "rank", "organism", "species",
+    "person", "people", "human", "animal", "plant", "bird", "insect",
+    "portrait", "face",
+    #: The taxonomic idiom for "most specific taxon", banned as a bigram.
+    #: ``level`` alone is NOT banned and must not be: the sanctioned neutral
+    #: wordings say "the requested level of specificity" and "the level the
+    #: question asks for", so banning the word would refuse the repair.
+    "finest level",
+)
+
+EVIDENCE_RESTRICTING_PHRASES = (
+    "only what is visible", "nothing else", "from the image",
+    "the image supports", "justify from", "visible", "as seen",
+    #: Added by running this bound over ``RETIRED_WRAPPER_WORDINGS``: the first
+    #: seven phrases caught six of the eight retired wordings and let
+    #: "With reference to this image only" through, because it restricts the
+    #: evidence channel without using the word "visible" or the phrase
+    #: "nothing else".  A bound validated only against the module it ships
+    #: with keeps exactly the holes nobody happened to test.
+    "image only", "only the image", "image alone", "based on the image",
+)
+
+#: The eight wordings this bound retires, quoted verbatim from the sealed
+#: module so the record says what was removed and not merely that something
+#: was.  Reproduce with
+#:   git show 18fd88d:src/granunlearn/evaluation/confirmation_templates.py
+#:
+#: SEVEN of the eight leak, in two distinct classes:
+#:
+#:   * FOUR name a taxon, a rank, an organism or a taxonomic level --
+#:     ``image_fine_direct:4`` and ``:6``, ``image_target_direct:4`` and
+#:     ``:5``.  At 42 persons apiece these are the 4 x 42 = 168 probes, one
+#:     third of the 504-probe person stratum, that the review counted.
+#:   * THREE restrict the model to the visual channel --
+#:     ``image_fine_direct:3`` and ``:5``, ``image_target_direct:3``.  A
+#:     further 3 x 42 = 126 person-stratum probes, which no vocabulary list
+#:     catches, because none of the seven person attributes in this split is a
+#:     visible property of a portrait.
+#:
+#: The eighth, ``image_target_direct:6`` "Answer at the level the question
+#: asks for", is already neutral and was replaced for uniformity rather than
+#: because it leaked -- all eight are rewritten together so that no wrapper in
+#: a family is distinguishable from its siblings by vintage.
+RETIRED_WRAPPER_WORDINGS = {
+    "image_fine_direct": (
+        "Using only what is visible here, answer: {question}",
+        "{question} Reply with the most specific taxon the image supports.",
+        "Consider this photograph and nothing else. {question}",
+        "{question} Name the finest level you can justify from the image.",
+    ),
+    "image_target_direct": (
+        "With reference to this image only: {question}",
+        "{question} State the rank you are naming.",
+        "Based on the organism pictured, respond: {question}",
+        "{question} Answer at the level the question asks for.",
+    ),
+}
+
+#: The fields ``_make_query`` substitutes.  Blanking all of them leaves the
+#: wrapper's OWN words, which is the only part this module is responsible for:
+#: the question comes from the fingerprinted exploratory generator and
+#: legitimately says "the person shown in this image", and ``{name}`` is an
+#: entity the wrapper was given.
+TEMPLATE_FIELDS = ("question", "name", "attr", "answer", "distractor")
+
+
+def wrapper_fragments(text: str) -> list[str]:
+    """The wrapper's own wording, with every substituted field blanked out."""
+    sentinel = "\x00"
+    for field in TEMPLATE_FIELDS:
+        text = text.replace("{" + field + "}", sentinel)
+    return [p.strip() for p in text.split(sentinel) if p.strip()]
+
+
+def offending_wrapper_vocabulary(fragments: list[str]) -> list[str]:
+    """Which banned wordings appear in a wrapper's own fragments.
+
+    Word-bounded on purpose: "Give the most specific answer requested" must
+    not be refused because ``specific`` contains the letters of ``species``.
+    """
+    joined = " ".join(fragments).lower()
+    hits = [w for w in ENTITY_SPECIFIC_VOCABULARY
+            if re.search(r"\b" + re.escape(w) + r"\b", joined)]
+    hits += [p for p in EVIDENCE_RESTRICTING_PHRASES if p in joined]
+    return hits
+
+
+def wrapper_neutrality_refusals() -> list[str]:
+    """Refuse a confirmation wrapper that is not neutral about its stratum.
+
+    Checked over every family in ``CONFIRM_NEW_TEMPLATES``, not only the three
+    image ones: the retention wrappers are shared across strata too, and a
+    bound that covers only the families that have already leaked is a bound
+    that waits for the next one.
+    """
+    out: list[str] = []
+    for fam, texts in CONFIRM_NEW_TEMPLATES.items():
+        for idx, text in zip(CONFIRM_TEMPLATE_INDICES[fam], texts):
+            hits = offending_wrapper_vocabulary(wrapper_fragments(text))
+            if hits:
+                out.append(
+                    f"{fam}:{idx} is shared by the person and the species "
+                    f"stratum but its own wording says {hits}: {text!r}")
+    return out
 
 
 def _check_fields(fam: str, texts: tuple[str, ...]) -> list[str]:
@@ -216,6 +369,11 @@ def validate_confirmation_templates(exploratory_ids: set[str],
     if len(set(texts)) != len(texts):
         dupes = sorted({t for t in texts if texts.count(t) > 1})
         out.append(f"confirmation templates are not distinct texts: {dupes}")
+    #: The stratum-neutrality bound.  Enforced HERE, in the validator the
+    #: builder calls, and not only in a test: a test that fails after a bad
+    #: wrapper is committed still leaves a built split on disk, while a
+    #: refusal here means the leaking split is never written at all.
+    out.extend(wrapper_neutrality_refusals())
     return out
 
 

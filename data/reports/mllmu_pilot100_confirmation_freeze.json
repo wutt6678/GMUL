@@ -40,7 +40,7 @@
   "checkpoints": {
     "B0": {
       "adapter_contract": {
-        "adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100_unlearn/B0/adapters",
+        "adapter_dir": "data/checkpoints/mllmu_pilot100_unlearn/B0/adapters",
         "files": {
           "adapter_config.json": "acfd3f78b297d873e50193c618c34d059a0be665bcee785617f9abe98333ce7e",
           "adapter_model.safetensors": "4ee78bd1bb5cf6a721b99f8225a964a89a74bf2a533804acb294acd8beacfa24"
@@ -52,7 +52,7 @@
       "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
       "checkpoint_id": "B0",
       "distance_to_mg_on_the_exploratory_split": 0.1021,
-      "init_adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MF/adapters",
+      "init_adapter_dir": "data/checkpoints/mllmu_pilot100/MF/adapters",
       "noop": true,
       "num_optimizer_steps": 0,
       "recipe": {
@@ -85,7 +85,7 @@
     },
     "B3": {
       "adapter_contract": {
-        "adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100_unlearn/B3_lam0.5_lr2e-05_ep5/adapters",
+        "adapter_dir": "data/checkpoints/mllmu_pilot100_unlearn/B3_lam0.5_lr2e-05_ep5/adapters",
         "files": {
           "adapter_config.json": "a10f59a9fd0efe9ce9191724fa39ebfcca4775c5e134d4275a46f127ad3a00ec",
           "adapter_model.safetensors": "67cc961c89fe7fd522d3e0104ff3416da6c7ba2c32a81ba1db2854f3dcb863a6"
@@ -98,7 +98,7 @@
       "checkpoint_id": "B3_lam0.5_lr2e-05_ep5",
       "distance_to_mg_on_the_exploratory_split": 0.041043,
       "granularity_lambda": 0.5,
-      "init_adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MF/adapters",
+      "init_adapter_dir": "data/checkpoints/mllmu_pilot100/MF/adapters",
       "noop": null,
       "num_optimizer_steps": 355,
       "recipe": {
@@ -150,7 +150,7 @@
     },
     "MG": {
       "adapter_contract": {
-        "adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MG/adapters",
+        "adapter_dir": "data/checkpoints/mllmu_pilot100/MG/adapters",
         "files": {
           "adapter_config.json": "903d9f9eaec8ee740aa77dce433870e1bcdad2a0ab7afb9930570e2b769fbfa2",
           "adapter_model.safetensors": "358a557817c5845cf44e3b0953eacb099104841e59ac263f460cb91d1271a893"
@@ -211,9 +211,9 @@
   "code": {
     "analysis_scripts_sha256": {
       "scripts/evaluate_pilot100_final.py": "508354306410a0e60917ff267470f07a8ff5cc0fe3f11e54a960513f2949e14f",
-      "scripts/freeze_confirmation_protocol.py": "b9aa7130b709df6fc138d2bd47408c874e4ea52881dc7629c359bfbb21fb0c62",
-      "scripts/power_analysis_confirmation.py": "6b1ba007ea654db1517eb212b0f46846246feaa2c15fc294bb64b26e6fafa4d4",
-      "scripts/select_confirmation_photographs.py": "30d33ce91a2aa1b15522d0b1eba3f00720d9c63b56ae805bf4cb3a97481f1bde",
+      "scripts/freeze_confirmation_protocol.py": "3e883f783cc993a269912ec57c6916c71f692cd9ada00d1a9aa31b3da943c54b",
+      "scripts/power_analysis_confirmation.py": "56f8fd8427f336aafe754f2c3a2b07c102deb010f37205368e76bc86bc020df3",
+      "scripts/select_confirmation_photographs.py": "0bc22d79c7c4c56e6f72bd96a7fe24a96fe93012e13631fc39939db134ba989d",
       "scripts/select_unlearning_checkpoints.py": "ecacee99a9dd52cba7c419081e11a628f931fc40e8300b45b489946e6da25f2d"
     },
     "fingerprinted_module_list": [
@@ -256,7 +256,7 @@
       "confirmation_photograph_sha256_manifest": {
         "images_pinned": 402,
         "licence_and_attribution_are_recorded_by": "data/reports/mllmu_confirm100_photograph_selection.json",
-        "licence_and_attribution_sha256": "c4ee282865124abf36cbb9e4d53924e5eef4e1640952fee7fccf5383bad3cd19",
+        "licence_and_attribution_sha256": "a075ffff543d40aadef44ec2b790eea732159aea5b13134d6cc91f1e762fc2f3",
         "manifest": "data/mllmu_hier_confirm100/image_manifest.json",
         "manifest_file_sha256": "8a00e5ec252f4a62fb48a60b718218ae8b60ba6cfb6fed1116574eb7bc489dce",
         "manifest_rollup_sha256": "5821b5b0002db1cd02a1dcd515df2711fa0b323056995135b0b8dba4c3892623",
@@ -297,7 +297,7 @@
         ],
         "new_template_ids_sha256": "8f0aabbbff9f5870f808e9834755d8bfb34c4f0466f6be9b9d487106123fa1d4",
         "template_file": "src/granunlearn/evaluation/confirmation_templates.py",
-        "template_file_sha256": "57f844b3d4df0b5416f037828ce2c7e702d4e265af34a77289ed33daeebd787d",
+        "template_file_sha256": "876b6a12764f072dae9c959a12d43ac3a50bb7740bbdca180d49e930c062b11f",
         "why_the_FILE_is_hashed_and_not_only_the_ids": "CONFIRM_IMAGE_FAMILIES in that file supplies the f in A_e[(j + f) mod |A_e|], so reordering it changes which target association every probe asks while all 18 ids stay identical; only the file's bytes can pin the order"
       },
       "sealed": true,
@@ -793,7 +793,7 @@
     "version": "pilot100_v2"
   },
   "freeze": "iteration_11c_confirmation_protocol",
-  "frozen_at_utc": "2026-09-07T13:02:48+00:00",
+  "frozen_at_utc": "2026-09-08T04:13:58+00:00",
   "generation": {
     "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
     "batch_layout": "ONE uniform layout for every scored state: all confirmation queries in a single pass, same batch_size and image_batch_size for B3, B0 and MG. Batched greedy decoding is not bit-stable across batch compositions, so two layouts would put decoding noise inside the paired difference itself.",
@@ -811,7 +811,7 @@
     "module_defaults_match": true,
     "source": "the single generation_config shared by all 30 committed 11R predictions"
   },
-  "git_commit": "5b7424b896de5f6b86d66e191c80ae37a52de9d3",
+  "git_commit": "18fd88db5141b5d960b2997383418ab456866abd",
   "git_dirty": true,
   "inputs_bound": {
     "final_evaluation": {
@@ -820,7 +820,7 @@
     },
     "power_analysis": {
       "path": "data/reports/mllmu_pilot100_confirmation_power.json",
-      "sha256": "1395a5097b90cfeef97e876a9ba67966ba4a9ceb06a6a2325d8b04a5b7e1c4f8"
+      "sha256": "e305ad7df2c96801c7c216dd36a391c161dd8203d6db87d84dc936a9c22b4433"
     },
     "prediction_manifest": {
       "path": "data/reports/mllmu_pilot100_prediction_manifest.json",
@@ -1370,45 +1370,139 @@
     "why_balance_is_reported_per_size": "a single flag quantified over the sizes that divide the probe count is vacuously true when none of them does, and that is the case where the allocation is uneven; the per-size shapes below are the measurement and the two lists are its verdict",
     "why_this_is_in_the_freeze": "Both rules decide which FACT a probe asks, and the primary statistic averages over ENTITIES, so an entity whose probes all ask one association reports that association's fate as the entity's. Leaving either to the stage-3 builder would leave the estimand to it. The retention rule also carries the measurement that rejects the obvious alternative: association ids sort alphabetically by attribute, so three in sorted order would have asked no salary fact at all, one residence fact and six occupation facts."
   },
-  "protocol_amendment": {
-    "amending_freeze": {
-      "commit": "977319a",
-      "contained_the_rule": true,
-      "frozen_at_utc": "2026-09-07T07:06:58+00:00"
-    },
-    "confirmation_prediction_files": 0,
-    "if_literal_pre_fetch_preregistration_is_required": "this pool has to be discarded and a fresh one drawn under an independent seed, with the rule frozen first; the rule as written does not depend on the pool it is applied to, so re-drawing costs a fetch and not a redesign",
-    "kind": "outcome-blind protocol amendment",
-    "ordering": {
-      "every_ordering_claim_is_measured": true,
-      "measured_from": [
-        "git show 726288c:data/reports/mllmu_pilot100_confirmation_freeze.json -> frozen_at_utc",
-        "data/raw/inaturalist/confirm_v1/PROVENANCE.json -> retrieved_at",
-        "git show 977319a:data/reports/mllmu_pilot100_confirmation_freeze.json -> frozen_at_utc",
-        "data/reports/mllmu_confirm100_photograph_selection.json -> generated_utc",
-        "data/mllmu_hier_confirm100/predictions/ -> absent"
-      ],
-      "rule_was_absent_when_the_pool_was_fetched": true,
-      "rule_was_published_after_the_pool": true,
-      "rule_was_published_before_any_model_output": true,
-      "rule_was_published_before_the_subset_was_selected": true
-    },
-    "pool_acquired_at_utc": "2026-09-07T05:42:36.393947+00:00",
-    "prior_freeze": {
-      "commit": "726288c",
-      "contained_the_rule": false,
-      "frozen_at_utc": "2026-09-07T05:07:46+00:00"
+  "protocol_amendments": {
+    "amendments_expected": [
+      "PHOTO_SELECTION_RULE",
+      "CONFIRM_NEW_TEMPLATES[image_fine_direct]"
+    ],
+    "by_identity": {
+      "CONFIRM_NEW_TEMPLATES[image_fine_direct]": {
+        "confirmation_prediction_files": 0,
+        "exploratory_prediction_files": 60,
+        "how_it_was_found": "by rendering the shared templates against a person association and reading the result, not by reading the module: nothing in the module says which stratum a template will be applied to, and each wording reads sensibly against the species it was written for",
+        "if_a_sealed_protocol_may_not_be_amended_at_all": "then the confirmation cannot be run on this split: the sealed wording asks a person-stratum model to name a taxon in reply to a salary question on one third of its probes, and scoring that measures compliance with a contradiction rather than granularity retention. The alternative is to discard the sealed split and re-derive it under neutral wording frozen first, which costs a rebuild and not a redesign, because nothing the repair touched is an input to the allocation",
+        "kind": "outcome-blind protocol amendment",
+        "ordering": {
+          "every_ordering_claim_is_measured": true,
+          "measured_from": [
+            "git show 18fd88d:data/reports/mllmu_pilot100_confirmation_freeze.json -> frozen_at_utc",
+            "git show 18fd88d:data/reports/mllmu_pilot100_confirmation_power.json -> confirmation_size.frozen_at_stage_3_before_any_scoring.confirmation_template_ids_and_file_sha256.template_file_sha256",
+            "git show 18fd88d:src/granunlearn/evaluation/confirmation_templates.py | sha256sum, which equals that sealed hash",
+            "sha256sum src/granunlearn/evaluation/confirmation_templates.py -> the value now",
+            "data/mllmu_hier_confirm100/predictions/ -> absent",
+            "data/mllmu_hier_pilot100/predictions/ -> present"
+          ],
+          "the_exploratory_result_was_available_and_is_disclosed": true,
+          "the_repair_achieves_what_it_states": true,
+          "the_repair_was_made_before_any_confirmation_prediction": true,
+          "the_seal_bound_the_defective_wording": true
+        },
+        "prior_seal": {
+          "commit": "18fd88d",
+          "frozen_at_utc": "2026-09-07T13:02:48+00:00",
+          "sealed_the_defective_wording": true,
+          "template_file_sha256": "57f844b3d4df0b5416f037828ce2c7e702d4e265af34a77289ed33daeebd787d"
+        },
+        "repair": {
+          "bound_passes_the_repaired_module": true,
+          "bound_passes_the_repaired_module_refusals": [],
+          "bound_refuses_the_retired_wordings": true,
+          "fraction_of_the_person_stratum": "168/504 = one third behind an entity-specific wrapper, which is the count the review identified",
+          "person_stratum_image_probes": 504,
+          "probes_behind_a_channel_restricting_wrapper": 126,
+          "probes_behind_an_entity_specific_wrapper": 168,
+          "probes_behind_any_defective_wrapper": 294,
+          "retired_wordings": {
+            "already_neutral": [
+              "image_target_direct:6"
+            ],
+            "channel_restricting_only": [
+              "image_fine_direct:3",
+              "image_fine_direct:5",
+              "image_target_direct:3"
+            ],
+            "entity_specific": [
+              "image_fine_direct:4",
+              "image_fine_direct:6",
+              "image_target_direct:4",
+              "image_target_direct:5"
+            ],
+            "refused_by_the_bound": 7,
+            "retired_total": 8,
+            "why_the_eighth_was_replaced_anyway": "the one wording the bound passes was already neutral; it is rewritten with the other seven so that no wrapper in a family is distinguishable from its siblings by vintage, which would otherwise let a reader infer which stratum a probe was written for from its template index alone"
+          },
+          "where_the_bound_is_enforced": "confirmation_templates.wrapper_neutrality_refusals, called by validate_confirmation_templates, which the builder calls before writing queries.parquet -- so a leaking wrapper stops the build rather than being reported after it"
+        },
+        "template_file_sha256_now": "876b6a12764f072dae9c959a12d43ac3a50bb7740bbdca180d49e930c062b11f",
+        "the_defensible_claim": "the wording was sealed, then found defective by rendering it against the other stratum, then replaced and the split rebuilt -- all before a single confirmation prediction existed, so no confirmation result could have shaped the repair. The EXPLORATORY result was in hand and is not claimed away: the defect was found in the stratum that carried the exploratory effect. What that licenses is a repair of wording that contradicted its own question; what it does not license is any change to the estimand, the entity set, the allocation, the primary test or the decision rule, and none of those moved",
+        "what": "the shared image wrapper wordings (CONFIRM_NEW_TEMPLATES[image_fine_direct] and [image_target_direct])",
+        "what_changed_and_what_did_not": {
+          "changed": [
+            "the eight image_fine_direct and image_target_direct wrapper texts",
+            "the template_file_sha256 the stage-3 seal binds",
+            "the rendered prompt string of every image-route probe"
+          ],
+          "did_not_change": [
+            "the 1,209 probe count and the per-family allocation",
+            "the 72 target entities and the 42 person / 30 species split",
+            "the association rotation A_e[(j + f) mod |A_e|]",
+            "the 360 selected photographs or their sha256 values",
+            "the TGA and FILR estimands, the sign-flip test, the Holm family, the bootstrap seeds or any decision threshold",
+            "template IDS: the eight keep their indices, so the rotation and the id-set hash are untouched"
+          ]
+        },
+        "what_was_available_when_the_repair_was_written": [
+          "every rendered confirmation prompt, since the split was built",
+          "the exploratory predictions and the exploratory effect they show"
+        ],
+        "what_was_not_available": [
+          "any B3, B0 or M_G prediction on a confirmation query",
+          "any confirmation TGA, FILR, p-value or interval"
+        ],
+        "why_it_was_needed": "all twelve image-family templates are shared by both strata, and these eight were written for the taxonomic one; rendered on the MLLMU persons they asked for a taxon, a rank, an organism or the finest taxonomic level in reply to a question about a salary or a birth decade, and three more told the model to answer only from what the image shows when no person attribute in this split is a visible property of a portrait"
+      },
+      "PHOTO_SELECTION_RULE": {
+        "amending_freeze": {
+          "commit": "977319a",
+          "contained_the_rule": true,
+          "frozen_at_utc": "2026-09-07T07:06:58+00:00"
+        },
+        "confirmation_prediction_files": 0,
+        "if_literal_pre_fetch_preregistration_is_required": "this pool has to be discarded and a fresh one drawn under an independent seed, with the rule frozen first; the rule as written does not depend on the pool it is applied to, so re-drawing costs a fetch and not a redesign",
+        "kind": "outcome-blind protocol amendment",
+        "ordering": {
+          "every_ordering_claim_is_measured": true,
+          "measured_from": [
+            "git show 726288c:data/reports/mllmu_pilot100_confirmation_freeze.json -> frozen_at_utc",
+            "data/raw/inaturalist/confirm_v1/PROVENANCE.json -> retrieved_at",
+            "git show 977319a:data/reports/mllmu_pilot100_confirmation_freeze.json -> frozen_at_utc",
+            "data/reports/mllmu_confirm100_photograph_selection.json -> generated_utc",
+            "data/mllmu_hier_confirm100/predictions/ -> absent"
+          ],
+          "rule_was_absent_when_the_pool_was_fetched": true,
+          "rule_was_published_after_the_pool": true,
+          "rule_was_published_before_any_model_output": true,
+          "rule_was_published_before_the_subset_was_selected": true
+        },
+        "pool_acquired_at_utc": "2026-09-07T05:42:36.393947+00:00",
+        "prior_freeze": {
+          "commit": "726288c",
+          "contained_the_rule": false,
+          "frozen_at_utc": "2026-09-07T05:07:46+00:00"
+        },
+        "subset_selected_at_utc": "2026-09-07T11:17:31.360125+00:00",
+        "the_defensible_claim": "the rule was fixed after acquisition exposed the nesting defect, but before subset selection and before any model scoring; no model output existed that could have informed it, so retaining this pool is sound PROVIDED this amendment is disclosed as outcome-blind rather than presented as pre-fetch preregistration",
+        "what": "the photograph selection rule (PHOTO_SELECTION_RULE)",
+        "what_was_not_available": [
+          "which 12 of the 24 any species would keep",
+          "any confirmation query, template or prompt",
+          "any B3, B0 or M_G prediction"
+        ]
+      }
     },
     "retracted_claim": "an earlier revision of this analysis and its commit message stated the rule was 'sealed BEFORE the fetch was run'. It was not: the timestamps above are the repository's own and they say the opposite. The claim is retracted here rather than left in the prose, because a preregistration whose timeline is misstated is worse than one that is honestly amended",
-    "subset_selected_at_utc": "2026-09-07T11:17:31.360125+00:00",
-    "the_defensible_claim": "the rule was fixed after acquisition exposed the nesting defect, but before subset selection and before any model scoring; no model output existed that could have informed it, so retaining this pool is sound PROVIDED this amendment is disclosed as outcome-blind rather than presented as pre-fetch preregistration",
-    "what": "the photograph selection rule (PHOTO_SELECTION_RULE)",
-    "what_was_not_available": [
-      "which 12 of the 24 any species would keep",
-      "any confirmation query, template or prompt",
-      "any B3, B0 or M_G prediction"
-    ],
-    "why_this_is_in_the_freeze": "A preregistration amended after the fact is still usable, but only if it says when. The photograph-selection rule was NOT sealed before the fetch, and an earlier revision of this repository said it was. The freeze records the ordering as measured from artifacts -- two committed freezes, the pool's own provenance and the selection report -- and refuses to freeze if any of it stops holding, so the disclosure cannot quietly become a claim of preregistration."
+    "why_a_second_amendment_is_not_a_second_excuse": "both were made before any confirmation prediction existed, which is the only property that makes an amendment outcome-blind, and each is checked for it separately against its own artifacts; the second one is stricter than the first, because it amends wording that was already sealed and so has to show the seal bound the defective bytes and that they have since changed",
+    "why_these_are_in_the_freeze": "A preregistration amended after the fact is still usable, but only if it says when. Both of these were made before any confirmation prediction existed, and each records the ordering as measured from artifacts rather than asserted: the first from two committed freezes, the pool's own provenance and the selection report, the second from the sealed template hash and the module's current one. The freeze refuses if any of it stops holding, so neither disclosure can quietly become a claim of preregistration. The second is the stricter of the two, because it amends wording that was already sealed and so has to show the seal bound the defective bytes and that they have since changed -- and it discloses that the EXPLORATORY result was in hand, since the defect was found in the stratum that carried it."
   },
   "provenance_contract_version": 2,
   "purpose": "Bind every parameter the confirmatory claims depend on before any confirmation probe is built or scored, so that a result produced afterwards cannot be explained by a parameter that moved beforehand.",

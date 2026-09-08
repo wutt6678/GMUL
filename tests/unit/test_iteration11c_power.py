@@ -21,6 +21,7 @@ import hashlib
 import json
 import math
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -90,6 +91,33 @@ def _load() -> dict:
     if not POWER_REPORT.exists():
         pytest.skip(f"power report not present: {POWER_REPORT}")
     return json.loads(POWER_REPORT.read_text())
+
+
+def _amendment(ident: str, block: dict | None = None) -> dict:
+    """The disclosed amendment naming ``ident``, found BY IDENTITY.
+
+    ``block`` is the ``protocol_amendments`` block itself, so a freshly
+    computed one can be passed without wrapping it back into a report shape.
+
+    Two amendments are disclosed now, so ``amendments[0]`` would test whichever
+    the report happens to list first.  Finding each by the symbol it names is
+    what the freeze's own refusal does, and a test that indexes positionally
+    would keep passing after a reorder that changes what the freeze certifies.
+    """
+    block = block if block is not None else _load()["protocol_amendments"]
+    return next(a for a in block["amendments"]
+                if ident in (a.get("what") or ""))
+
+
+def _n_target_persons(power: dict | None = None) -> int:
+    """The 42 the allocation uses, read from the report rather than retyped.
+
+    ``protocol_amendments`` multiplies this by the number of defective
+    wrappers to get the affected-probe count, so passing a literal here would
+    let the test agree with a wrong number.
+    """
+    return len((power or _load())["portrait_reuse_exemption"]
+               ["target_person_ids"])
 
 
 # ── the sizing primitives ─────────────────────────────────────────
@@ -2320,11 +2348,12 @@ class TestTheAmendmentDisclosesWhenItHappened:
         if not prov.exists():
             pytest.skip(f"pool provenance not present: {prov}")
         retrieved = json.loads(prov.read_text())["retrieved_at"]
-        block = protocol_amendments(REPO_ROOT)
-        assert block["amendments"][0]["pool_acquired_at_utc"] == retrieved
+        block = protocol_amendments(REPO_ROOT, _n_target_persons())
+        assert _amendment("PHOTO_SELECTION_RULE", block)[
+            "pool_acquired_at_utc"] == retrieved
 
     def test_every_ordering_claim_is_computed_and_holds(self):
-        ordering = _load()["protocol_amendments"]["amendments"][0]["ordering"]
+        ordering = _amendment("PHOTO_SELECTION_RULE")["ordering"]
         for key in ("rule_was_absent_when_the_pool_was_fetched",
                     "rule_was_published_after_the_pool",
                     "rule_was_published_before_the_subset_was_selected",
@@ -2340,7 +2369,7 @@ class TestTheAmendmentDisclosesWhenItHappened:
         assert any("predictions/" in c for c in ordering["measured_from"])
 
     def test_the_amendment_says_it_is_an_amendment(self):
-        a = _load()["protocol_amendments"]["amendments"][0]
+        a = _amendment("PHOTO_SELECTION_RULE")
         assert a["kind"] == "outcome-blind protocol amendment"
         assert "PHOTO_SELECTION_RULE" in a["what"]
         assert a["prior_freeze"]["contained_the_rule"] is False
@@ -2354,7 +2383,7 @@ class TestTheAmendmentDisclosesWhenItHappened:
         prov = REPO_ROOT / "data/raw/inaturalist/confirm_v1/PROVENANCE.json"
         if not prov.exists():
             pytest.skip(f"pool provenance not present: {prov}")
-        a = _load()["protocol_amendments"]["amendments"][0]
+        a = _amendment("PHOTO_SELECTION_RULE")
         before = a["prior_freeze"]["frozen_at_utc"]
         pool = a["pool_acquired_at_utc"]
         after = a["amending_freeze"]["frozen_at_utc"]
@@ -2385,8 +2414,142 @@ class TestTheAmendmentDisclosesWhenItHappened:
         assert "OUTCOME-BLIND PROTOCOL AMENDMENT" in src
 
     def test_what_a_literal_preregistration_would_cost_is_stated(self):
-        a = _load()["protocol_amendments"]["amendments"][0]
+        a = _amendment("PHOTO_SELECTION_RULE")
         cost = a["if_literal_pre_fetch_preregistration_is_required"]
         assert "fresh" in cost and "independent seed" in cost
         assert a["what_was_not_available"]
         assert any("B3" in x for x in a["what_was_not_available"])
+
+
+class TestTheSecondAmendmentDisclosesTheWrapperRepair:
+    """Iteration 11C-4R.
+
+    The eight ``image_fine_direct`` / ``image_target_direct`` wrappers were
+    written for the taxonomic stratum and are shared by both strata, so on the
+    MLLMU persons they asked for a taxon, a rank, an organism or a taxonomic
+    level in reply to a question about a salary or a birth decade.  Four of
+    them did that, at 42 persons apiece: 168 of the 504 person-stratum image
+    probes, exactly one third, and the person stratum is the one that carried
+    the exploratory effect.
+
+    This is a HARDER amendment to defend than the first, because the defective
+    wording was already sealed.  So its ordering is measured from the seal's
+    own hash: the seal bound bytes that no longer hash to the same value, and
+    no confirmation prediction exists in between.
+    """
+
+    IDENT = "CONFIRM_NEW_TEMPLATES[image_fine_direct]"
+
+    def test_the_report_discloses_exactly_two_and_names_both(self):
+        block = _load()["protocol_amendments"]
+        assert len(block["amendments"]) == 2
+        assert len(block["amendments_expected"]) == 2
+        for ident in block["amendments_expected"]:
+            assert any(ident in (a.get("what") or "")
+                       for a in block["amendments"]), ident
+
+    def test_every_ordering_claim_is_computed_and_holds(self):
+        ordering = _amendment(self.IDENT)["ordering"]
+        for key in ("the_seal_bound_the_defective_wording",
+                    "the_repair_was_made_before_any_confirmation_prediction",
+                    "the_repair_achieves_what_it_states",
+                    "the_exploratory_result_was_available_and_is_disclosed",
+                    "every_ordering_claim_is_measured"):
+            assert ordering[key] is True, key
+        #: The seal hash is pinned as a constant, so the recipe that reproduces
+        #: it has to be recorded beside it or the constant is unauditable.
+        assert any("git show" in c for c in ordering["measured_from"])
+        assert any("sha256sum" in c for c in ordering["measured_from"])
+
+    def test_the_sealed_hash_really_is_the_defective_modules_hash(self):
+        """The whole ordering rests on this, so it is checked against the
+        committed artifact and not against the constant that describes it.
+
+        ``git show <seal>:<module>`` must hash to the value the seal recorded.
+        If it did not, the seal would bind some other bytes and "the wording
+        changed after the seal" would be a claim about nothing.
+        """
+        a = _amendment(self.IDENT)
+        seal = a["prior_seal"]
+        #: Built as one value rather than as adjacent literals inside the argv
+        #: list, so the path cannot be split by a formatter and so the check
+        #: below names the same string the command does.
+        module_at_seal = (f"{seal['commit']}:src/granunlearn/evaluation/"
+                          "confirmation_templates.py")
+        out = subprocess.run(["git", "show", module_at_seal],
+                             capture_output=True, cwd=REPO_ROOT, check=False)
+        if out.returncode != 0:
+            pytest.skip(f"cannot read {seal['commit']} from git history")
+        assert hashlib.sha256(out.stdout).hexdigest() == \
+            seal["template_file_sha256"], \
+            "the seal does not bind the bytes of the module it names"
+        #: And the module has since changed, which is the repair.
+        assert a["template_file_sha256_now"] != seal["template_file_sha256"]
+
+    def test_the_probe_counts_are_derived_and_match_the_review(self):
+        """168 of 504 is the finding; the report has to reproduce it from the
+        person count and the wrapper census rather than restate it."""
+        a = _amendment(self.IDENT)
+        rep = a["repair"]
+        n = _n_target_persons()
+        assert n == 42, n
+        assert rep["person_stratum_image_probes"] == 504
+        assert len(rep["retired_wordings"]["entity_specific"]) == 4
+        assert rep["probes_behind_an_entity_specific_wrapper"] == 168 == 4 * n
+        assert rep["probes_behind_a_channel_restricting_wrapper"] == 126
+        assert rep["probes_behind_any_defective_wrapper"] == 294
+        assert "168/504" in rep["fraction_of_the_person_stratum"]
+        #: The four the review named, by template id.
+        assert set(rep["retired_wordings"]["entity_specific"]) == {
+            "image_fine_direct:4", "image_fine_direct:6",
+            "image_target_direct:4", "image_target_direct:5"}
+
+    def test_the_bound_is_shown_to_have_teeth(self):
+        """A bound that refuses nothing passes every check that imports it, so
+        the report records that it refuses seven of the eight wordings it
+        replaced -- and that the eighth was already neutral, which is why the
+        count is seven and not eight."""
+        rep = _amendment(self.IDENT)["repair"]
+        assert rep["bound_refuses_the_retired_wordings"] is True
+        assert rep["bound_passes_the_repaired_module"] is True
+        assert rep["bound_passes_the_repaired_module_refusals"] == []
+        retired = rep["retired_wordings"]
+        assert retired["retired_total"] == 8
+        assert retired["refused_by_the_bound"] == 7
+        assert retired["already_neutral"] == ["image_target_direct:6"]
+        assert "already neutral" in retired["why_the_eighth_was_replaced_anyway"]
+
+    def test_it_discloses_that_the_exploratory_result_was_in_hand(self):
+        """The claim is outcome-blind as to the CONFIRMATION, and the report
+        says so rather than letting "outcome-blind" imply more.
+
+        This is the disclosure most worth omitting, because it is the one that
+        weakens the claim: the defect was found by reading prompts from the
+        stratum that carried the exploratory effect, so that effect was known.
+        """
+        a = _amendment(self.IDENT)
+        assert a["confirmation_prediction_files"] == 0
+        assert a["exploratory_prediction_files"] > 0
+        assert "EXPLORATORY result was in hand" in a["the_defensible_claim"]
+        assert any("exploratory" in x.lower()
+                   for x in a["what_was_available_when_the_repair_was_written"])
+        assert any("B3" in x for x in a["what_was_not_available"])
+
+    def test_it_states_what_the_repair_did_not_touch(self):
+        """An amendment to a sealed protocol has to enumerate what stayed
+        frozen, or "only the wording changed" is an assertion."""
+        a = _amendment(self.IDENT)
+        chg = a["what_changed_and_what_did_not"]
+        assert len(chg["did_not_change"]) >= 5
+        joined = " ".join(chg["did_not_change"])
+        #: The things that would change the estimand if they had moved.
+        for term in ("1,209", "72 target entities", "rotation", "360",
+                     "TGA", "Holm", "template IDS"):
+            assert term in joined, term
+        assert any("prompt" in c for c in chg["changed"])
+
+    def test_what_it_would_cost_to_refuse_all_amendment_is_stated(self):
+        cost = _amendment(self.IDENT)[
+            "if_a_sealed_protocol_may_not_be_amended_at_all"]
+        assert "cannot be run on this split" in cost
+        assert "contradiction" in cost

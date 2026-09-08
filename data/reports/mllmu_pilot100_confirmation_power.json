@@ -30,7 +30,7 @@
       "confirmation_photograph_sha256_manifest": {
         "images_pinned": 402,
         "licence_and_attribution_are_recorded_by": "data/reports/mllmu_confirm100_photograph_selection.json",
-        "licence_and_attribution_sha256": "c4ee282865124abf36cbb9e4d53924e5eef4e1640952fee7fccf5383bad3cd19",
+        "licence_and_attribution_sha256": "a075ffff543d40aadef44ec2b790eea732159aea5b13134d6cc91f1e762fc2f3",
         "manifest": "data/mllmu_hier_confirm100/image_manifest.json",
         "manifest_file_sha256": "8a00e5ec252f4a62fb48a60b718218ae8b60ba6cfb6fed1116574eb7bc489dce",
         "manifest_rollup_sha256": "5821b5b0002db1cd02a1dcd515df2711fa0b323056995135b0b8dba4c3892623",
@@ -71,7 +71,7 @@
         ],
         "new_template_ids_sha256": "8f0aabbbff9f5870f808e9834755d8bfb34c4f0466f6be9b9d487106123fa1d4",
         "template_file": "src/granunlearn/evaluation/confirmation_templates.py",
-        "template_file_sha256": "57f844b3d4df0b5416f037828ce2c7e702d4e265af34a77289ed33daeebd787d",
+        "template_file_sha256": "876b6a12764f072dae9c959a12d43ac3a50bb7740bbdca180d49e930c062b11f",
         "why_the_FILE_is_hashed_and_not_only_the_ids": "CONFIRM_IMAGE_FAMILIES in that file supplies the f in A_e[(j + f) mod |A_e|], so reordering it changes which target association every probe asks while all 18 ids stay identical; only the file's bytes can pin the order"
       },
       "sealed": true,
@@ -2238,7 +2238,7 @@
       }
     }
   },
-  "generated_utc": "2026-09-07T12:57:47+00:00",
+  "generated_utc": "2026-09-07T15:38:12+00:00",
   "holm_primary_family": {
     "critical_value_z": 1.959964,
     "familywise_alpha": 0.05,
@@ -10582,9 +10582,100 @@
           "any B3, B0 or M_G prediction"
         ],
         "why_it_was_needed": "the 11C-2 justification for novelty - that drawing 24 and taking 12 makes the second 12 new BY CONSTRUCTION - is false, and the fetched pool is what made that measurable; without a stated rule, 'which 12 of these 24' would have been decided after seeing the pool"
+      },
+      {
+        "confirmation_dataset_dir": "data/mllmu_hier_confirm100",
+        "confirmation_prediction_files": 0,
+        "exploratory_prediction_files": 60,
+        "how_it_was_found": "by rendering the shared templates against a person association and reading the result, not by reading the module: nothing in the module says which stratum a template will be applied to, and each wording reads sensibly against the species it was written for",
+        "if_a_sealed_protocol_may_not_be_amended_at_all": "then the confirmation cannot be run on this split: the sealed wording asks a person-stratum model to name a taxon in reply to a salary question on one third of its probes, and scoring that measures compliance with a contradiction rather than granularity retention. The alternative is to discard the sealed split and re-derive it under neutral wording frozen first, which costs a rebuild and not a redesign, because nothing the repair touched is an input to the allocation",
+        "kind": "outcome-blind protocol amendment",
+        "ordering": {
+          "every_ordering_claim_is_measured": true,
+          "measured_from": [
+            "git show 18fd88d:data/reports/mllmu_pilot100_confirmation_freeze.json -> frozen_at_utc",
+            "git show 18fd88d:data/reports/mllmu_pilot100_confirmation_power.json -> confirmation_size.frozen_at_stage_3_before_any_scoring.confirmation_template_ids_and_file_sha256.template_file_sha256",
+            "git show 18fd88d:src/granunlearn/evaluation/confirmation_templates.py | sha256sum, which equals that sealed hash",
+            "sha256sum src/granunlearn/evaluation/confirmation_templates.py -> the value now",
+            "data/mllmu_hier_confirm100/predictions/ -> absent",
+            "data/mllmu_hier_pilot100/predictions/ -> present"
+          ],
+          "the_exploratory_result_was_available_and_is_disclosed": true,
+          "the_repair_achieves_what_it_states": true,
+          "the_repair_was_made_before_any_confirmation_prediction": true,
+          "the_seal_bound_the_defective_wording": true
+        },
+        "prior_seal": {
+          "commit": "18fd88d",
+          "frozen_at_utc": "2026-09-07T13:02:48+00:00",
+          "sealed_the_defective_wording": true,
+          "template_file_sha256": "57f844b3d4df0b5416f037828ce2c7e702d4e265af34a77289ed33daeebd787d"
+        },
+        "repair": {
+          "bound_passes_the_repaired_module": true,
+          "bound_passes_the_repaired_module_refusals": [],
+          "bound_refuses_the_retired_wordings": true,
+          "fraction_of_the_person_stratum": "168/504 = one third behind an entity-specific wrapper, which is the count the review identified",
+          "person_stratum_image_probes": 504,
+          "probes_behind_a_channel_restricting_wrapper": 126,
+          "probes_behind_an_entity_specific_wrapper": 168,
+          "probes_behind_any_defective_wrapper": 294,
+          "retired_wordings": {
+            "already_neutral": [
+              "image_target_direct:6"
+            ],
+            "channel_restricting_only": [
+              "image_fine_direct:3",
+              "image_fine_direct:5",
+              "image_target_direct:3"
+            ],
+            "entity_specific": [
+              "image_fine_direct:4",
+              "image_fine_direct:6",
+              "image_target_direct:4",
+              "image_target_direct:5"
+            ],
+            "refused_by_the_bound": 7,
+            "retired_total": 8,
+            "why_the_eighth_was_replaced_anyway": "the one wording the bound passes was already neutral; it is rewritten with the other seven so that no wrapper in a family is distinguishable from its siblings by vintage, which would otherwise let a reader infer which stratum a probe was written for from its template index alone"
+          },
+          "where_the_bound_is_enforced": "confirmation_templates.wrapper_neutrality_refusals, called by validate_confirmation_templates, which the builder calls before writing queries.parquet -- so a leaking wrapper stops the build rather than being reported after it"
+        },
+        "template_file_sha256_now": "876b6a12764f072dae9c959a12d43ac3a50bb7740bbdca180d49e930c062b11f",
+        "the_defensible_claim": "the wording was sealed, then found defective by rendering it against the other stratum, then replaced and the split rebuilt -- all before a single confirmation prediction existed, so no confirmation result could have shaped the repair. The EXPLORATORY result was in hand and is not claimed away: the defect was found in the stratum that carried the exploratory effect. What that licenses is a repair of wording that contradicted its own question; what it does not license is any change to the estimand, the entity set, the allocation, the primary test or the decision rule, and none of those moved",
+        "what": "the shared image wrapper wordings (CONFIRM_NEW_TEMPLATES[image_fine_direct] and [image_target_direct])",
+        "what_changed_and_what_did_not": {
+          "changed": [
+            "the eight image_fine_direct and image_target_direct wrapper texts",
+            "the template_file_sha256 the stage-3 seal binds",
+            "the rendered prompt string of every image-route probe"
+          ],
+          "did_not_change": [
+            "the 1,209 probe count and the per-family allocation",
+            "the 72 target entities and the 42 person / 30 species split",
+            "the association rotation A_e[(j + f) mod |A_e|]",
+            "the 360 selected photographs or their sha256 values",
+            "the TGA and FILR estimands, the sign-flip test, the Holm family, the bootstrap seeds or any decision threshold",
+            "template IDS: the eight keep their indices, so the rotation and the id-set hash are untouched"
+          ]
+        },
+        "what_was_available_when_the_repair_was_written": [
+          "every rendered confirmation prompt, since the split was built",
+          "the exploratory predictions and the exploratory effect they show"
+        ],
+        "what_was_not_available": [
+          "any B3, B0 or M_G prediction on a confirmation query",
+          "any confirmation TGA, FILR, p-value or interval"
+        ],
+        "why_it_was_needed": "all twelve image-family templates are shared by both strata, and these eight were written for the taxonomic one; rendered on the MLLMU persons they asked for a taxon, a rank, an organism or the finest taxonomic level in reply to a question about a salary or a birth decade, and three more told the model to answer only from what the image shows when no person attribute in this split is a visible property of a portrait"
       }
     ],
-    "retracted_claim": "an earlier revision of this analysis and its commit message stated the rule was 'sealed BEFORE the fetch was run'. It was not: the timestamps above are the repository's own and they say the opposite. The claim is retracted here rather than left in the prose, because a preregistration whose timeline is misstated is worse than one that is honestly amended"
+    "amendments_expected": [
+      "PHOTO_SELECTION_RULE",
+      "CONFIRM_NEW_TEMPLATES[image_fine_direct]"
+    ],
+    "retracted_claim": "an earlier revision of this analysis and its commit message stated the rule was 'sealed BEFORE the fetch was run'. It was not: the timestamps above are the repository's own and they say the opposite. The claim is retracted here rather than left in the prose, because a preregistration whose timeline is misstated is worse than one that is honestly amended",
+    "why_a_second_amendment_is_not_a_second_excuse": "both were made before any confirmation prediction existed, which is the only property that makes an amendment outcome-blind, and each is checked for it separately against its own artifacts; the second one is stricter than the first, because it amends wording that was already sealed and so has to show the seal bound the defective bytes and that they have since changed"
   },
   "retention_claim_decision": {
     "binding_argument": "The batch-layout noise floor on the retain metrics is 0.0556, measured by scoring ONE checkpoint under two batch layouts, and it already exceeds the declared 0.05 margin. That bound does not depend on any cluster count, so it holds before precision is even considered; precision at each claim's own ceiling is the second and weaker of the two.",
