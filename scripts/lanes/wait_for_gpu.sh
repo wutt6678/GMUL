@@ -10,8 +10,12 @@
 # both big enough and unclaimed.  Poll interval is POLL seconds
 # (default 1); claims are atomic (mkdir) and live in
 # outputs/gpu_locks/<idx>/ (gitignored); the lock is released when the
-# command exits.  A lane killed with SIGKILL leaves a stale lock — clear
-# it by hand (rmdir outputs/gpu_locks/<idx>) before relaunching.
+# command exits.  A lane killed with SIGKILL, or a reboot, leaves the
+# directory behind: a lock whose recorded pid is no longer running is
+# reclaimed below rather than obeyed, because the documented recovery
+# for an interrupted chain is "re-run it" and a lock that outlived its
+# holder would make the re-run poll a free GPU forever.  A lock whose
+# pid IS running is never stolen, however long this lane waits.
 #
 # Retries: Qwen3.5-9B in bf16 needs ~22 GiB of its own, and a co-tenant
 # can allocate more AFTER we claim (this happened: claimed at 22.7 GiB
@@ -53,6 +57,21 @@ while true; do
     idx=$((idx + 1))
     [ -n "${free:-}" ] || continue
     [ "$free" -ge "$threshold" ] || continue
+    # Reclaim a lock whose holder is gone.  Only a lock that NAMES a pid is a
+    # candidate: between another lane's mkdir and its `echo $$` the directory
+    # exists with no pid file, and treating that window as stale would let two
+    # lanes onto one device.  /proc is read rather than `kill -0` because kill
+    # fails with EPERM on a live process owned by another user, which would read
+    # as "dead" and steal a held lock.  A recycled pid keeps us waiting, which
+    # is the safe direction.
+    if [ -d "$LOCKDIR/$idx" ]; then
+      holder="$(cat "$LOCKDIR/$idx/pid" 2>/dev/null)"
+      if [ -n "$holder" ] && [ ! -d "/proc/$holder" ]; then
+        echo "$(date -Is) reclaiming a stale lock on GPU $idx (pid $holder is not running)" >> "$LOG"
+        rm -f "$LOCKDIR/$idx/pid"
+        rmdir "$LOCKDIR/$idx" 2>/dev/null
+      fi
+    fi
     if mkdir "$LOCKDIR/$idx" 2>/dev/null; then
       echo $$ > "$LOCKDIR/$idx/pid"
       attempt=$((attempt + 1))

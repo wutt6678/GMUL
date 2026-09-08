@@ -92,6 +92,15 @@ data/raw/inaturalist/confirm_v1/*
 # which exploratory validator errors were tolerated and why, and that the four
 # measurable sealed invariants held BEFORE anything was written.
 !data/reports/mllmu_confirm100_split_report.json
+# 11C stage 5: the confirmation RESULT.  Negated for the same reason every
+# other stage report above is: data/reports/* is ignored, so without this line
+# the one artifact the whole sealed protocol exists to produce - the primary
+# claims, their intervals and the Holm verdict - would be written by
+# scripts/lanes/confirm100_11c5_chain.sh and then silently skipped by a plain
+# `git add -A`, leaving the result only on the machine that scored it.  It is
+# committed AFTER stage 5 runs; until then its absence from the repository is
+# itself the record that the confirmation has not been scored.
+!data/reports/mllmu_confirm100_final_analysis.json
 # Frozen sha256s for every image the dataset references; binds the photographs
 # the predictions were actually generated over.
 !data/mllmu_hier_pilot100/image_manifest.json

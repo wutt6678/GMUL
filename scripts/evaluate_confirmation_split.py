@@ -3,10 +3,60 @@
     python scripts/evaluate_confirmation_split.py --device cuda:0
     python scripts/evaluate_confirmation_split.py --device cuda:0 --state B3
     python scripts/evaluate_confirmation_split.py --verify-only
+    python scripts/evaluate_confirmation_split.py --list-outstanding
 
 Scores exactly the three frozen states — B3, B0 and MG — over all 1,209
 confirmation queries, under the one uniform generation configuration the
 freeze binds, writing a provenance sidecar beside each parquet.
+
+Four modes, four different scopes
+---------------------------------
+``--state X`` generates X, verifies X, and exits on X's own merits.  It says
+nothing about the other two states.  That is what makes sharding the three
+passes across GPUs work: a lane that finishes its state has SUCCEEDED.  An
+earlier version fell through to the global completeness check, so whichever
+lane finished first exited nonzero merely because the other two were still
+running, and a chain that records a failed lane stops before its own gate even
+when that gate would have passed.
+
+``--verify-only`` is the global gate: all three states, reported at once, and
+it is what ``analyze_confirmation_split.py`` re-checks before assembling.
+
+``--list-outstanding`` prints one line per state that does not currently
+VERIFY and exits 0.  The lane uses it to decide what to run, so "outstanding"
+means "fails verification" and not "has no filename": a state whose parquet
+exists but whose sidecar or generation-order record is stale is regenerated
+rather than skipped and then refused by the gate with no step that would ever
+rewrite it.  stdout is the data channel in this mode and the logger is silenced
+into stderr, because the lane iterates over what it reads.
+
+The preflight, run in EVERY mode
+--------------------------------
+Before any state is generated, reused or verified, four things are checked
+against the bytes on disk rather than trusted from the freeze's record of them:
+
+* every hash in ``code.analysis_scripts_sha256``, plus the separately pinned
+  ``primary_test.implementation.sha256`` for ``paired_ci.py`` — the module that
+  implements the sign-flip test, the paired CI and the Holm step-down, and is
+  deliberately outside ``CODE_FINGERPRINT_MODULES``.  A pin that is recorded but
+  never compared describes the protocol instead of enforcing it.
+* ``verify_image_manifest`` over the 402 pinned photographs, so a swapped or
+  truncated file is refused.
+* PER-QUERY image resolution, because ``ReferenceStateGenerator._render_prompt``
+  silently drops an image it cannot resolve and generates TEXT-ONLY: an
+  image-route probe rendered without its photograph is still decoded, still
+  scored and still sealed with a provenance-valid sidecar, and would be
+  reported as visual evidence having measured a text probe.  That module is in
+  ``CODE_FINGERPRINT_MODULES``, so editing it would invalidate all 30 committed
+  exploratory sidecars; the gap is closed in front of it instead.
+* the base-model revision.  The freeze pins ``c202236…`` and the weights are
+  loaded from a snapshot resolved AT that revision, not through the repo id —
+  ``from_pretrained(model_id)`` resolves via the MUTABLE
+  ``~/.cache/huggingface/hub/models--*/refs/main``.  A moved ref is refused
+  rather than worked around, because ``PredictionFingerprint.build`` records the
+  LIVE ref, so the sidecar would bind a base model that is not the frozen one
+  and ``verify_sidecar`` — comparing against an expectation read from the same
+  moved ref — would not notice.
 
 Why this is not ``evaluate_pilot100_final.py`` pointed at another directory
 ---------------------------------------------------------------------------
@@ -63,6 +113,13 @@ adapter bytes, dataset version and artifact hashes, generation configuration
 and code fingerprint is reused; anything else is regenerated.  That is what
 makes an interrupted pass resumable on a shared box without re-spending GPU
 hours, and it is a verified decision rather than a filename match.
+
+The generation-order record is part of that verification and is checked inside
+:func:`verify_state`, not only at assembly.  Checking it later left the reuse
+path able to accept a parquet generated over a different query order, and
+batched greedy decoding is not bit-stable across batch compositions — so the
+three states could have been compared across two layouts while every sidecar
+verified and nothing refused.
 """
 
 from __future__ import annotations
@@ -70,6 +127,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -77,9 +135,13 @@ from granunlearn.config import _find_repo_root
 from granunlearn.evaluation.prediction_provenance import (
     PredictionFingerprint,
     adapter_contract,
+    base_model_revision,
     dataset_version,
+    referenced_image_paths,
+    resolve_image_path,
     sha256_file,
     validate_prediction_coverage,
+    verify_image_manifest,
     verify_sidecar,
     write_sidecar,
 )
@@ -337,6 +399,245 @@ def predictions_path(repo_root: Path, state: str) -> Path:
         f"predictions_{state}.parquet"
 
 
+def generation_order_path(repo_root: Path, state: str) -> Path:
+    """The record of which query order a state was generated over.
+
+    Its own function because three places now need the same spelling — the
+    writer, :func:`verify_state` and the lane — and a path built slightly
+    differently in one of them is a record nobody reads.
+    """
+    return predictions_path(repo_root, state).parent / \
+        f"predictions_{state}.generation_order.json"
+
+
+def frozen_base_model_revision(freeze: dict[str, Any]) -> str:
+    """The base-model revision the protocol pins, cross-checked in the freeze.
+
+    The freeze records it four times — once under ``generation`` and once per
+    scored checkpoint — because it is a property of the base weights every
+    state shares.  All four are compared rather than one trusted: a freeze
+    whose checkpoints disagree with its own generation block is describing two
+    different base models, and picking either silently would be a choice this
+    script is not entitled to make.
+    """
+    want = (freeze.get("generation") or {}).get("base_model_revision")
+    if not want:
+        raise SystemExit(
+            "REFUSED — the freeze's generation block records no "
+            "base_model_revision, so there is no pinned base model to load and "
+            "this run would take whatever the local cache resolves to")
+    checkpoints = freeze.get("checkpoints") or {}
+    disagree = {st: (entry or {}).get("base_model_revision")
+                for st, entry in checkpoints.items()
+                if (entry or {}).get("base_model_revision") != want}
+    if disagree:
+        raise SystemExit(
+            f"REFUSED — the freeze pins base_model_revision {want} under "
+            f"generation but these checkpoints record something else: "
+            f"{disagree}. Every state is the same base model plus an adapter, "
+            "so a disagreement means the freeze describes two base models and "
+            "the comparison between states would not be between adapters.")
+    return want
+
+
+def pinned_model_source(model_id: str, revision: str) -> str:
+    """A model source that IS the pinned revision, not a ref that can move.
+
+    ``ReferenceStateGenerator`` calls ``from_pretrained(model_id)`` with no
+    ``revision``, so handing it the repo id resolves through
+    ``~/.cache/huggingface/hub/models--<id>/refs/main`` — a MUTABLE pointer.
+    Resolving the pinned snapshot to a directory first means the bytes loaded
+    are the pinned commit no matter where ``refs/main`` points afterwards,
+    which is the same reasoning ``salmu.adapter.locate_repo_pinned`` uses.
+
+    The live ref is compared to the pin as well, and a mismatch refuses rather
+    than merely loading the right bytes.  ``PredictionFingerprint.build``
+    records ``base_model_revision(model_id)``, which reads that same live ref,
+    so a moved ref would write a sidecar binding a revision that is not the
+    frozen one — and because ``verify_sidecar`` compares the sidecar against an
+    expectation built from the same live ref, that sidecar would verify.  A
+    check whose two sides are read from the same mutable source is not a check.
+    """
+    live = base_model_revision(model_id)
+    if live is None:
+        raise SystemExit(
+            f"REFUSED — no local HF cache ref for {model_id}, so the revision "
+            f"that would be recorded in the sidecar is unresolvable and the "
+            f"freeze's pin {revision} cannot be compared against anything")
+    if live != revision:
+        raise SystemExit(
+            f"REFUSED — the local HF cache ref for {model_id} points at "
+            f"{live} but the freeze pins {revision}. Loading the pinned "
+            "snapshot would still be correct, but the sidecar records the LIVE "
+            "ref, so it would bind a base model that is not the frozen one — "
+            "and verify_sidecar compares it against an expectation read from "
+            "the same moved ref, so it would not notice. Restore the ref to "
+            "the pinned revision, or re-freeze over the new one; do not score "
+            "across the difference.")
+    try:
+        from huggingface_hub import snapshot_download
+    except ImportError as exc:
+        raise SystemExit(
+            f"REFUSED — huggingface_hub is not importable ({exc}), so the "
+            f"pinned revision {revision} of {model_id} cannot be resolved to a "
+            "snapshot and the base model cannot be pinned") from exc
+    try:
+        #: ``local_files_only``: a confirmation run must not depend on the
+        #: network, and must not silently substitute a freshly downloaded
+        #: snapshot for the one the protocol was frozen over.
+        snapshot = Path(snapshot_download(
+            repo_id=model_id, revision=revision, local_files_only=True))
+    except Exception as exc:
+        raise SystemExit(
+            f"REFUSED — no local snapshot of {model_id} at the pinned revision "
+            f"{revision}: {exc}. The pinned bytes have to be present before "
+            "scoring; downloading them during the run would make the base "
+            "model a moving input") from exc
+    if not snapshot.is_dir():
+        raise SystemExit(
+            f"REFUSED — the pinned snapshot of {model_id}@{revision} resolved "
+            f"to {snapshot}, which is not a directory")
+    return str(snapshot)
+
+
+def verify_confirmation_images(repo_root: Path, queries: list[QueryRecord],
+                               by_assoc: dict) -> list[str]:
+    """Every way the photographs this run would render are not the frozen ones.
+
+    Two checks, because they catch different failures:
+
+    * ``verify_image_manifest`` re-hashes the 402 pinned photographs against
+      ``image_manifest.json``, which is what catches a swapped or truncated
+      file — the mutation the manifest's own hash cannot see.
+    * a PER-QUERY resolution check, because ``ReferenceStateGenerator`` drops
+      an image it cannot resolve and generates TEXT-ONLY with no warning:
+      ``_render_prompt`` appends ``{"type": "image"}`` only inside ``if
+      p.exists()``, and only when the query's ``image_ids`` match one of ITS
+      OWN association's images.  An image-route probe rendered without its
+      image is still decoded, still scored, still sealed with a
+      provenance-valid sidecar — and is then reported as image evidence when
+      it measured a text probe.
+
+    The second check lives here rather than in ``reference_eval.py`` because
+    that module is in ``CODE_FINGERPRINT_MODULES``: editing it would change the
+    code fingerprint inside all 30 committed exploratory sidecars and refuse
+    their reuse.  The gap is closed in front of the generator instead.
+    """
+    data_dir = repo_root / CONFIRM_DATASET_DIR
+    problems = [f"image manifest: {p}"
+                for p in verify_image_manifest(data_dir, repo_root)]
+    #: Which routes must carry an image.  Derived from the queries themselves
+    #: rather than hardcoded, so a route this script has not seen is reported
+    #: as unclassifiable instead of being silently treated as text.
+    image_routes = {"image_to_text", "image_text_to_text"}
+    text_routes = {"text_to_text"}
+    for q in queries:
+        if q.route in image_routes and not q.image_ids:
+            problems.append(
+                f"{q.query_id}: route {q.route} is an image route but the "
+                "query names no image_ids, so the generator would render it "
+                "text-only and it would be reported as image evidence")
+            continue
+        if q.route in text_routes and q.image_ids:
+            problems.append(
+                f"{q.query_id}: route {q.route} is a text route but the query "
+                f"names image_ids {sorted(q.image_ids)}")
+            continue
+        if q.route not in image_routes | text_routes:
+            problems.append(
+                f"{q.query_id}: route {q.route!r} is neither a known image "
+                "route nor a known text route, so whether it must resolve an "
+                "image cannot be determined")
+            continue
+        if not q.image_ids:
+            continue
+        assoc = by_assoc.get(q.association_id)
+        if assoc is None:
+            problems.append(
+                f"{q.query_id}: names association {q.association_id}, which is "
+                "absent from associations.parquet")
+            continue
+        ref = next((i for i in assoc.images if i.image_id in q.image_ids), None)
+        if ref is None:
+            problems.append(
+                f"{q.query_id}: image_ids {sorted(q.image_ids)} match none of "
+                f"the {len(assoc.images)} images on its own association "
+                f"{q.association_id}, so _render_prompt would find no img_ref "
+                "and generate text-only")
+            continue
+        if resolve_image_path(ref.path, data_dir, repo_root) is None:
+            problems.append(
+                f"{q.query_id}: image {ref.path} is referenced but absent on "
+                "disk, so _render_prompt would skip the image and generate "
+                "text-only")
+    return problems
+
+
+def verify_frozen_code(repo_root: Path, freeze: dict[str, Any]) -> list[str]:
+    """Every code hash the freeze pins, compared against the bytes on disk NOW.
+
+    The freeze binds two sets and this checks both:
+
+    * ``code.analysis_scripts_sha256`` — the seven scripts that turn scores
+      into claims.  Recording them without checking them is a description of
+      the protocol rather than an enforcement of it: sealed-split invariant 7
+      says a failed primary claim is reported as failed and nothing downstream
+      re-tunes on it, and that holds only if the code producing the verdict
+      cannot change unnoticed between the freeze and the analysis.
+    * ``primary_test.implementation.sha256`` — ``paired_ci.py``, pinned
+      SEPARATELY because it is not in ``CODE_FINGERPRINT_MODULES`` (adding it
+      would invalidate the 30 committed exploratory sidecars).  It implements
+      the sign-flip test, the paired CI and the Holm step-down, so it is the
+      one module the primary claims depend on that the fingerprint does not
+      already cover.
+
+    Returns the problems rather than raising so both scripts can report all of
+    them at once and fold them into their own refusal lists.
+    """
+    problems: list[str] = []
+    bound = (freeze.get("code") or {}).get("analysis_scripts_sha256") or {}
+    if not bound:
+        problems.append(
+            "the freeze binds no analysis_scripts_sha256, so the code that "
+            "turns scores into claims is unpinned")
+    for rel, want in sorted(bound.items()):
+        path = repo_root / rel
+        if not path.exists():
+            problems.append(f"{rel}: bound by the freeze but absent from the "
+                            "repository")
+            continue
+        got = sha256_file(path)
+        if got != want:
+            problems.append(
+                f"{rel}: the freeze binds {want} but the file is now {got} — "
+                "the code that produces the confirmation verdict has changed "
+                "since the protocol was frozen, so re-freeze before scoring "
+                "rather than scoring under a protocol the repository no "
+                "longer matches")
+    impl = ((freeze.get("primary_test") or {}).get("implementation") or {})
+    rel, want = impl.get("module"), impl.get("sha256")
+    if not rel or not want:
+        problems.append(
+            "the freeze's primary_test.implementation names no module or no "
+            "sha256, so the code implementing the sign-flip test, the paired "
+            "CI and the Holm step-down is unpinned")
+    else:
+        path = repo_root / rel
+        if not path.exists():
+            problems.append(f"{rel}: pinned by primary_test.implementation but "
+                            "absent from the repository")
+        else:
+            got = sha256_file(path)
+            if got != want:
+                problems.append(
+                    f"{rel}: primary_test.implementation pins {want} but the "
+                    f"file is now {got} — this module implements "
+                    f"{impl.get('functions')} and is deliberately NOT in "
+                    "CODE_FINGERPRINT_MODULES, so this hash is the only thing "
+                    "pinning the procedure that decides the primary claims")
+    return problems
+
+
 def expected_fingerprint(state: str, adapter_dir: Path, repo_root: Path,
                          model_id: str, generation_config: dict[str, Any],
                          n_queries: int) -> PredictionFingerprint:
@@ -363,17 +664,63 @@ def verify_state(state: str, repo_root: Path, freeze: dict[str, Any],
     every reason it is not.  Reasons are returned rather than raised so a
     completeness check can report all three states at once: "MG is missing" is
     a more useful message than whichever state happened to be checked first.
+
+    This is TOTAL: nothing on the path raises.  ``adapter_for`` refuses with a
+    ``SystemExit`` when a checkpoint is absent or has moved, and that is the
+    right behaviour for a caller about to spend GPU hours on it, but here it is
+    converted into a reason — because the lane asks this function which states
+    still need work, and an oracle that raises on the first absent checkpoint
+    cannot tell the lane anything.
+
+    The generation-order record is verified HERE and not only at assembly.
+    Checking it later means ``generate_state``'s reuse path can accept a
+    parquet that was generated over a different query order, and batched greedy
+    decoding is not bit-stable across batch compositions — so the three states
+    would be compared across two layouts while every sidecar verified.
     """
     ppath = predictions_path(repo_root, state)
     if not ppath.exists():
         return None, [
             f"{ppath.name} does not exist — this state has not been generated"]
-    adapter_dir = adapter_for(state, freeze, repo_root)
+    try:
+        adapter_dir = adapter_for(state, freeze, repo_root)
+    except SystemExit as exc:
+        return None, [str(exc)]
     expected = expected_fingerprint(state, adapter_dir, repo_root, model_id,
                                     generation_config, len(queries))
     reasons = verify_sidecar(ppath, expected)
     if reasons:
         return None, [f"{ppath.name}: {r}" for r in reasons]
+    order_sha = generation_order_sha256(queries)
+    opath = generation_order_path(repo_root, state)
+    if not opath.exists():
+        return None, [
+            (f"{ppath.name} has a verifying sidecar but no "
+             f"{opath.name} beside it, so the query order it was generated "
+             "over is unrecorded and cannot be shown to match the other "
+             "states — regenerate it rather than trusting it")]
+    try:
+        record = json.loads(opath.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        return None, [
+            (f"{opath.name} is unreadable ({exc}), so the generation order it "
+             "should record is unknown")]
+    recorded_order = record.get("generation_order_sha256")
+    if recorded_order != order_sha:
+        return None, [
+            (f"{opath.name} records query order {recorded_order!r}, not this "
+             f"run's {order_sha!r}; batched greedy decoding is not bit-stable "
+             "across batch compositions, so this state would not be comparable "
+             "with the others")]
+    for key, want in (("state", state),
+                      ("experiment_id", EXPERIMENT_ID),
+                      ("num_queries", len(queries)),
+                      ("generation_config", generation_config)):
+        if record.get(key) != want:
+            return None, [
+                (f"{opath.name} records {key}={record.get(key)!r} but this run "
+                 f"expects {want!r}, so the record beside this parquet does "
+                 "not describe the generation being verified")]
     preds = load_predictions_parquet(ppath)
     coverage = validate_prediction_coverage(
         preds, [q.query_id for q in queries], EXPERIMENT_ID, state)
@@ -387,7 +734,7 @@ def verify_state(state: str, repo_root: Path, freeze: dict[str, Any],
 def generate_state(state: str, adapter_dir: Path, repo_root: Path,
                    freeze: dict[str, Any],
                    queries: list[QueryRecord], by_assoc: dict,
-                   model_id: str, device: str,
+                   model_id: str, model_source: str, device: str,
                    generation_config: dict[str, Any],
                    order_sha: str) -> bool:
     """Generate (or verifiedly reuse) one state's predictions.
@@ -395,6 +742,12 @@ def generate_state(state: str, adapter_dir: Path, repo_root: Path,
     Returns whether an existing file was reused.  Computes no aggregate: the
     rows are scored per query because that is what turns a decoded string into
     a record, and then written straight to disk.
+
+    ``model_id`` and ``model_source`` are different things and both are needed.
+    ``model_id`` is the logical name the freeze records and the sidecar binds;
+    ``model_source`` is the revision-pinned snapshot directory the weights are
+    actually loaded from.  Collapsing them would either record a filesystem
+    path as the base model or load through a mutable cache ref.
     """
     preds, reasons = verify_state(state, repo_root, freeze, queries, by_assoc,
                                   model_id, generation_config)
@@ -415,7 +768,7 @@ def generate_state(state: str, adapter_dir: Path, repo_root: Path,
              generation_config["max_new_tokens"],
              not generation_config["do_sample"])
     generator = ReferenceStateGenerator(
-        model_id, device, adapter_dir=adapter_dir,
+        model_source, device, adapter_dir=adapter_dir,
         max_image_pixels=generation_config["max_image_pixels"])
     #: The SAME ordered list for every state, which is what makes the paired
     #: difference a comparison of models rather than of batch layouts.
@@ -445,7 +798,7 @@ def generate_state(state: str, adapter_dir: Path, repo_root: Path,
     write_sidecar(ppath, expected)
     #: Recorded beside the parquet so a later assembly can show all three
     #: states were generated over the same ordering, rather than asserting it.
-    (ppath.parent / f"predictions_{state}.generation_order.json").write_text(
+    generation_order_path(repo_root, state).write_text(
         json.dumps({
             "state": state,
             "experiment_id": EXPERIMENT_ID,
@@ -470,22 +823,43 @@ def main() -> None:
     #: a way to drift from the protocol without editing it.
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--state", default=None,
-                        help="Generate only this one of B3, B0, MG. Used to "
-                             "shard the three passes across GPUs; an "
+                        help="Generate only this one of B3, B0, MG, verify THAT "
+                             "state, and exit on its own merits. Used to shard "
+                             "the three passes across GPUs: a lane that "
+                             "finished its state succeeded, and global "
+                             "completeness is --verify-only's job. An "
                              "unrecognised state is an error rather than a "
                              "silent no-op that would leave the confirmation "
                              "incomplete and surface only at assembly.")
     parser.add_argument("--verify-only", action="store_true",
-                        help="Verify the three states' sidecars and report "
-                             "completeness. No GPU, and no metric: this is the "
-                             "gate analyze_confirmation_split.py re-checks "
-                             "before it will assemble a report.")
+                        help="Verify all three states' sidecars and report "
+                             "GLOBAL completeness. No GPU, and no metric: this "
+                             "is the gate analyze_confirmation_split.py "
+                             "re-checks before it will assemble a report.")
+    parser.add_argument("--list-outstanding", action="store_true",
+                        help="Print one line per state that does not currently "
+                             "VERIFY, then exit 0. This is how the lane decides "
+                             "what to run: a state is outstanding because its "
+                             "sidecar or generation-order record fails, not "
+                             "because its filename is absent, so a stale "
+                             "partial pass is regenerated instead of being "
+                             "skipped and then failing the gate with no way "
+                             "forward.")
     args = parser.parse_args()
+
+    if args.list_outstanding:
+        #: stdout is the DATA channel in this mode: the lane reads state names
+        #: from it and iterates over them.  ``setup_logger`` attaches a
+        #: ``StreamHandler(sys.stdout)``, so the logger is silenced here and the
+        #: summary goes to stderr — otherwise the lane would have to filter log
+        #: lines out of a list it is about to feed to ``--state``.
+        log.handlers.clear()
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
     freeze = load_frozen_protocol(repo_root)
     states = scored_states(freeze)
     generation_config = frozen_generation_config(freeze)
+    revision = frozen_base_model_revision(freeze)
     model_id = ((freeze.get("checkpoints") or {}).get(states[0]) or {}).get(
         "recipe", {}).get("model_id")
     if not model_id:
@@ -497,60 +871,116 @@ def main() -> None:
     by_assoc = {a.association_id: a for a in load_associations_parquet(
         repo_root / CONFIRM_DATASET_DIR / "associations.parquet")}
     order_sha = generation_order_sha256(queries)
+
+    # ---- preflight: refused before ANY state is generated or reused --------
+    #: Run in every mode, including --list-outstanding and --verify-only.  A
+    #: reused parquet is evidence exactly as much as a generated one, so the
+    #: photographs and the analysis code have to be the frozen ones for reuse
+    #: too; checking only before generation would let a stale-but-verifying
+    #: file through on a dataset whose images had been swapped underneath it.
+    problems = verify_frozen_code(repo_root, freeze)
+    problems += verify_confirmation_images(repo_root, queries, by_assoc)
+    live_revision = base_model_revision(model_id)
+    if live_revision is not None and live_revision != revision:
+        problems.append(
+            f"the local HF cache ref for {model_id} points at {live_revision} "
+            f"but the freeze pins base_model_revision {revision}")
+    if problems:
+        raise SystemExit(
+            f"REFUSED — {len(problems)} preflight check(s) failed, so nothing "
+            "will be generated, reused or verified:\n  "
+            + "\n  ".join(problems))
+
     log.info("confirmation dataset %s: %d queries, %d associations",
              dataset_version(repo_root / CONFIRM_DATASET_DIR), len(queries),
              len(by_assoc))
     log.info("frozen generation config: %s", generation_config)
+    log.info("base model %s pinned at revision %s", model_id, revision)
     log.info("generation order sha256: %s", order_sha)
     log.info("scored states: %s (and no others)", list(states))
+    log.info("preflight: %d analysis-script hash(es) plus paired_ci verified, "
+             "%d pinned photograph(s) re-hashed, %d of %d queries are "
+             "image-route and every one resolves to a frozen byte",
+             len((freeze.get("code") or {}).get(
+                 "analysis_scripts_sha256") or {}),
+             len(referenced_image_paths(repo_root / CONFIRM_DATASET_DIR)),
+             sum(1 for q in queries if q.image_ids), len(queries))
+
+    def _verify(state: str):
+        return verify_state(state, repo_root, freeze, queries, by_assoc,
+                            model_id, generation_config)
+
+    if args.list_outstanding:
+        outstanding = [s for s in states if _verify(s)[0] is None]
+        for state in outstanding:
+            print(state)
+        print(f"{len(outstanding)} of {len(states)} states still need "
+              f"generation: {outstanding or 'none'}", file=sys.stderr)
+        #: Exit 0 even when nothing is outstanding: an empty list is a complete
+        #: answer, not a failure, and a lane that treated it as one would never
+        #: reach the gate on a resumed run.
+        return
 
     if args.state is not None and args.state not in states:
         raise SystemExit(
             f"--state names {args.state!r}, which is not one of the frozen "
             f"scored states {list(states)}. Generating any other state would "
             "put an unreported comparison on disk.")
-    todo = (args.state,) if args.state else states
 
     if not args.verify_only:
+        todo = (args.state,) if args.state else states
+        #: Resolved once, before any state is generated: the pinned snapshot is
+        #: the same directory for all three, and failing to resolve it after B3
+        #: had already run would leave a partial pass.
+        model_source = pinned_model_source(model_id, revision)
+        log.info("base model snapshot pinned at %s: %s", revision[:12],
+                 model_source)
         for state in todo:
             adapter_dir = adapter_for(state, freeze, repo_root)
             reused = generate_state(state, adapter_dir, repo_root, freeze,
-                                    queries, by_assoc, model_id, args.device,
-                                    generation_config, order_sha)
+                                    queries, by_assoc, model_id, model_source,
+                                    args.device, generation_config, order_sha)
             log.info("[%s] %s", state,
                      "reused a verified parquet" if reused
                      else "generated and sealed")
 
-    #: Completeness, reported for ALL three states rather than stopping at the
-    #: first problem.  No metric is computed on the way: the rows are verified
-    #: and counted, never aggregated.
+        if args.state is not None:
+            #: ONE state's own merits.  This is the fix for a sharded lane: the
+            #: previous version fell through to the global gate, so the first
+            #: lane to finish exited nonzero because the other two had not
+            #: finished yet — and a chain that records gen_rc=1 stops before its
+            #: own gate, however healthy that gate would have been.
+            preds, reasons = _verify(args.state)
+            if preds is None:
+                raise SystemExit(
+                    f"REFUSED — {args.state} was generated but does not "
+                    "verify:\n  " + "\n  ".join(reasons))
+            print(f"\n{args.state}: {len(preds)} rows generated and "
+                  f"provenance-verified over query order {order_sha[:16]}")
+            print("  this exit says nothing about the other states; run "
+                  "--verify-only for global completeness")
+            return
+
+    #: Global completeness, reported for ALL three states rather than stopping
+    #: at the first problem, and reached only by --verify-only or by a run that
+    #: generated all three.  No metric is computed on the way: the rows are
+    #: verified and counted, never aggregated.  The generation-order record is
+    #: not re-checked here because verify_state owns it now — checking it in two
+    #: places is how the reuse path came to skip it in the first place.
     incomplete: dict[str, list[str]] = {}
     complete: list[str] = []
     for state in states:
-        ppath = predictions_path(repo_root, state)
-        preds, reasons = verify_state(state, repo_root, freeze, queries,
-                                      by_assoc, model_id, generation_config)
+        preds, reasons = _verify(state)
         if preds is None:
             incomplete[state] = reasons
         else:
             complete.append(state)
-            order_file = ppath.parent / \
-                f"predictions_{state}.generation_order.json"
-            if order_file.exists():
-                recorded = json.loads(order_file.read_text())[
-                    "generation_order_sha256"]
-                if recorded != order_sha:
-                    incomplete.setdefault(state, []).append(
-                        f"{state} was generated over query order {recorded}, "
-                        f"not this run's {order_sha}; batched greedy decoding "
-                        "is not bit-stable across batch compositions, so the "
-                        "three states would not be comparable")
-                    complete.remove(state)
     print(f"\nconfirmation predictions — {len(complete)}/{len(states)} states "
           f"complete and provenance-verified")
     print(f"  dataset      {CONFIRM_DATASET_DIR} "
           f"({dataset_version(repo_root / CONFIRM_DATASET_DIR)})")
     print(f"  experiment   {EXPERIMENT_ID}")
+    print(f"  base model   {model_id} @ {revision}")
     print(f"  queries      {len(queries)} per state, order sha256 "
           f"{order_sha[:16]}")
     print(f"  states       {list(states)}")

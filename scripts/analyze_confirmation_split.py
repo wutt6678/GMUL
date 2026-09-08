@@ -42,6 +42,24 @@ Sealed-split invariants 4, 5 and 6 are discharged here rather than promised:
   11C-2a decisions, and the freeze records the 0.05 margin's role as
   "REPORTING YARDSTICK, not a tested margin".
 
+What it re-checks rather than trusts
+------------------------------------
+The analysis is a separate process from the generation and may run hours later
+on a different checkout, so the freeze's pins are compared against the bytes on
+disk HERE, through the evaluator's own implementations rather than a restatement
+of them:
+
+* every hash in ``code.analysis_scripts_sha256`` and the separately pinned
+  ``primary_test.implementation.sha256`` for ``paired_ci.py``.  This is the
+  enforcement behind sealed-split invariant 7: the freeze RECORDING those hashes
+  is a description of the protocol, and comparing them is what makes editing the
+  code that produces a verdict impossible without also re-freezing.
+* ``verify_image_manifest`` over the pinned photographs, and per-query image
+  resolution — because a prediction generated over a photograph that has since
+  been swapped has a sidecar that still verifies while its evidence is not what
+  the protocol froze.
+* the base-model revision against the freeze's pin.
+
 Invariant 7 — a failed primary claim is reported as failed — is discharged by
 there being no code path that adjusts anything: every threshold, seed, draw
 count and direction is read from the freeze and cross-checked, so the only way
@@ -78,6 +96,7 @@ from granunlearn.evaluation.paired_ci import (  # noqa: E402
     row_flags,
 )
 from granunlearn.evaluation.prediction_provenance import (  # noqa: E402
+    base_model_revision,
     dataset_version,
     sha256_file,
 )
@@ -283,6 +302,40 @@ def analyze(repo_root: Path) -> dict[str, Any]:
 
     refusals: list[str] = []
 
+    # ---- preflight: the frozen code and the frozen photographs ----
+    #: Checked here and not only before generation, because the analysis is a
+    #: separate process that may run hours or days later on a different
+    #: checkout.  Reusing the evaluator's implementation rather than restating
+    #: it keeps "is this the frozen protocol" a single question with one answer.
+    refusals.extend(ecs.verify_frozen_code(repo_root, freeze))
+    refusals.extend(ecs.verify_confirmation_images(repo_root, queries,
+                                                   by_assoc))
+    revision = ecs.frozen_base_model_revision(freeze)
+    live_revision = base_model_revision(model_id)
+    #: TOTAL here, where the evaluator's two read-only modes tolerate an
+    #: unresolvable ref.  The difference is what each mode leaves behind: this
+    #: one writes a report asserting
+    #: ``base_model_revision_verified_at_runtime``, and a comparison that was
+    #: skipped cannot make that claim true.  ``verify_sidecar`` happens to catch
+    #: the same case — with no live ref the expected fingerprint records None
+    #: while the sidecar records the pin — but it reports it as "file has
+    #: c202236…, this run expects None", which does not tell the reader that the
+    #: base model is unverifiable on THIS machine, and it would not catch a
+    #: hand-written sidecar that recorded None too.
+    if live_revision is None:
+        refusals.append(
+            f"no local HF cache ref for {model_id}, so the base-model revision "
+            "these predictions were generated from cannot be compared with the "
+            f"freeze's pin {revision}. The predictions were necessarily made on "
+            "a machine that could resolve it; analyze them there, or restore "
+            "the ref, rather than reporting a verification that did not happen")
+    elif live_revision != revision:
+        refusals.append(
+            f"the local HF cache ref for {model_id} points at {live_revision} "
+            f"but the freeze pins base_model_revision {revision}, so the base "
+            "model these predictions were generated from cannot be shown to be "
+            "the frozen one")
+
     # ---- the completeness gate: all three states, verified, same order ----
     preds_by_state: dict[str, list[PredictionRecord]] = {}
     state_audit: dict[str, Any] = {}
@@ -291,19 +344,19 @@ def analyze(repo_root: Path) -> dict[str, Any]:
             state, repo_root, freeze, queries, by_assoc, model_id,
             generation_config)
         ppath = ecs.predictions_path(repo_root, state)
+        opath = ecs.generation_order_path(repo_root, state)
+        #: ``verify_state`` has already refused a missing, unreadable or
+        #: mismatched order record, so reading it here is for the AUDIT rather
+        #: than for the gate — and it is read defensively because a state that
+        #: did not verify has no record worth reading.
+        recorded_order = None
+        if preds is not None and opath.exists():
+            recorded_order = json.loads(opath.read_text()).get(
+                "generation_order_sha256")
         if preds is None:
             refusals.extend(f"{state}: {r}" for r in reasons)
             state_audit[state] = {"complete": False, "reasons": reasons}
             continue
-        order_file = ppath.parent / f"predictions_{state}.generation_order.json"
-        recorded_order = (json.loads(order_file.read_text())[
-            "generation_order_sha256"] if order_file.exists() else None)
-        if recorded_order != order_sha:
-            refusals.append(
-                f"{state}: was generated over query order "
-                f"{recorded_order!r}, not this run's {order_sha!r}; batched "
-                "greedy decoding is not bit-stable across batch compositions, "
-                "so the three states would not be comparable")
         preds_by_state[state] = preds
         state_audit[state] = {
             "complete": True,
@@ -316,11 +369,14 @@ def analyze(repo_root: Path) -> dict[str, Any]:
         }
     if refusals:
         #: Invariant 6.  Nothing below is computed, so no partial metric can
-        #: leak into a log, a report or a reader's head.
+        #: leak into a log, a report or a reader's head.  The state count is
+        #: still reported even though refusals can now also carry preflight
+        #: problems, because "assembled from 2 of 3" is the part a reader has
+        #: to see first.
         raise SystemExit(
             f"REFUSED — the confirmation cannot be assembled from "
-            f"{len(preds_by_state)} of {len(states)} scored states:\n  "
-            + "\n  ".join(refusals))
+            f"{len(preds_by_state)} of {len(states)} scored states; "
+            f"{len(refusals)} refusal(s):\n  " + "\n  ".join(refusals))
 
     # ---- the frozen analysis parameters, read and cross-checked ----
     analysis = freeze.get("analysis") or {}
@@ -562,6 +618,8 @@ def analyze(repo_root: Path) -> dict[str, Any]:
                 [q.query_id for q in queries]),
             "generation_order_sha256": order_sha,
             "experiment_id": ecs.EXPERIMENT_ID,
+            "base_model_id": model_id,
+            "base_model_revision": revision,
             "states": state_audit,
         },
         "protocol_compliance": {
@@ -591,6 +649,29 @@ def analyze(repo_root: Path) -> dict[str, Any]:
                 "all, so a run that generated one state and stopped could not "
                 "print a rate, an interval or a p-value; this script refuses "
                 "to compute anything until all three sidecars verify"),
+            "frozen_code_hashes_verified_at_runtime": True,
+            "image_manifest_verified_at_runtime": True,
+            "base_model_revision_verified_at_runtime": True,
+            "what_the_three_runtime_verifications_are": (
+                "the analysis is a separate process from the generation and may "
+                "run on a different checkout, so the freeze's pins are "
+                "re-checked against the bytes on disk HERE rather than trusted "
+                "from the generation run: every entry in "
+                "code.analysis_scripts_sha256, the separately pinned "
+                "primary_test.implementation.sha256 for paired_ci.py, the "
+                "re-hash of every pinned photograph against image_manifest.json, "
+                "the resolution of every image-route query to a photograph on "
+                "disk, and the local base-model revision against the freeze's "
+                "pin. Recording a hash without comparing it describes the "
+                "protocol instead of enforcing it."),
+            "why_the_photographs_are_checked_per_query_and_not_only_by_hash": (
+                "ReferenceStateGenerator drops an image it cannot resolve and "
+                "generates TEXT-ONLY with no warning, so a photograph that is "
+                "correctly pinned but unresolvable for a particular query would "
+                "still produce a provenance-valid sidecar over evidence that "
+                "was never visual. That module is in CODE_FINGERPRINT_MODULES "
+                "and cannot be edited without invalidating the 30 committed "
+                "exploratory sidecars, so the gap is closed in front of it."),
             "equivalence_test_run": False,
             "non_inferiority_test_run": False,
             "anything_tuned_on_these_predictions": False,
