@@ -142,11 +142,22 @@ machine that has the GPU stack installed. `.github/workflows/tests.yml` runs the
 unit suite plus a step that loads every committed report the evidence claims
 depend on.
 
-One coverage boundary is stated rather than left to a skip count: tests that
-fabricate a **provenance-verified** prediction file need the real adapter bytes,
-because `PredictionFingerprint.build` hashes them. The adapters are gitignored,
-so those tests skip in a bare clone and run on the machine that trained them —
-which is the machine that will run the three GPU passes.
+Two coverage boundaries are stated rather than left to a skip count, and both
+are gitignored inputs rather than unfinished work:
+
+* fabricating a **provenance-verified** prediction file needs the real adapter
+  bytes, because `PredictionFingerprint.build` hashes them;
+* asserting an exact answer from the image preflight — or running the scorer's
+  `main()`, which re-hashes the pool in every mode — needs the 402 sealed
+  photographs.
+
+Both guards skip naming what is absent, and both run on the machine that trained
+the adapters and fetched the pool, which is the machine that will run the three
+GPU passes. Measured: **1431 passed / 71 skipped** in a bare clone with a venv
+built from `requirements/ci-unit.txt` alone, **1502 passed / 0 skipped** here.
+The committed half of each boundary — the manifest pinning 402 paths and hashes,
+the pool's disjointness from exploratory media, the fetch provenance behind it —
+is asserted in `test_iteration11c_probes.py` and needs no bytes at all.
 
 ---
 

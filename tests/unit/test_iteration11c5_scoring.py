@@ -152,6 +152,55 @@ def protocol(farm) -> dict:
     }
 
 
+def _absent_photographs(repo_root: Path) -> list[str]:
+    """The sealed confirmation photographs that are not on disk.
+
+    ``image_manifest.json`` IS committed — 402 paths with their sha256 — but the
+    bytes behind them are not: the 360 iNaturalist photographs are gitignored and
+    re-fetchable through ``confirm_v1/PROVENANCE.json``, and the 42 exempted
+    target-person portraits sit under the gitignored exploratory media.  So "does
+    the frozen pool verify" is a question a bare clone cannot answer.
+    """
+    data_dir = repo_root / ecs.CONFIRM_DATASET_DIR
+    return [str(path) for path in ecs.referenced_image_paths(data_dir)
+            if ecs.resolve_image_path(path, data_dir, repo_root) is None]
+
+
+def _skip_without_photographs(repo_root: Path) -> None:
+    """Skip, naming the absent bytes, when a test needs the frozen photographs.
+
+    The committed HALF of this evidence — that the manifest pins 402 paths and
+    hashes, that the pool is disjoint from exploratory media, that the fetch
+    provenance accounts for every file — is tested in
+    ``test_iteration11c_probes.py`` and needs no bytes at all.  What is skipped
+    here is only the re-hash of the photographs themselves, which is a check on
+    this machine's pool and not a check on the repository.
+    """
+    absent = _absent_photographs(repo_root)
+    if absent:
+        pytest.skip(
+            f"{len(absent)} of the sealed confirmation photographs are absent "
+            f"and gitignored (first: {absent[0]}); this test asserts something "
+            "about the frozen image BYTES, so it runs where the pool was "
+            "fetched, and the committed manifest that pins them is tested "
+            "without bytes in test_iteration11c_probes.py")
+
+
+@pytest.fixture(scope="module")
+def photographs(farm) -> Path:
+    """SKIP, not error, when the sealed photograph bytes are absent.
+
+    The same convention as ``adapters`` and for the same reason: these are
+    gitignored inputs, so a fresh checkout is missing nothing it was supposed to
+    have, and a red suite gets overridden.  Unlike ``adapters`` this guard is
+    also called directly from ``_run_main``, because ``main()`` runs the
+    preflight and a test that reaches it must not be able to bypass the guard by
+    calling the helper instead of requesting the fixture.
+    """
+    _skip_without_photographs(farm)
+    return farm
+
+
 def _absent_adapters(freeze: dict) -> list[str]:
     """The scored states whose gitignored adapter directory is not on disk."""
     out = []
@@ -294,7 +343,7 @@ def unscored(farm, protocol) -> Path:
 
 
 @pytest.fixture(scope="module")
-def scored(farm, protocol, adapters) -> Path:
+def scored(farm, protocol, adapters, photographs) -> Path:
     """The farm with all three states present.
 
     B0 is the no-op, so it still leaks the fine value; B3 is the
@@ -1126,7 +1175,7 @@ class TestThePhotographsAreVerifiedBeforeAnythingIsScored:
     The evidence would be invalid while every hash check passed.
     """
 
-    def test_the_committed_dataset_verifies(self, farm, protocol):
+    def test_the_committed_dataset_verifies(self, farm, protocol, photographs):
         assert ecs.verify_confirmation_images(
             farm, protocol["queries"], protocol["by_assoc"]) == []
 
@@ -1138,9 +1187,15 @@ class TestThePhotographsAreVerifiedBeforeAnythingIsScored:
         assert len(protocol["queries"]) - len(image_route) == 345
 
     def test_an_image_id_absent_from_its_own_association_is_reported(
-            self, farm, protocol):
+            self, farm, protocol, photographs):
         """The exact case that degrades silently: ``img_ref`` comes back None,
-        so no image is appended and nothing says so."""
+        so no image is appended and nothing says so.
+
+        ``len(problems) == 1`` is the assertion that needs the pool: with a
+        photograph missing, the manifest check contributes 402 problems of its
+        own and the one this test is about is no longer countable.  The tests
+        below it assert ``any(...)`` and so stay portable.
+        """
         target = next(q for q in protocol["queries"] if q.image_ids)
         broken = target.model_copy(update={"image_ids": ["no_such_image_id"]})
         problems = ecs.verify_confirmation_images(
@@ -1327,7 +1382,16 @@ def _run_main(farm: Path, monkeypatch, *argv: str) -> None:
     is the REAL repository, so ``_find_repo_root`` is pointed at the farm —
     otherwise these tests would generate into, or refuse over, the committed
     dataset instead of the throwaway one.
+
+    It also runs the preflight in every mode, and the preflight re-hashes the
+    402 sealed photographs and resolves every image-route query to one.  On a
+    checkout that never fetched the pool that refusal arrives BEFORE whatever the
+    test asked about, so the guard is here rather than on each test: a test that
+    reaches ``main()`` cannot bypass it, and a refusal for the wrong reason is
+    reported as a skip that names the missing bytes instead of a failure that
+    looks like a broken check.
     """
+    _skip_without_photographs(farm)
     monkeypatch.setattr(ecs, "_find_repo_root", lambda _cwd: farm)
     monkeypatch.setattr(
         sys, "argv", ["evaluate_confirmation_split.py", *argv])
