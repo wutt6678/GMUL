@@ -308,6 +308,7 @@ def analyze(repo_root: Path) -> dict[str, Any]:
     #: checkout.  Reusing the evaluator's implementation rather than restating
     #: it keeps "is this the frozen protocol" a single question with one answer.
     refusals.extend(ecs.verify_frozen_code(repo_root, freeze))
+    refusals.extend(ecs.verify_confirmation_dataset(repo_root, freeze))
     refusals.extend(ecs.verify_confirmation_images(repo_root, queries,
                                                    by_assoc))
     revision = ecs.frozen_base_model_revision(freeze)
@@ -650,20 +651,32 @@ def analyze(repo_root: Path) -> dict[str, Any]:
                 "print a rate, an interval or a p-value; this script refuses "
                 "to compute anything until all three sidecars verify"),
             "frozen_code_hashes_verified_at_runtime": True,
+            "frozen_dataset_hashes_verified_at_runtime": True,
             "image_manifest_verified_at_runtime": True,
             "base_model_revision_verified_at_runtime": True,
-            "what_the_three_runtime_verifications_are": (
+            "what_the_runtime_verifications_are": (
                 "the analysis is a separate process from the generation and may "
                 "run on a different checkout, so the freeze's pins are "
                 "re-checked against the bytes on disk HERE rather than trusted "
                 "from the generation run: every entry in "
+                "code.fingerprinted_modules and in "
                 "code.analysis_scripts_sha256, the separately pinned "
-                "primary_test.implementation.sha256 for paired_ci.py, the "
-                "re-hash of every pinned photograph against image_manifest.json, "
-                "the resolution of every image-route query to a photograph on "
-                "disk, and the local base-model revision against the freeze's "
-                "pin. Recording a hash without comparing it describes the "
-                "protocol instead of enforcing it."),
+                "primary_test.implementation.sha256 for paired_ci.py, every "
+                "artifact in confirmation_dataset.artifacts_sha256 plus the "
+                "image-manifest roll-up, the re-hash of every pinned "
+                "photograph against image_manifest.json, the resolution of "
+                "every image-route query to a photograph on disk, and the "
+                "local base-model revision against the freeze's pin. "
+                "Recording a hash without comparing it describes the protocol "
+                "instead of enforcing it."),
+            "why_the_code_and_dataset_hashes_are_not_left_to_the_sidecars": (
+                "a sidecar records the module hashes and the dataset artifact "
+                "hashes it was generated under, but verify_sidecar compares "
+                "that record with an expectation RE-DERIVED from the same disk, "
+                "so editing a scoring module or rewriting a prompt behind an "
+                "unchanged query_id moves both sides together and every "
+                "sidecar still verifies. Only the freeze holds a value that "
+                "was fixed before the bytes could be touched."),
             "why_the_photographs_are_checked_per_query_and_not_only_by_hash": (
                 "ReferenceStateGenerator drops an image it cannot resolve and "
                 "generates TEXT-ONLY with no warning, so a photograph that is "

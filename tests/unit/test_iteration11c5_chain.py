@@ -9,12 +9,12 @@ lives in the scorer — so this file runs the chain itself.
 How a GPU chain is run on a CPU box
 -----------------------------------
 ``PY`` is read from the environment, so the chain is handed a STUB interpreter
-that plays every mode it invokes: the preconditions heredoc, ``--verify-only``,
-``--list-outstanding``, ``--state X`` and the analysis.  Each stub mode reads
-its exit status and its output from a file, so a test can fail any one of them
-without the others changing.  ``nvidia-smi`` is stubbed the same way, through
-``PATH``, which is what lets ``wait_for_gpu.sh`` claim a device that is not
-there.
+that plays every mode it invokes: the two programs the chain feeds it on stdin,
+``--verify-only``, ``--list-outstanding``, ``--state X`` and the analysis.  Each
+stub mode reads its exit status and its output from a file, so a test can fail
+any one of them without the others changing.  ``nvidia-smi`` is stubbed the same
+way, through ``PATH``, which is what lets ``wait_for_gpu.sh`` claim a device that
+is not there.
 
 The tree the chain runs in is a throwaway: the two lane scripts are COPIED into
 it and nothing else exists, because the chain derives ``REPO_ROOT`` from its own
@@ -32,11 +32,22 @@ repository this tree stands in for.  Two tests read that text instead, one of
 them against the real ``evaluate_confirmation_split`` module, so a preflight
 that called a function the scorer no longer has would fail here rather than
 three GPU claims into a real run.
+
+The chain feeds a SECOND program on stdin — the reader that turns the
+structured outstanding report back into a list of names — and the stub tells the
+two apart by their text, because only the reader names the field it reads.  The
+stub emulates the reader by copying the names it answered with, which is the
+same content it wrote into the report; it does NOT reproduce the reader's
+validation, so the reader's own refusal is tested by running the heredoc's text
+for real, in a plain interpreter, over a report holding the line a corrupt
+sidecar produced.  What a chain test can prove is the chain's half of the rule;
+what a reader test can prove is the reader's.
 """
 
 from __future__ import annotations
 
 import ast
+import json
 import os
 import shutil
 import signal
@@ -62,6 +73,12 @@ CHAIN_LOG = LOGDIR / "confirm100_11c5_chain.log"
 PREFLIGHT_LOG = LOGDIR / "confirm100_11c5_preflight.log"
 GATE_LOG = LOGDIR / "confirm100_11c5_gate.log"
 ANALYSIS_LOG = LOGDIR / "confirm100_11c5_analysis.log"
+OUTSTANDING = LOGDIR / "confirm100_11c5_outstanding.txt"
+OUTSTANDING_JSON = LOGDIR / "confirm100_11c5_outstanding.json"
+OUTSTANDING_STDOUT = LOGDIR / "confirm100_11c5_outstanding_stdout.log"
+#: Every log but the journal, which the chain resets once it holds the lock.
+RUN_LOGS = (PREFLIGHT_LOG, OUTSTANDING, OUTSTANDING_JSON, OUTSTANDING_STDOUT,
+            GATE_LOG, ANALYSIS_LOG)
 CHAIN_LOCK = LOGDIR / "confirm100_11c5_chain.lock"
 ANALYSIS = Path("data") / "reports" / "mllmu_confirm100_final_analysis.json"
 PREDICTIONS = Path("data") / "mllmu_hier_confirm100" / "predictions"
@@ -73,10 +90,38 @@ set -u
 CTL="$STUB_CTL"
 printf '%s\n' "$*" >> "$CTL/calls.txt"
 
+# "A", "B" from a file holding one name per line: the form the JSON array the
+# list mode writes has to take.
+names_json() {
+  local out="" line
+  while IFS= read -r line; do
+    [ -n "$line" ] || continue
+    out="$out${out:+, }\"$line\""
+  done < "$1"
+  printf '%s' "$out"
+}
+
 if [ "${1:-}" = "-" ]; then
+  # TWO different programs arrive on stdin: the chain's preconditions, and the
+  # reader that turns the structured report back into a list of names.  Which is
+  # which is a property of the program's TEXT, and only the reader names the
+  # field it reads.
+  cat > "$CTL/stdin_program.py"
+  if grep -q "outstanding_states" "$CTL/stdin_program.py"; then
+    cp "$CTL/stdin_program.py" "$CTL/reader_program.py"
+    # Emulated by copying the names this stub answered with, which is the same
+    # content it wrote into the report.  The real reader also VALIDATES every
+    # name and refuses anything that is not exactly B3, B0 or MG; that half is
+    # tested against the heredoc's own text, so the stub is allowed to be
+    # weaker than the thing it stands in for - what a chain test can prove is
+    # the chain's own refusal.
+    cat "$(cat "$CTL/last_src" 2>/dev/null || echo "$CTL/outstanding.txt")" \
+      > "${3:-/dev/null}"
+    exit "${STUB_READER_RC:-0}"
+  fi
   # The chain feeds its preconditions program on stdin.  Recorded verbatim and
   # NOT executed: what is assertable about it is which checks it asks for.
-  cat > "$CTL/preflight_program.py"
+  cp "$CTL/stdin_program.py" "$CTL/preflight_program.py"
   if [ -f "$CTL/preflight_refusal.txt" ]; then
     cat "$CTL/preflight_refusal.txt"
   else
@@ -90,10 +135,11 @@ script="${1##*/}"
 shift
 case "$script" in
   evaluate_confirmation_split.py)
-    mode="" ; state=""
+    mode="" ; state="" ; report=""
     while [ "$#" -gt 0 ]; do
       case "$1" in
         --list-outstanding) mode="list" ;;
+        --outstanding-report) report="${2:-}" ; shift ;;
         --verify-only)      mode="verify" ;;
         --state)            mode="state" ; state="${2:-}" ;;
       esac
@@ -108,15 +154,36 @@ case "$script" in
         # usually not the one it got before generation.  Its exit status can
         # differ too: a test has to be able to fail the RE-ASK alone.
         rc="${STUB_LIST_RC:-0}"
+        src="$CTL/outstanding.txt"
         if [ "$n" -ge 2 ]; then
           if [ -n "${STUB_LIST_RC_AFTER:-}" ]; then rc="$STUB_LIST_RC_AFTER"; fi
           if [ -f "$CTL/outstanding_after.txt" ]; then
-            cat "$CTL/outstanding_after.txt"
-            printf '%s\n' "STUB-LIST-REFUSAL-CHANNEL call $n" >&2
-            exit "$rc"
+            src="$CTL/outstanding_after.txt"
           fi
         fi
-        cat "$CTL/outstanding.txt" 2>/dev/null || true
+        if [ "$rc" -ne 0 ]; then
+          printf '%s\n' "STUB-LIST-REFUSAL-CHANNEL call $n" >&2
+          exit "$rc"
+        fi
+        printf '%s\n' "$src" > "$CTL/last_src"
+        # The answer the chain READS is the structured file it named.  stdout
+        # still gets the names, because the real evaluator prints them for a
+        # human and the chain now sends stdout to a log of its own.
+        if [ -n "$report" ]; then
+          { printf '{\n'
+            printf ' "mode": "list-outstanding",\n'
+            printf ' "scored_states": [%s],\n' \
+              "$(names_json "$CTL/scored_states.txt")"
+            printf ' "outstanding_states": [%s],\n' "$(names_json "$src")"
+            printf ' "reasons": {"stub": "the real evaluator records one per state"}\n'
+            printf '}\n' ; } > "$report"
+        fi
+        cat "$src" 2>/dev/null || true
+        # A test can put anything it likes into the stdout channel, which is
+        # the channel this mode used to be read from.
+        if [ -f "$CTL/list_stdout_pollution.txt" ]; then
+          cat "$CTL/list_stdout_pollution.txt"
+        fi
         printf '%s\n' "STUB-LIST-REFUSAL-CHANNEL call $n" >&2
         exit "$rc" ;;
       verify)
@@ -184,13 +251,27 @@ def _dead_pid() -> int:
     raise AssertionError("no unused pid found, so /proc is not readable here")
 
 
+def _heredoc_programs_in_source() -> list[str]:
+    """Every python program the chain file holds, in the order it holds them."""
+    import re
+    return re.findall(r"<<'PYEOF'\n(.*?)\nPYEOF\n", CHAIN.read_text(), re.S)
+
+
 def _preflight_program_in_source() -> str:
     """The preconditions program exactly as the chain file holds it."""
-    lines = CHAIN.read_text().splitlines()
-    start = next(i for i, line in enumerate(lines)
-                 if line.rstrip().endswith("<<'PYEOF'")) + 1
-    end = next(i for i, line in enumerate(lines) if line == "PYEOF")
-    return "\n".join(lines[start:end])
+    return _heredoc_programs_in_source()[0]
+
+
+def _reader_program_in_source() -> str:
+    """The program that turns the structured report back into a name list.
+
+    Taken from the chain file rather than restated here, so a test of the
+    reader is a test of the reader the chain actually runs.
+    """
+    programs = _heredoc_programs_in_source()
+    readers = [p for p in programs if "outstanding_states" in p]
+    assert len(readers) == 1, f"expected one reader program, got {len(readers)}"
+    return readers[0]
 
 
 class Rig:
@@ -208,6 +289,8 @@ class Rig:
         self._executable(self.ctl / "bin" / "nvidia-smi", _STUB_SMI)
         self.set_gpus(3)
         self.set_outstanding(*STATES)
+        (self.ctl / "scored_states.txt").write_text(
+            "".join(f"{s}\n" for s in STATES))
         self.write_analysis()
 
     @staticmethod
@@ -226,6 +309,22 @@ class Rig:
     def set_outstanding_after(self, *states: str) -> None:
         (self.ctl / "outstanding_after.txt").write_text(
             "".join(f"{s}\n" for s in states))
+
+    def pollute_list_stdout(self, text: str) -> None:
+        """Put a line into the stdout channel that is NOT a state name.
+
+        That channel is no longer read, and this is how a test says so: the
+        line a library logger actually put there during 11C-5R2's review is
+        reproduced verbatim, and the chain has to be unaffected by it.
+        """
+        (self.ctl / "list_stdout_pollution.txt").write_text(text + "\n")
+
+    def outstanding_report(self) -> dict:
+        """The structured answer the chain was handed, as the chain left it."""
+        return json.loads((self.repo / OUTSTANDING_JSON).read_text())
+
+    def outstanding_list(self) -> str:
+        return self.read(OUTSTANDING)
 
     def set_lane_rc(self, state: str, rc: int) -> None:
         (self.ctl / f"rc_{state}").write_text(f"{rc}\n")
@@ -443,6 +542,145 @@ class TestTheChainDecidesWorkByVerificationNotByFilename:
         assert "associations.parquet" in text
 
 
+class TestTheOutstandingChannelIsAMachineChannel:
+    """11C-5R2 finding 3: a corrupt sidecar broke ``--list-outstanding``.
+
+    The chain read the evaluator's STDOUT with ``mapfile`` and iterated over it.
+    ``setup_logger`` attaches a ``StreamHandler(sys.stdout)`` to every logger it
+    creates, so silencing the evaluator's own logger left the other loggers in
+    the import graph writing into that list — and verification reaches into
+    ``prediction_provenance``, whose ``read_sidecar`` logs one ERROR line when a
+    sidecar is truncated.  The chain then queued a lane for a "state" whose name
+    was an error message, made a log file named after it, and spent a GPU claim
+    failing ``--state``'s validation.  Reproduced with a sidecar cut off mid
+    string.
+
+    Both halves are tested: the chain no longer reads stdout, and every name it
+    does accept is validated against the only three states this confirmation
+    scores.
+    """
+
+    #: The line the reviewer's truncated sidecar produced, verbatim.
+    POLLUTION = ("[2026-09-09 00:01:41] ERROR    prediction_provenance — "
+                 "unreadable sidecar /x/predictions_B3.parquet"
+                 ".provenance.json: Unterminated string starting at: line 1 "
+                 "column 42 (char 41)")
+
+    def test_an_error_line_on_stdout_is_no_longer_read_as_a_state(self, rig):
+        """THE regression.  The pollution is in the channel it used to arrive
+        in, and the chain is unaffected by it."""
+        rig.set_outstanding("B3")
+        rig.pollute_list_stdout(self.POLLUTION)
+        result = rig.run_chain()
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert rig.lanes() == ["B3"]
+        #: Not filtered out and lost: it is preserved where a human can read it,
+        #: which is the only thing that channel is good for now.
+        assert "unreadable sidecar" in rig.read(OUTSTANDING_STDOUT)
+        assert "unreadable" not in rig.outstanding_list()
+
+    def test_the_chain_asks_for_the_structured_answer(self, rig):
+        rig.set_outstanding("MG")
+        result = rig.run_chain()
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert any("--outstanding-report" in c for c in rig.calls())
+        doc = rig.outstanding_report()
+        assert doc["outstanding_states"] == ["MG"]
+        assert set(doc["scored_states"]) == set(STATES)
+        #: The list the chain iterated is the report's own field, so the two
+        #: cannot disagree about what was outstanding.
+        assert rig.outstanding_list().split() == doc["outstanding_states"]
+
+    def test_a_name_that_is_not_a_scored_state_queues_nothing(self, rig):
+        """The shell half of the validation, at the point where the string would
+        become a ``--state`` argument and a log filename."""
+        rig.set_outstanding("B3", "ERROR unreadable sidecar")
+        result = rig.run_chain()
+        assert result.returncode == 2
+        #: Nothing is queued, not even the valid name: a chain that dropped the
+        #: bad entry and ran the rest would be guessing which half of an
+        #: incoherent answer to believe.
+        assert rig.lanes() == []
+        assert "one of B3, B0 or MG" in rig.chain_log
+        assert "nothing is queued" in rig.chain_log
+
+    def test_a_post_gate_answer_holding_a_bad_name_stops_the_chain(self, rig):
+        """The same rule on the re-ask, which is the call that decides whether a
+        failed lane may be disregarded."""
+        rig.set_lane_rc("B3", 1)
+        rig.set_outstanding_after("MG", "[2026-09-09] ERROR")
+        result = rig.run_chain()
+        assert result.returncode == 4
+        assert not rig.analysis_exists()
+        assert "one of B3, B0 or MG" in rig.chain_log
+
+    def test_the_reader_refuses_a_name_that_is_not_a_scored_state(self,
+                                                                 tmp_path):
+        """The python half, run for real against the chain's own heredoc.
+
+        The stub interpreter emulates the reader by copying names, so a chain
+        test can only reach the shell validation; this runs the program the
+        chain actually feeds the interpreter, over a report holding the line a
+        corrupt sidecar produced.
+        """
+        report = tmp_path / "outstanding.json"
+        report.write_text(json.dumps({
+            "scored_states": list(STATES),
+            "outstanding_states": ["B3", self.POLLUTION]}))
+        dest = tmp_path / "outstanding.txt"
+        proc = subprocess.run(
+            [sys.executable, "-", str(report), str(dest)],
+            input=_reader_program_in_source(),
+            capture_output=True, text=True, timeout=60)
+        assert proc.returncode != 0, proc.stdout + proc.stderr
+        assert "not exactly one of B3, B0 or MG" in proc.stderr
+        #: Refused before writing anything: a half-written list is the failure
+        #: mode the file channel exists to remove.
+        assert not dest.exists()
+
+    def test_the_reader_writes_exactly_the_names_it_validated(self, tmp_path):
+        """The converse, so the test above cannot pass by refusing everything."""
+        report = tmp_path / "outstanding.json"
+        report.write_text(json.dumps({
+            "scored_states": list(STATES),
+            "outstanding_states": ["B3", "MG"]}))
+        dest = tmp_path / "outstanding.txt"
+        proc = subprocess.run(
+            [sys.executable, "-", str(report), str(dest)],
+            input=_reader_program_in_source(),
+            capture_output=True, text=True, timeout=60)
+        assert proc.returncode == 0, proc.stdout + proc.stderr
+        assert dest.read_text() == "B3\nMG\n"
+
+    def test_the_reader_refuses_a_name_the_freeze_does_not_score(self,
+                                                                tmp_path):
+        """A state that is spelled correctly but is not one of THIS freeze's
+        scored states is refused too: the literal triple and the report have to
+        agree, so neither can widen the set on its own."""
+        report = tmp_path / "outstanding.json"
+        report.write_text(json.dumps({
+            "scored_states": ["B3", "B0"],
+            "outstanding_states": ["B3", "MG"]}))
+        dest = tmp_path / "outstanding.txt"
+        proc = subprocess.run(
+            [sys.executable, "-", str(report), str(dest)],
+            input=_reader_program_in_source(),
+            capture_output=True, text=True, timeout=60)
+        assert proc.returncode != 0
+        assert "MG" in proc.stderr
+
+    def test_the_reader_imports_nothing_from_this_project(self):
+        """Structural: it is the only step between the oracle and a ``--state``
+        argument, so it must not be able to fail by importing something, and it
+        must have no library logger of its own to pollute what it prints."""
+        tree = ast.parse(_reader_program_in_source())
+        imported = {alias.name for node in ast.walk(tree)
+                    if isinstance(node, ast.Import) for alias in node.names}
+        imported |= {node.module for node in ast.walk(tree)
+                     if isinstance(node, ast.ImportFrom)}
+        assert imported <= {"json", "sys"}, sorted(imported)
+
+
 class TestTheGateIsTheCompletenessAuthority:
     """Finding 1's residue: ``gate_rc != 0 || gen_rc != 0`` stopped the chain.
 
@@ -548,6 +786,91 @@ class TestOneChainAtATime:
         assert "reclaiming a stale chain lock" in rig.chain_log
         assert sorted(rig.lanes()) == sorted(STATES)
         assert not rig.lock_held()
+
+
+class TestARefusedDuplicateLeavesTheActiveRunAlone:
+    """11C-5R2 finding 4: a rejected duplicate chain erased active-run logs.
+
+    The chain truncated its preflight, outstanding, gate and analysis logs at the
+    top of the file, twenty-odd lines BEFORE it tried to claim the chain lock.  A
+    second invocation was therefore refused correctly — exit 6, no lane queued —
+    but only after emptying every log of the chain that was still running.  The
+    operator who went to find out why the first pass was slow read six empty
+    files and one journal line from a process that had never started.
+    """
+
+    ACTIVE = "ACTIVE-RUN-EVIDENCE written by the chain that holds the lock\n"
+
+    def _seed_active_logs(self, rig) -> None:
+        (rig.repo / LOGDIR).mkdir(parents=True, exist_ok=True)
+        for log in RUN_LOGS:
+            (rig.repo / log).write_text(self.ACTIVE)
+
+    def test_a_refused_second_chain_erases_nothing(self, rig):
+        """THE regression: every run log survives the refusal byte for byte."""
+        self._seed_active_logs(rig)
+        rig.hold_chain_lock(os.getpid())
+        result = rig.run_chain()
+        assert result.returncode == 6
+        assert rig.lanes() == []
+        assert "another confirmation chain" in rig.chain_log
+        for log in RUN_LOGS:
+            assert (rig.repo / log).read_text() == self.ACTIVE, log
+        #: And the refusal is still recorded, in the one file that accumulates.
+        assert rig.lock_held()
+
+    def test_a_lock_naming_no_pid_erases_nothing_either(self, rig):
+        """The other refusal on that path, which used to truncate first too."""
+        self._seed_active_logs(rig)
+        rig.hold_chain_lock(None)
+        result = rig.run_chain()
+        assert result.returncode == 6
+        assert "names no pid" in rig.chain_log
+        for log in RUN_LOGS:
+            assert (rig.repo / log).read_text() == self.ACTIVE, log
+
+    def test_a_stale_lock_is_still_reclaimed_and_the_logs_still_reset(self,
+                                                                     rig):
+        """The converse, so the two tests above cannot pass by never truncating:
+        the re-run this chain documents as its recovery does get clean logs."""
+        self._seed_active_logs(rig)
+        rig.hold_chain_lock(_dead_pid())
+        result = rig.run_chain()
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert "reclaiming a stale chain lock" in rig.chain_log
+        for log in (GATE_LOG, ANALYSIS_LOG, PREFLIGHT_LOG, OUTSTANDING):
+            assert "ACTIVE-RUN-EVIDENCE" not in rig.read(log), log
+        assert "STUB-GATE-OUTPUT" in rig.read(GATE_LOG)
+
+    def test_the_lock_is_claimed_before_any_run_log_is_reset(self):
+        """Structural, because the finding IS an ordering: resetting after the
+        claim is the fix, and a reordering would restore the defect without
+        changing a single message the tests above match on."""
+        lines = CHAIN.read_text().splitlines()
+        claim = next(i for i, line in enumerate(lines)
+                     if line.startswith("if ! claim_chain_lock"))
+        reset = next(i for i, line in enumerate(lines)
+                     if "for run_log in" in line)
+        assert claim < reset, (claim, reset)
+        #: Not vacuous: the reset is of the run logs and nothing else, and the
+        #: journal is appended so a refusal survives it.
+        assert 'do : > "$run_log"; done' in lines[reset], lines[reset]
+        assert not any(line.strip().startswith(": > \"$LOG\"")
+                       for line in lines)
+
+    def test_every_run_log_the_chain_writes_is_in_the_reset_list(self):
+        """So a new log cannot arrive unreset and have a previous run's contents
+        read as this run's — the defect ``TestTheLogsDescribeThisRun`` covers."""
+        text = CHAIN.read_text()
+        #: Taken from the declaration itself however it is wrapped, so the test
+        #: is about the list and not about its line breaks.
+        declared = text.split("RUN_LOGS=(", 1)[1].split(")", 1)[0]
+        for name in ("$PREFLIGHT", "$OUTSTANDING", "$OUTSTANDING_JSON",
+                     "$OUTSTANDING_STDOUT", "$GATE_LOG", "$ANAL_LOG"):
+            assert name in declared, name
+        #: The per-lane logs are reset in the lane loop instead, because which
+        #: of them exist depends on the answer this run just got.
+        assert ': > "$LOGDIR/confirm100_11c5_${st}.log"' in text
 
 
 class TestTerminatingTheChainStopsItsLanes:

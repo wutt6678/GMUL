@@ -87,9 +87,20 @@ say() { echo "[$(date -Is)] $*" | tee -a "$LOG"; }
 
 PREFLIGHT="$LOGDIR/confirm100_11c5_preflight.log"
 OUTSTANDING="$LOGDIR/confirm100_11c5_outstanding.txt"
+OUTSTANDING_JSON="$LOGDIR/confirm100_11c5_outstanding.json"
+OUTSTANDING_STDOUT="$LOGDIR/confirm100_11c5_outstanding_stdout.log"
 GATE_LOG="$LOGDIR/confirm100_11c5_gate.log"
 ANAL_LOG="$LOGDIR/confirm100_11c5_analysis.log"
-: > "$PREFLIGHT"; : > "$OUTSTANDING"; : > "$GATE_LOG"; : > "$ANAL_LOG"
+RUN_LOGS=("$PREFLIGHT" "$OUTSTANDING" "$OUTSTANDING_JSON" \
+          "$OUTSTANDING_STDOUT" "$GATE_LOG" "$ANAL_LOG")
+# Reset AFTER the chain lock is claimed and not before, which is where this
+# line used to be.  A second invocation must leave the ACTIVE run's evidence
+# alone: truncating first meant the duplicate was refused correctly but only
+# after emptying the preflight, outstanding, gate and analysis logs of the
+# chain that was still running - so the operator who went to read why the
+# first chain was slow found six empty files and a journal entry from a
+# process that had never started.  $LOG itself is appended and never
+# truncated, so the refusal is still recorded.
 
 # ---- one chain at a time -------------------------------------------------
 # The confirmation is scored ONCE and this script is what scores it, so two of
@@ -135,6 +146,10 @@ if ! claim_chain_lock; then
   claim_chain_lock || { say "STOPPING: cannot claim $LOCK"; exit 6; }
 fi
 say "chain lock claimed (pid $$)"
+# Reset HERE, and only now that this run owns the directory: the reason is at
+# the declaration above.
+for run_log in "${RUN_LOGS[@]}"; do : > "$run_log"; done
+say "  ${#RUN_LOGS[@]} run log(s) reset; they describe this run only"
 
 # ---- terminating this chain has to stop its lanes -----------------------
 # The lanes are backgrounded, so a SIGTERM to this script orphans them: they go
@@ -193,15 +208,16 @@ by_assoc = {a.association_id: a for a in load_associations_parquet(
 model_id = freeze["checkpoints"][states[0]]["recipe"]["model_id"]
 print(f"  freeze ok, states {list(states)}, {len(queries)} queries")
 
-# The same three runtime verifications the scorer and the analyzer perform,
+# The same runtime verifications the scorer and the analyzer perform,
 # run here because this is the cheapest place to fail: an hour into a GPU pass
 # is not the time to discover a swapped photograph or an edited paired_ci.py.
 problems = ecs.verify_frozen_code(root, freeze)
+problems += ecs.verify_confirmation_dataset(root, freeze)
 problems += ecs.verify_confirmation_images(root, queries, by_assoc)
 if problems:
     raise SystemExit("preflight refusals:\n  " + "\n  ".join(problems))
-print("  frozen code hashes, pinned photographs and per-query image "
-      "resolution all verified")
+print("  frozen code hashes, frozen dataset hashes, pinned photographs and "
+      "per-query image resolution all verified")
 
 for st in states:
     ecs.adapter_for(st, freeze, root)            # refuses if bytes moved
@@ -251,24 +267,91 @@ fi
 # it, and the chain would stop with the offending file still in place and no
 # step that would ever rewrite it.
 #
-# The evaluator silences its logger in this mode and prints the summary to
-# stderr, so stdout is exactly the list of state names and needs no filtering.
+# The answer is read from a STRUCTURED FILE the evaluator writes, not from its
+# stdout.  stdout was the channel and was never safe: setup_logger attaches a
+# StreamHandler(sys.stdout) to EVERY logger in the process, so the evaluator
+# silencing its own logger left prediction_provenance's writing into the list
+# the chain was about to iterate.  One truncated sidecar was enough —
+# read_sidecar logs "unreadable sidecar ...", that line arrived where a state
+# name was expected, and the chain made a log file named after an error message
+# and spent a GPU claim on a lane that could only fail --state's validation.
 #
-# Written to a file rather than captured with ``mapfile < <(cmd)``: in that
+# Written to files rather than captured with ``mapfile < <(cmd)``: in that
 # form ``$?`` afterwards is MAPFILE's status, not the command's, so a failed
 # --list-outstanding would report success and the chain would queue no lanes.
-# $OUTSTANDING is defined with the other log paths above.  stdout is the list
-# the chain iterates; stderr is the evaluator's own summary and refusals, and
-# goes to the journal rather than to a terminal nobody is watching.
-if ! "$PY" scripts/evaluate_confirmation_split.py --list-outstanding \
-      > "$OUTSTANDING" 2>> "$LOG"; then
-  say "STOPPING: --list-outstanding failed, so which states still need work is"
-  say "  unknown and queueing lanes would be guesswork. Its refusals are in"
-  say "  $LOG above this line; the preconditions passed, so this is a real"
-  say "  fault rather than a missing artifact."
+#
+# The reader below imports nothing from this project on purpose.  It is the
+# only step between the oracle and a ``--state`` argument, so it must not be
+# able to fail by importing something, and it writes the list itself rather
+# than printing it into a channel anything else in the process can write to.
+ask_outstanding() {   # ask_outstanding: fills $OUTSTANDING_JSON, $OUTSTANDING
+  if ! "$PY" scripts/evaluate_confirmation_split.py --list-outstanding \
+        --outstanding-report "$OUTSTANDING_JSON" \
+        > "$OUTSTANDING_STDOUT" 2>> "$LOG"; then
+    say "STOPPING: --list-outstanding failed, so which states still need work"
+    say "  is unknown and queueing lanes would be guesswork. Its refusals are"
+    say "  in $LOG above this line; the preconditions passed, so this is a"
+    say "  real fault rather than a missing artifact."
+    return 1
+  fi
+  if ! "$PY" - "$OUTSTANDING_JSON" "$OUTSTANDING" <<'PYEOF'
+import json, sys
+
+report, dest = sys.argv[1], sys.argv[2]
+with open(report) as fh:
+    doc = json.load(fh)
+scored = doc["scored_states"]
+outstanding = doc["outstanding_states"]
+#: Validated HERE as well as in the shell loop below: two independent spellings
+#: of one rule, because the alternative is a string that came out of a file
+#: reaching ``--state`` and a filename.  B3, B0 and MG are the only three
+#: states this confirmation scores, and scored_states() in the evaluator
+#: refuses a freeze naming any other set.
+for state in outstanding:
+    if state not in ("B3", "B0", "MG") or state not in scored:
+        raise SystemExit(
+            f"{report} lists {state!r} as outstanding, which is not exactly "
+            f"one of B3, B0 or MG among the freeze's scored states {scored}")
+with open(dest, "w") as out:
+    for state in outstanding:
+        out.write(state + "\n")
+PYEOF
+  then
+    say "STOPPING: $OUTSTANDING_JSON could not be read back as a list of the"
+    say "  three scored states, so what still needs generation is unknown."
+    say "  See $LOG and that file."
+    return 1
+  fi
+  return 0
+}
+
+# The shell half of the same rule, at the point where the string becomes an
+# argument and a filename.  Deliberately a literal and not a value read from
+# the report: this chain queues GPU work, and the set of states it is allowed
+# to queue is not something the file it just read should get to widen.  Takes
+# the items themselves rather than the name of the array, so what is validated
+# is exactly what the loop below iterates.
+only_scored_states() {   # only_scored_states <what> [items...]
+  local what="$1" item
+  shift
+  for item in "$@"; do
+    case "$item" in
+      B3|B0|MG) ;;
+      *)
+        say "STOPPING: the $what list contains '$item', which is not exactly"
+        say "  one of B3, B0 or MG. Queueing it would pass an arbitrary"
+        say "  string to --state and to a log filename, so nothing is queued."
+        return 1 ;;
+    esac
+  done
+  return 0
+}
+
+if ! ask_outstanding; then
   exit 2
 fi
 mapfile -t todo < "$OUTSTANDING"
+only_scored_states "outstanding" ${todo[@]+"${todo[@]}"} || exit 2
 say "states still needing generation: ${#todo[@]} (${todo[*]:-none})"
 
 gen_pids=()
@@ -330,13 +413,13 @@ if [ "$gen_rc" -ne 0 ]; then
   # where they could differ — something else writing to the predictions
   # directory between the gate and here.
   say "WARNING: a generation lane exited nonzero although the gate passed."
-  if ! "$PY" scripts/evaluate_confirmation_split.py --list-outstanding \
-        > "$OUTSTANDING" 2>> "$LOG"; then
-    say "STOPPING: a lane failed AND the post-gate --list-outstanding failed,"
-    say "  so what is on disk is unknown. See $LOG."
+  if ! ask_outstanding; then
+    say "  a lane failed AND the post-gate --list-outstanding failed, so what"
+    say "  is on disk is unknown."
     exit 4
   fi
   mapfile -t left < "$OUTSTANDING"
+  only_scored_states "post-gate outstanding" ${left[@]+"${left[@]}"} || exit 4
   if [ "${#left[@]}" -ne 0 ]; then
     say "STOPPING: a lane failed and ${#left[@]} state(s) are still"
     say "  outstanding (${left[*]}) although the gate passed, so the two"

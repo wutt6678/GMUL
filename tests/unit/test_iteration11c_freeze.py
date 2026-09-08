@@ -46,6 +46,7 @@ from power_analysis_confirmation import (  # noqa: E402
     ALPHA_ONE_SIDED,
     ALPHA_STANDALONE_ONE_SIDED,
     BOOTSTRAP_SEED,
+    CONFIRM_DATASET_DIR,
     CONFIRM_FETCH_IMAGES_PER_SPECIES,
     CONFIRM_FETCH_OUT,
     CONFIRM_FETCH_ROLE,
@@ -2096,6 +2097,80 @@ class TestTheSealedSplitInvariantsAreActionable:
                                               "queries.parquet",
                                               "manifest.json"}
 
+    def test_the_confirmation_dataset_is_bound_by_its_own_bytes(self):
+        """11C-5R2 finding 2, at the freeze rather than at the scorer.
+
+        The stage-3 seal binds the SORTED query-id list and the row count, which
+        says which probes were selected and nothing about what they ask: a prompt
+        rewritten behind an unchanged ``query_id`` passed that seal, and passed
+        every sidecar too, because ``expected_fingerprint`` re-derives the
+        dataset hashes from the same directory it verifies against.  These values
+        are the only pin whose value was fixed before the bytes could be
+        touched.
+        """
+        from granunlearn.evaluation.prediction_provenance import sha256_file
+        f = _load()
+        c = f["confirmation_dataset"]
+        data_dir = REPO_ROOT / CONFIRM_DATASET_DIR
+        assert c["data_dir"] == CONFIRM_DATASET_DIR
+        assert c["version"] == "confirm100_v1"
+        assert c["built_at_freeze_time"] is True
+        assert set(c["artifacts_sha256"]) == {"associations.parquet",
+                                              "queries.parquet",
+                                              "manifest.json"}
+        assert c["artifacts_the_hashes_cover"] == sorted(c["artifacts_sha256"])
+        #: Recomputed from the bytes on disk and not copied out of the dataset:
+        #: a hash inside the file it describes is written by whoever wrote the
+        #: file, which is why ``manifest.json``'s own ``frozen_artifact_sha256``
+        #: is a cross-check and not a pin.
+        for name, sha in c["artifacts_sha256"].items():
+            assert sha == sha256_file(data_dir / name), name
+        manifest = json.loads((data_dir / "manifest.json").read_text())
+        for name in ("associations.parquet", "queries.parquet"):
+            assert manifest["frozen_artifact_sha256"][name] == \
+                c["artifacts_sha256"][name], name
+
+    def test_the_manifest_the_photographs_are_checked_against_is_bound(self):
+        """``verify_image_manifest`` compares 402 photographs AGAINST this
+        roll-up, so a manifest rewritten to describe swapped photographs would
+        agree with the swaps and pass that check.  The roll-up in the freeze is
+        what makes the rewrite visible."""
+        from granunlearn.evaluation.prediction_provenance import (
+            image_manifest_sha256)
+        f = _load()
+        c = f["confirmation_dataset"]
+        assert c["image_manifest_sha256"] == image_manifest_sha256(
+            REPO_ROOT / CONFIRM_DATASET_DIR)
+        assert c["num_images_pinned"] == 402
+
+    def test_the_confirmation_block_says_why_the_sidecar_cannot_carry_it(self):
+        """The reason is part of the artifact: a reader who finds the same three
+        hashes inside a prediction sidecar has to be told why they are bound
+        twice, or the duplication looks like a copy that can drift."""
+        c = _load()["confirmation_dataset"]
+        assert "verification time" in \
+            c["why_the_sidecar_cannot_carry_this_alone"]
+        assert "move together" in c["why_the_sidecar_cannot_carry_this_alone"]
+        assert "query_id" in c["role"]
+        assert "written by the builder" in \
+            c["why_the_hashes_are_here_and_not_only_in_the_dataset"]
+
+    def test_the_block_says_whether_it_hashed_a_built_split(self):
+        """The split is built AFTER the protocol is frozen, so a freeze derived
+        before stage 3 honestly has no dataset to hash — and the scorer refuses
+        to run under one.  ``status`` is quoted to the operator by that refusal,
+        so it and ``artifacts_sha256`` have to agree."""
+        c = _load()["confirmation_dataset"]
+        assert bool(c["artifacts_sha256"]) is c["built_at_freeze_time"]
+        assert (c["status"] == "hashed from the built split") is bool(
+            c["artifacts_sha256"])
+        #: Not vacuous in the other direction: the generator really can produce
+        #: the not-built status, so a freeze derived before stage 3 explains
+        #: itself instead of recording an empty block with no reason.
+        assert "had NOT been built when this freeze was derived" in (
+            REPO_ROOT / "scripts" / "freeze_confirmation_protocol.py"
+        ).read_text()
+
     def test_the_inputs_the_freeze_rests_on_are_hashed(self):
         f = _load()
         bound = f["inputs_bound"]
@@ -2164,6 +2239,7 @@ class TestTheFreezeIsWrittenOnce:
         # nothing binding may be in the excluded set
         for bound in ("checkpoints", "generation", "scorer", "analysis",
                       "claims", "code", "exploratory_dataset",
+                      "confirmation_dataset",
                       "sealed_split_invariants", "inputs_bound", "states",
                       "b0_is_the_no_op", "primary_estimand",
                       "confirmation_size"):

@@ -107,6 +107,7 @@ from power_analysis_confirmation import (  # noqa: E402
     BOOTSTRAP_SEED,
     CLAIM_KIND,
     CLAIM_KIND_VS_MG,
+    CONFIRM_DATASET_DIR,
     CONFIRM_FETCH_IMAGES_PER_SPECIES,
     CONFIRM_FETCH_OUT,
     CONFIRM_FETCH_ROLE,
@@ -1727,6 +1728,27 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
     if missing_scripts:
         refusals.append(f"analysis scripts absent: {missing_scripts}")
 
+    #: The confirmation dataset's own bytes.  ``dataset_fingerprint`` hashes
+    #: ``queries.parquet``, ``associations.parquet``, ``manifest.json`` and the
+    #: image-manifest roll-up — the same four values every prediction sidecar
+    #: carries.  Binding them HERE is what makes them evidence rather than a
+    #: description: a sidecar's expectation is re-derived from the same
+    #: directory at verification time, so a prompt rewritten behind an
+    #: unchanged query_id, or an association's ``levels`` edited, moves the
+    #: recorded value and the expected value together and every sidecar still
+    #: verifies.  The dataset's own ``manifest.json`` carries
+    #: ``frozen_artifact_sha256`` for the two parquets, but a hash that sits
+    #: inside the dataset it describes is written by whoever wrote the dataset.
+    #:
+    #: The split is built AFTER the protocol is frozen — the builder reads this
+    #: file and refuses when it refuses — so a freeze derived before stage 3
+    #: honestly has no dataset to hash.  It records that instead of pretending,
+    #: and stage 5 refuses to score under it, which is what makes the re-freeze
+    #: over the built split mandatory rather than merely available.
+    confirm_dir = repo_root / CONFIRM_DATASET_DIR
+    confirm_fingerprint = dataset_fingerprint(confirm_dir, repo_root)
+    confirm_built = bool(confirm_fingerprint.get("artifacts_sha256"))
+
     freeze: dict[str, Any] = {
         "freeze": "iteration_11c_confirmation_protocol",
         "frozen_at_utc": _utcnow(),
@@ -2297,6 +2319,41 @@ def build_freeze(repo_root: Path, tag: str) -> dict[str, Any]:
                 "this one."),
             "selection_scope": selection["selection_scope"],
             "selection_basis": selection["basis"],
+        },
+        "confirmation_dataset": {
+            **confirm_fingerprint,
+            "built_at_freeze_time": confirm_built,
+            "status": (
+                "hashed from the built split" if confirm_built else
+                "the split had NOT been built when this freeze was derived, so "
+                "artifacts_sha256 is empty and stage 5 will refuse to score "
+                "under it; rebuild and re-freeze"),
+            "artifacts_the_hashes_cover": sorted(
+                confirm_fingerprint.get("artifacts_sha256") or {}),
+            "role": (
+                "the dataset the confirmation is scored on. Bound by hash so "
+                "that the frozen QUERY SEMANTICS cannot move: the stage-3 seal "
+                "in confirmation_size binds the sorted query-id list and the "
+                "row count, which "
+                "identifies WHICH probes were selected and says nothing about "
+                "what they ask, so a prompt rewritten behind an unchanged "
+                "query_id - or an association's levels edited, which moves "
+                "every ancestor_retention and wrong_branch judgement - would "
+                "pass the seal and every sidecar with it."),
+            "why_the_hashes_are_here_and_not_only_in_the_dataset": (
+                "manifest.json carries frozen_artifact_sha256 for the two "
+                "parquets, but it is written by the builder that wrote them, so "
+                "it can only show that a dataset agrees with itself. These "
+                "values are recomputed by this script from the bytes on disk at "
+                "freeze time and are outside the dataset, which is what makes a "
+                "later disagreement detectable."),
+            "why_the_sidecar_cannot_carry_this_alone": (
+                "PredictionFingerprint.build hashes the same artifacts into "
+                "every sidecar, and verify_sidecar compares that record with an "
+                "expectation built from the same directory at verification "
+                "time. Both sides move together, so a dataset edited after "
+                "generation still verifies. This block is the only pin whose "
+                "value was fixed before the bytes could be touched."),
         },
         "sealed_split_invariants": [
             # Iteration 11C-R2's finding #1.  The single invariant that used

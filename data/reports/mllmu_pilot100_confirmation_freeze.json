@@ -210,10 +210,10 @@
   },
   "code": {
     "analysis_scripts_sha256": {
-      "scripts/analyze_confirmation_split.py": "9c502c43adea9a96ceb949de9e2c419da4b4ea4e138a40091daaf0b7b0cefc3f",
-      "scripts/evaluate_confirmation_split.py": "07fb32621dde8e81d956dac2c7783263adf2de9fdb79d991d2c78c2fceaf1292",
+      "scripts/analyze_confirmation_split.py": "8f08d0871a95007345517c1231bdb289ac14b67d8e75e162165350ad9c57196d",
+      "scripts/evaluate_confirmation_split.py": "d15ab331d1899a11dc3851e1c60f36150b874efc9a14c38654da986f5d6939ff",
       "scripts/evaluate_pilot100_final.py": "508354306410a0e60917ff267470f07a8ff5cc0fe3f11e54a960513f2949e14f",
-      "scripts/freeze_confirmation_protocol.py": "26bbfe02d1c30845a38c17bcfd5e7232ac39da226c37641234866e30f53b2f27",
+      "scripts/freeze_confirmation_protocol.py": "da41f7e646fad07a1c63e49e0613f03efaa81ea2daa6867b0292dd6259829209",
       "scripts/power_analysis_confirmation.py": "56f8fd8427f336aafe754f2c3a2b07c102deb010f37205368e76bc86bc020df3",
       "scripts/select_confirmation_photographs.py": "0bc22d79c7c4c56e6f72bd96a7fe24a96fe93012e13631fc39939db134ba989d",
       "scripts/select_unlearning_checkpoints.py": "ecacee99a9dd52cba7c419081e11a628f931fc40e8300b45b489946e6da25f2d"
@@ -243,6 +243,27 @@
       "src/granunlearn/schema/query.py": "4b6b4cc9ce18c8e04871f24714ffcf3a922b8bb18068794992f224c6ddfd699e"
     },
     "why_analysis_scripts_are_bound_separately": "CODE_FINGERPRINT_MODULES binds the modules that turn queries into scores. These turn scores into claims, and an edit to either would change what the frozen protocol means without changing a single prediction - so the sidecars would still verify while the conclusion moved."
+  },
+  "confirmation_dataset": {
+    "artifacts_sha256": {
+      "associations.parquet": "7726bdebaf5b893517070b82ae442ccd6acf6633136678473f37583e344ceb39",
+      "manifest.json": "066575e0e47d2a440ba69b0461728c7fb326e1a2e6566c45f7a52a7f1bab1167",
+      "queries.parquet": "2bbf6350f210ac202277468afbcdb7ca42b85cd6f3943e22d61175d5da0f6678"
+    },
+    "artifacts_the_hashes_cover": [
+      "associations.parquet",
+      "manifest.json",
+      "queries.parquet"
+    ],
+    "built_at_freeze_time": true,
+    "data_dir": "data/mllmu_hier_confirm100",
+    "image_manifest_sha256": "5821b5b0002db1cd02a1dcd515df2711fa0b323056995135b0b8dba4c3892623",
+    "num_images_pinned": 402,
+    "role": "the dataset the confirmation is scored on. Bound by hash so that the frozen QUERY SEMANTICS cannot move: the stage-3 seal in confirmation_size binds the sorted query-id list and the row count, which identifies WHICH probes were selected and says nothing about what they ask, so a prompt rewritten behind an unchanged query_id - or an association's levels edited, which moves every ancestor_retention and wrong_branch judgement - would pass the seal and every sidecar with it.",
+    "status": "hashed from the built split",
+    "version": "confirm100_v1",
+    "why_the_hashes_are_here_and_not_only_in_the_dataset": "manifest.json carries frozen_artifact_sha256 for the two parquets, but it is written by the builder that wrote them, so it can only show that a dataset agrees with itself. These values are recomputed by this script from the bytes on disk at freeze time and are outside the dataset, which is what makes a later disagreement detectable.",
+    "why_the_sidecar_cannot_carry_this_alone": "PredictionFingerprint.build hashes the same artifacts into every sidecar, and verify_sidecar compares that record with an expectation built from the same directory at verification time. Both sides move together, so a dataset edited after generation still verifies. This block is the only pin whose value was fixed before the bytes could be touched."
   },
   "confirmation_size": {
     "frozen_at_stage_3_before_any_scoring": {
@@ -795,7 +816,7 @@
     "version": "pilot100_v2"
   },
   "freeze": "iteration_11c_confirmation_protocol",
-  "frozen_at_utc": "2026-09-08T10:42:08+00:00",
+  "frozen_at_utc": "2026-09-08T17:02:35+00:00",
   "generation": {
     "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
     "batch_layout": "ONE uniform layout for every scored state: all confirmation queries in a single pass, same batch_size and image_batch_size for B3, B0 and MG. Batched greedy decoding is not bit-stable across batch compositions, so two layouts would put decoding noise inside the paired difference itself.",
@@ -813,7 +834,7 @@
     "module_defaults_match": true,
     "source": "the single generation_config shared by all 30 committed 11R predictions"
   },
-  "git_commit": "59f037164c8b6cb761d4239a84783266350eb22d",
+  "git_commit": "9cb470431adb92f2d3deb43180425c23aa423f2b",
   "git_dirty": true,
   "inputs_bound": {
     "final_evaluation": {

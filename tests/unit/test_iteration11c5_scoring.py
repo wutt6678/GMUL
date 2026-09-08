@@ -32,7 +32,9 @@ from a skip count.
 
 from __future__ import annotations
 
+import io
 import json
+import logging
 import shutil
 import sys
 from contextlib import contextmanager
@@ -150,6 +152,87 @@ def protocol(farm) -> dict:
         "order": ecs.generation_order_sha256(queries),
         "model_id": freeze["checkpoints"]["B3"]["recipe"]["model_id"],
     }
+
+
+@contextmanager
+def _mutated_module(farm: Path, rel: str, suffix: bytes = b"\n# mutated\n"):
+    """Replace ONE module in the farm with an edited copy, then put it back.
+
+    ``farm/src`` is a symlink into the repository, so writing through it would
+    edit the COMMITTED module and every test that ran after this one.  Each
+    parent of the target is therefore turned into a real directory holding links
+    to the same entries — the trick ``_build_farm`` uses for ``data/`` — the leaf
+    is written as a real file, and the whole chain is restored afterwards.
+    """
+    parts = Path(rel).parts
+    original = (farm / rel).read_bytes()
+    replaced: list[tuple[Path, Path]] = []
+    current = farm
+    for part in parts[:-1]:
+        child = current / part
+        if child.is_symlink():
+            target = child.resolve()
+            replaced.append((child, target))
+            child.unlink()
+            child.mkdir()
+            for entry in target.iterdir():
+                (child / entry.name).symlink_to(entry)
+        current = child
+    leaf = current / parts[-1]
+    assert leaf.is_symlink(), (
+        f"{leaf} is not a symlink, so writing it would edit the committed "
+        "module rather than the farm's view of it")
+    leaf.unlink()
+    leaf.write_bytes(original + suffix)
+    try:
+        yield leaf
+    finally:
+        #: Innermost first: each directory has to be a link again before the one
+        #: containing it is replaced by its own.
+        for link, target in reversed(replaced):
+            shutil.rmtree(link)
+            link.symlink_to(target)
+        assert (farm / rel).read_bytes() == original
+
+
+@contextmanager
+def _mutated_dataset_file(farm: Path, name: str, edit):
+    """Replace one confirmation-dataset artifact with an edited copy.
+
+    ``_build_farm`` makes ``data/mllmu_hier_confirm100`` a REAL directory whose
+    entries are links, so unlinking an entry removes the link and the committed
+    dataset is never written to — the property ``_mutated_freeze`` relies on.
+    ``edit`` takes the artifact's bytes and returns the replacement.
+    """
+    path = farm / ecs.CONFIRM_DATASET_DIR / name
+    assert path.is_symlink(), (
+        f"{path} is not a symlink, so writing it would edit the committed "
+        "dataset rather than the farm's view of it")
+    target = path.resolve()
+    original = path.read_bytes()
+    path.unlink()
+    path.write_bytes(edit(original))
+    try:
+        yield path
+    finally:
+        path.unlink(missing_ok=True)
+        path.symlink_to(target)
+        assert path.read_bytes() == original
+
+
+def _edited_parquet(raw: bytes, mutate) -> bytes:
+    """``mutate`` a DataFrame, then return the rewritten file's bytes.
+
+    Rewritten rather than patched byte-wise, because the claim under test is
+    that the freeze binds the FILE: a change to one cell that leaves every
+    query id and every count intact still has to be visible.
+    """
+    import pandas as pd
+    frame = pd.read_parquet(io.BytesIO(raw))
+    mutate(frame)
+    out = io.BytesIO()
+    frame.to_parquet(out, index=False)
+    return out.getvalue()
 
 
 def _absent_photographs(repo_root: Path) -> list[str]:
@@ -961,6 +1044,77 @@ class TestTheFrozenCodeHashesAreComparedAndNotJustRecorded:
                                                             protocol):
         assert ecs.verify_frozen_code(farm, protocol["freeze"]) == []
 
+    def test_every_fingerprinted_module_is_compared_not_just_recorded(
+            self, farm, protocol):
+        """11C-5R2 finding 1, and THE regression for it.
+
+        ``code.fingerprinted_modules`` held ten hashes that nothing read back:
+        the reviewer edited one in a temporary copy and the preflight still
+        returned no problems.  The sidecar cannot carry this check —
+        ``PredictionFingerprint.build`` hashes these modules into every
+        prediction file, but ``expected_fingerprint`` re-hashes them from the
+        same disk when that file is verified, so an edit moves the recorded
+        value and the expected value together and the sidecar still verifies.
+        """
+        victim = "src/granunlearn/evaluation/scoring.py"
+        assert victim in protocol["freeze"]["code"]["fingerprinted_modules"]
+        with _mutated_module(farm, victim):
+            problems = ecs.verify_frozen_code(farm, protocol["freeze"])
+        assert len(problems) == 1
+        assert victim in problems[0]
+        #: It has to say why a sidecar full of these hashes did not notice.
+        assert "CODE_FINGERPRINT_MODULES" in problems[0]
+        assert "no sidecar comparison can notice" in problems[0]
+
+    def test_every_one_of_the_ten_modules_is_covered(self, farm, protocol):
+        """Not just the one above: the check has to reach the modules that
+        define the hierarchy, the image splits and the persisted row schemas
+        too, or an edit to one of those is still invisible."""
+        bound = protocol["freeze"]["code"]["fingerprinted_modules"]
+        assert set(bound) == set(
+            protocol["freeze"]["code"]["fingerprinted_module_list"])
+        for rel in ("src/granunlearn/evaluation/hierarchy_metrics.py",
+                    "src/granunlearn/evaluation/image_splits.py",
+                    "src/granunlearn/schema/prediction.py"):
+            assert rel in bound, rel
+            with _mutated_module(farm, rel):
+                problems = ecs.verify_frozen_code(farm, protocol["freeze"])
+            assert len(problems) == 1, rel
+            assert rel in problems[0]
+
+    def test_a_fingerprinted_module_that_is_absent_is_reported(self, farm):
+        def mutate(f):
+            code = dict(f["code"])
+            modules = dict(code["fingerprinted_modules"], **{
+                "src/granunlearn/evaluation/never_written.py": "0" * 64})
+            return dict(f, code=dict(code, fingerprinted_modules=modules))
+        with _mutated_freeze(farm, mutate):
+            problems = ecs.verify_frozen_code(farm, ecs.load_frozen_protocol(farm))
+        assert any("absent from the repository" in p for p in problems)
+
+    def test_a_module_listed_but_not_hashed_is_reported(self, farm):
+        """The freeze records the module LIST beside the hashes, so a dict
+        missing an entry is detectable rather than silently shorter: hashing nine
+        of the ten would still leave every sidecar verifiable."""
+        def mutate(f):
+            code = dict(f["code"])
+            modules = dict(code["fingerprinted_modules"])
+            modules.pop("src/granunlearn/evaluation/scoring.py")
+            return dict(f, code=dict(code, fingerprinted_modules=modules))
+        with _mutated_freeze(farm, mutate):
+            problems = ecs.verify_frozen_code(farm, ecs.load_frozen_protocol(farm))
+        assert any("pins no sha256 for" in p and "scoring.py" in p
+                   for p in problems)
+
+    def test_a_freeze_that_pins_no_fingerprinted_modules_is_a_refusal(
+            self, farm):
+        def mutate(f):
+            return dict(f, code=dict(f["code"], fingerprinted_modules={}))
+        with _mutated_freeze(farm, mutate):
+            problems = ecs.verify_frozen_code(farm, ecs.load_frozen_protocol(farm))
+        assert any("binds no code.fingerprinted_modules" in p
+                   for p in problems)
+
     def test_both_confirmation_scripts_and_paired_ci_are_in_the_bound_set(
             self, protocol):
         bound = protocol["freeze"]["code"]["analysis_scripts_sha256"]
@@ -1036,7 +1190,324 @@ class TestTheFrozenCodeHashesAreComparedAndNotJustRecorded:
         compliance = report["protocol_compliance"]
         assert compliance["frozen_code_hashes_verified_at_runtime"] is True
         assert "analysis_scripts_sha256" in \
-            compliance["what_the_three_runtime_verifications_are"]
+            compliance["what_the_runtime_verifications_are"]
+
+    def test_the_analysis_refuses_an_edited_fingerprinted_module(self, scored):
+        """End to end: no report is assembled under an edited scorer.
+
+        The analysis imports the module at process start, so the edit does not
+        change what THIS process computes — it changes what the repository says
+        the protocol was, which is the thing a preregistered verdict has to be
+        produced under.
+        """
+        with (_mutated_module(scored,
+                              "src/granunlearn/evaluation/scoring.py"),
+              pytest.raises(SystemExit, match="CODE_FINGERPRINT_MODULES")):
+            acs.analyze(scored)
+
+
+class TestTheFrozenDatasetIsBoundByItsBytes:
+    """11C-5R2 finding 2: the frozen query semantics could change undetected.
+
+    ``confirmation_queries`` binds the SORTED query-id list and the row count.
+    That identifies which probes were selected — the right thing to seal at
+    stage 3 — and says nothing about what they ask.  A prompt with an extra
+    instruction appended behind an unchanged ``query_id`` was accepted as the
+    frozen split, and so was an association whose target level had been moved,
+    which changes what every TGA and FILR judgement on that association means.
+
+    The sidecars do not close the gap for the same reason they do not close it
+    for the code hashes: ``expected_fingerprint`` re-derives
+    ``dataset_fingerprint`` from the same directory, so both sides move together.
+    And ``manifest.json``'s own ``frozen_artifact_sha256`` cannot either, because
+    it sits inside the dataset it describes — one test below rewrites a parquet
+    and updates the manifest to agree with it, and the refusal still fires.
+    """
+
+    def test_the_committed_dataset_matches_the_committed_freeze(self, farm,
+                                                               protocol):
+        assert ecs.verify_confirmation_dataset(farm, protocol["freeze"]) == []
+
+    def test_all_three_artifacts_and_the_image_manifest_are_pinned(self,
+                                                                  protocol):
+        bound = protocol["freeze"]["confirmation_dataset"]
+        assert set(bound["artifacts_sha256"]) == set(
+            ecs.CONFIRM_DATASET_ARTIFACTS)
+        assert bound["artifacts_the_hashes_cover"] == sorted(
+            ecs.CONFIRM_DATASET_ARTIFACTS)
+        assert bound["built_at_freeze_time"] is True
+        assert bound["version"] == "confirm100_v1"
+        assert bound["data_dir"] == ecs.CONFIRM_DATASET_DIR
+        assert len(bound["image_manifest_sha256"]) == 64
+        #: Every pinned value is a hash of a file that is actually there.
+        for name, sha in bound["artifacts_sha256"].items():
+            assert len(sha) == 64, name
+
+    def test_a_prompt_rewritten_behind_its_own_id_is_refused(self, farm,
+                                                             protocol):
+        """THE regression.  The seal passes and the dataset check does not, which
+        is the whole point: the ids and the count are not the semantics."""
+        def edit(raw):
+            def mutate(frame):
+                frame.loc[0, "prompt"] = (
+                    frame.loc[0, "prompt"] + " Answer with one word only.")
+            return _edited_parquet(raw, mutate)
+        with _mutated_dataset_file(farm, "queries.parquet", edit):
+            #: The stage-3 seal is satisfied by the edit — same ids, same count.
+            assert len(ecs.confirmation_queries(
+                farm, protocol["freeze"])) == len(protocol["queries"])
+            problems = ecs.verify_confirmation_dataset(farm, protocol["freeze"])
+        assert len(problems) == 1
+        assert "queries.parquet" in problems[0]
+        assert "not the dataset the protocol was frozen over" in problems[0]
+
+    def test_an_answer_set_edited_behind_its_own_id_is_refused(self, farm,
+                                                              protocol):
+        """The mutation that changes a verdict rather than a wording: one query's
+        acceptable answers widened, so a leak would have been scored correct."""
+        def edit(raw):
+            def mutate(frame):
+                frame.loc[0, "expected_answer"] = "something else entirely"
+            return _edited_parquet(raw, mutate)
+        with _mutated_dataset_file(farm, "queries.parquet", edit):
+            problems = ecs.verify_confirmation_dataset(farm, protocol["freeze"])
+        assert any("queries.parquet" in p for p in problems)
+
+    def test_an_association_hierarchy_edited_behind_its_id_is_refused(
+            self, farm, protocol):
+        """``target_level`` decides which rung of the hierarchy counts as a
+        correct answer, so moving it moves TGA and FILR for every query on that
+        association while leaving all 317 ids in place."""
+        def edit(raw):
+            def mutate(frame):
+                frame.loc[0, "target_level"] = frame.loc[0, "target_level"] + 1
+            return _edited_parquet(raw, mutate)
+        with _mutated_dataset_file(farm, "associations.parquet", edit):
+            problems = ecs.verify_confirmation_dataset(farm, protocol["freeze"])
+        assert any("associations.parquet" in p for p in problems)
+
+    def test_a_dataset_that_agrees_with_itself_is_still_refused(self, farm,
+                                                               protocol):
+        """``manifest.json`` declares ``frozen_artifact_sha256`` for the two
+        parquets, so an edit that updates those too leaves the dataset
+        self-consistent.  Only a pin from OUTSIDE the dataset can see it."""
+        import hashlib
+
+        def edit_queries(raw):
+            def mutate(frame):
+                frame.loc[0, "prompt"] = frame.loc[0, "prompt"] + " Briefly."
+            return _edited_parquet(raw, mutate)
+
+        with _mutated_dataset_file(farm, "queries.parquet",
+                                   edit_queries) as edited:
+            new_sha = hashlib.sha256(edited.read_bytes()).hexdigest()
+
+            def edit_manifest(raw):
+                doc = json.loads(raw)
+                doc["frozen_artifact_sha256"]["queries.parquet"] = new_sha
+                return json.dumps(doc, indent=1).encode()
+
+            with _mutated_dataset_file(farm, "manifest.json", edit_manifest):
+                manifest = json.loads(
+                    (farm / ecs.CONFIRM_DATASET_DIR / "manifest.json"
+                     ).read_text())
+                #: The dataset now agrees with itself about the edit.
+                assert manifest["frozen_artifact_sha256"][
+                    "queries.parquet"] == new_sha
+                problems = ecs.verify_confirmation_dataset(
+                    farm, protocol["freeze"])
+        assert any("queries.parquet" in p for p in problems), problems
+        assert any("manifest.json" in p for p in problems), problems
+
+    def test_a_version_that_moved_is_reported(self, farm, protocol):
+        """The version is a string someone can forget to bump, so it is compared
+        rather than trusted — and a bump nobody authorised is reported too."""
+        def mutate(f):
+            return dict(f, confirmation_dataset=dict(
+                f["confirmation_dataset"], version="confirm100_v2"))
+        with _mutated_freeze(farm, mutate):
+            problems = ecs.verify_confirmation_dataset(
+                farm, ecs.load_frozen_protocol(farm))
+        assert any("declares version" in p for p in problems)
+
+    def test_a_rewritten_image_manifest_is_reported(self, farm, protocol):
+        """``verify_image_manifest`` compares 402 photographs AGAINST this
+        roll-up, so a manifest rewritten to describe swapped photographs would
+        agree with the swaps and pass that check."""
+        def mutate(f):
+            return dict(f, confirmation_dataset=dict(
+                f["confirmation_dataset"], image_manifest_sha256="0" * 64))
+        with _mutated_freeze(farm, mutate):
+            problems = ecs.verify_confirmation_dataset(
+                farm, ecs.load_frozen_protocol(farm))
+        assert any("rolls up to" in p for p in problems)
+
+    def test_a_pin_set_missing_one_of_the_three_is_reported(self, farm):
+        """An empty pin set must not read as "nothing to check, all clear", and
+        neither must a shorter one."""
+        def mutate(f):
+            cd = dict(f["confirmation_dataset"])
+            arts = dict(cd["artifacts_sha256"])
+            arts.pop("associations.parquet")
+            return dict(f, confirmation_dataset=dict(
+                cd, artifacts_sha256=arts))
+        with _mutated_freeze(farm, mutate):
+            problems = ecs.verify_confirmation_dataset(
+                farm, ecs.load_frozen_protocol(farm))
+        assert any("pins" in p and "associations.parquet" in p
+                   for p in problems)
+
+    def test_an_artifact_bound_but_absent_is_reported(self, farm):
+        def mutate(f):
+            cd = dict(f["confirmation_dataset"])
+            arts = dict(cd["artifacts_sha256"],
+                        **{"never_written.parquet": "0" * 64})
+            return dict(f, confirmation_dataset=dict(cd,
+                                                     artifacts_sha256=arts))
+        with _mutated_freeze(farm, mutate):
+            problems = ecs.verify_confirmation_dataset(
+                farm, ecs.load_frozen_protocol(farm))
+        assert any("absent from the dataset" in p for p in problems)
+
+    def test_a_freeze_derived_before_the_split_was_built_refuses(self, farm):
+        """The split is built AFTER the protocol is frozen — the builder reads the
+        freeze and refuses when it refuses — so an honest freeze can have no
+        dataset hashes yet.  What is not honest is scoring under it, and the
+        refusal has to say what to do instead."""
+        def mutate(f):
+            return dict(f, confirmation_dataset=dict(
+                f["confirmation_dataset"], artifacts_sha256={},
+                built_at_freeze_time=False,
+                status="the split had NOT been built when this freeze was "
+                       "derived"))
+        with _mutated_freeze(farm, mutate):
+            problems = ecs.verify_confirmation_dataset(
+                farm, ecs.load_frozen_protocol(farm))
+        assert len(problems) == 1
+        assert "binds no confirmation_dataset" in problems[0]
+        assert "had NOT been built" in problems[0]
+        assert "--allow-refreeze" in problems[0]
+
+    def test_a_freeze_with_no_dataset_block_at_all_refuses(self, farm):
+        """The freeze this repair was written against: the key simply was not
+        there, and a ``.get`` chain turned that into an empty pin set."""
+        def mutate(f):
+            out = dict(f)
+            out.pop("confirmation_dataset")
+            return out
+        with _mutated_freeze(farm, mutate):
+            problems = ecs.verify_confirmation_dataset(
+                farm, ecs.load_frozen_protocol(farm))
+        assert any("binds no confirmation_dataset" in p for p in problems)
+
+    def test_the_analysis_refuses_a_rewritten_prompt(self, scored):
+        """End to end: no report over a dataset the freeze does not bind."""
+        def edit(raw):
+            def mutate(frame):
+                frame.loc[0, "prompt"] = frame.loc[0, "prompt"] + " Briefly."
+            return _edited_parquet(raw, mutate)
+        with (_mutated_dataset_file(scored, "queries.parquet", edit),
+              pytest.raises(SystemExit, match="not the dataset the protocol "
+                                              "was frozen over")):
+            acs.analyze(scored)
+
+    def test_the_report_says_the_dataset_hashes_were_compared(self, scored):
+        compliance = acs.analyze(scored)["protocol_compliance"]
+        assert compliance["frozen_dataset_hashes_verified_at_runtime"] is True
+        assert "confirmation_dataset.artifacts_sha256" in \
+            compliance["what_the_runtime_verifications_are"]
+        #: And why the sidecars could not carry it alone.
+        assert "RE-DERIVED" in compliance[
+            "why_the_code_and_dataset_hashes_are_not_left_to_the_sidecars"]
+
+
+class TestTheOutstandingAnswerCannotBePolluted:
+    """11C-5R2 finding 3, in the scorer: the chain's half is in
+    ``test_iteration11c5_chain.py``.
+
+    ``--list-outstanding`` made stdout the data channel and silenced THIS
+    module's logger.  ``setup_logger`` attaches a ``StreamHandler(sys.stdout)``
+    to every logger it creates, and verification reaches into
+    ``prediction_provenance``, whose ``read_sidecar`` logs one ERROR line when a
+    sidecar is truncated.  That line arrived where a state name was expected,
+    reproduced here with a sidecar cut off inside a string.
+    """
+
+    TRUNCATED = '{"contract_version": 2, "experiment_id": "mll'
+
+    def test_a_truncated_sidecar_puts_nothing_into_the_channel(self, farm,
+                                                              protocol,
+                                                              adapters,
+                                                              unscored,
+                                                              monkeypatch,
+                                                              capsys):
+        """THE regression, on the exact artifact the reviewer truncated.
+
+        ``unscored`` rather than a local ``_clear``: ``scored`` is
+        module-scoped, so a test that writes one state and then deletes it
+        leaves the farm missing a state every later test assumes is there.
+        """
+        _write_state(farm, protocol, "B3", "tga")
+        _sidecar_for(farm, "B3").write_text(self.TRUNCATED)
+        _run_main(farm, monkeypatch, "--list-outstanding")
+        out = capsys.readouterr().out
+        assert out.split() == list(protocol["states"]), out
+
+    def test_a_foreign_logger_cannot_reach_the_channel(self, farm, protocol,
+                                                       monkeypatch, capsys):
+        """The general form of the finding: the leak was not this module's
+        logger, so clearing this module's handlers could not have fixed it.  Any
+        logger in the process, at any level, is muted for this mode."""
+        real = ecs.verify_state
+
+        def noisy(*args, **kwargs):
+            logging.getLogger("prediction_provenance").error(
+                "unreadable sidecar %s: %s", "/x/sidecar.json", "truncated")
+            logging.getLogger("some.other.library").warning("a warning")
+            logging.getLogger().critical("a root-logger critical")
+            return real(*args, **kwargs)
+
+        monkeypatch.setattr(ecs, "verify_state", noisy)
+        _run_main(farm, monkeypatch, "--list-outstanding")
+        out = capsys.readouterr().out
+        assert set(out.split()) <= set(protocol["states"]), out
+
+    def test_the_structured_report_names_the_states_and_their_reasons(
+            self, farm, protocol, adapters, unscored, monkeypatch, tmp_path,
+            capsys):
+        """What the chain actually reads, and why it is worth more than a list of
+        names: the reasons are the only diagnosis an unattended run leaves."""
+        _write_state(farm, protocol, "B3", "tga")
+        dest = tmp_path / "outstanding.json"
+        _sidecar_for(farm, "B3").write_text(self.TRUNCATED)
+        _run_main(farm, monkeypatch, "--list-outstanding",
+                  "--outstanding-report", str(dest))
+        captured = capsys.readouterr()
+        doc = json.loads(dest.read_text())
+        assert doc["outstanding_states"] == list(protocol["states"])
+        assert doc["verified_states"] == []
+        assert set(doc["scored_states"]) == set(protocol["states"])
+        assert doc["mode"] == "list-outstanding"
+        assert any("provenance sidecar" in r
+                   for r in doc["reasons"]["B3"]), doc["reasons"]
+        #: stdout and the file agree, so neither can be the wrong one.
+        assert captured.out.split() == doc["outstanding_states"]
+        assert "structured answer written to" in captured.err
+        assert "provenance sidecar" in captured.err
+
+    def test_a_verified_state_is_not_listed_in_the_report(self, scored,
+                                                          protocol,
+                                                          monkeypatch,
+                                                          tmp_path):
+        """The converse: a report that named every state would be safe and
+        useless, and would queue three lanes on a complete run."""
+        dest = tmp_path / "outstanding.json"
+        _run_main(scored, monkeypatch, "--list-outstanding",
+                  "--outstanding-report", str(dest))
+        doc = json.loads(dest.read_text())
+        assert doc["outstanding_states"] == []
+        assert doc["verified_states"] == list(protocol["states"])
+        assert doc["reasons"] == {}
 
 
 class TestTheBaseModelIsPinnedToTheFrozenRevision:
@@ -1395,7 +1866,16 @@ def _run_main(farm: Path, monkeypatch, *argv: str) -> None:
     monkeypatch.setattr(ecs, "_find_repo_root", lambda _cwd: farm)
     monkeypatch.setattr(
         sys, "argv", ["evaluate_confirmation_split.py", *argv])
-    ecs.main()
+    try:
+        ecs.main()
+    finally:
+        #: ``--list-outstanding`` disables logging PROCESS-WIDE, because every
+        #: logger in the import graph writes to stdout through ``setup_logger``
+        #: and stdout is what that mode used to be read from.  In the real script
+        #: that is the rest of the process's life; here it is one call among
+        #: thousands, and leaving the interpreter muted would switch off every
+        #: later test's logging, including pytest's own capture.
+        logging.disable(logging.NOTSET)
 
 
 class TestTheLaneAsksWhatVerifiesNotWhatExists:
@@ -1457,12 +1937,15 @@ class TestTheLaneAsksWhatVerifiesNotWhatExists:
         finally:
             _clear(farm, "B0")
 
-    def test_stdout_is_only_state_names_so_the_lane_can_iterate_it(self, farm,
-                                                                   protocol,
-                                                                   monkeypatch,
-                                                                   capsys):
-        """The logger writes to stdout, so this mode silences it and sends the
-        summary to stderr.  A log line in the list would be handed to --state."""
+    def test_stdout_is_only_state_names_so_a_human_can_read_it(self, farm,
+                                                               protocol,
+                                                               monkeypatch,
+                                                               capsys):
+        """The lane reads a STRUCTURED FILE now, because every logger in the
+        process writes to stdout through ``setup_logger`` and one truncated
+        sidecar was enough to put an error line where a state name was expected.
+        stdout still has to be clean: it is what a person reads, and a mode that
+        prints log lines among its answer is unreadable either way."""
         _run_main(farm, monkeypatch, "--list-outstanding")
         captured = capsys.readouterr()
         assert set(captured.out.split()) <= set(protocol["states"])

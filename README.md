@@ -133,10 +133,10 @@ here instead of hiding every other result behind a collection error in CI.
 ## Tests
 
 ```bash
-pytest tests/unit -q          # 1502 tests, CPU only, ~2.5 min on the artifact box
+pytest tests/unit -q          # 1543 tests, CPU only, ~2.6 min on the artifact box
 ```
 
-The same 1502 pass with `torch`, `transformers`, `peft`, `accelerate` and
+The same 1543 pass with `torch`, `transformers`, `peft`, `accelerate` and
 `datasets` made unimportable, which is how the CPU-only contract is checked on a
 machine that has the GPU stack installed. `.github/workflows/tests.yml` runs the
 unit suite plus a step that loads every committed report the evidence claims
@@ -153,8 +153,9 @@ are gitignored inputs rather than unfinished work:
 
 Both guards skip naming what is absent, and both run on the machine that trained
 the adapters and fetched the pool, which is the machine that will run the three
-GPU passes. Measured: **1431 passed / 71 skipped** in a bare clone with a venv
-built from `requirements/ci-unit.txt` alone, **1502 passed / 0 skipped** here.
+GPU passes. Measured: **1465 passed / 78 skipped / 0 failed** in a bare clone
+with a venv built from `requirements/ci-unit.txt` alone — with and without CI's
+`--maxfail=5` — and **1543 passed / 0 skipped** here.
 The committed half of each boundary — the manifest pinning 402 paths and hashes,
 the pool's disjointness from exploratory media, the fetch provenance behind it —
 is asserted in `test_iteration11c_probes.py` and needs no bytes at all.
@@ -172,12 +173,23 @@ result produced here is hard to produce accidentally.
   `--check-only` re-derives the freeze from the repository and reports DRIFT if
   anything moved; re-freezing needs `--allow-refreeze` and is refused once a
   confirmation prediction exists.
-* **Analysis code is hash-bound.** Seven scripts under
-  `code.analysis_scripts_sha256`, plus `src/granunlearn/evaluation/paired_ci.py`
-  pinned separately because it implements the sign-flip test, the paired CI and
-  the Holm step-down while deliberately sitting outside the code fingerprint.
-  Both the scorer and the analyzer re-hash all of them at runtime: a pin that is
-  recorded but never compared describes the protocol instead of enforcing it.
+* **Code and data are hash-bound, and the hashes are compared.** Four sets of
+  pins are re-checked against the bytes on disk at every runtime entry point —
+  the scorer, the analyzer and the chain's own preconditions: the ten
+  `code.fingerprinted_modules` that turn queries into scores, the seven
+  `code.analysis_scripts_sha256` that turn scores into claims,
+  `src/granunlearn/evaluation/paired_ci.py` pinned separately because it
+  implements the sign-flip test, the paired CI and the Holm step-down while
+  deliberately sitting outside the code fingerprint, and the confirmation
+  dataset's own `queries.parquet`, `associations.parquet`, `manifest.json` and
+  image-manifest roll-up under `confirmation_dataset`. A pin that is recorded
+  but never compared describes the protocol instead of enforcing it, and the
+  prediction sidecars cannot substitute: they hash the same modules and the same
+  dataset files, but the expectation is *re-derived from the same disk* at
+  verification time, so an edit moves both sides together and every sidecar still
+  verifies. Only the freeze holds a value that was fixed before the bytes could
+  be touched — which is why a prompt rewritten behind an unchanged `query_id` is
+  refused now and was not before.
 * **Every prediction carries a provenance sidecar** binding the adapter bytes
   and `adapter_config.json`, the dataset version and artifact hashes, the image
   manifest, the generation configuration, the code fingerprint and the base-model
@@ -207,9 +219,9 @@ One invocation, six steps:
 
 | Step | What it does |
 | --- | --- |
-| `lock` | One chain at a time (`mkdir`, pid recorded). A lock whose pid is dead is reclaimed; a lock naming no pid is left alone. Two chains would queue the same states and write the same parquet |
-| `pre` | Fails before any GPU hour: freeze present and unrefused, split sealed against its query-id hash, all three adapters re-hashed against the pinned contracts, every frozen analysis-script and `paired_ci` hash compared with the bytes on disk, all 402 photographs re-hashed, every image-route query resolved to a photograph, and the base-model revision resolved to the pinned snapshot directory |
-| `todo` | `--list-outstanding`: which states still need work, decided by **verification**, not by whether a filename exists |
+| `lock` | One chain at a time (`mkdir`, pid recorded). A lock whose pid is dead is reclaimed; a lock naming no pid is left alone. Two chains would queue the same states and write the same parquet. The per-run logs are reset **after** the lock is claimed, so a refused duplicate leaves the active run's evidence untouched |
+| `pre` | Fails before any GPU hour: freeze present and unrefused, split sealed against its query-id hash, all three adapters re-hashed against the pinned contracts, every frozen module, analysis-script and `paired_ci` hash compared with the bytes on disk, the three confirmation dataset artifacts and the image-manifest roll-up compared with the freeze, all 402 photographs re-hashed, every image-route query resolved to a photograph, and the base-model revision resolved to the pinned snapshot directory |
+| `todo` | `--list-outstanding`: which states still need work, decided by **verification**, not by whether a filename exists. The answer is written to a structured JSON file the chain reads back, never parsed out of stdout, and every name in it is checked to be exactly `B3`, `B0` or `MG` before anything is queued |
 | `gen` | One lane per outstanding state, each claiming a GPU through `wait_for_gpu.sh`, generating all 1,209 queries, verifying **its own** state and exiting on that alone |
 | `gate` | `--verify-only`: all three sidecars verify and all three were generated over the same query order |
 | `anal` | `analyze_confirmation_split.py`: no GPU, assembles the report |
@@ -232,16 +244,26 @@ restart *and* actually restartable: a state whose parquet exists but does not
 verify is regenerated, where a filename test would skip it, the gate would then
 refuse it, and the chain would stop with the offending file still in place.
 Logs are under `outputs/lanes/`; the chain log is the journal and every other log
-is truncated per run so a tail of one is never a previous run's.
+is reset per run — after the lock is claimed, never before — so a tail of one is
+never a previous run's and a refused second invocation erases nothing.
 
 The same steps by hand:
 
 ```bash
-python scripts/evaluate_confirmation_split.py --list-outstanding
+python scripts/evaluate_confirmation_split.py --list-outstanding \
+    --outstanding-report outputs/lanes/outstanding.json
 python scripts/evaluate_confirmation_split.py --device cuda:0 --state B3
 python scripts/evaluate_confirmation_split.py --verify-only
 python scripts/analyze_confirmation_split.py --check-only
 ```
+
+`--outstanding-report` is what the chain reads: it carries `outstanding_states`,
+`verified_states` and one `reasons` list per outstanding state, so a resumed run
+says *why* a state needs regenerating rather than only that it does. Without the
+flag the same names are printed to stdout, which is clean because that mode
+disables logging process-wide — every logger in the import graph writes to stdout
+through `setup_logger`, and one truncated sidecar was once enough to put an error
+line where a state name was expected.
 
 Prerequisites: the three adapter directories on disk, the pinned base-model
 revision present in the local HF cache (a moved or absent ref refuses rather than
@@ -313,5 +335,6 @@ baselines · **10–11** pilot-100, SalmuBench cross-dataset comparison ·
 **11R** the visual-split repair (the image route had been serving the photograph
 training consumed), provenance-gated reuse, sharded regeneration of all evidence
 · **11C** the confirmation: power analysis, protocol freeze, photograph
-selection, the 1,209-query split, five review repairs, and the dedicated scorer
-and analyzer that will produce the verdict.
+selection, the 1,209-query split, two rounds of blocking review repairs (five
+findings in 11C-5R, four in 11C-5R2), and the dedicated scorer and analyzer that
+will produce the verdict.

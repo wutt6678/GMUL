@@ -22,17 +22,30 @@ when that gate would have passed.
 ``--verify-only`` is the global gate: all three states, reported at once, and
 it is what ``analyze_confirmation_split.py`` re-checks before assembling.
 
-``--list-outstanding`` prints one line per state that does not currently
-VERIFY and exits 0.  The lane uses it to decide what to run, so "outstanding"
-means "fails verification" and not "has no filename": a state whose parquet
-exists but whose sidecar or generation-order record is stale is regenerated
-rather than skipped and then refused by the gate with no step that would ever
-rewrite it.  stdout is the data channel in this mode and the logger is silenced
-into stderr, because the lane iterates over what it reads.
+``--list-outstanding`` reports the states that do not currently VERIFY and
+exits 0.  The lane uses it to decide what to run, so "outstanding" means
+"fails verification" and not "has no filename": a state whose parquet exists
+but whose sidecar or generation-order record is stale is regenerated rather
+than skipped and then refused by the gate with no step that would ever rewrite
+it.
+
+The answer goes into a STRUCTURED FILE named by ``--outstanding-report``, not
+into stdout.  An earlier revision made stdout the data channel and silenced
+this module's own logger, which looked safe and was not: ``setup_logger``
+attaches a ``StreamHandler(sys.stdout)`` to every logger it creates, three of
+them are live in this process, and verification reaches into one of the other
+two.  One truncated sidecar was enough — ``read_sidecar`` logs "unreadable
+sidecar …" through ``prediction_provenance``'s logger, that line landed in the
+list the lane read with ``mapfile``, and the lane queued a fourth "state" whose
+name was an error message: it created a log file called
+``confirm100_11c5_[2026-09-09 00:01:41] ERROR ….log`` and spent a GPU claim
+failing ``--state``'s own validation.  Logging is now disabled process-wide in
+this mode as well, so a fourth logger added by a later import cannot reopen the
+hole, and the human-readable summary still goes to stderr.
 
 The preflight, run in EVERY mode
 --------------------------------
-Before any state is generated, reused or verified, four things are checked
+Before any state is generated, reused or verified, six things are checked
 against the bytes on disk rather than trusted from the freeze's record of them:
 
 * every hash in ``code.analysis_scripts_sha256``, plus the separately pinned
@@ -40,6 +53,21 @@ against the bytes on disk rather than trusted from the freeze's record of them:
   implements the sign-flip test, the paired CI and the Holm step-down, and is
   deliberately outside ``CODE_FINGERPRINT_MODULES``.  A pin that is recorded but
   never compared describes the protocol instead of enforcing it.
+* every hash in ``code.fingerprinted_modules`` — the ten modules that turn
+  queries into scores.  These ARE hashed into every sidecar by
+  ``PredictionFingerprint.build``, which made them look covered; they were not,
+  because ``expected_fingerprint`` re-hashes them from the same disk at
+  verification time, so a module edited after the freeze moves the recorded
+  value and the expected value together and every sidecar still verifies.
+* the confirmation dataset's own bytes: ``queries.parquet``,
+  ``associations.parquet``, ``manifest.json`` and the image-manifest roll-up,
+  pinned in ``confirmation_dataset``.  The stage-3 seal binds the sorted
+  query-ID list and the row count, which says WHICH probes were selected and
+  nothing about what they ask, so a prompt rewritten behind an unchanged
+  ``query_id`` — or an association's ``levels`` edited, which moves every
+  ancestor_retention and wrong_branch judgement — passed as the frozen split.
+  The sidecar's ``dataset_fingerprint`` cannot catch it either, for the same
+  both-sides-move reason as the modules above.
 * ``verify_image_manifest`` over the 402 pinned photographs, so a swapped or
   truncated file is refused.
 * PER-QUERY image resolution, because ``ReferenceStateGenerator._render_prompt``
@@ -127,7 +155,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import logging
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -137,6 +167,7 @@ from granunlearn.evaluation.prediction_provenance import (
     adapter_contract,
     base_model_revision,
     dataset_version,
+    image_manifest_sha256,
     referenced_image_paths,
     resolve_image_path,
     sha256_file,
@@ -166,6 +197,17 @@ log = setup_logger("evaluate_confirmation_split")
 TAG = "pilot100"
 CONFIRM_TAG = "confirm100"
 CONFIRM_DATASET_DIR = f"data/mllmu_hier_{CONFIRM_TAG}"
+
+#: The dataset artifacts the freeze pins by hash.  These are the three files
+#: ``dataset_fingerprint`` hashes, and they are the whole of the frozen query
+#: semantics: the prompts and answer sets live in ``queries.parquet``, the
+#: hierarchies that decide every granularity judgement live in
+#: ``associations.parquet``, and ``manifest.json`` declares the version and the
+#: counts the seal cross-checks.  ``image_manifest.json`` is bound beside them
+#: through its own roll-up rather than as a file hash, because that roll-up is
+#: what ``verify_image_manifest`` compares 402 photographs against.
+CONFIRM_DATASET_ARTIFACTS = ("queries.parquet", "associations.parquet",
+                             "manifest.json")
 FREEZE_REPORT = f"data/reports/mllmu_{TAG}_confirmation_freeze.json"
 CONFIRM_REPORT = f"data/reports/mllmu_{TAG}_confirmation_power.json"
 EXPERIMENT_ID = f"mllmu_{CONFIRM_TAG}_iter11c"
@@ -573,11 +615,104 @@ def verify_confirmation_images(repo_root: Path, queries: list[QueryRecord],
     return problems
 
 
+def verify_confirmation_dataset(repo_root: Path,
+                                freeze: dict[str, Any]) -> list[str]:
+    """Every way the confirmation dataset on disk is not the frozen one.
+
+    The stage-3 seal in ``confirmation_size`` binds the SORTED query-id list
+    and the row count.  That identifies which probes were selected, and it is
+    the right thing to seal at stage 3, but it says nothing about what the
+    probes ASK: rewriting a prompt behind an unchanged ``query_id``, changing
+    an ``expected_answer``, or editing an association's ``levels`` — which
+    moves every ``ancestor_retention`` and ``wrong_branch`` judgement derived
+    from it — all leave the id list and the count untouched.  Measured, not
+    hypothetical: a prompt with an extra instruction appended was accepted as
+    the frozen split, and an association renamed to a different entity was too.
+
+    The sidecar does not close the gap.  ``PredictionFingerprint.build`` hashes
+    these same three artifacts, but ``expected_fingerprint`` re-hashes them
+    from the same directory at verification time, so a dataset edited after
+    generation moves the recorded value and the expected value together and
+    every sidecar still verifies.  The freeze is the only pin whose value was
+    fixed before the bytes could be touched, which is why the comparison lives
+    here and not in ``verify_sidecar``.
+
+    ``manifest.json``'s own ``frozen_artifact_sha256`` is not a substitute
+    either: it sits inside the dataset it describes, so whoever rewrote a
+    parquet could rewrite the hash beside it.
+    """
+    data_dir = repo_root / CONFIRM_DATASET_DIR
+    bound = freeze.get("confirmation_dataset") or {}
+    want = bound.get("artifacts_sha256") or {}
+    problems: list[str] = []
+    if not want:
+        #: An empty pin set must not read as "nothing to check, all clear",
+        #: and neither must the freeze that legitimately predates the build:
+        #: the split is derived AFTER the protocol is frozen, so the first
+        #: freeze of a fresh checkout can honestly have no dataset to hash.
+        #: What is not honest is scoring under it.
+        status = bound.get("status")
+        problems.append(
+            "the freeze binds no confirmation_dataset.artifacts_sha256"
+            + (f" — {status} —" if status else ",")
+            + " so the queries, associations and manifest this run would "
+            "score are pinned by nothing outside the dataset itself. "
+            "Re-freeze over the built split before scoring: "
+            "python scripts/freeze_confirmation_protocol.py "
+            "--allow-refreeze")
+        return problems
+    unpinned = [n for n in CONFIRM_DATASET_ARTIFACTS if n not in want]
+    if unpinned:
+        problems.append(
+            f"the freeze's confirmation_dataset pins {sorted(want)} but not "
+            f"{unpinned}, so the semantics those files carry are unbound "
+            "while the ones beside them are")
+    for name, want_sha in sorted(want.items()):
+        path = data_dir / name
+        if not path.exists():
+            problems.append(f"{CONFIRM_DATASET_DIR}/{name}: bound by the "
+                            "freeze but absent from the dataset")
+            continue
+        got = sha256_file(path)
+        if got != want_sha:
+            problems.append(
+                f"{CONFIRM_DATASET_DIR}/{name}: the freeze binds {want_sha} "
+                f"but the file is now {got} — this is not the dataset the "
+                "protocol was frozen over, so its prompts, answer sets or "
+                "hierarchies may have moved while the query ids stayed put. "
+                "Rebuild it from the frozen design and re-freeze, and do not "
+                "score this one.")
+    #: The version is a string someone can forget to bump, so it is compared
+    #: rather than trusted; the hashes above are what actually binds.
+    got_version = dataset_version(data_dir)
+    if bound.get("version") != got_version:
+        problems.append(
+            f"{CONFIRM_DATASET_DIR}/manifest.json declares version "
+            f"{got_version!r} but the freeze pinned "
+            f"{bound.get('version')!r}")
+    #: Bound because ``verify_image_manifest`` compares 402 photographs
+    #: AGAINST this roll-up: a manifest rewritten to describe swapped
+    #: photographs would agree with the swaps and pass that check.
+    got_manifest = image_manifest_sha256(data_dir)
+    if bound.get("image_manifest_sha256") != got_manifest:
+        problems.append(
+            f"{CONFIRM_DATASET_DIR}/image_manifest.json rolls up to "
+            f"{got_manifest!r} but the freeze pinned "
+            f"{bound.get('image_manifest_sha256')!r}, so the photographs the "
+            "image checks compare against are not the frozen set")
+    return problems
+
+
 def verify_frozen_code(repo_root: Path, freeze: dict[str, Any]) -> list[str]:
     """Every code hash the freeze pins, compared against the bytes on disk NOW.
 
-    The freeze binds two sets and this checks both:
+    The freeze binds three sets and this checks all three:
 
+    * ``code.fingerprinted_modules`` — the ten modules that turn queries into
+      scores.  ``PredictionFingerprint.build`` hashes them into every sidecar,
+      which made them look enforced; they were not, because the expectation is
+      re-derived from the same bytes, so an edit moves both sides together.
+      This is the only place the frozen value is held.
     * ``code.analysis_scripts_sha256`` — the seven scripts that turn scores
       into claims.  Recording them without checking them is a description of
       the protocol rather than an enforcement of it: sealed-split invariant 7
@@ -595,7 +730,38 @@ def verify_frozen_code(repo_root: Path, freeze: dict[str, Any]) -> list[str]:
     them at once and fold them into their own refusal lists.
     """
     problems: list[str] = []
-    bound = (freeze.get("code") or {}).get("analysis_scripts_sha256") or {}
+    code = freeze.get("code") or {}
+    modules = code.get("fingerprinted_modules") or {}
+    listed = code.get("fingerprinted_module_list") or []
+    if not modules:
+        problems.append(
+            "the freeze binds no code.fingerprinted_modules, so the modules "
+            "that turn queries into scores are unpinned")
+    #: The freeze records the module LIST beside the hashes, so a dict missing
+    #: an entry is detectable rather than silently shorter: hashing nine of ten
+    #: modules would still leave every sidecar verifiable.
+    unpinned = [rel for rel in listed if rel not in modules]
+    if unpinned:
+        problems.append(
+            f"the freeze lists {len(listed)} fingerprinted modules but pins no "
+            f"sha256 for {unpinned}, so those would be hashed into every "
+            "sidecar while nothing compares them with the frozen bytes")
+    for rel, want in sorted(modules.items()):
+        path = repo_root / rel
+        if not path.exists():
+            problems.append(f"{rel}: bound by code.fingerprinted_modules but "
+                            "absent from the repository")
+            continue
+        got = sha256_file(path)
+        if got != want:
+            problems.append(
+                f"{rel}: the freeze binds {want} but the file is now {got} — "
+                "this module is in CODE_FINGERPRINT_MODULES, so it defines "
+                "what a score MEANS, and every sidecar hashes it from the "
+                "same disk this check does, so no sidecar comparison can "
+                "notice the edit. Re-freeze before scoring rather than "
+                "scoring under a protocol the repository no longer matches")
+    bound = code.get("analysis_scripts_sha256") or {}
     if not bound:
         problems.append(
             "the freeze binds no analysis_scripts_sha256, so the code that "
@@ -837,7 +1003,7 @@ def main() -> None:
                              "is the gate analyze_confirmation_split.py "
                              "re-checks before it will assemble a report.")
     parser.add_argument("--list-outstanding", action="store_true",
-                        help="Print one line per state that does not currently "
+                        help="Report every state that does not currently "
                              "VERIFY, then exit 0. This is how the lane decides "
                              "what to run: a state is outstanding because its "
                              "sidecar or generation-order record fails, not "
@@ -845,15 +1011,31 @@ def main() -> None:
                              "partial pass is regenerated instead of being "
                              "skipped and then failing the gate with no way "
                              "forward.")
+    parser.add_argument("--outstanding-report", default=None,
+                        help="With --list-outstanding, write the answer as a "
+                             "STRUCTURED JSON file to this path as well as "
+                             "printing it. The lane reads the file, not "
+                             "stdout: every logger in this process writes to "
+                             "stdout through setup_logger, so a single "
+                             "'unreadable sidecar' line from a library was "
+                             "once read as the name of a state to generate. "
+                             "The file also carries each state's reasons, "
+                             "which stdout cannot.")
     args = parser.parse_args()
 
     if args.list_outstanding:
-        #: stdout is the DATA channel in this mode: the lane reads state names
-        #: from it and iterates over them.  ``setup_logger`` attaches a
-        #: ``StreamHandler(sys.stdout)``, so the logger is silenced here and the
-        #: summary goes to stderr — otherwise the lane would have to filter log
-        #: lines out of a list it is about to feed to ``--state``.
-        log.handlers.clear()
+        #: Logging is disabled PROCESS-WIDE, not just for this module's logger.
+        #: ``setup_logger`` attaches a ``StreamHandler(sys.stdout)``, and
+        #: importing this script creates THREE loggers that have one —
+        #: ``evaluate_confirmation_split``, ``prediction_provenance`` and
+        #: ``reference_eval``, measured — so clearing ``log.handlers`` left the
+        #: other two writing into what the lane read: a truncated sidecar made
+        #: ``read_sidecar`` log one ERROR line, and the lane took it for a state
+        #: name.  The structured report below is the real fix — the lane no
+        #: longer parses stdout at all — and this is why stdout stays
+        #: trustworthy for anybody who still reads it, including a fourth logger
+        #: added by a later import.
+        logging.disable(logging.CRITICAL)
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
     freeze = load_frozen_protocol(repo_root)
@@ -879,6 +1061,7 @@ def main() -> None:
     #: too; checking only before generation would let a stale-but-verifying
     #: file through on a dataset whose images had been swapped underneath it.
     problems = verify_frozen_code(repo_root, freeze)
+    problems += verify_confirmation_dataset(repo_root, freeze)
     problems += verify_confirmation_images(repo_root, queries, by_assoc)
     live_revision = base_model_revision(model_id)
     if live_revision is not None and live_revision != revision:
@@ -898,11 +1081,16 @@ def main() -> None:
     log.info("base model %s pinned at revision %s", model_id, revision)
     log.info("generation order sha256: %s", order_sha)
     log.info("scored states: %s (and no others)", list(states))
-    log.info("preflight: %d analysis-script hash(es) plus paired_ci verified, "
-             "%d pinned photograph(s) re-hashed, %d of %d queries are "
-             "image-route and every one resolves to a frozen byte",
-             len((freeze.get("code") or {}).get(
-                 "analysis_scripts_sha256") or {}),
+    _code = freeze.get("code") or {}
+    log.info("preflight: %d fingerprinted-module hash(es), %d analysis-script "
+             "hash(es) plus paired_ci, and %d dataset artifact(s) with the "
+             "image-manifest roll-up all compared with the freeze; %d pinned "
+             "photograph(s) re-hashed; %d of %d queries are image-route and "
+             "every one resolves to a frozen byte",
+             len(_code.get("fingerprinted_modules") or {}),
+             len(_code.get("analysis_scripts_sha256") or {}),
+             len((freeze.get("confirmation_dataset") or {}).get(
+                 "artifacts_sha256") or {}),
              len(referenced_image_paths(repo_root / CONFIRM_DATASET_DIR)),
              sum(1 for q in queries if q.image_ids), len(queries))
 
@@ -911,11 +1099,47 @@ def main() -> None:
                             model_id, generation_config)
 
     if args.list_outstanding:
-        outstanding = [s for s in states if _verify(s)[0] is None]
+        #: Reasons are collected rather than discarded.  "B3 is outstanding" on
+        #: its own is an invitation to delete the wrong file; "B3 is outstanding
+        #: because its sidecar records a different adapter contract" says what
+        #: to do about it, and the chain's journal is the only place an operator
+        #: will look at hour three.
+        verdicts = {s: _verify(s) for s in states}
+        outstanding = [s for s in states if verdicts[s][0] is None]
+        report = {
+            "generated_utc": datetime.now(timezone.utc).isoformat(
+                timespec="seconds"),
+            "mode": "list-outstanding",
+            "scored_states": list(states),
+            "outstanding_states": outstanding,
+            "verified_states": [s for s in states if s not in outstanding],
+            "reasons": {s: verdicts[s][1] for s in outstanding},
+            "what_outstanding_means": (
+                "fails verify_state against THIS run's adapter bytes, dataset "
+                "version, artifact hashes, generation configuration, code "
+                "fingerprint and generation-order record — not merely 'has no "
+                "parquet yet', so a stale partial pass is regenerated rather "
+                "than skipped and then refused by the gate"),
+            "how_to_read_this": (
+                "outstanding_states is the only field a machine should "
+                "iterate, and every item in it is one of scored_states. "
+                "Nothing else in this file, and nothing on stdout, is a state "
+                "name."),
+        }
+        if args.outstanding_report:
+            dest = Path(args.outstanding_report)
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_text(json.dumps(report, indent=1, sort_keys=True))
         for state in outstanding:
             print(state)
         print(f"{len(outstanding)} of {len(states)} states still need "
               f"generation: {outstanding or 'none'}", file=sys.stderr)
+        if args.outstanding_report:
+            print(f"  structured answer written to {args.outstanding_report}",
+                  file=sys.stderr)
+            for state in outstanding:
+                for reason in report["reasons"][state]:
+                    print(f"  {state}: {reason}", file=sys.stderr)
         #: Exit 0 even when nothing is outstanding: an empty list is a complete
         #: answer, not a failure, and a lane that treated it as one would never
         #: reach the gate on a resumed run.
