@@ -192,6 +192,26 @@ ANALYSIS_SCRIPTS = (
     # kept ones decides which photographs the confirmation actually scores, so
     # its bytes are bound beside the rule it executes.
     "scripts/select_confirmation_photographs.py",
+    #: Iteration 11C stage 5.  Sealed-split invariant 7 -- "a failed primary
+    #: claim is reported as failed" -- is enforced by these two hashes and by
+    #: nothing else: the only way to change a confirmation verdict has to be to
+    #: change the protocol, and changing the code that produces the verdict IS
+    #: changing the protocol.  Both are bound because they decide different
+    #: things and either alone would leave a route open:
+    #:
+    #:   evaluate_confirmation_split.py decides WHICH queries are scored, over
+    #:     what ordering, under what generation configuration, and which states
+    #:     count as complete -- so editing it can change the evidence without
+    #:     touching a single line of statistics;
+    #:   analyze_confirmation_split.py decides how that evidence is aggregated
+    #:     -- the entity set the primary pools over, the directions, the Holm
+    #:     family, and which comparisons get a test at all.
+    #:
+    #: ``evaluate_pilot100_final.py`` is bound above and is NOT the
+    #: confirmation scorer; it stays bound because the confirmation is defined
+    #: against the exploratory result it produced.
+    "scripts/evaluate_confirmation_split.py",
+    "scripts/analyze_confirmation_split.py",
 )
 
 
