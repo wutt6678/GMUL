@@ -1,0 +1,856 @@
+{
+ "analysis_parameters_read_from_the_freeze": {
+  "bootstrap_seed": 42,
+  "ci_level": 0.95,
+  "familywise_alpha": 0.05,
+  "n_bootstrap": 1000,
+  "n_permutations": 10000,
+  "none_of_these_is_a_cli_flag_because": "every one is frozen, and a flag that can move a frozen value is a route to drifting from the protocol without editing it",
+  "paired_metrics": [
+   "filr",
+   "tga",
+   "wrong_branch",
+   "over_forgetting",
+   "retain_same",
+   "retain_other"
+  ],
+  "permutation_seed": 20260908,
+  "primary_family": [
+   "B3_minus_B0:tga",
+   "B3_minus_B0:filr"
+  ]
+ },
+ "descriptive": {
+  "b3_minus_mg": {
+   "equivalence_concluded": false,
+   "equivalence_test_run": false,
+   "margin_role": "REPORTING YARDSTICK, not a tested margin",
+   "margin_that_is_not_tested": 0.05,
+   "metrics": {
+    "B3_minus_MG:filr": {
+     "claim_kind": "descriptive",
+     "direction": null,
+     "entity_macro": {
+      "ci": [
+       0.0451,
+       0.1493
+      ],
+      "ci_level": 0.95,
+      "diff": 0.0938,
+      "num_entity_clusters": 72,
+      "num_paired_rows": 864,
+      "rate_a": 0.148148,
+      "rate_b": 0.054398
+     },
+     "entity_set": "all target entities",
+     "num_entity_clusters": 72,
+     "row_micro": {
+      "diff": 0.09375,
+      "num_paired_rows": 864,
+      "rate_a": 0.148148,
+      "rate_b": 0.054398,
+      "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+     },
+     "states_compared": [
+      "B3",
+      "MG"
+     ],
+     "test": null,
+     "why_there_is_no_test": "no hypothesis was preregistered for this comparison, so no p-value is computed; an interval published without a test is a description, and calling it a non-significant result would be reading absence of evidence as evidence of absence"
+    },
+    "B3_minus_MG:over_forgetting": {
+     "claim_kind": "descriptive",
+     "direction": null,
+     "entity_macro": {
+      "ci": [
+       -0.0046,
+       0.0162
+      ],
+      "ci_level": 0.95,
+      "diff": 0.0046,
+      "num_entity_clusters": 72,
+      "num_paired_rows": 864,
+      "rate_a": 0.011574,
+      "rate_b": 0.006944
+     },
+     "entity_set": "all target entities",
+     "num_entity_clusters": 72,
+     "row_micro": {
+      "diff": 0.00463,
+      "num_paired_rows": 864,
+      "rate_a": 0.011574,
+      "rate_b": 0.006944,
+      "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+     },
+     "states_compared": [
+      "B3",
+      "MG"
+     ],
+     "test": null,
+     "why_there_is_no_test": "no hypothesis was preregistered for this comparison, so no p-value is computed; an interval published without a test is a description, and calling it a non-significant result would be reading absence of evidence as evidence of absence"
+    },
+    "B3_minus_MG:retain_other": {
+     "claim_kind": "descriptive",
+     "direction": null,
+     "entity_macro": {
+      "ci": [
+       0.0641,
+       0.4487
+      ],
+      "ci_level": 0.95,
+      "diff": 0.2564,
+      "num_entity_clusters": 26,
+      "num_paired_rows": 78,
+      "rate_a": 0.538462,
+      "rate_b": 0.282051
+     },
+     "entity_set": "all target entities",
+     "num_entity_clusters": 26,
+     "row_micro": {
+      "diff": 0.25641,
+      "num_paired_rows": 78,
+      "rate_a": 0.538462,
+      "rate_b": 0.282051,
+      "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+     },
+     "states_compared": [
+      "B3",
+      "MG"
+     ],
+     "test": null,
+     "why_there_is_no_test": "no hypothesis was preregistered for this comparison, so no p-value is computed; an interval published without a test is a description, and calling it a non-significant result would be reading absence of evidence as evidence of absence"
+    },
+    "B3_minus_MG:retain_same": {
+     "claim_kind": "descriptive",
+     "direction": null,
+     "entity_macro": {
+      "ci": [
+       0.0712,
+       0.246
+      ],
+      "ci_level": 0.95,
+      "diff": 0.1587,
+      "num_entity_clusters": 42,
+      "num_paired_rows": 126,
+      "rate_a": 0.52381,
+      "rate_b": 0.365079
+     },
+     "entity_set": "all target entities",
+     "num_entity_clusters": 42,
+     "row_micro": {
+      "diff": 0.15873,
+      "num_paired_rows": 126,
+      "rate_a": 0.52381,
+      "rate_b": 0.365079,
+      "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+     },
+     "states_compared": [
+      "B3",
+      "MG"
+     ],
+     "test": null,
+     "why_there_is_no_test": "no hypothesis was preregistered for this comparison, so no p-value is computed; an interval published without a test is a description, and calling it a non-significant result would be reading absence of evidence as evidence of absence"
+    },
+    "B3_minus_MG:tga": {
+     "claim_kind": "descriptive",
+     "direction": null,
+     "entity_macro": {
+      "ci": [
+       -0.1667,
+       -0.0254
+      ],
+      "ci_level": 0.95,
+      "diff": -0.0984,
+      "num_entity_clusters": 72,
+      "num_paired_rows": 864,
+      "rate_a": 0.502315,
+      "rate_b": 0.600694
+     },
+     "entity_set": "all target entities",
+     "num_entity_clusters": 72,
+     "row_micro": {
+      "diff": -0.09838,
+      "num_paired_rows": 864,
+      "rate_a": 0.502315,
+      "rate_b": 0.600694,
+      "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+     },
+     "states_compared": [
+      "B3",
+      "MG"
+     ],
+     "test": null,
+     "why_there_is_no_test": "no hypothesis was preregistered for this comparison, so no p-value is computed; an interval published without a test is a description, and calling it a non-significant result would be reading absence of evidence as evidence of absence"
+    },
+    "B3_minus_MG:wrong_branch": {
+     "claim_kind": "descriptive",
+     "direction": null,
+     "entity_macro": {
+      "ci": [
+       -0.0903,
+       0.0093
+      ],
+      "ci_level": 0.95,
+      "diff": -0.037,
+      "num_entity_clusters": 72,
+      "num_paired_rows": 864,
+      "rate_a": 0.137731,
+      "rate_b": 0.174769
+     },
+     "entity_set": "all target entities",
+     "num_entity_clusters": 72,
+     "row_micro": {
+      "diff": -0.037037,
+      "num_paired_rows": 864,
+      "rate_a": 0.137731,
+      "rate_b": 0.174769,
+      "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+     },
+     "states_compared": [
+      "B3",
+      "MG"
+     ],
+     "test": null,
+     "why_there_is_no_test": "no hypothesis was preregistered for this comparison, so no p-value is computed; an interval published without a test is a description, and calling it a non-significant result would be reading absence of evidence as evidence of absence"
+    }
+   },
+   "status": "DESCRIPTIVE \u2014 equivalence is NOT concluded",
+   "why_no_equivalence_conclusion": "equivalence to M_G would need a margin fixed before the comparison plus a test that the WHOLE interval fits inside it. The power analysis measured that equivalence at delta = 0.05 on TGA would need 560 entity clusters against a hard ceiling of 72, and on FILR 2702 against the same 72, so the confirmation cannot conclude it at any margin it could defend. An interval that straddles zero licenses only 'no significant difference detected'; reporting that as 'behaves like M_G' would be reading absence of evidence as evidence of absence."
+  },
+  "other_target_metrics": {
+   "over_forgetting": {
+    "claim_kind": "descriptive",
+    "direction": null,
+    "entity_macro": {
+     "ci": [
+      0.0,
+      0.0301
+     ],
+     "ci_level": 0.95,
+     "diff": 0.0116,
+     "num_entity_clusters": 72,
+     "num_paired_rows": 864,
+     "rate_a": 0.011574,
+     "rate_b": 0.0
+    },
+    "num_entity_clusters": 72,
+    "row_micro": {
+     "diff": 0.011574,
+     "num_paired_rows": 864,
+     "rate_a": 0.011574,
+     "rate_b": 0.0,
+     "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+    },
+    "test": null,
+    "why_there_is_no_test": "no hypothesis was preregistered for this comparison, so no p-value is computed; an interval published without a test is a description, and calling it a non-significant result would be reading absence of evidence as evidence of absence"
+   },
+   "wrong_branch": {
+    "claim_kind": "descriptive",
+    "direction": null,
+    "entity_macro": {
+     "ci": [
+      -0.0729,
+      0.015
+     ],
+     "ci_level": 0.95,
+     "diff": -0.0278,
+     "num_entity_clusters": 72,
+     "num_paired_rows": 864,
+     "rate_a": 0.137731,
+     "rate_b": 0.165509
+    },
+    "num_entity_clusters": 72,
+    "row_micro": {
+     "diff": -0.027778,
+     "num_paired_rows": 864,
+     "rate_a": 0.137731,
+     "rate_b": 0.165509,
+     "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+    },
+    "test": null,
+    "why_there_is_no_test": "no hypothesis was preregistered for this comparison, so no p-value is computed; an interval published without a test is a description, and calling it a non-significant result would be reading absence of evidence as evidence of absence"
+   }
+  },
+  "retention": {
+   "declared_margin": null,
+   "entity_set": "every entity carrying the metric, NOT restricted to the 72 target entities",
+   "metrics": {
+    "B3_minus_B0:retain_other": {
+     "claim_kind": "descriptive",
+     "direction": null,
+     "entity_macro": {
+      "ci": [
+       -0.2224,
+       0.0002
+      ],
+      "ci_level": 0.95,
+      "diff": -0.1111,
+      "num_entity_clusters": 45,
+      "num_paired_rows": 135,
+      "rate_a": 0.518519,
+      "rate_b": 0.62963
+     },
+     "entity_set": "entities carrying this retain metric",
+     "num_entity_clusters": 45,
+     "row_micro": {
+      "diff": -0.111111,
+      "num_paired_rows": 135,
+      "rate_a": 0.518519,
+      "rate_b": 0.62963,
+      "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+     },
+     "test": null,
+     "why_there_is_no_test": "no hypothesis was preregistered for this comparison, so no p-value is computed; an interval published without a test is a description, and calling it a non-significant result would be reading absence of evidence as evidence of absence"
+    },
+    "B3_minus_B0:retain_same": {
+     "claim_kind": "descriptive",
+     "direction": null,
+     "entity_macro": {
+      "ci": [
+       -0.119,
+       0.019
+      ],
+      "ci_level": 0.95,
+      "diff": -0.0476,
+      "num_entity_clusters": 70,
+      "num_paired_rows": 210,
+      "rate_a": 0.52381,
+      "rate_b": 0.571429
+     },
+     "entity_set": "entities carrying this retain metric",
+     "num_entity_clusters": 70,
+     "row_micro": {
+      "diff": -0.047619,
+      "num_paired_rows": 210,
+      "rate_a": 0.52381,
+      "rate_b": 0.571429,
+      "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+     },
+     "test": null,
+     "why_there_is_no_test": "no hypothesis was preregistered for this comparison, so no p-value is computed; an interval published without a test is a description, and calling it a non-significant result would be reading absence of evidence as evidence of absence"
+    }
+   },
+   "route": "text_to_text only",
+   "status": "DESCRIPTIVE \u2014 no margin, no non-inferiority test",
+   "why": "both retention claims were demoted by the 11C-2a decisions: the batch-layout noise floor on the retain metrics is 0.0556, measured by scoring one checkpoint under two batch layouts, and it already exceeds the 0.05 margin that was declared, so no interval at the achievable cluster count could conclude non-inferiority at it. The intervals are published instead.",
+   "why_the_entity_set_is_not_the_primary_one": "the primary estimand is pooled over the 72 target entities, but retention is descriptive and is reported over the entities that actually carry a retain probe \u2014 70 clusters for retain_same and 45 for retain_other. The power report sizes both against a ceiling of 70 ('entities carrying a retain association in the frozen pilot100_v2 manifest') and records that retain_same saturates it while retain_other does not, so 45 is the achieved count and not a second ceiling. Restricting the block to the target set would drop 28 entities' retention evidence for no preregistered reason, and 'retention was not harmed' is a claim about everything the adapters were trained to keep, not about the subset that was also unlearned from."
+  }
+ },
+ "generated_utc": "2026-09-09T09:44:27+00:00",
+ "inputs_bound": {
+  "base_model_id": "Qwen/Qwen3.5-9B",
+  "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+  "dataset_dir": "data/mllmu_hier_confirm100",
+  "dataset_version": "confirm100_v1",
+  "experiment_id": "mllmu_confirm100_iter11c",
+  "freeze_report": "data/reports/mllmu_pilot100_confirmation_freeze.json",
+  "freeze_sha256": "0d4af0e67d010858809d4bb3e9d8b637eed834dbebf7427696200809aae1cee2",
+  "generation_order_sha256": "364ecf5030af647a9fa87937be0f9672e6e2c46c3e7fa43e0227372ac9b28fe2",
+  "power_report": "data/reports/mllmu_pilot100_confirmation_power.json",
+  "power_sha256": "e305ad7df2c96801c7c216dd36a391c161dd8203d6db87d84dc936a9c22b4433",
+  "queries_parquet_sha256": "2bbf6350f210ac202277468afbcdb7ca42b85cd6f3943e22d61175d5da0f6678",
+  "query_id_list_sha256": "05025c40e876aa8d705d134845503b66886f7196bb0f3f3f9a618dfdfc44fdc1",
+  "states": {
+   "B0": {
+    "complete": true,
+    "generation_order_matches_the_other_states": true,
+    "generation_order_sha256": "364ecf5030af647a9fa87937be0f9672e6e2c46c3e7fa43e0227372ac9b28fe2",
+    "num_predictions": 1209,
+    "parquet_sha256": "796471e57c516a0c155aa947dae723c5db5fc5e634547aec0113925d3a30f832",
+    "retain_probe_rows_scored": 345,
+    "sidecar_verified": true,
+    "target_probe_rows_scored": 864
+   },
+   "B3": {
+    "complete": true,
+    "generation_order_matches_the_other_states": true,
+    "generation_order_sha256": "364ecf5030af647a9fa87937be0f9672e6e2c46c3e7fa43e0227372ac9b28fe2",
+    "num_predictions": 1209,
+    "parquet_sha256": "c0e237a00b7d605feedf154bb34a9c40745df1e0950d8ab0bd4fc672477bc210",
+    "retain_probe_rows_scored": 345,
+    "sidecar_verified": true,
+    "target_probe_rows_scored": 864
+   },
+   "MG": {
+    "complete": true,
+    "generation_order_matches_the_other_states": true,
+    "generation_order_sha256": "364ecf5030af647a9fa87937be0f9672e6e2c46c3e7fa43e0227372ac9b28fe2",
+    "num_predictions": 1209,
+    "parquet_sha256": "abef5a1a0d483b0767b5b955d6a7e974ddd453ec18639f9347d2d10312fefc44",
+    "retain_probe_rows_scored": 345,
+    "sidecar_verified": true,
+    "target_probe_rows_scored": 864
+   }
+  }
+ },
+ "iteration": "11C-5",
+ "primary": {
+  "averaging_units_are_reported_separately": true,
+  "claims": {
+   "B3_minus_B0:filr": {
+    "claim_kind": "superiority",
+    "direction": "less",
+    "entity_macro": {
+     "ci": [
+      -0.2176,
+      -0.0937
+     ],
+     "ci_level": 0.95,
+     "diff": -0.1574,
+     "num_entity_clusters": 72,
+     "num_paired_rows": 864,
+     "rate_a": 0.148148,
+     "rate_b": 0.305556
+    },
+    "entity_set": "all target entities",
+    "metric": "filr",
+    "num_entity_clusters": 72,
+    "row_micro": {
+     "diff": -0.157407,
+     "num_paired_rows": 864,
+     "rate_a": 0.148148,
+     "rate_b": 0.305556,
+     "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+    },
+    "states_compared": [
+     "B3",
+     "B0"
+    ],
+    "test": {
+     "all_differences_zero": false,
+     "alternative": "theta < 0",
+     "direction": "less",
+     "method": "Monte Carlo cluster sign-flip permutation",
+     "monte_carlo_se_at_p": 0.0001,
+     "n_permutations": 10000,
+     "null_hypothesis": "each entity's paired difference is symmetric about zero, so all 2^72 sign-flip vectors are equally likely and the mean of a random one is a draw from the null distribution of the statistic",
+     "num_clusters": 72,
+     "num_flippable_clusters": 41,
+     "observed_vector_included_in_the_null": true,
+     "p_smallest_reportable": 0.0001,
+     "p_value_one_sided": 0.0001,
+     "seed": 20260908,
+     "statistic": -0.157407,
+     "statistic_is": "mean over entities of the per-entity paired rate difference - the same quantity paired_rate_diff_ci reports as 'diff' and covers with its interval",
+     "why_that_matters": "an entity whose paired difference is exactly zero cannot be flipped, so the resolution the test has is set by num_flippable_clusters (41) and not by num_clusters (72); when every difference is zero no sign flip can move the statistic and the p-value is 1 by construction",
+     "zero_difference_fraction": 0.4306
+    }
+   },
+   "B3_minus_B0:tga": {
+    "claim_kind": "superiority",
+    "direction": "greater",
+    "entity_macro": {
+     "ci": [
+      0.1007,
+      0.2211
+     ],
+     "ci_level": 0.95,
+     "diff": 0.1586,
+     "num_entity_clusters": 72,
+     "num_paired_rows": 864,
+     "rate_a": 0.502315,
+     "rate_b": 0.34375
+    },
+    "entity_set": "all target entities",
+    "metric": "tga",
+    "num_entity_clusters": 72,
+    "row_micro": {
+     "diff": 0.158565,
+     "num_paired_rows": 864,
+     "rate_a": 0.502315,
+     "rate_b": 0.34375,
+     "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+    },
+    "states_compared": [
+     "B3",
+     "B0"
+    ],
+    "test": {
+     "all_differences_zero": false,
+     "alternative": "theta > 0",
+     "direction": "greater",
+     "method": "Monte Carlo cluster sign-flip permutation",
+     "monte_carlo_se_at_p": 0.0001,
+     "n_permutations": 10000,
+     "null_hypothesis": "each entity's paired difference is symmetric about zero, so all 2^72 sign-flip vectors are equally likely and the mean of a random one is a draw from the null distribution of the statistic",
+     "num_clusters": 72,
+     "num_flippable_clusters": 44,
+     "observed_vector_included_in_the_null": true,
+     "p_smallest_reportable": 0.0001,
+     "p_value_one_sided": 0.0001,
+     "seed": 20260908,
+     "statistic": 0.158565,
+     "statistic_is": "mean over entities of the per-entity paired rate difference - the same quantity paired_rate_diff_ci reports as 'diff' and covers with its interval",
+     "why_that_matters": "an entity whose paired difference is exactly zero cannot be flipped, so the resolution the test has is set by num_flippable_clusters (44) and not by num_clusters (72); when every difference is zero no sign flip can move the statistic and the p-value is 1 by construction",
+     "zero_difference_fraction": 0.3889
+    }
+   }
+  },
+  "estimand": "pooled_over_target_entities",
+  "multiplicity": {
+   "familywise_alpha": 0.05,
+   "holm": {
+    "all_rejected": true,
+    "familywise_alpha": 0.05,
+    "k": 2,
+    "ordering": "ascending p-value, ties broken by claim name",
+    "rejected": [
+     "B3_minus_B0:filr",
+     "B3_minus_B0:tga"
+    ],
+    "retained": [],
+    "steps": [
+     {
+      "claim": "B3_minus_B0:filr",
+      "clears_its_own_threshold": true,
+      "p_value_one_sided": 0.0001,
+      "rejected": true,
+      "step": 1,
+      "threshold": 0.025,
+      "why": "p <= alpha/(k - i) and no earlier step failed"
+     },
+     {
+      "claim": "B3_minus_B0:tga",
+      "clears_its_own_threshold": true,
+      "p_value_one_sided": 0.0001,
+      "rejected": true,
+      "step": 2,
+      "threshold": 0.05,
+      "why": "p <= alpha/(k - i) and no earlier step failed"
+     }
+    ],
+    "stopping_rule": "the first non-rejection ends the procedure; every later claim is retained whether or not it clears its own threshold",
+    "thresholds": [
+     0.025,
+     0.05
+    ],
+    "thresholds_apply_to": "one-sided p-values",
+    "tie_handling": "ties are ordered by claim name so the procedure is reproducible from the p-values alone; the break cannot change a verdict, because tied p-values meet the same threshold at the same step"
+   },
+   "k": 2,
+   "procedure": "Holm",
+   "thresholds_apply_to": "one-sided p-values"
+  },
+  "target_entities": {
+   "derived_from": "data/mllmu_hier_confirm100/manifest.json target_association_ids joined to associations.parquet entity_id",
+   "persons": 42,
+   "species": 30,
+   "target_association_ids": 90,
+   "target_association_ids_match_the_freeze": true,
+   "target_association_ids_sha256": "d86c92ad439b1f451fb25d17974145e1080d86705194ff786846a6fc2dbfce78",
+   "target_entity_ids": 72,
+   "target_entity_ids_match_the_freeze": true,
+   "target_entity_ids_sha256": "acbf30d42b461a5c08a9d8d5fc6d4f12ed03043a92fbee9fdb03a1b2e0606225"
+  },
+  "verdict": {
+   "all_rejected": true,
+   "per_claim": {
+    "B3_minus_B0:filr": {
+     "entity_macro_ci": [
+      -0.2176,
+      -0.0937
+     ],
+     "entity_macro_diff": -0.1574,
+     "p_value_one_sided": 0.0001,
+     "rejected": true,
+     "row_micro_diff": -0.157407,
+     "statement": "B3_minus_B0:filr is REJECTED at familywise alpha 0.05 by Holm step 1",
+     "threshold_at_its_step": 0.025
+    },
+    "B3_minus_B0:tga": {
+     "entity_macro_ci": [
+      0.1007,
+      0.2211
+     ],
+     "entity_macro_diff": 0.1586,
+     "p_value_one_sided": 0.0001,
+     "rejected": true,
+     "row_micro_diff": 0.158565,
+     "statement": "B3_minus_B0:tga is REJECTED at familywise alpha 0.05 by Holm step 2",
+     "threshold_at_its_step": 0.05
+    }
+   },
+   "rejected": [
+    "B3_minus_B0:filr",
+    "B3_minus_B0:tga"
+   ],
+   "retained": []
+  }
+ },
+ "protocol_compliance": {
+  "anything_tuned_on_these_predictions": false,
+  "base_model_revision_verified_at_runtime": true,
+  "checkpoint_selection_invoked": false,
+  "equivalence_test_run": false,
+  "frozen_code_hashes_verified_at_runtime": true,
+  "frozen_dataset_hashes_verified_at_runtime": true,
+  "generation_config": {
+   "batch_size": 8,
+   "do_sample": false,
+   "image_batch_size": 8,
+   "max_image_pixels": 147456,
+   "max_length": 1536,
+   "max_new_tokens": 96
+  },
+  "generation_config_is_the_frozen_one": true,
+  "how_that_is_enforced": "evaluate_confirmation_split.py imports no aggregation code at all, so a run that generated one state and stopped could not print a rate, an interval or a p-value; this script refuses to compute anything until all three sidecars verify",
+  "image_manifest_verified_at_runtime": true,
+  "non_inferiority_test_run": false,
+  "partial_results_were_inspectable_before_completion": false,
+  "query_ordering_identical_across_states": true,
+  "reference_state_gate_invoked": false,
+  "reference_state_gate_parquets_read": [],
+  "selection_report_read": false,
+  "states_excluded": {
+   "B1": "not the subject of any preregistered claim",
+   "B2": "not the subject of any preregistered claim",
+   "B2R": "not the subject of any preregistered claim",
+   "BASE": "no confirmation claim references the un-finetuned model",
+   "MF": "excluded only if the measured adapter contract proves B0 IS the no-op copy of it; see b0_is_the_no_op. If that check fails the freeze refuses rather than dropping a distinct state.",
+   "MN": "the negative-control oracle carries no confirmation claim"
+  },
+  "states_scored": [
+   "B3",
+   "B0",
+   "MG"
+  ],
+  "what_the_runtime_verifications_are": "the analysis is a separate process from the generation and may run on a different checkout, so the freeze's pins are re-checked against the bytes on disk HERE rather than trusted from the generation run: every entry in code.fingerprinted_modules and in code.analysis_scripts_sha256, the separately pinned primary_test.implementation.sha256 for paired_ci.py, every artifact in confirmation_dataset.artifacts_sha256 plus the image-manifest roll-up, the re-hash of every pinned photograph against image_manifest.json, the resolution of every image-route query to a photograph on disk, and the local base-model revision against the freeze's pin. Recording a hash without comparing it describes the protocol instead of enforcing it.",
+  "why_neither_is_invoked": "sealed-split invariants 4 and 5: the confirmation split never enters the reference-state gate and never enters candidate selection or any other go/no-go decision. Selection is complete and frozen, so re-running it on confirmation data would be selecting on the test set; and the gate is a go/no-go on the oracle, so letting it see confirmation data would make the confirmation exploratory in the same way. This module does not know either report's path.",
+  "why_the_code_and_dataset_hashes_are_not_left_to_the_sidecars": "a sidecar records the module hashes and the dataset artifact hashes it was generated under, but verify_sidecar compares that record with an expectation RE-DERIVED from the same disk, so editing a scoring module or rewriting a prompt behind an unchanged query_id moves both sides together and every sidecar still verifies. Only the freeze holds a value that was fixed before the bytes could be touched.",
+  "why_the_photographs_are_checked_per_query_and_not_only_by_hash": "ReferenceStateGenerator drops an image it cannot resolve and generates TEXT-ONLY with no warning, so a photograph that is correctly pinned but unresolvable for a particular query would still produce a provenance-valid sidecar over evidence that was never visual. That module is in CODE_FINGERPRINT_MODULES and cannot be edited without invalidating the 30 committed exploratory sidecars, so the gap is closed in front of it."
+ },
+ "refusals": [],
+ "secondary_strata": {
+  "status": "SECONDARY DIAGNOSTICS ONLY",
+  "strata": {
+   "held_out_photo": {
+    "label": "photograph",
+    "metrics": {
+     "filr": {
+      "claim_kind": "descriptive",
+      "direction": null,
+      "entity_macro": {
+       "ci": [
+        -0.0972,
+        -0.0278
+       ],
+       "ci_level": 0.95,
+       "diff": -0.0611,
+       "num_entity_clusters": 30,
+       "num_paired_rows": 360,
+       "rate_a": 0.036111,
+       "rate_b": 0.097222
+      },
+      "num_entity_clusters": 30,
+      "row_micro": {
+       "diff": -0.061111,
+       "num_paired_rows": 360,
+       "rate_a": 0.036111,
+       "rate_b": 0.097222,
+       "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+      },
+      "test": null,
+      "why_there_is_no_test": "no hypothesis was preregistered for this comparison, so no p-value is computed; an interval published without a test is a description, and calling it a non-significant result would be reading absence of evidence as evidence of absence"
+     },
+     "over_forgetting": {
+      "claim_kind": "descriptive",
+      "direction": null,
+      "entity_macro": {
+       "ci": [
+        0.0,
+        0.0
+       ],
+       "ci_level": 0.95,
+       "diff": 0.0,
+       "num_entity_clusters": 30,
+       "num_paired_rows": 360,
+       "rate_a": 0.0,
+       "rate_b": 0.0
+      },
+      "num_entity_clusters": 30,
+      "row_micro": {
+       "diff": 0.0,
+       "num_paired_rows": 360,
+       "rate_a": 0.0,
+       "rate_b": 0.0,
+       "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+      },
+      "test": null,
+      "why_there_is_no_test": "no hypothesis was preregistered for this comparison, so no p-value is computed; an interval published without a test is a description, and calling it a non-significant result would be reading absence of evidence as evidence of absence"
+     },
+     "tga": {
+      "claim_kind": "descriptive",
+      "direction": null,
+      "entity_macro": {
+       "ci": [
+        0.0167,
+        0.0972
+       ],
+       "ci_level": 0.95,
+       "diff": 0.0528,
+       "num_entity_clusters": 30,
+       "num_paired_rows": 360,
+       "rate_a": 0.636111,
+       "rate_b": 0.583333
+      },
+      "num_entity_clusters": 30,
+      "row_micro": {
+       "diff": 0.052778,
+       "num_paired_rows": 360,
+       "rate_a": 0.636111,
+       "rate_b": 0.583333,
+       "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+      },
+      "test": null,
+      "why_there_is_no_test": "no hypothesis was preregistered for this comparison, so no p-value is computed; an interval published without a test is a description, and calling it a non-significant result would be reading absence of evidence as evidence of absence"
+     },
+     "wrong_branch": {
+      "claim_kind": "descriptive",
+      "direction": null,
+      "entity_macro": {
+       "ci": [
+        -0.0306,
+        0.0083
+       ],
+       "ci_level": 0.95,
+       "diff": -0.0111,
+       "num_entity_clusters": 30,
+       "num_paired_rows": 360,
+       "rate_a": 0.061111,
+       "rate_b": 0.072222
+      },
+      "num_entity_clusters": 30,
+      "row_micro": {
+       "diff": -0.011111,
+       "num_paired_rows": 360,
+       "rate_a": 0.061111,
+       "rate_b": 0.072222,
+       "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+      },
+      "test": null,
+      "why_there_is_no_test": "no hypothesis was preregistered for this comparison, so no p-value is computed; an interval published without a test is a description, and calling it a non-significant result would be reading absence of evidence as evidence of absence"
+     }
+    },
+    "num_entities": 30,
+    "num_probes": 360,
+    "status": "SECONDARY DIAGNOSTIC \u2014 carries no primary claim and no Holm entry",
+    "stratum": "held_out_photo"
+   },
+   "seen_photo_unseen_wording": {
+    "label": "person",
+    "metrics": {
+     "filr": {
+      "claim_kind": "descriptive",
+      "direction": null,
+      "entity_macro": {
+       "ci": [
+        -0.3274,
+        -0.123
+       ],
+       "ci_level": 0.95,
+       "diff": -0.2262,
+       "num_entity_clusters": 42,
+       "num_paired_rows": 504,
+       "rate_a": 0.228175,
+       "rate_b": 0.454365
+      },
+      "num_entity_clusters": 42,
+      "row_micro": {
+       "diff": -0.22619,
+       "num_paired_rows": 504,
+       "rate_a": 0.228175,
+       "rate_b": 0.454365,
+       "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+      },
+      "test": null,
+      "why_there_is_no_test": "no hypothesis was preregistered for this comparison, so no p-value is computed; an interval published without a test is a description, and calling it a non-significant result would be reading absence of evidence as evidence of absence"
+     },
+     "over_forgetting": {
+      "claim_kind": "descriptive",
+      "direction": null,
+      "entity_macro": {
+       "ci": [
+        0.0,
+        0.0595
+       ],
+       "ci_level": 0.95,
+       "diff": 0.0198,
+       "num_entity_clusters": 42,
+       "num_paired_rows": 504,
+       "rate_a": 0.019841,
+       "rate_b": 0.0
+      },
+      "num_entity_clusters": 42,
+      "row_micro": {
+       "diff": 0.019841,
+       "num_paired_rows": 504,
+       "rate_a": 0.019841,
+       "rate_b": 0.0,
+       "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+      },
+      "test": null,
+      "why_there_is_no_test": "no hypothesis was preregistered for this comparison, so no p-value is computed; an interval published without a test is a description, and calling it a non-significant result would be reading absence of evidence as evidence of absence"
+     },
+     "tga": {
+      "claim_kind": "descriptive",
+      "direction": null,
+      "entity_macro": {
+       "ci": [
+        0.1448,
+        0.3254
+       ],
+       "ci_level": 0.95,
+       "diff": 0.2341,
+       "num_entity_clusters": 42,
+       "num_paired_rows": 504,
+       "rate_a": 0.406746,
+       "rate_b": 0.172619
+      },
+      "num_entity_clusters": 42,
+      "row_micro": {
+       "diff": 0.234127,
+       "num_paired_rows": 504,
+       "rate_a": 0.406746,
+       "rate_b": 0.172619,
+       "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+      },
+      "test": null,
+      "why_there_is_no_test": "no hypothesis was preregistered for this comparison, so no p-value is computed; an interval published without a test is a description, and calling it a non-significant result would be reading absence of evidence as evidence of absence"
+     },
+     "wrong_branch": {
+      "claim_kind": "descriptive",
+      "direction": null,
+      "entity_macro": {
+       "ci": [
+        -0.1071,
+        0.0357
+       ],
+       "ci_level": 0.95,
+       "diff": -0.0397,
+       "num_entity_clusters": 42,
+       "num_paired_rows": 504,
+       "rate_a": 0.19246,
+       "rate_b": 0.232143
+      },
+      "num_entity_clusters": 42,
+      "row_micro": {
+       "diff": -0.039683,
+       "num_paired_rows": 504,
+       "rate_a": 0.19246,
+       "rate_b": 0.232143,
+       "why_it_differs_from_the_macro": "micro averages over paired rows and macro over entities; the two agree only when every entity contributes the same number of probes, and here persons contribute 12 target probes and species 12, but the retention families contribute 3 each to unequal numbers of entities"
+      },
+      "test": null,
+      "why_there_is_no_test": "no hypothesis was preregistered for this comparison, so no p-value is computed; an interval published without a test is a description, and calling it a non-significant result would be reading absence of evidence as evidence of absence"
+     }
+    },
+    "num_entities": 42,
+    "num_probes": 504,
+    "status": "SECONDARY DIAGNOSTIC \u2014 carries no primary claim and no Holm entry",
+    "stratum": "seen_photo_unseen_wording"
+   }
+  },
+  "why": "the person stratum is where the exploratory effect was seen, so it is reported because a reader needs it and not because it is tested; the photograph stratum measured -0.0111 over 30 clusters exploratorily with an interval that did not exclude zero. Neither is in the Holm family, and neither can carry a primary conclusion."
+ },
+ "what_this_is": "the confirmation analysis, assembled once from three provenance-verified prediction files over all 1209 confirmation queries"
+}

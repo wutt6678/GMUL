@@ -11,11 +11,14 @@ Why a symlink farm rather than ``tmp_path``
 ``PredictionFingerprint.build`` hashes the adapter bytes, the dataset artifacts
 and the ten fingerprinted modules, all resolved relative to a repo root.  A
 bare temp directory has none of them, and copying them is 300 MB of adapters.
-So the farm symlinks the repository and makes exactly ONE directory real:
-``data/mllmu_hier_confirm100/predictions/``, which is where the fabricated
-parquets go.  The real dataset's ``predictions/`` stays absent throughout, and
-a test asserting that is included below, because the whole point of stage 5 not
-having run yet is that it has not run.
+So the farm symlinks the repository and makes two directories real:
+``data/mllmu_hier_confirm100`` and ``data/reports``.  Inside the first,
+``predictions/`` is where the fabricated parquets go.  Stage 5 has now RUN, so
+the real directory of that name holds the committed confirmation predictions and
+the farm must unlink the link rather than keep it: a test writing through a
+symlinked directory would overwrite the one-shot evidence the result was
+assembled from.  A test below writes into the farm and asserts the committed
+bytes did not move.
 
 What runs where
 ---------------
@@ -24,7 +27,7 @@ the adapters are gitignored.  So the tests that fabricate a state depend on the
 ``adapters`` fixture below and SKIP on a checkout without them — CI, and any
 fresh clone.  The tests that do not fabricate anything (the source-level
 boundary checks, the protocol refusals, the completeness gate over an empty
-farm, and the assertion that the real repository is unscored) run everywhere.
+farm, and the assertions over the committed confirmation result) run everywhere.
 That split is deliberate and it is the repository's existing convention, but it
 is a real coverage boundary and is stated here rather than left to be inferred
 from a skip count.
@@ -32,6 +35,7 @@ from a skip count.
 
 from __future__ import annotations
 
+import hashlib
 import io
 import json
 import logging
@@ -70,12 +74,15 @@ def _build_farm(root: Path) -> Path:
     into the committed repository:
 
     * ``data/mllmu_hier_confirm100`` — its ``predictions/`` is where the
-      fabricated parquets go, and it must not be a link into the real dataset,
-      or a test would leave predictions behind in a dataset whose whole
-      property is that stage 5 has not run;
+      fabricated parquets go, and it must not be a link into the real dataset.
+      Since stage 5 was scored that directory holds the committed confirmation
+      predictions, so a test writing through the link would overwrite one-shot
+      evidence rather than a fixture;
     * ``data/reports`` — several tests below replace the freeze to check a
       refusal, and an ``unlink`` through a symlinked directory would delete the
-      COMMITTED freeze rather than a link to it.
+      COMMITTED freeze rather than a link to it.  Since stage 5 was scored this
+      directory also holds the committed analysis RESULT, so that one link is
+      removed rather than kept; see the comment at the end of this function.
     """
     if root.exists():
         shutil.rmtree(root)
@@ -94,9 +101,28 @@ def _build_farm(root: Path) -> Path:
         for entry in target.iterdir():
             (local / entry.name).symlink_to(entry)
     ds = root / "data" / "mllmu_hier_confirm100"
+    #: The loop above linked every entry of the real dataset directory, and
+    #: ``predictions`` is one of them now that stage 5 has been scored.  Unlink
+    #: it first: ``mkdir(exist_ok=True)`` would leave the SYMLINK standing, and
+    #: then every fabricated parquet below would be written straight through
+    #: into the committed confirmation evidence.
+    (ds / "predictions").unlink(missing_ok=True)
     (ds / "predictions").mkdir()
     assert not (ds / "predictions").is_symlink()
+    assert (ds / "predictions").is_dir()
+    assert list((ds / "predictions").iterdir()) == [], \
+        "the farm must start with no predictions, so the not-reusable path runs"
     assert not (root / "data" / "reports").is_symlink()
+    #: ``data/reports`` is a real directory but its entries are links, and one of
+    #: them is now the COMMITTED confirmation result.  ``analyze()`` only returns
+    #: a dict, but ``main()`` writes to ``repo_root / ANALYSIS_REPORT`` unless
+    #: ``--output`` is given, so a test that ran the analyzer without it would
+    #: write through that link and replace the one-shot result with fabricated
+    #: numbers.  The farm therefore starts WITHOUT it: the report is an artifact
+    #: these tests produce, not an input to them.
+    (root / acs.ANALYSIS_REPORT).unlink(missing_ok=True)
+    assert not (root / acs.ANALYSIS_REPORT).exists(), \
+        "the farm still links the committed analysis report"
     return root
 
 
@@ -441,30 +467,152 @@ def scored(farm, protocol, adapters, photographs) -> Path:
     return farm
 
 
-class TestNothingHasBeenScoredInTheRealRepository:
-    """The precondition every other test in this file depends on.
+class TestTheRealRepositoryHoldsTheScoredConfirmation:
+    """The post-condition every other test in this file now depends on.
 
-    Stage 5 has not run.  If it had, the confirmation would already be scored
-    and these tests would be exercising a protocol whose one-shot property was
-    spent — so this is asserted first and against the REAL paths, not the farm.
+    Stage 5 HAS run.  This class used to assert the opposite — that the real
+    ``predictions/`` was absent and no analysis report had been written — and
+    that assertion was a point in time rather than an invariant, so it went red
+    the moment the chain scored, exactly as its own docstring predicted.  What
+    replaces it is the property that has to hold from now on: the committed
+    prediction files are the ones the committed report bound, the report says
+    nothing was tuned on them, and the farm these tests fabricate in still
+    cannot reach them.
+
+    Every test here needs neither adapter nor photograph, so unlike the
+    fabricating tests it runs in CI and in a fresh clone.
     """
 
-    def test_the_real_dataset_has_no_predictions_directory(self):
-        assert not REAL_PREDICTIONS.exists(), \
-            f"{REAL_PREDICTIONS} exists: stage 5 has already run"
+    @pytest.fixture(scope="class")
+    def report(self) -> dict:
+        assert REAL_ANALYSIS.exists(), \
+            f"{REAL_ANALYSIS} is absent: stage 5 has not been filed"
+        return json.loads(REAL_ANALYSIS.read_text())
 
-    def test_no_analysis_report_has_been_written(self):
-        assert not REAL_ANALYSIS.exists()
+    def test_the_report_was_written_with_nothing_refused(self, report):
+        assert report["refusals"] == []
 
-    def test_the_farm_does_not_write_through_to_the_real_dataset(self, farm):
-        """The farm shares ``data/mllmu_hier_confirm100`` by symlink for every
-        file EXCEPT ``predictions/``, so a fabricated parquet cannot land in
-        the real dataset.  Asserted rather than assumed, because the failure
-        mode is silent and permanent."""
+    def test_the_report_records_that_nothing_was_tuned_on_it(self, report):
+        """Invariants 4, 5 and 7 of the sealed protocol, as the analyzer filed
+        them: no checkpoint selection, no reference-state gate, no partial
+        result inspected before the run completed."""
+        compliance = report["protocol_compliance"]
+        for field in ("anything_tuned_on_these_predictions",
+                      "partial_results_were_inspectable_before_completion",
+                      "checkpoint_selection_invoked",
+                      "selection_report_read",
+                      "reference_state_gate_invoked",
+                      "equivalence_test_run",
+                      "non_inferiority_test_run"):
+            assert compliance[field] is False, field
+        assert compliance["states_scored"] == ["B3", "B0", "MG"]
+
+    def test_every_runtime_pin_verification_is_recorded_as_run(self, report):
+        """Recording a hash without comparing it describes the protocol instead
+        of enforcing it, so the report has to say the comparison happened."""
+        compliance = report["protocol_compliance"]
+        for field in ("frozen_code_hashes_verified_at_runtime",
+                      "frozen_dataset_hashes_verified_at_runtime",
+                      "image_manifest_verified_at_runtime",
+                      "base_model_revision_verified_at_runtime",
+                      "generation_config_is_the_frozen_one",
+                      "query_ordering_identical_across_states"):
+            assert compliance[field] is True, field
+
+    def test_both_primary_claims_were_rejected_under_holm(self, report):
+        primary = report["primary"]
+        assert primary["estimand"] == "pooled_over_target_entities"
+        assert primary["multiplicity"]["procedure"] == "Holm"
+        assert primary["multiplicity"]["k"] == 2
+        verdict = primary["verdict"]
+        assert verdict["all_rejected"] is True
+        assert sorted(verdict["rejected"]) == [
+            "B3_minus_B0:filr", "B3_minus_B0:tga"]
+        assert verdict["retained"] == []
+        for claim in verdict["per_claim"].values():
+            assert claim["rejected"] is True
+            assert claim["p_value_one_sided"] <= 0.05
+
+    def test_each_claim_points_the_direction_the_freeze_declared(self, report):
+        """TGA is an accuracy so better is HIGHER and FILR is a leakage rate so
+        better is LOWER: one sign convention applied to both would test one of
+        them backwards."""
+        claims = report["primary"]["claims"]
+        assert claims["B3_minus_B0:filr"]["direction"] == "less"
+        assert claims["B3_minus_B0:tga"]["direction"] == "greater"
+        assert claims["B3_minus_B0:filr"]["entity_macro"]["diff"] < 0
+        assert claims["B3_minus_B0:tga"]["entity_macro"]["diff"] > 0
+
+    def test_every_prediction_file_on_disk_is_the_one_the_report_bound(self,
+                                                                      report):
+        """The strongest check available without an adapter or a photograph.
+
+        ``inputs_bound`` carries each state's parquet sha256, so hashing the
+        committed bytes ties them to the committed numbers.  A parquet replaced
+        after the analysis was assembled fails here even though nothing about
+        the report itself changed.
+        """
+        states = report["inputs_bound"]["states"]
+        assert sorted(states) == ["B0", "B3", "MG"]
+        for state, bound in sorted(states.items()):
+            parquet = REAL_PREDICTIONS / f"predictions_{state}.parquet"
+            assert parquet.exists(), f"{parquet} is absent"
+            got = hashlib.sha256(parquet.read_bytes()).hexdigest()
+            assert got == bound["parquet_sha256"], (
+                f"{state}: the report bound {bound['parquet_sha256']} but the "
+                f"file on disk is now {got}")
+            assert bound["num_predictions"] == 1209
+            assert bound["complete"] is True
+            assert bound["sidecar_verified"] is True
+            assert bound["generation_order_matches_the_other_states"] is True
+
+    def test_all_three_states_share_one_generation_order(self, report):
+        bound = report["inputs_bound"]
+        orders = {s["generation_order_sha256"] for s in bound["states"].values()}
+        assert len(orders) == 1, f"the states disagree on query order: {orders}"
+        assert orders == {bound["generation_order_sha256"]}
+        for state in ("B3", "B0", "MG"):
+            record = REAL_PREDICTIONS / \
+                f"predictions_{state}.generation_order.json"
+            assert record.exists(), f"{record} is absent"
+            assert json.loads(record.read_text())["generation_order_sha256"] \
+                == bound["generation_order_sha256"]
+
+    def test_the_farm_does_not_write_through_to_the_real_predictions(self, farm):
+        """The isolation the farm exists for, asserted rather than assumed.
+
+        The farm shares ``data/mllmu_hier_confirm100`` by symlink for every file
+        EXCEPT ``predictions/``, which it makes a real empty directory.  Before
+        stage 5 was scored the failure mode was a stray fixture file; now it is
+        overwriting the confirmation itself, and it is still silent.
+        """
+        before = {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
+                  for p in sorted(REAL_PREDICTIONS.iterdir())}
+        assert before, "the committed predictions vanished"
+        report_before = hashlib.sha256(REAL_ANALYSIS.read_bytes()).hexdigest()
         ds = farm / "data" / "mllmu_hier_confirm100"
         assert (ds / "queries.parquet").is_symlink()
         assert not (ds / "predictions").is_symlink()
-        assert not REAL_PREDICTIONS.exists()
+        probe = ds / "predictions" / "write_through_probe.parquet"
+        probe.write_bytes(b"fabricated")
+        #: The report is written one directory over, into ``data/reports``, so
+        #: it gets the same probe: a test running the analyzer's ``main()``
+        #: without ``--output`` would land on the committed result.
+        report_probe = farm / acs.ANALYSIS_REPORT
+        report_probe.write_text('{"fabricated": true}')
+        try:
+            assert not (REAL_PREDICTIONS / probe.name).exists(), \
+                "a write inside the farm landed in the committed dataset"
+            after = {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
+                     for p in sorted(REAL_PREDICTIONS.iterdir())}
+            assert before == after
+            assert hashlib.sha256(REAL_ANALYSIS.read_bytes()).hexdigest() \
+                == report_before, \
+                "a write inside the farm replaced the committed analysis report"
+            assert json.loads(REAL_ANALYSIS.read_text())["refusals"] == []
+        finally:
+            probe.unlink()
+            report_probe.unlink()
 
 
 class TestTheEvaluatorReadsTheProtocolInsteadOfDefaultingIt:

@@ -20,21 +20,54 @@ different results and this repository never collapses them into "incorrect".
 
 ## Status: what has run and what has not
 
-This is a preregistered confirmation design, so "not yet run" is a load-bearing
-fact rather than an omission.
+This is a preregistered confirmation design, so which stage has run is a
+load-bearing fact rather than an omission. Every stage has now run.
 
 | Stage | Artifact | State |
 | --- | --- | --- |
 | Exploratory pipeline (Iterations 1–11R) | `data/reports/mllmu_pilot100_final_evaluation.json`, 30 prediction files bound by `mllmu_pilot100_prediction_manifest.json` | **run, committed** |
 | Confirmation split (11C stage 3) | `data/mllmu_hier_confirm100/` — 1,209 queries, 402 photographs sealed by hash | **built, sealed, committed** |
 | Protocol freeze (11C stage 2, re-frozen through 5R) | `data/reports/mllmu_pilot100_confirmation_freeze.json` — `refusals: []`, `--check-only` clean | **frozen, committed** |
-| Confirmation scoring (11C stage 5) | `data/mllmu_hier_confirm100/predictions/`, `data/reports/mllmu_confirm100_final_analysis.json` | **NOT RUN — both absent** |
+| Confirmation scoring (11C stage 5) | `data/mllmu_hier_confirm100/predictions/` — three files of 1,209 rows each, bound by sidecar; `data/reports/mllmu_confirm100_final_analysis.json` | **run once, scored, committed** |
 
-**No preregistered claim has a verdict yet.** The stage-5 code is committed,
-CPU-tested and hash-bound into the freeze, and is deliberately unrun: the
-confirmation is scored exactly once, so the code that scores it is reviewed
-before any GPU hour is spent on it. The exploratory numbers below are *not* that
-verdict.
+**Both preregistered claims were confirmed.** Entity-macro `B3 − B0` over all 72
+target entities (42 persons, 30 species), 864 paired target probes, one-sided
+cluster sign-flip permutation tests with 10,000 draws at seed 20260908, Holm
+step-down over the two claims at familywise α = 0.05:
+
+| Primary claim | B0 | B3 | Diff | 95% CI | p | Holm |
+| --- | --- | --- | --- | --- | --- | --- |
+| FILR (leakage rate, lower is better) | 0.3056 | 0.1481 | **−0.1574** | [−0.2176, −0.0937] | 0.0001 | rejected, step 1 |
+| TGA (accuracy, higher is better) | 0.3438 | 0.5023 | **+0.1586** | [+0.1007, +0.2211] | 0.0001 | rejected, step 2 |
+
+`retained: []` — nothing survived the step-down, so both nulls were rejected in
+the directions the freeze declared. `0.0001` is `p_smallest_reportable`: no draw
+was as extreme as the observed statistic, so it reads as "at the resolution floor
+of 10,000 draws", not as four-digit precision, and the report records that the
+resolution comes from 41 and 44 *flippable* entity clusters rather than 72,
+since roughly 40% of per-entity differences are exactly zero.
+
+Scored once, on 2026-09-09, and nothing re-tuned on it: the report carries
+`anything_tuned_on_these_predictions: false`,
+`partial_results_were_inspectable_before_completion: false`,
+`checkpoint_selection_invoked: false` and `reference_state_gate_invoked: false`.
+
+Three things the result does **not** say, all recorded in the report and stated
+here because they are part of it rather than decoration:
+
+* retention is *lower* under `B3` — `retain_same` −0.0476 CI [−0.119, +0.019],
+  `retain_other` −0.1111 CI [−0.2224, +0.0002]. Both are descriptive: no
+  preregistered claim covers retention, no p-value is computed, and the second
+  interval stops a hair short of zero.
+* over-forgetting on the person stratum is 0.0198 under `B3` against 0.0000
+  under `B0`, CI [+0.0000, +0.0595]. The photograph stratum shows none.
+* `B3 − MG` on FILR is +0.0938 CI [+0.0451, +0.1493] with
+  `equivalence_concluded: false`. The δ = 0.05 margin is a reporting yardstick;
+  no equivalence or non-inferiority test was run, so this is not "`B3` ≈ `MG`".
+
+The exploratory numbers further below are still not this verdict. They are what
+selected `B3` in the first place, which is exactly why they cannot also confirm
+it.
 
 ---
 
@@ -133,10 +166,10 @@ here instead of hiding every other result behind a collection error in CI.
 ## Tests
 
 ```bash
-pytest tests/unit -q          # 1543 tests, CPU only, ~2.6 min on the artifact box
+pytest tests/unit -q          # 1548 tests, CPU only, ~2.8 min on the artifact box
 ```
 
-The same 1543 pass with `torch`, `transformers`, `peft`, `accelerate` and
+The same 1548 pass with `torch`, `transformers`, `peft`, `accelerate` and
 `datasets` made unimportable, which is how the CPU-only contract is checked on a
 machine that has the GPU stack installed. `.github/workflows/tests.yml` runs the
 unit suite plus a step that loads every committed report the evidence claims
@@ -152,10 +185,10 @@ are gitignored inputs rather than unfinished work:
   photographs.
 
 Both guards skip naming what is absent, and both run on the machine that trained
-the adapters and fetched the pool, which is the machine that will run the three
-GPU passes. Measured: **1465 passed / 78 skipped / 0 failed** in a bare clone
-with a venv built from `requirements/ci-unit.txt` alone — with and without CI's
-`--maxfail=5` — and **1543 passed / 0 skipped** here.
+the adapters and fetched the pool — the machine that ran the three GPU passes.
+Measured: **1470 passed / 78 skipped / 0 failed** in a bare clone with a venv
+built from `requirements/ci-unit.txt` alone — with and without CI's
+`--maxfail=5` — and **1548 passed / 0 skipped** here.
 The committed half of each boundary — the manifest pinning 402 paths and hashes,
 the pool's disjointness from exploratory media, the fetch provenance behind it —
 is asserted in `test_iteration11c_probes.py` and needs no bytes at all.
@@ -214,6 +247,13 @@ result produced here is hard to produce accidentally.
 ```bash
 bash scripts/lanes/confirm100_11c5_chain.sh
 ```
+
+This ran once, on 2026-09-09, and produced the committed result above. It is not
+a command to re-run. With all three states verified it queues no lanes, but it
+does re-assemble the report and so overwrites `generated_utc`; and regenerating a
+state after seeing the verdict is a protocol amendment that belongs in the
+freeze, not a retry. The steps are documented because the run that mattered went
+through them, and the logs beside them record that it did.
 
 One invocation, six steps:
 
@@ -300,7 +340,8 @@ retention. Two caveats that are part of the result and not decoration:
   preregistered verdict is the confirmation's — entity-macro `B3 − B0` on TGA and
   FILR over all 72 target entities, one-sided sign-flip permutation tests
   (10,000 draws, seed 20260908) with a Holm step-down over the two claims at
-  familywise α = 0.05 — and it has not been computed.
+  familywise α = 0.05 — and it is reported in **Status** above, where both claims
+  were rejected in their declared directions.
 * `B3`'s TGA interval against `MG` crosses zero with a half-width larger than the
   prespecified δ = 0.05 margin, so it is reported **INDETERMINATE**, not
   equivalent. The margin is a reporting yardstick; no equivalence test is run on
@@ -318,12 +359,21 @@ Gitignored, with the record that makes each one auditable anyway:
 | --- | --- |
 | Photographs (432 + 720 CC-licensed files) | `PROVENANCE.json`: source URL, licence, attribution, observation id and sha256 per file, re-fetchable with `scripts/fetch_inat_species.py` |
 | Adapter checkpoints (~300 MB each) | the committed training/unlearning JSONLs, the candidate grid and each recipe recorded in the freeze |
-| Prediction parquets | 30 exploratory ones are bound by hash in `mllmu_pilot100_prediction_manifest.json`; the confirmation's will be beside their own sidecars |
+| Prediction parquets | 30 exploratory ones are bound by hash in `mllmu_pilot100_prediction_manifest.json`; the confirmation's three are committed beside their own sidecars, and the report's `inputs_bound` carries each parquet's sha256 |
 
 The one exception, and the reason for it: `data/reports/*` is ignored, so each
 research-provenance report carries an explicit `!` negation — including the
-confirmation analysis, which does not exist yet and whose absence from the
-repository is itself the record that stage 5 has not run.
+confirmation analysis, whose absence from the repository was the record that
+stage 5 had not run, and whose presence is now the record that it has.
+
+The confirmation's three prediction files are the one place this repository
+tracks predictions rather than only their hashes. They are 132 KB, they are the
+bytes the committed report's `inputs_bound` pins, and they are not regenerable:
+batched greedy decoding is not bit-stable across batch compositions, so a re-run
+would not reproduce them, and the protocol scores exactly once regardless.
+Committing them lets a reviewer recompute every number in the report with no GPU,
+no adapter and no photograph. The exploratory parquets stay ignored as large and
+regenerable; these are neither.
 
 ## Iteration history
 
@@ -336,5 +386,5 @@ baselines · **10–11** pilot-100, SalmuBench cross-dataset comparison ·
 training consumed), provenance-gated reuse, sharded regeneration of all evidence
 · **11C** the confirmation: power analysis, protocol freeze, photograph
 selection, the 1,209-query split, two rounds of blocking review repairs (five
-findings in 11C-5R, four in 11C-5R2), and the dedicated scorer and analyzer that
-will produce the verdict.
+findings in 11C-5R, four in 11C-5R2), the dedicated scorer and analyzer, and the
+scored result they produced — both preregistered claims confirmed.

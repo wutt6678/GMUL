@@ -716,17 +716,25 @@ class TestTheBuildRefusesRatherThanApproximates:
         assert "--allow-rebuild" in out.stdout + out.stderr
 
     def test_check_only_writes_nothing(self):
-        before = {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
-                  for p in sorted(CONFIRM.iterdir())}
+        #: Only FILES are hashed.  Stage 5 put a ``predictions/`` directory in
+        #: here, and ``read_bytes()`` on a directory raises IsADirectoryError,
+        #: which would fail this test for a reason that has nothing to do with
+        #: what it asserts.  Subdirectory NAMES are still compared, so a
+        #: ``--check-only`` that created one is caught all the same.
+        def state() -> tuple[dict, list]:
+            entries = sorted(CONFIRM.iterdir())
+            return ({p.name: hashlib.sha256(p.read_bytes()).hexdigest()
+                     for p in entries if p.is_file()},
+                    [p.name for p in entries if p.is_dir()])
+
+        before = state()
         out = subprocess.run(
             [sys.executable, "scripts/build_confirmation_split.py",
              "--check-only"],
             cwd=REPO_ROOT, capture_output=True, text=True)
         assert out.returncode == 0, out.stdout + out.stderr
         assert "nothing written" in out.stdout
-        after = {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
-                 for p in sorted(CONFIRM.iterdir())}
-        assert before == after
+        assert state() == before
 
 
 # ── the query records are the ones the scorer reads ──────────────────

@@ -83,7 +83,7 @@ jobs:
               # The 402 photographs the confirmation is scored over, sealed by
               # hash: 360 selected plus the 42 exempted target-person
               # portraits, and nothing else.  This is the artifact the
-              # prediction sidecars will bind as dataset.image_manifest_sha256.
+              # prediction sidecars bind as dataset.image_manifest_sha256.
               "data/mllmu_hier_confirm100/image_manifest.json",
               # 11C preregistration evidence: the power analysis that sizes
               # the confirmation split and derives the retention margin.  It
@@ -95,6 +95,22 @@ jobs:
               # confirmation inference.  Without it in git there is no way to
               # show the parameters were fixed beforehand.
               "data/reports/mllmu_pilot100_confirmation_freeze.json",
+              # 11C stage 5: the RESULT.  Absent from git until the chain
+              # scored, which was itself the record that the confirmation had
+              # not been run; now the primary claims, their intervals and the
+              # Holm verdict.
+              "data/reports/mllmu_confirm100_final_analysis.json",
+              # The provenance beside each confirmation prediction file.  The
+              # three parquets are committed too, and
+              # test_iteration11c5_scoring.py ties each one to the sha256 the
+              # report's inputs_bound pins; these six are the JSON half, so a
+              # checkout missing them fails here rather than inside a test.
+              "data/mllmu_hier_confirm100/predictions/predictions_B3.parquet.provenance.json",
+              "data/mllmu_hier_confirm100/predictions/predictions_B0.parquet.provenance.json",
+              "data/mllmu_hier_confirm100/predictions/predictions_MG.parquet.provenance.json",
+              "data/mllmu_hier_confirm100/predictions/predictions_B3.generation_order.json",
+              "data/mllmu_hier_confirm100/predictions/predictions_B0.generation_order.json",
+              "data/mllmu_hier_confirm100/predictions/predictions_MG.generation_order.json",
           ]
           missing = [p for p in required if not Path(p).exists()]
           if missing:

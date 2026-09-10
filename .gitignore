@@ -101,6 +101,19 @@ data/raw/inaturalist/confirm_v1/*
 # committed AFTER stage 5 runs; until then its absence from the repository is
 # itself the record that the confirmation has not been scored.
 !data/reports/mllmu_confirm100_final_analysis.json
+# 11C stage 5 evidence: the three confirmation prediction files, their sidecars
+# and their generation-order records.  TRACKED, unlike the exploratory parquets
+# below.  They are 132 KB; they are the bytes the committed report's
+# inputs_bound pins by sha256; and they are not regenerable, because batched
+# greedy decoding is not bit-stable across batch compositions and the protocol
+# scores exactly once regardless.  Committing them lets a reviewer recompute
+# every number in the result with no GPU, no adapter and no photograph.  What
+# actually protects them is being tracked at all: git never ignores a tracked
+# file, so no later pattern in this file can drop them.  The negations below are
+# documentation of that decision, placed here rather than left to be inferred
+# from `git ls-files`.
+!data/mllmu_hier_confirm100/predictions/
+!data/mllmu_hier_confirm100/predictions/**
 # Frozen sha256s for every image the dataset references; binds the photographs
 # the predictions were actually generated over.
 !data/mllmu_hier_pilot100/image_manifest.json

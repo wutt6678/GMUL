@@ -1,0 +1,16 @@
+{
+ "adapter_contract_sha256": "ab25b620a25a9cd03280def621216d590fe41b39e1fd888e56aada3a442b6d3b",
+ "experiment_id": "mllmu_confirm100_iter11c",
+ "generation_config": {
+  "batch_size": 8,
+  "do_sample": false,
+  "image_batch_size": 8,
+  "max_image_pixels": 147456,
+  "max_length": 1536,
+  "max_new_tokens": 96
+ },
+ "generation_order_sha256": "364ecf5030af647a9fa87937be0f9672e6e2c46c3e7fa43e0227372ac9b28fe2",
+ "num_queries": 1209,
+ "queries_parquet_sha256": "2bbf6350f210ac202277468afbcdb7ca42b85cd6f3943e22d61175d5da0f6678",
+ "state": "B0"
+}

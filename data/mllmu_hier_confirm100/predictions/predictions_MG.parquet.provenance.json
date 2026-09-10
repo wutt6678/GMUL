@@ -1,0 +1,66 @@
+{
+  "experiment_id": "mllmu_confirm100_iter11c",
+  "checkpoint_id": "MG",
+  "adapter_sha256": "358a557817c5845cf44e3b0953eacb099104841e59ac263f460cb91d1271a893",
+  "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+  "dataset": {
+    "version": "confirm100_v1",
+    "artifacts_sha256": {
+      "associations.parquet": "7726bdebaf5b893517070b82ae442ccd6acf6633136678473f37583e344ceb39",
+      "queries.parquet": "2bbf6350f210ac202277468afbcdb7ca42b85cd6f3943e22d61175d5da0f6678",
+      "manifest.json": "066575e0e47d2a440ba69b0461728c7fb326e1a2e6566c45f7a52a7f1bab1167"
+    },
+    "data_dir": "data/mllmu_hier_confirm100",
+    "image_manifest_sha256": "5821b5b0002db1cd02a1dcd515df2711fa0b323056995135b0b8dba4c3892623",
+    "num_images_pinned": 402
+  },
+  "generation_config": {
+    "batch_size": 8,
+    "image_batch_size": 8,
+    "max_new_tokens": 96,
+    "do_sample": false,
+    "max_image_pixels": 147456,
+    "max_length": 1536
+  },
+  "code": {
+    "git_commit": "73f49fdb9c6c94c2f6635f46969e070c52c8f10e",
+    "git_dirty": true,
+    "modules_sha256": {
+      "src/granunlearn/evaluation/reference_eval.py": "645440c1fd36c07f94d6771e099be7db1bfa6fb8915fcdb0df81ab373da115dd",
+      "src/granunlearn/evaluation/query_generation.py": "1713cee1bea6606fdbea32ea027a66d0d9dac5683679fa944169973fbc265c0c",
+      "src/granunlearn/evaluation/scoring.py": "4f37289b66a9389e94830b9b65bb51a6d198b4272926e9d38be7522edd73f891",
+      "src/granunlearn/evaluation/hierarchy_metrics.py": "67e75fd4b12c3f22bfe86f7c77678df945d5a1152a43447d0a088da10b46966c",
+      "src/granunlearn/evaluation/image_splits.py": "5a63e8df7c1c0bc9b60cffafe70ed01c2f0c8cbfdf8c53fd9e524492f695775c",
+      "src/granunlearn/imaging.py": "b9f330f18c972b4ec116a58f4ab6110edf083a6b58e416bd1ae0662b68aed119",
+      "src/granunlearn/schema/association.py": "78fc642461d06c704162c50d7e018f2b91e9df96c38383d09f18396f0a6acaa0",
+      "src/granunlearn/schema/hierarchy.py": "1ea96658c972ddc58034c09b9c0ecc49892fcae3b5ec4844e464b1f209a2b4ad",
+      "src/granunlearn/schema/prediction.py": "a69e45f416fb1630df07b6b73904a0abd0f8fa7c9cb7f20b3446d0f64db47124",
+      "src/granunlearn/schema/query.py": "4b6b4cc9ce18c8e04871f24714ffcf3a922b8bb18068794992f224c6ddfd699e"
+    }
+  },
+  "created_utc": "2026-09-09T09:36:20+00:00",
+  "num_rows": 1209,
+  "adapter_contract": {
+    "files": {
+      "adapter_model.safetensors": "358a557817c5845cf44e3b0953eacb099104841e59ac263f460cb91d1271a893",
+      "adapter_config.json": "903d9f9eaec8ee740aa77dce433870e1bcdad2a0ab7afb9930570e2b769fbfa2"
+    },
+    "sha256": "a22a1461ad75c188efab528e0f9c8aa3ba514336bc09c6837997a9d12e3f2794",
+    "missing_files": [],
+    "adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MG/adapters"
+  },
+  "prediction_sha256": "abef5a1a0d483b0767b5b955d6a7e974ddd453ec18639f9347d2d10312fefc44",
+  "contract_version": 2,
+  "environment": {
+    "python_executable": "/scratch/wutiantong/miniconda3/envs/gmul/bin/python",
+    "python_version": "3.10.20",
+    "package_versions": {
+      "torch": "2.8.0+cu128",
+      "transformers": "5.14.1",
+      "peft": "0.20.0",
+      "numpy": "2.2.6",
+      "pandas": "2.3.3",
+      "pyarrow": "25.0.0"
+    }
+  }
+}
