@@ -336,7 +336,7 @@ def adapters(protocol) -> dict:
     skip and say why; erroring instead would turn CI red on a checkout that is
     missing nothing it was supposed to have, and a red suite gets overridden.
     These tests therefore run on the artifact machine — which is the machine
-    that will run the three GPU passes, so the scorer is exercised where it
+    that ran the three GPU passes, so the scorer is exercised where it
     matters.  Everything that does NOT need adapter bytes (the source-level
     checks, the protocol refusals, the completeness gate over an empty farm) is
     above this fixture and runs everywhere.

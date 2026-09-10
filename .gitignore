@@ -97,9 +97,10 @@ data/raw/inaturalist/confirm_v1/*
 # the one artifact the whole sealed protocol exists to produce - the primary
 # claims, their intervals and the Holm verdict - would be written by
 # scripts/lanes/confirm100_11c5_chain.sh and then silently skipped by a plain
-# `git add -A`, leaving the result only on the machine that scored it.  It is
-# committed AFTER stage 5 runs; until then its absence from the repository is
-# itself the record that the confirmation has not been scored.
+# `git add -A`, leaving the result only on the machine that scored it.  It was
+# committed after stage 5 ran on 2026-09-09; until then its absence from the
+# repository was the record that the confirmation had not been scored, and its
+# presence is now the record that it has.
 !data/reports/mllmu_confirm100_final_analysis.json
 # 11C stage 5 evidence: the three confirmation prediction files, their sidecars
 # and their generation-order records.  TRACKED, unlike the exploratory parquets

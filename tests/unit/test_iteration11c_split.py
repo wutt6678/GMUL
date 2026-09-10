@@ -1104,9 +1104,9 @@ class TestTheSharedWrappersAreNeutralAboutWhichStratumTheyRenderOn:
         assert rendered == 24
 
     def test_no_person_stratum_prompt_in_the_built_split_carries_them(self):
-        """The end state, measured over the artifact that will be scored
-        rather than over the module: the 168 contradictory prompts are gone,
-        and so are the 126 that only restricted the evidence channel."""
+        """The end state, measured over the artifact that was scored rather
+        than over the module: the 168 contradictory prompts are gone, and so
+        are the 126 that only restricted the evidence channel."""
         pw = _load(POWER_PATH)
         persons = set(pw["portrait_reuse_exemption"]["target_person_ids"])
         assoc = {a.association_id: a for a in _associations()}
