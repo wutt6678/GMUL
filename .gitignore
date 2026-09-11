@@ -208,3 +208,23 @@ data/salmu_hierarchical/probe_sims_shards_*/
 # Official SALMUBench evaluator staging + raw per-state results
 data/salmu_hierarchical/official_eval_models*/
 data/salmu_hierarchical/official_salmubench_results*/
+
+# Iteration 12 selection protocol.  `data/reports/*` above ignores every
+# report by default, so without these two negations the frozen protocol would
+# live only in this working tree -- which is exactly the gap the 11C post-run
+# audit recorded for the confirmation run logs.  A protocol nobody can read
+# from the commit is not preregistration, it is a note to self.
+#
+# PLACED AFTER `data/reports/*` ON PURPOSE: in a .gitignore the LAST matching
+# pattern wins, so a negation written above the ignore rule loses to it.
+!data/reports/mllmu_iter12_retention_probe.json
+!data/reports/mllmu_iter12_selection_protocol_freeze.json
+!data/reports/mllmu_iter12_retention_selection.json
+# The fit-half training groups ARE the frozen partition: retain.jsonl is the
+# 183 replayed associations, and its absence would make the protocol's central
+# claim -- that the probe half was never rehearsed -- unverifiable from a
+# clone.  Small (three jsonl files, no images), so they are committed.
+!data/mllmu_hier_pilot100/unlearning_iter12/
+# Predictions from this study stay ignored, like the pilot-100 ones: they are
+# regenerable, large, and the selection report is the committed roll-up.
+data/mllmu_hier_pilot100/predictions_iter12/

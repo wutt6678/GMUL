@@ -30,6 +30,7 @@ load-bearing fact rather than an omission. Every stage has now run.
 | Protocol freeze (11C stage 2, re-frozen through 5R) | `data/reports/mllmu_pilot100_confirmation_freeze.json` — `refusals: []`, `--check-only` clean | **frozen, committed** |
 | Confirmation scoring (11C stage 5) | `data/mllmu_hier_confirm100/predictions/` — three files of 1,209 rows each, bound by sidecar; `data/reports/mllmu_confirm100_final_analysis.json` | **run once, scored, committed** |
 | Post-run execution audit | `data/reports/mllmu_confirm100_execution_provenance.json`, derived from the committed `data/mllmu_hier_confirm100/execution_logs/` | **filed post-hoc; `post_hoc: true`, binds nothing** |
+| Iteration 12 selection protocol (exploratory) | `data/reports/mllmu_iter12_retention_probe.json` — the fit/probe partition of the 70 retained entities; `data/reports/mllmu_iter12_selection_protocol_freeze.json` — D_G's direction, tolerance and tie-break, the retention floor, the 9-row grid | **frozen, committed; no candidate trained, no GPU hour spent** |
 
 **Both preregistered claims were confirmed.** Entity-macro `B3 − B0` over all 72
 target entities (42 persons, 30 species), 864 paired target probes, one-sided
@@ -170,10 +171,10 @@ here instead of hiding every other result behind a collection error in CI.
 ## Tests
 
 ```bash
-pytest tests/unit -q          # 1574 tests, CPU only, ~3.2 min on the artifact box
+pytest tests/unit -q          # 1629 tests, CPU only, ~3.0 min on the artifact box
 ```
 
-The same 1574 pass with `torch`, `transformers`, `peft`, `accelerate` and
+The same 1629 pass with `torch`, `transformers`, `peft`, `accelerate` and
 `datasets` made unimportable, which is how the CPU-only contract is checked on a
 machine that has the GPU stack installed. `.github/workflows/tests.yml` runs the
 unit suite plus a step that loads every committed report the evidence claims
@@ -190,9 +191,9 @@ are gitignored inputs rather than unfinished work:
 
 Both guards skip naming what is absent, and both run on the machine that trained
 the adapters and fetched the pool — the machine that ran the three GPU passes.
-Measured: **1496 passed / 78 skipped / 0 failed** in a bare clone with a venv
+Measured: **1551 passed / 78 skipped / 0 failed** in a bare clone with a venv
 built from `requirements/ci-unit.txt` alone — with and without CI's
-`--maxfail=5` — and **1574 passed / 0 skipped** here. The whole suite also passes
+`--maxfail=5` — and **1629 passed / 0 skipped** here. The whole suite also passes
 with `PytestRemovedIn10Warning` promoted to an error.
 The committed half of each boundary — the manifest pinning 402 paths and hashes,
 the pool's disjointness from exploratory media, the fetch provenance behind it —
@@ -274,6 +275,17 @@ result produced here is hard to produce accidentally.
   "sealed before the fetch" timeline in 11C-3b — it was retracted in the freeze
   with the narrower defensible claim in its place, and a repo-wide sweep for the
   stale wording is itself a test.
+* **An exploratory protocol can enforce what the confirmatory one only asks
+  for.** Iteration 12's `scripts/freeze_iter12_selection_protocol.py` refuses to
+  write a freeze at all once any candidate adapter exists — unconditionally, with
+  no flag reaching past it, which is precisely the gate the confirmation's
+  `--allow-refreeze` does not have. Its `--refreeze` path is permitted only
+  *before* training, requires `--reason`, and appends an amendment carrying the
+  sha256 of the protocol it supersedes.
+  `scripts/select_iter12_retention_checkpoints.py` verifies the freeze before it
+  generates anything, so changing the criterion afterwards breaks the run instead
+  of quietly redefining it: setting the floor's tolerance to the rejected `+0.02`
+  margin makes six tests fail, including the freeze check the selector runs.
 
 ## Running the confirmation pass (stage 5)
 
@@ -388,7 +400,7 @@ retention. Two caveats that are part of the result and not decoration:
 ## What is committed, and what is re-derivable
 
 Committed: both dataset directories' parquets and manifests, both image
-manifests, `PROVENANCE.json` for each iNaturalist pool, all 38 stage reports, the
+manifests, `PROVENANCE.json` for each iNaturalist pool, all 39 stage reports, the
 power analysis and the freeze.
 
 Gitignored, with the record that makes each one auditable anyway:
@@ -413,6 +425,97 @@ Committing them lets a reviewer recompute every number in the report with no GPU
 no adapter and no photograph. The exploratory parquets stay ignored as large and
 regenerable; these are neither.
 
+## Iteration 12 (exploratory): retention, and a protocol frozen first
+
+The confirmation's retention diagnostics are the open scientific problem:
+retain-same −0.0476 CI [−0.119, +0.019], retain-other −0.1111 CI [−0.2224,
++0.0002], person-stratum over-forgetting +0.0198. Both retention intervals
+include zero, so neither is a demonstrated cost — which is a reason to measure
+retention properly in its own study, not a finding about it.
+
+Iteration 12 is that study. It is **exploratory**: it selects a checkpoint, tests
+no hypothesis, controls no error rate, and reads nothing from the sealed
+confirmation. The successor it develops is method `B4` — B3's three components
+with the replay strength swept — in two stages: retain replay first, and an
+MF-preservation regularizer only if Stage 1 fails to beat its own reference row.
+
+**The measurement problem, found before any training.** The `retain` replay group
+is exactly the 387 retained associations, and those associations back **100% of
+the retention queries in all three splits** — 387/387 for `retain_same_entity`
+and 65/65 for `retain_other_entity`, and 198/198 and 64/64 in the confirmation
+split as well. A candidate carrying `sft retain` is therefore scored in-sample on
+retention while B0, the no-op, is scored out-of-sample. A floor saying "retention
+must not fall below B0" then compares two different quantities and cannot
+discriminate: applied to the committed pilot-100 grid it passes exactly the two
+candidates carrying a replay group and fails all nine that do not. It selects
+*for* replay instead of testing it.
+
+So `scripts/build_iter12_retention_probe.py` splits the 70 retained **entities**
+by a seeded hash into a `fit` half (183 associations, replayed) and a `probe`
+half (204 associations, never replayed by any candidate), and the floor is
+measured on probe queries only, where B0 and a replay candidate stand on the same
+footing. `fine_target.jsonl` and `target_level.jsonl` are copied byte-for-byte
+from the pilot-100 groups, so the target-side objective does not move. Splitting
+at entity level is what makes "never rehearsed" true of a whole entity's
+knowledge: an association-level split would leave every probe fact belonging to a
+partly rehearsed entity.
+
+Three things the freeze pins down, because each can change which candidate wins
+and none is implied by "closest to MG subject to retention not falling":
+
+* **the direction of D_G** — minimise; every component enters as
+  `|v_j(M_U) − v_j(M_G)|`. It does **not** reward low leakage: a candidate that
+  drives FILR below MG's level is penalised exactly as much as one that leaves it
+  above, which a test asserts rather than a sentence claims. The floor is the only
+  monotone requirement in the protocol — more retained knowledge is never
+  disqualifying.
+* **the numerical tolerance** — distances are compared exactly as
+  `distance_to_reference` rounds them, to 6 decimals, with no added epsilon, so
+  two candidates are tied iff their rounded distances are equal. The floor uses
+  `1e-9`. The smallest difference the probe measurement can express is 0.00204
+  (one flipped outcome in the widest of 35 probe entities), so `1e-9` sits six
+  orders of magnitude below anything resolvable: it absorbs float representation
+  error and cannot decide a real comparison. That is what separates a tolerance
+  from a margin.
+* **the tie-break** — `(distance_to_mg, candidate_id)` ascending. The id encodes
+  hyperparameters and no outcome, so the order cannot be gamed by looking at
+  results, and it does not depend on grid order, filesystem order, or which
+  adapters happen to exist on disk. What it replaces — the pilot selector's strict
+  `<` over dict insertion order — was deterministic but written down nowhere.
+
+The floor requires **both** estimands. Row-micro and entity-macro disagree in
+*sign* for retain-other on the pilot-100 evidence: the incumbent is −0.1056
+against B0 row-micro and +0.0093 entity-macro. Freezing either alone would be
+choosing the estimand that produces the preferred answer. A `+0.02` retention
+margin was proposed and rejected — it is not a resolvable gap, not an interval
+width and not a pre-registered effect size, so requiring improvement beyond "not
+below B0" would invent a hypothesis and file it as a constraint.
+
+The constraint is not vacuous. B0's pilot-100 floor is retain-same 0.5594 /
+retain-other 0.6056 row-micro, and the checkpoint the confirmation just scored —
+`B3_lam0.5_lr2e-05_ep5` — sits at 0.6111 / **0.5000**: it fails. Two of the
+fifteen trained candidates pass.
+
+Two consequences of halving the replay group are recorded rather than absorbed.
+The retain term's share of each epoch's interleaved gradient stream falls from
+0.683 to 0.504, so weight 1.0 does *not* reproduce the incumbent's effective
+influence — the grid therefore includes the derived weight 1.3539 that does,
+computed from the committed group counts and recomputed from them by a test. And
+the probe half carries 1 of the 6 taxonomic retained associations, so taxonomic
+retention is recorded as unmeasured, not as preserved.
+
+None of this touches the eighteen sealed paths: `hierarchy_metrics.py` supplies
+the row-micro rate through filtered inputs, `paired_ci.py` and
+`select_unlearning_checkpoints.py` are imported rather than edited, and a test
+cross-checks all five sealed dependencies against the hashes the confirmation
+freeze recorded. The analysis report is still `b330b3c0488af6a0`.
+
+**Status: frozen, not run.** The partition, the grid, the criterion and the gates
+are committed; no Iteration-12 candidate has been trained and no GPU hour has been
+spent. `data/reports/mllmu_iter12_retention_selection.json` does not exist yet,
+and the workflow's required-report list deliberately does not name it — a required
+file that does not exist would fail every push until Stage 1 runs.
+
 ## Iteration history
 
 `git log --oneline` is the authoritative narrative and its commit messages carry
@@ -425,4 +528,8 @@ training consumed), provenance-gated reuse, sharded regeneration of all evidence
 · **11C** the confirmation: power analysis, protocol freeze, photograph
 selection, the 1,209-query split, two rounds of blocking review repairs (five
 findings in 11C-5R, four in 11C-5R2), the dedicated scorer and analyzer, and the
-scored result they produced — both preregistered claims confirmed.
+scored result they produced — both preregistered claims confirmed · **11C-5R3**
+the post-run audit of what that scoring run did not record, and three README
+claims corrected · **12** retention, as a separate exploratory study: the
+fit/probe partition that makes a retention floor measurable at all, and a
+selection protocol frozen before any candidate was trained.

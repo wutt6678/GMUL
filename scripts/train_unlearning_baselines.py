@@ -35,6 +35,7 @@ from granunlearn.training.candidate_grid import (
     CandidateSpec,
     dataset_dir_for_tag,
     grid_for_tag,
+    groups_subdir_for_tag,
     validate_grid,
 )
 from granunlearn.training.reference_trainer import ReferenceRecipe
@@ -47,13 +48,33 @@ from granunlearn.training.unlearning_trainer import (
 log = setup_logger("train_unlearning_baselines")
 
 
-def resolve_paths(tag: str, repo_root: Path) -> tuple[Path, Path, Path]:
-    """(dataset_dir, mf_adapter_dir, candidate_output_root) for a tag."""
+def resolve_paths(tag: str, repo_root: Path) -> tuple[Path, Path, Path, Path]:
+    """(dataset_dir, mf_adapter_dir, candidate_output_root, groups_dir).
+
+    ``groups_dir`` is separate from ``dataset_dir`` because Iteration 12
+    reuses the pilot-100 dataset while training on a different set of
+    knowledge groups: its ``retain`` group is the fit half of the retained
+    entities, so the probe half is never rehearsed.  Resolving the groups
+    through the tag rather than hardcoding ``<dataset>/unlearning`` is what
+    keeps that separation out of the caller's hands.
+    """
     dataset_dir = repo_root / dataset_dir_for_tag(tag)
+    #: Iteration 12 continues from the pilot-100 MF adapter: there is no
+    #: separate ``mllmu_iter12`` reference-state training, and inventing one
+    #: would make its candidates incomparable with the incumbent's.
+    mf_tag = "pilot100" if tag == "iter12" else tag
     mf_adapters = repo_root / "data" / "checkpoints" / \
-        f"mllmu_{tag}" / "MF" / "adapters"
+        f"mllmu_{mf_tag}" / "MF" / "adapters"
     out_root = repo_root / "data" / "checkpoints" / f"mllmu_{tag}_unlearn"
-    return dataset_dir, mf_adapters, out_root
+    groups_dir = dataset_dir / groups_subdir_for_tag(tag)
+    return dataset_dir, mf_adapters, out_root, groups_dir
+
+
+def groups_builder_hint(tag: str) -> str:
+    """Which script produces the group files a tag trains on."""
+    if tag == "iter12":
+        return "scripts/build_iter12_retention_probe.py"
+    return f"scripts/build_unlearning_groups.py --tag {tag}"
 
 
 def select_candidates(grid: list[CandidateSpec],
@@ -103,7 +124,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Train MF->MU baseline candidates")
     parser.add_argument("--tag", default="smoke",
-                        choices=("smoke", "pilot100"))
+                        choices=("smoke", "pilot100", "iter12"))
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--methods", default=None,
                         help="DEPRECATED alias for --candidates")
@@ -117,9 +138,16 @@ def main() -> None:
 
     repo_root = Path(args.repo_root) if args.repo_root \
         else (_find_repo_root(Path.cwd()) or Path.cwd())
-    dataset_dir, mf_adapters, out_root = resolve_paths(args.tag, repo_root)
+    dataset_dir, mf_adapters, out_root, groups_dir = resolve_paths(
+        args.tag, repo_root)
     if not mf_adapters.exists():
         raise FileNotFoundError(f"Canonical MF adapter missing: {mf_adapters}")
+    #: Logged because for ``iter12`` these four paths deliberately do not all
+    #: carry the same tag: the dataset and the MF adapter are pilot-100's, the
+    #: groups are the fit-half ones, and only the output root is iter12's.  A
+    #: run log that did not say so could not be checked afterwards.
+    log.info("[%s] dataset %s | groups %s | MF %s | out %s", args.tag,
+             dataset_dir, groups_dir, mf_adapters, out_root)
 
     grid = grid_for_tag(args.tag)
     errors = validate_grid(grid)
@@ -137,15 +165,14 @@ def main() -> None:
                                  recipe=mf_inherited_recipe(mf_adapters))
             continue
         groups = [
-            GroupSpec(g.name, dataset_dir / "unlearning" / f"{g.name}.jsonl",
+            GroupSpec(g.name, groups_dir / f"{g.name}.jsonl",
                       g.mode, g.weight)
             for g in spec.groups
         ]
         for g in groups:
             if not Path(g.path).exists():
                 raise FileNotFoundError(
-                    f"{g.path} — run scripts/build_unlearning_groups.py "
-                    f"--tag {args.tag} first")
+                    f"{g.path} — run {groups_builder_hint(args.tag)} first")
         overrides = dict(spec.overrides)
         if args.epochs is not None:
             overrides["num_epochs"] = args.epochs

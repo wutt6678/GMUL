@@ -26,6 +26,11 @@ Methods
   swept as its own method rather than folded into B3.
 * ``B3``  granularity-aware — ``gd`` fine suppression (weight lambda)
   + ``sft`` target level + ``sft`` retain.
+* ``B4``  Iteration 12 retention-aware B3 successor — the same three
+  components as B3, but the ``retain`` group is the FIT HALF of the
+  retained entities (see ``build_iter12_retention_probe.py``) and its
+  weight is the swept knob.  The probe half is never rehearsed, so
+  retention can be measured out-of-sample against B0.
 """
 
 from __future__ import annotations
@@ -33,10 +38,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
-Method = Literal["B0", "B1", "B2", "B2R", "B3"]
+Method = Literal["B0", "B1", "B2", "B2R", "B3", "B4"]
 Mode = Literal["sft", "gd"]
 
-METHODS: tuple[str, ...] = ("B0", "B1", "B2", "B2R", "B3")
+METHODS: tuple[str, ...] = ("B0", "B1", "B2", "B2R", "B3", "B4")
 
 
 @dataclass(frozen=True)
@@ -147,7 +152,87 @@ def pilot100_grid() -> list[CandidateSpec]:
     return grid
 
 
-GRIDS = {"smoke": smoke_grid, "pilot100": pilot100_grid}
+# ---------------------------------------------------------------------------
+# Iteration 12 Stage 1 — the retention-aware B3 successor (method ``B4``).
+#
+# B4 is B3 with one difference: the ``retain`` group is the FIT HALF of the
+# retained entities, so the probe half is never rehearsed by any candidate and
+# the retention floor can be measured against B0 on knowledge neither model
+# was trained on.  Its weight is the swept knob.
+#
+# Stage 1 holds everything else at the incumbent's values — lambda 0.5, and
+# lr/epochs at 2e-5/5 except where a row exists specifically to test the
+# budget — so that a difference between rows is attributable to replay
+# strength rather than to three knobs moving at once.
+# ---------------------------------------------------------------------------
+
+#: Fine suppression is held at the incumbent's weight across every Stage-1
+#: row.  Sweeping it too would confound the mechanism under test.
+ITER12_LAM = 0.5
+
+#: Weight 1.0 on the fit half IS the incumbent recipe retrained under the
+#: Iteration-12 partition, so it doubles as the reference row.
+ITER12_REFERENCE_WEIGHT = 1.0
+
+#: Halving the replay group also cuts its share of every epoch's interleaved
+#: gradient stream — 387/(2*90+387) = 0.6825 for the pilot-100 group,
+#: 183/(2*90+183) = 0.5041 for the fit half — so weight 1.0 does NOT
+#: reproduce the incumbent's effective retain influence.  The ratio of the two
+#: shares does, and it is DERIVED from the committed partition rather than
+#: chosen: ``build_iter12_retention_probe.py`` records it as
+#: ``replay_strength.weight_reproducing_the_pilot_influence`` and a test
+#: recomputes it from the group counts.  Including it makes the sweep span the
+#: pilot's operating point instead of guessing where that point landed.
+ITER12_PILOT_EQUIVALENT_WEIGHT = 1.3539
+
+#: The replay weights swept at the incumbent budget.
+ITER12_WEIGHTS = (0.5, ITER12_REFERENCE_WEIGHT,
+                  ITER12_PILOT_EQUIVALENT_WEIGHT, 2.0, 4.0)
+
+
+def _b4_id(weight: float, lr: float, epochs: int) -> str:
+    return f"B4_w{weight}_lam{ITER12_LAM}_lr{_lr_str(lr)}_ep{epochs}"
+
+
+#: The row the Stage-2 gate compares the winner against: the incumbent recipe
+#: under the Iteration-12 partition, i.e. replay weight 1.0.
+ITER12_REFERENCE_ROW = _b4_id(ITER12_REFERENCE_WEIGHT, 2e-5, 5)
+
+
+def iter12_grid() -> list[CandidateSpec]:
+    """9 rows: B0 (the floor) + 8 B4 replay-strength candidates."""
+    ft = GroupUse("fine_target", "gd", ITER12_LAM)
+    tl = GroupUse("target_level", "sft", 1.0)
+    grid: list[CandidateSpec] = [CandidateSpec("B0", "B0", noop=True)]
+
+    #: The weight sweep at the incumbent budget.  0.5 and 4.0 bracket the
+    #: pilot's effective influence from below and above; 1.3539 lands on it.
+    for w in ITER12_WEIGHTS:
+        grid.append(CandidateSpec(
+            _b4_id(w, 2e-5, 5), "B4",
+            (ft, tl, GroupUse("retain", "sft", w)),
+            {"learning_rate": 2e-5, "num_epochs": 5}))
+
+    #: Budget sensitivity at a mid weight.  A heavier replay term may need a
+    #: shorter schedule to avoid overwriting the target-side objective, or a
+    #: longer one to converge; both directions are swept rather than assumed.
+    for ep in (3, 8):
+        grid.append(CandidateSpec(
+            _b4_id(2.0, 2e-5, ep), "B4",
+            (ft, tl, GroupUse("retain", "sft", 2.0)),
+            {"learning_rate": 2e-5, "num_epochs": ep}))
+
+    #: One learning-rate step, so a null result cannot be blamed entirely on
+    #: the schedule the incumbent happened to use.
+    grid.append(CandidateSpec(
+        _b4_id(2.0, 5e-5, 5), "B4",
+        (ft, tl, GroupUse("retain", "sft", 2.0)),
+        {"learning_rate": 5e-5, "num_epochs": 5}))
+    return grid
+
+
+GRIDS = {"smoke": smoke_grid, "pilot100": pilot100_grid,
+         "iter12": iter12_grid}
 
 
 def grid_for_tag(tag: str) -> list[CandidateSpec]:
@@ -158,8 +243,29 @@ def grid_for_tag(tag: str) -> list[CandidateSpec]:
 
 
 def dataset_dir_for_tag(tag: str) -> str:
-    """Tagged dataset directory, repo-relative."""
+    """Tagged dataset directory, repo-relative.
+
+    ``iter12`` deliberately resolves to the pilot-100 dataset: Iteration 12
+    changes which knowledge is rehearsed, not which queries are asked, so it
+    keeps pilot-100's queries, associations and ``pilot100_v2`` version and
+    its candidates stay directly comparable with the selection they succeed.
+    It also leaves the frozen confirmation dataset fingerprint untouched.
+    """
+    if tag == "iter12":
+        return "data/mllmu_hier_pilot100"
     return f"data/mllmu_hier_{tag}"
+
+
+def groups_subdir_for_tag(tag: str) -> str:
+    """Which unlearning-group directory a tag's candidates are fitted on.
+
+    ``iter12`` trains on ``unlearning_iter12/``, whose ``fine_target`` and
+    ``target_level`` are byte-identical copies of the pilot-100 ones and
+    whose ``retain`` holds only the FIT half of the retained entities.  The
+    separation is physical rather than a flag, so a candidate cannot rehearse
+    the probe half by accident.
+    """
+    return "unlearning_iter12" if tag == "iter12" else "unlearning"
 
 
 def validate_grid(grid: list[CandidateSpec]) -> list[str]:

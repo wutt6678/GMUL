@@ -70,8 +70,21 @@ class TestCandidateGrid:
         ids = [c.candidate_id for c in grid]
         assert len(ids) == len(set(ids))
         assert sum(1 for c in grid if c.noop) == 1
-        # every method of the ported B0-B3 family is swept
-        assert {c.method for c in grid} == set(METHODS)
+        # Every method of the ported B0-B3 family is swept.  Compared against
+        # the family itself rather than against METHODS, which Iteration 12
+        # extended with B4: B4 trains on the FIT HALF of a different retention
+        # partition, so it must never enter this grid.  A committed selection
+        # report names these candidates and the pilot-100 grid is historical,
+        # so "covers every method" and "covers the whole METHODS tuple" are no
+        # longer the same claim.
+        family = {"B0", "B1", "B2", "B2R", "B3"}
+        assert {c.method for c in grid} == family
+        assert family <= set(METHODS)
+        assert "B4" in set(METHODS), "Iteration 12's successor method"
+        assert "B4" not in {c.method for c in grid}, (
+            "a B4 row here would be trained on the pilot-100 retain group -- "
+            "all 387 associations, probe half included -- and would silently "
+            "join a selection that was frozen without it")
         for m in ("B1", "B2", "B3"):
             assert sum(1 for c in grid if c.method == m) >= 2, m
 

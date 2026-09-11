@@ -1,0 +1,508 @@
+{
+  "iteration": "12",
+  "stage": 1,
+  "protocol": "retention-aware B3 successor (method B4), exploratory",
+  "frozen_at_utc": "2026-09-11T14:30:20+00:00",
+  "status": {
+    "exploratory": true,
+    "preregistered_before_training": true,
+    "carries_no_confirmatory_claim": true,
+    "this_document_selects_a_checkpoint_it_does_not_test_a_hypothesis": true
+  },
+  "git_commit": "9ce3c783e2eff2214f062f44734f6a58e369b8a5",
+  "git_dirty": "M .github/workflows/tests.yml\n M .gitignore\n M scripts/train_unlearning_baselines.py\n M src/granunlearn/training/candidate_grid.py\n?? data/mllmu_hier_pilot100/unlearning_iter12/\n?? data/reports/mllmu_iter12_retention_probe.json\n?? data/reports/mllmu_iter12_selection_protocol_freeze.json\n?? scripts/build_iter12_retention_probe.py\n?? scripts/freeze_iter12_selection_protocol.py\n?? scripts/select_iter12_retention_checkpoints.py\n?? src/granunlearn/evaluation/retention_selection.py\n?? tests/unit/test_iteration12_protocol.py",
+  "criterion": {
+    "name": "D_G",
+    "formula": "D_G(M_U) = sum_j w_j * |v_j(M_U) - v_j(M_G)| / sum_j w_j, over the components present on both sides",
+    "components": [
+      "filr",
+      "tga",
+      "ancestor",
+      "retain_same",
+      "retain_other",
+      "over",
+      "wrong"
+    ],
+    "weights": {
+      "filr": 1.0,
+      "tga": 1.0,
+      "ancestor": 1.0,
+      "retain_same": 1.0,
+      "retain_other": 1.0,
+      "over": 1.0,
+      "wrong": 1.0
+    },
+    "changed_from_pilot100": false,
+    "computed_by": "granunlearn.evaluation.selection.distance_to_reference",
+    "reimplemented_in_this_iteration": false,
+    "direction": "minimize",
+    "direction_spelled_out": "D_G is a DISTANCE and the winner is its MINIMUM. Larger is worse. It is not a score to maximise.",
+    "direction_is_not": "It does NOT reward low leakage. Every component enters as an absolute deviation from MG, so a candidate that drives FILR below MG's level is penalised exactly as much as one that leaves FILR above it. The criterion asks whether a state looks like granularity-controlled unlearning, not whether it unlearns hard. The floor below is the only monotone requirement in this protocol: more retained knowledge is never disqualifying.",
+    "scope": {
+      "splits": [
+        "train",
+        "val"
+      ],
+      "dataset": "data/mllmu_hier_pilot100",
+      "dataset_version": "pilot100_v2",
+      "frozen_test_split_used_for_selection": false
+    },
+    "numerical_tolerance": {
+      "distance_decimals": 6,
+      "additional_epsilon_on_distances": 0.0,
+      "source_of_the_rounding": "distance_to_reference already rounds to 6 decimals; that rounding IS the tolerance and nothing is added to it",
+      "tied_iff": "the two rounded distances are exactly equal",
+      "retention_rate_decimals": 4,
+      "why_rates_and_distances_differ": "each number is rounded where it is computed -- rates at the 4 decimals the sealed _rate uses, distances at the 6 decimals distance_to_reference uses -- and never re-rounded afterwards",
+      "rounding_cannot_merge_two_retention_values": true
+    },
+    "tie_break": {
+      "rule": "(distance_to_mg, candidate_id) ascending",
+      "id_ordering": "lexicographic",
+      "carries_no_outcome_information": true,
+      "does_not_depend_on": [
+        "grid order",
+        "filesystem order",
+        "which adapters exist on disk"
+      ],
+      "replaces": "the pilot-100 selector's strict < over dict insertion order, which resolves ties by whichever candidate was registered first and writes that down nowhere",
+      "a_tie_is_reported_as": "criterion_did_not_discriminate, with the tied ids listed"
+    }
+  },
+  "floor": {
+    "statement": "A candidate is ELIGIBLE only if retain_same_entity and retain_other_entity, measured on PROBE-half train+val queries, are each at or above B0's value on those same queries, under BOTH entity-macro and row-micro.",
+    "reference_level": "B0, the no-op MF copy",
+    "direction": "candidate_must_be_at_or_above_b0",
+    "measured_on": {
+      "entities": "the probe half only -- never rehearsed by any candidate",
+      "num_probe_entities": 35,
+      "num_probe_associations": 204,
+      "per_family": {
+        "retain_same_entity": {
+          "probe_queries": 408,
+          "probe_entities": 35,
+          "max_queries_for_one_entity": 14,
+          "row_micro": {
+            "min_resolvable_gap": 0.0024509804,
+            "why": "one flipped outcome out of 408 pooled queries"
+          },
+          "entity_macro": {
+            "min_resolvable_gap": 0.0020408163,
+            "why": "one flipped outcome in the widest of 35 entities (14 queries), then averaged over entities"
+          }
+        },
+        "retain_other_entity": {
+          "probe_queries": 76,
+          "probe_entities": 23,
+          "max_queries_for_one_entity": 8,
+          "row_micro": {
+            "min_resolvable_gap": 0.0131578947,
+            "why": "one flipped outcome out of 76 pooled queries"
+          },
+          "entity_macro": {
+            "min_resolvable_gap": 0.0054347826,
+            "why": "one flipped outcome in the widest of 23 entities (8 queries), then averaged over entities"
+          }
+        }
+      }
+    },
+    "estimands_required": [
+      "entity_macro",
+      "row_micro"
+    ],
+    "why_both_estimands": "row-micro and entity-macro disagree in SIGN for retain_other on the pilot-100 evidence (the incumbent is -0.1056 against B0 row-micro and +0.0093 entity-macro), so freezing either alone would be choosing the estimand that yields the preferred verdict. Requiring both is the conservative pre-commitment and is made before any Iteration-12 candidate exists.",
+    "comparison": "candidate >= b0 - 1e-09",
+    "epsilon": 1e-09,
+    "epsilon_is_a_tolerance_not_a_margin": true,
+    "smallest_resolvable_gap": 0.0020408163,
+    "epsilon_is_below_every_resolvable_gap": true,
+    "orders_of_magnitude_below": 2040816.3,
+    "no_retention_margin_is_required": true,
+    "rejected_alternative": "A margin -- e.g. requiring the winner to clear B0's probe retention by +0.02 -- was proposed and REJECTED. Nothing in this repository supports a threshold of that size: it is not a resolvable gap, not a confidence-interval width, and not a pre-registered effect size. Requiring improvement beyond 'not below B0' would invent a hypothesis and file it as a constraint.",
+    "consequence_of_failing": "ineligible, however small its D_G. The floor is a constraint, not a term in the criterion, so it is never traded off against distance.",
+    "missing_value_is_a_failure": true,
+    "why_the_probe_is_needed_at_all": "The pilot-100 retain group is exactly the 387 retained associations, and those back 100% of the retention queries in all three splits. A replay candidate was therefore scored in-sample on retention while B0 was scored out-of-sample, and a floor comparing them cannot discriminate: applied to the existing grid it passes exactly the two candidates carrying a retain group and fails all nine that do not."
+  },
+  "grid": {
+    "tag": "iter12",
+    "dataset_dir": "data/mllmu_hier_pilot100",
+    "groups_subdir": "unlearning_iter12",
+    "num_candidates": 9,
+    "candidates": [
+      {
+        "candidate_id": "B0",
+        "method": "B0",
+        "noop": true,
+        "groups": [],
+        "overrides": {}
+      },
+      {
+        "candidate_id": "B4_w0.5_lam0.5_lr2e-05_ep5",
+        "method": "B4",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 0.5
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        }
+      },
+      {
+        "candidate_id": "B4_w1.0_lam0.5_lr2e-05_ep5",
+        "method": "B4",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        }
+      },
+      {
+        "candidate_id": "B4_w1.3539_lam0.5_lr2e-05_ep5",
+        "method": "B4",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.3539
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        }
+      },
+      {
+        "candidate_id": "B4_w2.0_lam0.5_lr2e-05_ep5",
+        "method": "B4",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 2.0
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        }
+      },
+      {
+        "candidate_id": "B4_w4.0_lam0.5_lr2e-05_ep5",
+        "method": "B4",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 4.0
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        }
+      },
+      {
+        "candidate_id": "B4_w2.0_lam0.5_lr2e-05_ep3",
+        "method": "B4",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 2.0
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 3
+        }
+      },
+      {
+        "candidate_id": "B4_w2.0_lam0.5_lr2e-05_ep8",
+        "method": "B4",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 2.0
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 8
+        }
+      },
+      {
+        "candidate_id": "B4_w2.0_lam0.5_lr5e-05_ep5",
+        "method": "B4",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 2.0
+          }
+        ],
+        "overrides": {
+          "learning_rate": 5e-05,
+          "num_epochs": 5
+        }
+      }
+    ],
+    "method": "B4",
+    "held_fixed": {
+      "fine_suppression_weight": 0.5,
+      "target_level_weight": 1.0,
+      "init_adapter": "the pilot-100 canonical MF adapter",
+      "recipe": "ReferenceRecipe, overridden only in learning_rate and num_epochs"
+    },
+    "swept": {
+      "retain_replay_weight": [
+        0.5,
+        1.0,
+        1.3539,
+        2.0,
+        4.0
+      ],
+      "num_epochs": [
+        3,
+        5,
+        8
+      ],
+      "learning_rate": [
+        2e-05,
+        5e-05
+      ]
+    },
+    "reference_row": "B4_w1.0_lam0.5_lr2e-05_ep5",
+    "reference_row_is": "the incumbent recipe -- lambda 0.5, lr 2e-5, 5 epochs, replay weight 1.0 -- retrained on the fit half. It is the row the Stage-2 gate compares the winner against, and it is in the grid rather than beside it so the weight sweep includes it.",
+    "pilot_equivalent_weight": 1.3539,
+    "pilot_equivalent_weight_derivation": {
+      "pilot100_retain_examples": 387,
+      "iter12_fit_examples": 183,
+      "how_weight_enters_the_objective": "loss = sign * weight * example_loss / accumulation_window, and each epoch interleaves the groups round-robin, so a group's influence is its weight times its share of the stream.  The share is set by example COUNT, which this partition halves.",
+      "retain_share_of_stream_pilot100": 0.68254,
+      "retain_share_of_stream_iter12_at_weight_1": 0.504132,
+      "weight_reproducing_the_pilot_influence": 1.3539,
+      "consequence": "The incumbent recipe retrained on the fit half is NOT the incumbent: halving the replay group also cuts its share of every epoch's gradient stream.  That retrained row is therefore the closest available control, and the weight sweep spans from below the pilot's effective influence to well above it rather than assuming weight 1.0 reproduces it."
+    },
+    "reference_weight": 1.0
+  },
+  "stage_2": {
+    "mechanism": "MF-preservation regularizer",
+    "opens_iff": [
+      "no Stage-1 candidate satisfies the retention floor, or",
+      "the best eligible candidate's D_G is not STRICTLY smaller than the reference row's D_G"
+    ],
+    "strictly_means": "a smaller 6-decimal distance; an exact tie is no improvement",
+    "margin_required": 0.0,
+    "no_margin_is_used": true,
+    "decided_by": "scripts/select_iter12_retention_checkpoints.py reporting stage_2_gate, computed from the frozen rule -- not by whoever reads the table"
+  },
+  "evidence_base": {
+    "used": [
+      "data/mllmu_hier_pilot100/queries.parquet, splits train+val",
+      "data/mllmu_hier_pilot100/associations.parquet",
+      "unlearning_iter12 group files",
+      "data/reports/mllmu_iter12_retention_probe.json"
+    ],
+    "never_read": [
+      "data/mllmu_hier_confirm100",
+      "data/reports/mllmu_confirm100_final_analysis.json"
+    ],
+    "never_read_enforced_by": "scripts/select_iter12_retention_checkpoints.py refuses any argument that resolves inside those paths, and writes predictions only to predictions_iter12/",
+    "why": "The 11C confirmation was scored once and is sealed. Tuning a successor on its predictions would make a confirmatory result retrospective, which is the failure the seal exists to prevent. Its composition metadata was read to DIAGNOSE the retention problem -- that diagnosis is recorded above -- but no confirmation outcome enters this protocol or any number it produces.",
+    "pilot100_selection_report": {
+      "path": "data/reports/mllmu_pilot100_unlearning_selection.json",
+      "read_for": "the incumbent's identity and the pilot-100 candidate table quoted in this protocol's rationale",
+      "never_transcribed_into": "the MG reference vector, which is regenerated for this study under its own generation contract"
+    }
+  },
+  "reference_vector": {
+    "state": "MG",
+    "obtained_by": "regenerating MG's predictions in predictions_iter12/ under the identical generation contract, in the same batch layout as every candidate",
+    "not_transcribed_from": "data/reports/mllmu_pilot100_unlearning_selection.json",
+    "why_regenerated": "Batched greedy decoding is not bit-stable across batch compositions. D_G ranks candidates by distance to MG, so an MG vector produced in a different layout would put decoding noise inside the criterion itself."
+  },
+  "generation_contract": {
+    "batch_size": 8,
+    "image_batch_size": 1,
+    "max_new_tokens": 96,
+    "max_length": 1536,
+    "max_image_pixels": 147456,
+    "do_sample": false,
+    "model_id": "Qwen/Qwen3.5-9B",
+    "predictions_dir": "data/mllmu_hier_pilot100/predictions_iter12",
+    "experiment_id": "mllmu_iter12_stage1",
+    "why_not_the_pilot_predictions_dir": "Both grids contain a candidate called B0. In one directory the two studies would share the filename predictions_tv_B0.parquet, and a differing experiment_id would make the sidecar refuse reuse and REGENERATE over committed pilot-100 evidence. A separate directory makes that impossible rather than unlikely."
+  },
+  "seeds": {
+    "training_seed": 42,
+    "partition_seed": 42,
+    "partition_ordering": "entities sorted ascending by sha256('42:iter12probe:<entity_id>')",
+    "no_selection_randomness": "selection is a deterministic ordering of computed numbers; it draws nothing"
+  },
+  "dataset_fingerprint": {
+    "version": "pilot100_v2",
+    "artifacts_sha256": {
+      "associations.parquet": "b4427b201868ff4d08a5f791d55cdcd78561d2f4abc42af97378bba63b1026c1",
+      "queries.parquet": "f66637323754039a28d45ea44a5e05bcb5b51f07b4272329d3f4a6b3b5482d5e",
+      "manifest.json": "be3f71d7094830353eba37dab5f12f31335196b43ab213eb4de50347fa0de737"
+    },
+    "data_dir": "data/mllmu_hier_pilot100",
+    "image_manifest_sha256": "99d930ca74e428d2286d164e961b37571b73106641d8cc3dccb539c9a5aefe34",
+    "num_images_pinned": 496
+  },
+  "hashes": {
+    "protocol_paths": {
+      "scripts/freeze_iter12_selection_protocol.py": "dd9007a5e78179fa8594f8d2354ff8ba9b667235774834a57a58009b62147f29",
+      "scripts/build_iter12_retention_probe.py": "093590aa29bcb2316869ca55317b99670dba2773cb753cbb94ffb3de5246d52c",
+      "scripts/select_iter12_retention_checkpoints.py": "28d8edabe88e53f174ae62708eae7c09c10d3f39c5548087de379efb837ec3f9",
+      "scripts/train_unlearning_baselines.py": "d7f415e02602138e62c3274794fc70acd97b978c6635ddaaeed42c2115017781",
+      "src/granunlearn/evaluation/retention_selection.py": "ff0ae167a9df495753b6a52d30fd0af0e16df81e910b039d1aaeb3ac190cdb79",
+      "src/granunlearn/training/candidate_grid.py": "bf9df2a61dbc3308875a0bed77787d146b5aebfdc7382699768c179b7b7a5f54",
+      "src/granunlearn/training/unlearning_datasets.py": "260b6c5e047f2361b02db8ec65574ce81b5bab207d122bbc0961c55903e1e062",
+      "src/granunlearn/training/unlearning_trainer.py": "7aba41087368563ed99934c0371562f0c15abee024931b0b87698104b391e541"
+    },
+    "depends_on_unchanged": {
+      "src/granunlearn/evaluation/selection.py": "ada1f9ccc1e6089d61758defe329f19071e602acf4b0e541ed58e861e9506806",
+      "src/granunlearn/evaluation/hierarchy_metrics.py": "67e75fd4b12c3f22bfe86f7c77678df945d5a1152a43447d0a088da10b46966c",
+      "src/granunlearn/evaluation/paired_ci.py": "8944d43d0f246a0ff9114a3e6bddf41ffc8d7c4ef2930c384b859bf091766ce4",
+      "src/granunlearn/evaluation/prediction_provenance.py": "f7e1f6278691161275c03cbf7e97cef48fae76e2c65619eaeb758325064155ba",
+      "src/granunlearn/evaluation/reference_eval.py": "645440c1fd36c07f94d6771e099be7db1bfa6fb8915fcdb0df81ab373da115dd",
+      "src/granunlearn/evaluation/scoring.py": "4f37289b66a9389e94830b9b65bb51a6d198b4272926e9d38be7522edd73f891",
+      "scripts/select_unlearning_checkpoints.py": "ecacee99a9dd52cba7c419081e11a628f931fc40e8300b45b489946e6da25f2d"
+    },
+    "data_paths": {
+      "data/reports/mllmu_iter12_retention_probe.json": "3c45905ec8369687875d90d945480be43c9478e1247dee9ac2a57c5dc95f15bb",
+      "data/mllmu_hier_pilot100/unlearning_iter12/fine_target.jsonl": "60ef46ac72d601deb64b55b5a5ddfb31c168983dd2adf5a594bd8ce73e8f6765",
+      "data/mllmu_hier_pilot100/unlearning_iter12/target_level.jsonl": "0c56833660ea701b61de426f2dc2bc4b7823cc5fe59c93840a364bdbd9a0fcbf",
+      "data/mllmu_hier_pilot100/unlearning_iter12/retain.jsonl": "1221a45f08958a0542c0c40b8f219181d248ee0318e0c41cf403a90634276e3c"
+    }
+  },
+  "limitations": [
+    "The probe half carries 1 of the 6 taxonomic retained associations, so probe retention speaks almost entirely to semantic and numeric knowledge.",
+    "retain_other_entity reaches 23 probe donor entities: enough for a point-estimate floor, too few for an interval. This protocol selects; it does not do inference.",
+    "Halving the replay group halves the rehearsal available to the mechanism under test, and cuts its share of each epoch's gradient stream from 0.6825 to 0.5041. A null result may reflect the smaller group rather than the mechanism, which is why the weight sweep spans the pilot's effective influence.",
+    "Selection is on train+val, and train queries are served photographs the checkpoints were trained on. That is inherited from the pilot-100 protocol and unchanged here.",
+    "Nothing in this protocol controls a familywise error rate. A winner chosen from 8 candidates on 4 retention numbers is a selected candidate, not a demonstrated effect."
+  ],
+  "amendments": [
+    {
+      "utc": "2026-09-11T14:16:16+00:00",
+      "reason": "Pre-training development only: the freeze script grew --repo-root (so the tests can freeze against a tree with no candidates in it) and the --refreeze/--reason amendment path itself. No Iteration-12 candidate has been trained and no criterion value changed.",
+      "supersedes_sha256": "12e287b67dac36b1371da0bf38264776628a3abeeeaa0a7fa934091db00fed91",
+      "fields_that_changed": [
+        "hashes.protocol_paths.scripts/freeze_iter12_selection_protocol.py: frozen='39787bb05ab8ee26ad639c7cf42e8691b3a2bf73dad87ccbb7991c3cbe0d3eea' now='2758ff8dd673d1605ee43837c91b5fe0bd6ca477e9f3686ccfa3ac9730b91fb9'"
+      ],
+      "no_candidate_had_been_trained": true
+    },
+    {
+      "utc": "2026-09-11T14:30:20+00:00",
+      "reason": "Lint-only cleanup of the protocol scripts and tests (import ordering, parenthesised implicit string concatenation, writelines for the jsonl loop, explicit check=False in the tests, removal of an unused import and dead noqa comments). No criterion value, grid entry, group file or partition field changed: the rebuilt groups and probe report are byte-identical to the ones this freeze already recorded.",
+      "supersedes_sha256": "723156d6d21802f109913230935c069c9800bfad3bf41f83993186d034fa2cb7",
+      "fields_that_changed": [
+        "hashes.protocol_paths.scripts/build_iter12_retention_probe.py: frozen='f608f3e22605e7383c40b24a477c7399f8ba32ec2100b815453b23a687eff358' now='093590aa29bcb2316869ca55317b99670dba2773cb753cbb94ffb3de5246d52c'",
+        "hashes.protocol_paths.scripts/freeze_iter12_selection_protocol.py: frozen='2758ff8dd673d1605ee43837c91b5fe0bd6ca477e9f3686ccfa3ac9730b91fb9' now='dd9007a5e78179fa8594f8d2354ff8ba9b667235774834a57a58009b62147f29'",
+        "hashes.protocol_paths.scripts/select_iter12_retention_checkpoints.py: frozen='9f49d96da1376f2a81e1099b7d0a4827c84ee54f87a9cbbe05b0e08dc1360f2f' now='28d8edabe88e53f174ae62708eae7c09c10d3f39c5548087de379efb837ec3f9'"
+      ],
+      "no_candidate_had_been_trained": true
+    }
+  ]
+}

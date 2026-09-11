@@ -117,11 +117,29 @@ jobs:
               # The raw run logs beside it are not listed here because this step
               # json.loads every entry and they are plain text.
               "data/reports/mllmu_confirm100_execution_provenance.json",
+              # Iteration 12 (exploratory).  `data/reports/*` is gitignored by
+              # default, so these two need negations in .gitignore to be here
+              # at all -- a frozen selection protocol that only exists in one
+              # working tree is not preregistration.  The first is the fit/
+              # probe partition of the retained entities; the second freezes
+              # D_G's direction, its numerical tolerance and the tie-break,
+              # plus the retention floor, BEFORE any candidate is trained.
+              # The selection report itself is added to this list when Stage 1
+              # actually runs, not before: a required file that does not exist
+              # yet would fail this step on every push until then.
+              "data/reports/mllmu_iter12_retention_probe.json",
+              "data/reports/mllmu_iter12_selection_protocol_freeze.json",
+              # The fit-half training groups.  retain.jsonl IS the frozen
+              # partition, so the protocol's central claim -- that the probe
+              # half was never rehearsed by any candidate -- is checkable from
+              # a clone rather than taken on trust.
+              "data/mllmu_hier_pilot100/unlearning_iter12/retain.jsonl",
           ]
           missing = [p for p in required if not Path(p).exists()]
           if missing:
               raise SystemExit(f"Missing committed reports: {missing}")
           for p in required:
-              json.loads(Path(p).read_text())
+              if p.endswith(".json"):
+                  json.loads(Path(p).read_text())
           print(f"All {len(required)} committed reports present and valid JSON.")
           EOF
