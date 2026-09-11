@@ -1,0 +1,9 @@
+
+wrote data/reports/mllmu_confirm100_final_analysis.json
+  states       ['B3', 'B0', 'MG'], all provenance-verified over the same query order
+  targets      72 entities (42 persons, 30 species), set sha256 acbf30d42b461a5c
+  B3_minus_B0:filr     entity-macro diff -0.1574 CI [-0.2176, -0.0937] over 72 entities; p(one-sided, less) = 0.0001; row-micro diff -0.1574
+  B3_minus_B0:tga      entity-macro diff +0.1586 CI [+0.1007, +0.2211] over 72 entities; p(one-sided, greater) = 0.0001; row-micro diff +0.1586
+  Holm         alpha=0.05 k=2 -> rejected ['B3_minus_B0:filr', 'B3_minus_B0:tga'], retained []
+  secondary    person and photograph strata reported as diagnostics only
+  descriptive  retention (no margin) and B3-MG (equivalence NOT concluded)

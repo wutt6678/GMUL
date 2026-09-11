@@ -102,6 +102,13 @@ data/raw/inaturalist/confirm_v1/*
 # repository was the record that the confirmation had not been scored, and its
 # presence is now the record that it has.
 !data/reports/mllmu_confirm100_final_analysis.json
+# 11C post-run audit: what the scoring run did NOT record.  Written after the
+# result was seen by scripts/audit_confirmation_execution.py, marked post_hoc
+# inside itself, and binding nothing.  Committed because a limitation that lives
+# only in a review thread is a limitation the next reader will not find: the
+# unbound verifier, the absent GPU identity, and the fact that physical-device
+# equivalence across the three states cannot be established retrospectively.
+!data/reports/mllmu_confirm100_execution_provenance.json
 # 11C stage 5 evidence: the three confirmation prediction files, their sidecars
 # and their generation-order records.  TRACKED, unlike the exploratory parquets
 # below.  They are 132 KB; they are the bytes the committed report's
@@ -141,6 +148,22 @@ Thumbs.db
 
 # Logs
 *.log
+
+# PLACED AFTER `*.log` ON PURPOSE.  In a .gitignore the LAST matching pattern
+# wins, so a negation written above `*.log` loses to it: with this block where
+# it first went, 8 of these 11 files stayed ignored and a plain `git add -A`
+# would have committed only the .json, the .txt and the .out — silently, which
+# is the exact failure the analysis-report negation above warns about.
+#
+# The chain's own logs from the one scoring run: the journal, the three lane
+# logs, the preflight, gate and analysis logs, and the structured outstanding
+# report.  They were written under outputs/lanes/, which `outputs/*/` excludes,
+# so until this line they existed on one machine and were the only record of
+# which device index each state was generated on and of the two out-of-memory
+# retries.  84 KB, copied byte-identically with their original mtimes, and read
+# back by the audit script so its report is reproducible from a clone.
+!data/mllmu_hier_confirm100/execution_logs/
+!data/mllmu_hier_confirm100/execution_logs/**
 
 # Model checkpoints
 *.bin

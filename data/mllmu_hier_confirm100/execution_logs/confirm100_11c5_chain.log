@@ -1,0 +1,52 @@
+[2026-09-09T12:40:17+08:00] chain lock claimed (pid 3648284)
+[2026-09-09T12:40:17+08:00]   6 run log(s) reset; they describe this run only
+[2026-09-09T12:40:17+08:00] preconditions
+  freeze ok, states ['B3', 'B0', 'MG'], 1209 queries
+  frozen code hashes, frozen dataset hashes, pinned photographs and per-query image resolution all verified
+  B3: adapter present and matching the frozen contract
+  B0: adapter present and matching the frozen contract
+  MG: adapter present and matching the frozen contract
+  base model Qwen/Qwen3.5-9B pinned at revision c202236235762e1c871ad0ccb60c8ee5ba337b9a
+  snapshot the lanes will load: /scratch/wutiantong/.cache/huggingface/hub/models--Qwen--Qwen3.5-9B/snapshots/c202236235762e1c871ad0ccb60c8ee5ba337b9a
+[2026-09-09T12:40:18+08:00]   preconditions passed
+3 of 3 states still need generation: ['B3', 'B0', 'MG']
+  structured answer written to /scratch/wutiantong/GMUL/granularity-unlearning/outputs/lanes/confirm100_11c5_outstanding.json
+  B3: predictions_B3.parquet does not exist — this state has not been generated
+  B0: predictions_B0.parquet does not exist — this state has not been generated
+  MG: predictions_MG.parquet does not exist — this state has not been generated
+[2026-09-09T12:40:19+08:00] states still needing generation: 3 (B3 B0 MG)
+[2026-09-09T12:40:19+08:00]   gen lane: B3
+[2026-09-09T12:40:19+08:00]   gen lane: B0
+[2026-09-09T12:40:19+08:00]   gen lane: MG
+[2026-09-09T17:44:04+08:00] generation finished rc=0
+[2026-09-09T17:44:04+08:00] gate: verifying all three states
+[2026-09-09 17:44:05] INFO     evaluate_confirmation_split — confirmation dataset confirm100_v1: 1209 queries, 317 associations
+[2026-09-09 17:44:05] INFO     evaluate_confirmation_split — frozen generation config: {'batch_size': 8, 'image_batch_size': 8, 'max_new_tokens': 96, 'do_sample': False, 'max_image_pixels': 147456, 'max_length': 1536}
+[2026-09-09 17:44:05] INFO     evaluate_confirmation_split — base model Qwen/Qwen3.5-9B pinned at revision c202236235762e1c871ad0ccb60c8ee5ba337b9a
+[2026-09-09 17:44:05] INFO     evaluate_confirmation_split — generation order sha256: 364ecf5030af647a9fa87937be0f9672e6e2c46c3e7fa43e0227372ac9b28fe2
+[2026-09-09 17:44:05] INFO     evaluate_confirmation_split — scored states: ['B3', 'B0', 'MG'] (and no others)
+[2026-09-09 17:44:05] INFO     evaluate_confirmation_split — preflight: 10 fingerprinted-module hash(es), 7 analysis-script hash(es) plus paired_ci, and 3 dataset artifact(s) with the image-manifest roll-up all compared with the freeze; 402 pinned photograph(s) re-hashed; 864 of 1209 queries are image-route and every one resolves to a frozen byte
+
+confirmation predictions — 3/3 states complete and provenance-verified
+  dataset      data/mllmu_hier_confirm100 (confirm100_v1)
+  experiment   mllmu_confirm100_iter11c
+  base model   Qwen/Qwen3.5-9B @ c202236235762e1c871ad0ccb60c8ee5ba337b9a
+  queries      1209 per state, order sha256 364ecf5030af647a
+  states       ['B3', 'B0', 'MG']
+    B3  ok
+    B0  ok
+    MG  ok
+  all three states verified — run python scripts/analyze_confirmation_split.py to assemble the analysis
+[2026-09-09T17:44:19+08:00] analysis: assembling from three verified prediction files
+
+wrote data/reports/mllmu_confirm100_final_analysis.json
+  states       ['B3', 'B0', 'MG'], all provenance-verified over the same query order
+  targets      72 entities (42 persons, 30 species), set sha256 acbf30d42b461a5c
+  B3_minus_B0:filr     entity-macro diff -0.1574 CI [-0.2176, -0.0937] over 72 entities; p(one-sided, less) = 0.0001; row-micro diff -0.1574
+  B3_minus_B0:tga      entity-macro diff +0.1586 CI [+0.1007, +0.2211] over 72 entities; p(one-sided, greater) = 0.0001; row-micro diff +0.1586
+  Holm         alpha=0.05 k=2 -> rejected ['B3_minus_B0:filr', 'B3_minus_B0:tga'], retained []
+  secondary    person and photograph strata reported as diagnostics only
+  descriptive  retention (no margin) and B3-MG (equivalence NOT concluded)
+[2026-09-09T17:44:29+08:00] stage 5 complete: /scratch/wutiantong/GMUL/granularity-unlearning/data/reports/mllmu_confirm100_final_analysis.json
+[2026-09-09T17:44:29+08:00]   This is the confirmation result. Invariant 7: a failed primary claim
+[2026-09-09T17:44:29+08:00]   is reported as failed, and nothing downstream re-tunes on it.

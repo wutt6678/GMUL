@@ -1,0 +1,90 @@
+2026-09-09T12:40:19+08:00 lane waiting for >=22000MiB free (poll 1s): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/evaluate_confirmation_split.py --device cuda:0 --state MG
+2026-09-09T15:08:18+08:00 CLAIMED GPU 3 (38739MiB free, attempt 1/8): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/evaluate_confirmation_split.py --device cuda:0 --state MG
+[2026-09-09 15:08:18] INFO     evaluate_confirmation_split — confirmation dataset confirm100_v1: 1209 queries, 317 associations
+[2026-09-09 15:08:18] INFO     evaluate_confirmation_split — frozen generation config: {'batch_size': 8, 'image_batch_size': 8, 'max_new_tokens': 96, 'do_sample': False, 'max_image_pixels': 147456, 'max_length': 1536}
+[2026-09-09 15:08:18] INFO     evaluate_confirmation_split — base model Qwen/Qwen3.5-9B pinned at revision c202236235762e1c871ad0ccb60c8ee5ba337b9a
+[2026-09-09 15:08:18] INFO     evaluate_confirmation_split — generation order sha256: 364ecf5030af647a9fa87937be0f9672e6e2c46c3e7fa43e0227372ac9b28fe2
+[2026-09-09 15:08:18] INFO     evaluate_confirmation_split — scored states: ['B3', 'B0', 'MG'] (and no others)
+[2026-09-09 15:08:18] INFO     evaluate_confirmation_split — preflight: 10 fingerprinted-module hash(es), 7 analysis-script hash(es) plus paired_ci, and 3 dataset artifact(s) with the image-manifest roll-up all compared with the freeze; 402 pinned photograph(s) re-hashed; 864 of 1209 queries are image-route and every one resolves to a frozen byte
+[2026-09-09 15:08:19] INFO     evaluate_confirmation_split — base model snapshot pinned at c20223623576: /scratch/wutiantong/.cache/huggingface/hub/models--Qwen--Qwen3.5-9B/snapshots/c202236235762e1c871ad0ccb60c8ee5ba337b9a
+[2026-09-09 15:08:19] WARNING  evaluate_confirmation_split — [MG] not reusable — predictions_MG.parquet does not exist — this state has not been generated
+[2026-09-09 15:08:37] INFO     evaluate_confirmation_split — [MG] generating all 1209 confirmation queries under batch_size=8 image_batch_size=8 max_new_tokens=96 greedy=True
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Traceback (most recent call last):
+  File "/scratch/wutiantong/GMUL/granularity-unlearning/scripts/evaluate_confirmation_split.py", line 1232, in <module>
+    main()
+  File "/scratch/wutiantong/GMUL/granularity-unlearning/scripts/evaluate_confirmation_split.py", line 1164, in main
+    reused = generate_state(state, adapter_dir, repo_root, freeze,
+  File "/scratch/wutiantong/GMUL/granularity-unlearning/scripts/evaluate_confirmation_split.py", line 936, in generate_state
+    generator = ReferenceStateGenerator(
+  File "/scratch/wutiantong/GMUL/granularity-unlearning/src/granunlearn/evaluation/reference_eval.py", line 95, in __init__
+    self.model = AutoModelForImageTextToText.from_pretrained(
+  File "/scratch/wutiantong/miniconda3/envs/gmul/lib/python3.10/site-packages/transformers/models/auto/auto_factory.py", line 402, in from_pretrained
+    return model_class.from_pretrained(
+  File "/scratch/wutiantong/miniconda3/envs/gmul/lib/python3.10/site-packages/transformers/modeling_utils.py", line 4456, in from_pretrained
+    loading_info, disk_offload_index = cls._load_pretrained_model(model, state_dict, checkpoint_files, load_config)
+  File "/scratch/wutiantong/miniconda3/envs/gmul/lib/python3.10/site-packages/transformers/modeling_utils.py", line 4536, in _load_pretrained_model
+    caching_allocator_warmup(model, expanded_device_map, load_config.hf_quantizer)
+  File "/scratch/wutiantong/miniconda3/envs/gmul/lib/python3.10/site-packages/transformers/modeling_utils.py", line 5198, in caching_allocator_warmup
+    _ = torch.empty(int(byte_count // 2), dtype=torch.float16, device=device, requires_grad=False)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 17.53 GiB. GPU 0 has a total capacity of 47.37 GiB of which 9.13 GiB is free. Process 3599581 has 3.18 GiB memory in use. Process 3627929 has 3.18 GiB memory in use. Process 3655219 has 3.16 GiB memory in use. Process 70829 has 28.28 GiB memory in use. Including non-PyTorch memory, this process has 426.00 MiB memory in use. Of the allocated memory 0 bytes is allocated by PyTorch, and 0 bytes is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+2026-09-09T15:08:44+08:00 GPU 3 released (exit 1)
+2026-09-09T15:08:44+08:00 re-queueing; new threshold 24000MiB
+2026-09-09T16:48:52+08:00 CLAIMED GPU 0 (45240MiB free, attempt 2/8): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/evaluate_confirmation_split.py --device cuda:0 --state MG
+[2026-09-09 16:48:55] INFO     evaluate_confirmation_split — confirmation dataset confirm100_v1: 1209 queries, 317 associations
+[2026-09-09 16:48:55] INFO     evaluate_confirmation_split — frozen generation config: {'batch_size': 8, 'image_batch_size': 8, 'max_new_tokens': 96, 'do_sample': False, 'max_image_pixels': 147456, 'max_length': 1536}
+[2026-09-09 16:48:55] INFO     evaluate_confirmation_split — base model Qwen/Qwen3.5-9B pinned at revision c202236235762e1c871ad0ccb60c8ee5ba337b9a
+[2026-09-09 16:48:55] INFO     evaluate_confirmation_split — generation order sha256: 364ecf5030af647a9fa87937be0f9672e6e2c46c3e7fa43e0227372ac9b28fe2
+[2026-09-09 16:48:55] INFO     evaluate_confirmation_split — scored states: ['B3', 'B0', 'MG'] (and no others)
+[2026-09-09 16:48:55] INFO     evaluate_confirmation_split — preflight: 10 fingerprinted-module hash(es), 7 analysis-script hash(es) plus paired_ci, and 3 dataset artifact(s) with the image-manifest roll-up all compared with the freeze; 402 pinned photograph(s) re-hashed; 864 of 1209 queries are image-route and every one resolves to a frozen byte
+[2026-09-09 16:48:56] INFO     evaluate_confirmation_split — base model snapshot pinned at c20223623576: /scratch/wutiantong/.cache/huggingface/hub/models--Qwen--Qwen3.5-9B/snapshots/c202236235762e1c871ad0ccb60c8ee5ba337b9a
+[2026-09-09 16:48:56] WARNING  evaluate_confirmation_split — [MG] not reusable — predictions_MG.parquet does not exist — this state has not been generated
+[2026-09-09 16:49:09] INFO     evaluate_confirmation_split — [MG] generating all 1209 confirmation queries under batch_size=8 image_batch_size=8 max_new_tokens=96 greedy=True
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Traceback (most recent call last):
+  File "/scratch/wutiantong/GMUL/granularity-unlearning/scripts/evaluate_confirmation_split.py", line 1232, in <module>
+    main()
+  File "/scratch/wutiantong/GMUL/granularity-unlearning/scripts/evaluate_confirmation_split.py", line 1164, in main
+    reused = generate_state(state, adapter_dir, repo_root, freeze,
+  File "/scratch/wutiantong/GMUL/granularity-unlearning/scripts/evaluate_confirmation_split.py", line 936, in generate_state
+    generator = ReferenceStateGenerator(
+  File "/scratch/wutiantong/GMUL/granularity-unlearning/src/granunlearn/evaluation/reference_eval.py", line 95, in __init__
+    self.model = AutoModelForImageTextToText.from_pretrained(
+  File "/scratch/wutiantong/miniconda3/envs/gmul/lib/python3.10/site-packages/transformers/models/auto/auto_factory.py", line 402, in from_pretrained
+    return model_class.from_pretrained(
+  File "/scratch/wutiantong/miniconda3/envs/gmul/lib/python3.10/site-packages/transformers/modeling_utils.py", line 4456, in from_pretrained
+    loading_info, disk_offload_index = cls._load_pretrained_model(model, state_dict, checkpoint_files, load_config)
+  File "/scratch/wutiantong/miniconda3/envs/gmul/lib/python3.10/site-packages/transformers/modeling_utils.py", line 4536, in _load_pretrained_model
+    caching_allocator_warmup(model, expanded_device_map, load_config.hf_quantizer)
+  File "/scratch/wutiantong/miniconda3/envs/gmul/lib/python3.10/site-packages/transformers/modeling_utils.py", line 5198, in caching_allocator_warmup
+    _ = torch.empty(int(byte_count // 2), dtype=torch.float16, device=device, requires_grad=False)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 17.53 GiB. GPU 0 has a total capacity of 47.37 GiB of which 15.36 GiB is free. Process 3702115 has 3.18 GiB memory in use. Process 427449 has 28.39 GiB memory in use. Including non-PyTorch memory, this process has 426.00 MiB memory in use. Of the allocated memory 0 bytes is allocated by PyTorch, and 0 bytes is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+2026-09-09T16:49:15+08:00 GPU 0 released (exit 1)
+2026-09-09T16:49:15+08:00 re-queueing; new threshold 26000MiB
+2026-09-09T17:36:19+08:00 CLAIMED GPU 3 (42003MiB free, attempt 3/8): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/evaluate_confirmation_split.py --device cuda:0 --state MG
+[2026-09-09 17:36:20] INFO     evaluate_confirmation_split — confirmation dataset confirm100_v1: 1209 queries, 317 associations
+[2026-09-09 17:36:20] INFO     evaluate_confirmation_split — frozen generation config: {'batch_size': 8, 'image_batch_size': 8, 'max_new_tokens': 96, 'do_sample': False, 'max_image_pixels': 147456, 'max_length': 1536}
+[2026-09-09 17:36:20] INFO     evaluate_confirmation_split — base model Qwen/Qwen3.5-9B pinned at revision c202236235762e1c871ad0ccb60c8ee5ba337b9a
+[2026-09-09 17:36:20] INFO     evaluate_confirmation_split — generation order sha256: 364ecf5030af647a9fa87937be0f9672e6e2c46c3e7fa43e0227372ac9b28fe2
+[2026-09-09 17:36:20] INFO     evaluate_confirmation_split — scored states: ['B3', 'B0', 'MG'] (and no others)
+[2026-09-09 17:36:20] INFO     evaluate_confirmation_split — preflight: 10 fingerprinted-module hash(es), 7 analysis-script hash(es) plus paired_ci, and 3 dataset artifact(s) with the image-manifest roll-up all compared with the freeze; 402 pinned photograph(s) re-hashed; 864 of 1209 queries are image-route and every one resolves to a frozen byte
+[2026-09-09 17:36:20] INFO     evaluate_confirmation_split — base model snapshot pinned at c20223623576: /scratch/wutiantong/.cache/huggingface/hub/models--Qwen--Qwen3.5-9B/snapshots/c202236235762e1c871ad0ccb60c8ee5ba337b9a
+[2026-09-09 17:36:20] WARNING  evaluate_confirmation_split — [MG] not reusable — predictions_MG.parquet does not exist — this state has not been generated
+[2026-09-09 17:36:27] INFO     evaluate_confirmation_split — [MG] generating all 1209 confirmation queries under batch_size=8 image_batch_size=8 max_new_tokens=96 greedy=True
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+[transformers] The fast path is not available because one of the required library is not installed. Falling back to torch implementation. To install follow https://github.com/fla-org/flash-linear-attention#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading weights:   0%|          | 0/760 [00:00<?, ?it/s]Loading weights:   0%|          | 1/760 [00:00<01:28,  8.62it/s]Loading weights:   0%|          | 2/760 [00:00<02:14,  5.62it/s]Loading weights:   2%|▏         | 15/760 [00:00<00:16, 44.42it/s]Loading weights:   4%|▎         | 28/760 [00:00<00:10, 68.10it/s]Loading weights:   6%|▌         | 43/760 [00:00<00:08, 88.90it/s]Loading weights:   7%|▋         | 56/760 [00:00<00:06, 100.60it/s]Loading weights:   9%|▉         | 68/760 [00:00<00:06, 103.12it/s]Loading weights:  11%|█         | 81/760 [00:00<00:06, 110.85it/s]Loading weights:  13%|█▎        | 96/760 [00:01<00:05, 114.02it/s]Loading weights:  14%|█▍        | 108/760 [00:01<00:05, 110.70it/s]Loading weights:  16%|█▌        | 120/760 [00:01<00:06, 100.55it/s]Loading weights:  18%|█▊        | 134/760 [00:01<00:05, 108.54it/s]Loading weights:  19%|█▉        | 148/760 [00:01<00:05, 115.65it/s]Loading weights:  21%|██        | 160/760 [00:01<00:05, 109.28it/s]Loading weights:  23%|██▎       | 174/760 [00:01<00:05, 112.20it/s]Loading weights:  25%|██▍       | 188/760 [00:01<00:04, 116.19it/s]Loading weights:  27%|██▋       | 202/760 [00:02<00:04, 117.74it/s]Loading weights:  28%|██▊       | 214/760 [00:02<00:04, 115.20it/s]Loading weights:  30%|██▉       | 227/760 [00:02<00:04, 117.08it/s]Loading weights:  32%|███▏      | 240/760 [00:02<00:04, 115.37it/s]Loading weights:  33%|███▎      | 254/760 [00:02<00:04, 114.60it/s]Loading weights:  35%|███▌      | 266/760 [00:02<00:04, 106.91it/s]Loading weights:  37%|███▋      | 279/760 [00:02<00:04, 112.27it/s]Loading weights:  38%|███▊      | 292/760 [00:02<00:04, 112.98it/s]Loading weights:  40%|████      | 307/760 [00:02<00:03, 117.27it/s]Loading weights:  42%|████▏     | 319/760 [00:03<00:04, 106.32it/s]Loading weights:  44%|████▍     | 333/760 [00:03<00:03, 108.61it/s]Loading weights:  46%|████▌     | 347/760 [00:03<00:03, 110.42it/s]Loading weights:  47%|████▋     | 360/760 [00:03<00:03, 114.34it/s]Loading weights:  49%|████▉     | 372/760 [00:03<00:03, 107.44it/s]Loading weights:  51%|█████     | 385/760 [00:03<00:03, 112.49it/s]Loading weights:  52%|█████▏    | 398/760 [00:03<00:03, 109.03it/s]Loading weights:  54%|█████▍    | 413/760 [00:03<00:02, 115.87it/s]Loading weights:  56%|█████▌    | 425/760 [00:04<00:03, 107.78it/s]Loading weights:  64%|██████▍   | 485/760 [00:04<00:01, 234.87it/s]Loading weights:  73%|███████▎  | 552/760 [00:04<00:00, 350.07it/s]Loading weights:  82%|████████▏ | 625/760 [00:04<00:00, 454.30it/s]Loading weights:  90%|█████████ | 687/760 [00:04<00:00, 499.21it/s]Loading weights:  98%|█████████▊| 744/760 [00:04<00:00, 516.98it/s]Loading weights: 100%|██████████| 760/760 [00:04<00:00, 163.71it/s]
+[2026-09-09 17:36:34] INFO     reference_eval — Loaded LoRA adapter from /scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MG/adapters
+[2026-09-09 17:38:13] INFO     reference_eval — generation progress: 256/1209 (21.2%) in 99s — 2.59 q/s, ETA 368s
+[2026-09-09 17:39:48] INFO     reference_eval — generation progress: 512/1209 (42.3%) in 194s — 2.64 q/s, ETA 264s
+[2026-09-09 17:41:01] INFO     reference_eval — generation progress: 768/1209 (63.5%) in 266s — 2.89 q/s, ETA 153s
+[2026-09-09 17:42:34] INFO     reference_eval — generation progress: 1024/1209 (84.7%) in 360s — 2.84 q/s, ETA 65s
+[2026-09-09 17:44:02] INFO     prediction_provenance — wrote prediction sidecar predictions_MG.parquet.provenance.json (parquet abef5a1a0d48, 1209 rows)
+[2026-09-09 17:44:02] INFO     evaluate_confirmation_split — [MG] wrote predictions_MG.parquet (1209 rows) and its sidecar
+[2026-09-09 17:44:02] INFO     evaluate_confirmation_split — [MG] generated and sealed
+
+MG: 1209 rows generated and provenance-verified over query order 364ecf5030af647a
+  this exit says nothing about the other states; run --verify-only for global completeness
+2026-09-09T17:44:04+08:00 GPU 3 released (success)

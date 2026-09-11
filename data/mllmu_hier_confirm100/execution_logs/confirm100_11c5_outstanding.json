@@ -1,0 +1,28 @@
+{
+ "generated_utc": "2026-09-09T04:40:19+00:00",
+ "how_to_read_this": "outstanding_states is the only field a machine should iterate, and every item in it is one of scored_states. Nothing else in this file, and nothing on stdout, is a state name.",
+ "mode": "list-outstanding",
+ "outstanding_states": [
+  "B3",
+  "B0",
+  "MG"
+ ],
+ "reasons": {
+  "B0": [
+   "predictions_B0.parquet does not exist \u2014 this state has not been generated"
+  ],
+  "B3": [
+   "predictions_B3.parquet does not exist \u2014 this state has not been generated"
+  ],
+  "MG": [
+   "predictions_MG.parquet does not exist \u2014 this state has not been generated"
+  ]
+ },
+ "scored_states": [
+  "B3",
+  "B0",
+  "MG"
+ ],
+ "verified_states": [],
+ "what_outstanding_means": "fails verify_state against THIS run's adapter bytes, dataset version, artifact hashes, generation configuration, code fingerprint and generation-order record \u2014 not merely 'has no parquet yet', so a stale partial pass is regenerated rather than skipped and then refused by the gate"
+}

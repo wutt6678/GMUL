@@ -1,0 +1,443 @@
+{
+ "assembled_after_the_result_was_seen": true,
+ "audit_of": {
+  "analysis_generated_utc": "2026-09-09T09:44:27+00:00",
+  "analysis_report": "data/reports/mllmu_confirm100_final_analysis.json",
+  "analysis_report_sha256": "b330b3c0488af6a0ef044e9a2d6ca60e8ddf391f127e8c76233df2f38f8f0645",
+  "primary_verdict": [
+   "B3_minus_B0:filr",
+   "B3_minus_B0:tga"
+  ],
+  "refusals_in_the_analysis_report": [],
+  "retained": []
+ },
+ "binds_nothing_and_enforces_nothing": true,
+ "code_identity": {
+  "all_three_states_generated_at_one_commit": true,
+  "commits_per_state": {
+   "B0": "73f49fdb9c6c94c2f6635f46969e070c52c8f10e",
+   "B3": "73f49fdb9c6c94c2f6635f46969e070c52c8f10e",
+   "MG": "73f49fdb9c6c94c2f6635f46969e070c52c8f10e"
+  },
+  "git_dirty_per_state": {
+   "B0": true,
+   "B3": false,
+   "MG": true
+  },
+  "limitation_of_a_single_dirty_boolean": "git_dirty cannot distinguish 'only untracked evidence appeared' from 'a tracked file was modified', because it reduces a porcelain listing to one bit. For B3 the false value pins the entire tracked tree to the scoring commit; for B0 and MG the true value is consistent with the untracked explanation but does not prove it.",
+  "num_sealed_paths": 18,
+  "predictions_dir_ignored_at_the_scoring_commit": false,
+  "scoring_commit": "73f49fdb9c6c94c2f6635f46969e070c52c8f10e",
+  "sealed_paths": [
+   "scripts/analyze_confirmation_split.py",
+   "scripts/evaluate_confirmation_split.py",
+   "scripts/evaluate_pilot100_final.py",
+   "scripts/freeze_confirmation_protocol.py",
+   "scripts/power_analysis_confirmation.py",
+   "scripts/select_confirmation_photographs.py",
+   "scripts/select_unlearning_checkpoints.py",
+   "src/granunlearn/evaluation/hierarchy_metrics.py",
+   "src/granunlearn/evaluation/image_splits.py",
+   "src/granunlearn/evaluation/paired_ci.py",
+   "src/granunlearn/evaluation/query_generation.py",
+   "src/granunlearn/evaluation/reference_eval.py",
+   "src/granunlearn/evaluation/scoring.py",
+   "src/granunlearn/imaging.py",
+   "src/granunlearn/schema/association.py",
+   "src/granunlearn/schema/hierarchy.py",
+   "src/granunlearn/schema/prediction.py",
+   "src/granunlearn/schema/query.py"
+  ],
+  "sealed_paths_changed_since_scoring": [],
+  "verifier_binding_gap": {
+   "consequence": "the verifier's own bytes were pinned by nothing at generation time, so the record cannot show that the contract being enforced then is the one being enforced now. It happens to be recoverable here only because the file is tracked and the scoring commit is recorded \u2014 a mitigation that is a property of this repository, not a control.",
+   "in_code_analysis_scripts_sha256": false,
+   "in_code_fingerprinted_modules": false,
+   "path": "src/granunlearn/evaluation/prediction_provenance.py",
+   "recorded_in_any_sidecar": true,
+   "recoverable_from_git_because_tracked": true,
+   "role": "defines the sidecar contract and implements verify_sidecar \u2014 the module that decides what counts as provenance",
+   "sha256_at_the_scoring_commit": "f7e1f6278691161275c03cbf7e97cef48fae76e2c65619eaeb758325064155ba",
+   "sha256_now": "f7e1f6278691161275c03cbf7e97cef48fae76e2c65619eaeb758325064155ba",
+   "unchanged_since_scoring": true
+  },
+  "what_git_dirty_measures": "prediction_provenance.git_dirty runs `git status --porcelain` with no --untracked-files flag, so UNTRACKED files count as dirty",
+  "why_b0_and_mg_report_dirty": "B3 ran first, when the predictions directory did not exist, so its tree was clean. Its three outputs were untracked at that commit, so porcelain listed them, and every later lane saw a dirty tree. No step of the chain edits a tracked file."
+ },
+ "do_not_rescore": {
+  "any_repeat_is_a_new_replication": "a further scoring pass is a NEW REPLICATION, never a re-run of this confirmation. It requires its own preregistered protocol, its own freeze and its own label; it must be reported beside this result rather than in place of it; and it must not inherit this protocol's claims, its alpha or its verdict. Relabelling a repeat as a re-run is how a scored-once protocol quietly becomes a search over outcomes.",
+  "the_chain_also_refuses": "scripts/lanes/confirm100_11c5_chain.sh exits 3 when the analysis report already exists, before it asks which states are outstanding and before it queues any lane",
+  "the_result_stands": true,
+  "why_the_missing_binding_does_not_justify_replacing_it": "choosing to regenerate after seeing a verdict that both preregistered claims survived would be selecting on the outcome, which is the exact failure the sealed protocol exists to prevent. The gaps documented here are gaps in what was RECORDED, and nothing in the record indicates an implementation change between the freeze and the run."
+ },
+ "generated_utc": "2026-09-11T11:59:48+00:00",
+ "hardware": {
+  "gone_looking_for": {
+   "conclusion": "no device model, UUID, driver version, CUDA version or compute capability appears anywhere in the committed run logs",
+   "hits_per_term": {},
+   "searched_files": [
+    "confirm100_11c5_B0.log",
+    "confirm100_11c5_B3.log",
+    "confirm100_11c5_MG.log",
+    "confirm100_11c5_analysis.log",
+    "confirm100_11c5_chain.log",
+    "confirm100_11c5_gate.log",
+    "confirm100_11c5_launch.out",
+    "confirm100_11c5_outstanding.json",
+    "confirm100_11c5_outstanding.txt",
+    "confirm100_11c5_outstanding_stdout.log",
+    "confirm100_11c5_preflight.log"
+   ],
+   "terms_searched": [
+    "RTX",
+    "Ada",
+    "GeForce",
+    "A100",
+    "H100",
+    "Tesla",
+    "Driver Version",
+    "CUDA Version",
+    "compute capability",
+    "GPU-",
+    "nvidia-smi",
+    "uuid"
+   ],
+   "terms_with_no_hits": [
+    "A100",
+    "Ada",
+    "CUDA Version",
+    "Driver Version",
+    "GPU-",
+    "GeForce",
+    "H100",
+    "RTX",
+    "Tesla",
+    "compute capability",
+    "nvidia-smi",
+    "uuid"
+   ]
+  },
+  "observed_at_audit_time_not_at_run_time": {
+   "available": true,
+   "device_models_observed": [
+    "NVIDIA RTX 6000 Ada Generation"
+   ],
+   "devices": [
+    {
+     "compute_capability": "8.9",
+     "driver_version": "580.126.09",
+     "index": 0,
+     "memory_total": "49140 MiB",
+     "name": "NVIDIA RTX 6000 Ada Generation",
+     "uuid": "GPU-67eb4597-fad1-4762-fa77-c0f93b5367be"
+    },
+    {
+     "compute_capability": "8.9",
+     "driver_version": "580.126.09",
+     "index": 1,
+     "memory_total": "49140 MiB",
+     "name": "NVIDIA RTX 6000 Ada Generation",
+     "uuid": "GPU-f43d6229-ba8c-ebd7-7ab6-9a733c59d39c"
+    },
+    {
+     "compute_capability": "8.9",
+     "driver_version": "580.126.09",
+     "index": 2,
+     "memory_total": "49140 MiB",
+     "name": "NVIDIA RTX 6000 Ada Generation",
+     "uuid": "GPU-06e0a35b-f401-8209-4512-f2ddebeb7fab"
+    },
+    {
+     "compute_capability": "8.9",
+     "driver_version": "580.126.09",
+     "index": 3,
+     "memory_total": "49140 MiB",
+     "name": "NVIDIA RTX 6000 Ada Generation",
+     "uuid": "GPU-ef4482e6-ef4b-5d37-0f74-35463a5d59d0"
+    }
+   ],
+   "driver_versions_observed": [
+    "580.126.09"
+   ],
+   "is_this_run_time_evidence": false,
+   "observed_utc": "2026-09-11T11:59:48+00:00",
+   "what_this_still_does_not_establish": "that any index claimed on the run date is the same physical device as the index with this UUID today; enumeration order is a host property that was never recorded into the evidence",
+   "why_it_is_here_at_all": "to state what the host looks like at audit time, so that a reader can see the gap between this and what the run recorded \u2014 and so that nobody mistakes one for the other"
+  },
+  "per_lane_attempts": {
+   "B0": {
+    "attempts": [
+     {
+      "attempt": 1,
+      "claimed_utc": "2026-09-09T17:28:37+08:00",
+      "free_mib_at_claim": 42003,
+      "gpu_index": 3,
+      "max_attempts": 8,
+      "outcome": "success",
+      "released_utc": "2026-09-09T17:36:19+08:00",
+      "succeeded": true
+     }
+    ],
+    "device_model_in_log": false,
+    "gpu_index_that_generated": 3,
+    "last_progress_sample": {
+     "done": 1024,
+     "elapsed_s": 368,
+     "total": 1209
+    },
+    "memory_thresholds_mib": [
+     22000
+    ],
+    "num_attempts": 1,
+    "oom_allocations_gib": [],
+    "rows_written_and_sealed": 1209,
+    "succeeded_on_attempt": 1,
+    "why_the_progress_sample_is_not_the_count": "progress is logged every 256 queries and generation ends at 1209 without a further line, so the last sample reads 1024; the sealed row count comes from the line the scorer writes and is cross-checked against the sidecar's num_rows"
+   },
+   "B3": {
+    "attempts": [
+     {
+      "attempt": 1,
+      "claimed_utc": "2026-09-09T17:19:14+08:00",
+      "free_mib_at_claim": 42003,
+      "gpu_index": 3,
+      "max_attempts": 8,
+      "outcome": "success",
+      "released_utc": "2026-09-09T17:28:37+08:00",
+      "succeeded": true
+     }
+    ],
+    "device_model_in_log": false,
+    "gpu_index_that_generated": 3,
+    "last_progress_sample": {
+     "done": 1024,
+     "elapsed_s": 364,
+     "total": 1209
+    },
+    "memory_thresholds_mib": [
+     22000
+    ],
+    "num_attempts": 1,
+    "oom_allocations_gib": [],
+    "rows_written_and_sealed": 1209,
+    "succeeded_on_attempt": 1,
+    "why_the_progress_sample_is_not_the_count": "progress is logged every 256 queries and generation ends at 1209 without a further line, so the last sample reads 1024; the sealed row count comes from the line the scorer writes and is cross-checked against the sidecar's num_rows"
+   },
+   "MG": {
+    "attempts": [
+     {
+      "attempt": 1,
+      "claimed_utc": "2026-09-09T15:08:18+08:00",
+      "free_mib_at_claim": 38739,
+      "gpu_index": 3,
+      "max_attempts": 8,
+      "oom_tried_to_allocate_gib": [
+       "17.53"
+      ],
+      "outcome": "exit 1",
+      "released_utc": "2026-09-09T15:08:44+08:00",
+      "succeeded": false
+     },
+     {
+      "attempt": 2,
+      "claimed_utc": "2026-09-09T16:48:52+08:00",
+      "free_mib_at_claim": 45240,
+      "gpu_index": 0,
+      "max_attempts": 8,
+      "oom_tried_to_allocate_gib": [
+       "17.53"
+      ],
+      "outcome": "exit 1",
+      "released_utc": "2026-09-09T16:49:15+08:00",
+      "succeeded": false
+     },
+     {
+      "attempt": 3,
+      "claimed_utc": "2026-09-09T17:36:19+08:00",
+      "free_mib_at_claim": 42003,
+      "gpu_index": 3,
+      "max_attempts": 8,
+      "outcome": "success",
+      "released_utc": "2026-09-09T17:44:04+08:00",
+      "succeeded": true
+     }
+    ],
+    "device_model_in_log": false,
+    "gpu_index_that_generated": 3,
+    "last_progress_sample": {
+     "done": 1024,
+     "elapsed_s": 360,
+     "total": 1209
+    },
+    "memory_thresholds_mib": [
+     22000,
+     24000,
+     26000
+    ],
+    "num_attempts": 3,
+    "oom_allocations_gib": [
+     "17.53",
+     "17.53"
+    ],
+    "rows_written_and_sealed": 1209,
+    "succeeded_on_attempt": 3,
+    "why_the_progress_sample_is_not_the_count": "progress is logged every 256 queries and generation ends at 1209 without a further line, so the last sample reads 1024; the sealed row count comes from the line the scorer writes and is cross-checked against the sidecar's num_rows"
+   }
+  },
+  "recorded_at_run_time": {
+   "all_three_generated_on_one_device_index": true,
+   "compute_capability": null,
+   "cuda_version": null,
+   "device_index_per_successful_generation": {
+    "B0": 3,
+    "B3": 3,
+    "MG": 3
+   },
+   "device_model": null,
+   "device_uuid": null,
+   "driver_version": null,
+   "free_memory_at_claim_mib": {
+    "B0": [
+     42003
+    ],
+    "B3": [
+     42003
+    ],
+    "MG": [
+     38739,
+     45240,
+     42003
+    ]
+   },
+   "the_device_index": 3,
+   "what_the_lane_logs_do_record": "the index claimed, the free memory at claim time, the attempt number, and the outcome of each attempt"
+  }
+ },
+ "limitations": [
+  "prediction_provenance.py \u2014 the module that defines the sidecar contract and implements verify_sidecar \u2014 was bound by no hash at generation time; it is in neither code.fingerprinted_modules nor code.analysis_scripts_sha256.",
+  "No GPU identity was recorded: no model, UUID, driver version, CUDA version or compute capability, in the sidecars or in the lane logs. Only the device index survives.",
+  "Physical-GPU equivalence across the three states therefore cannot be established retrospectively.",
+  "code.git_dirty is one bit over a porcelain listing that counts untracked files, so it cannot distinguish an earlier lane's untracked evidence from a modified tracked file.",
+  "The run logs lived in a gitignored directory and were committed only at audit time; between the run and that commit they existed on one machine and could have been lost.",
+  "The 11C-5R3 safeguards that would have closed the first two items were not implemented before scoring, and implementing them now cannot apply retroactively to a run that has already happened."
+ ],
+ "physical_gpu_equivalence": {
+  "establishable_from_the_record": false,
+  "what_is_establishable": "all three states were generated on the same device INDEX",
+  "what_is_not": "that the index denotes one physical device across the run, or that the device is the same model, driver, firmware or compute capability as anything observable now. An index is a slot in an enumeration, not an identity.",
+  "why_it_matters_and_why_it_does_not_undo_the_result": "the three states are compared as paired differences over the same 1,209 queries in the same order under the same frozen generation config and the same package environment, and the comparison is within-subject, so a uniform device would affect all three alike. What cannot be ruled out is a device-dependent numerical difference between states generated on different hardware \u2014 which the record cannot exclude because the record does not identify the hardware."
+ },
+ "post_hoc": true,
+ "row_counts": {
+  "all_lane_logs_agree_with_their_own_sidecars": true,
+  "per_state": {
+   "B0": {
+    "agree": true,
+    "lane_log_rows": 1209,
+    "sidecar_num_rows": 1209
+   },
+   "B3": {
+    "agree": true,
+    "lane_log_rows": 1209,
+    "sidecar_num_rows": 1209
+   },
+   "MG": {
+    "agree": true,
+    "lane_log_rows": 1209,
+    "sidecar_num_rows": 1209
+   }
+  }
+ },
+ "run_logs": {
+  "committed_at": "data/mllmu_hier_confirm100/execution_logs",
+  "files": {
+   "confirm100_11c5_B0.log": {
+    "bytes": 6432,
+    "sha256": "c12f20276f5ccbbc7419187ceafaaca011b5f24a521d35cc6390a86048c4f5bb"
+   },
+   "confirm100_11c5_B3.log": {
+    "bytes": 17883,
+    "sha256": "db53ac6248e0189efcfb0260b88bd9ce67b4fa89a30c06db2243a91045b8db5f"
+   },
+   "confirm100_11c5_MG.log": {
+    "bytes": 15976,
+    "sha256": "6268db164ae86b54222618ccc18033e51a42506d6a200b559c95b9d07d6db027"
+   },
+   "confirm100_11c5_analysis.log": {
+    "bytes": 751,
+    "sha256": "62ed7b69f2e12008f560d9891530802f4f9c5b8c158527d61a276b588586d44b"
+   },
+   "confirm100_11c5_chain.log": {
+    "bytes": 4312,
+    "sha256": "dfe53a10013573bac171d1338877441edd6ff1541b79c983aa992145a0dc1382"
+   },
+   "confirm100_11c5_gate.log": {
+    "bytes": 1597,
+    "sha256": "56b744ab079091b758c5adac30702e0827b567c4bc8ee2a9ded90b2ad671532e"
+   },
+   "confirm100_11c5_launch.out": {
+    "bytes": 3884,
+    "sha256": "ae0d055911db2e668ce9cccffc6ee4f115afda138f746e09b83f314ddaf65efd"
+   },
+   "confirm100_11c5_outstanding.json": {
+    "bytes": 1031,
+    "sha256": "4c8fe833f49ea0f2a3a7c91708e8bbf8f998d5612c3e75e52a9adbae036b1500"
+   },
+   "confirm100_11c5_outstanding.txt": {
+    "bytes": 9,
+    "sha256": "7e4f0ce78676f4300578593e0821d1b62e17e143efc0e9b8e0ba56b4912f868f"
+   },
+   "confirm100_11c5_outstanding_stdout.log": {
+    "bytes": 9,
+    "sha256": "7e4f0ce78676f4300578593e0821d1b62e17e143efc0e9b8e0ba56b4912f868f"
+   },
+   "confirm100_11c5_preflight.log": {
+    "bytes": 566,
+    "sha256": "2ca17c823041acc369e20b95a3922d0542dc460731d0db478b14313524cb834e"
+   }
+  },
+  "originally_at": "outputs/lanes/ (excluded by .gitignore)",
+  "why_they_were_committed": "they are the only record of which device each state was generated on and of the two out-of-memory retries, and until this commit they existed only on the machine that scored"
+ },
+ "sidecar_environments": {
+  "environment": {
+   "package_versions": {
+    "numpy": "2.2.6",
+    "pandas": "2.3.3",
+    "peft": "0.20.0",
+    "pyarrow": "25.0.0",
+    "torch": "2.8.0+cu128",
+    "transformers": "5.14.1"
+   },
+   "python_executable": "/scratch/wutiantong/miniconda3/envs/gmul/bin/python",
+   "python_version": "3.10.20"
+  },
+  "fields_not_recorded": [
+   "GPU model",
+   "GPU UUID",
+   "device index",
+   "driver version",
+   "CUDA runtime version",
+   "CUDA driver version",
+   "compute capability",
+   "device memory total",
+   "hostname",
+   "kernel"
+  ],
+  "fields_recorded": [
+   "package_versions",
+   "python_executable",
+   "python_version"
+  ],
+  "hardware_terms_found_in_the_run_logs": [],
+  "identical_across_the_three_states": true,
+  "what_the_package_versions_do_cover": "torch's own version string carries the CUDA build it was compiled against, so the toolkit the wheel expects is recoverable; the driver that served it and the device it ran on are not"
+ },
+ "what_this_is": "a POST-HOC audit of how the 11C confirmation was executed, filed after the result was seen. It binds nothing, gates nothing, and no script reads it. Its purpose is to state what the run recorded and what it did not, so that the gap is part of the public record rather than something a reviewer has to discover.",
+ "what_would_have_bound_it": {
+  "for_git_dirty": "record the porcelain listing, or at least the counts of tracked modifications and untracked files separately, instead of one boolean",
+  "for_hardware": "record per-generation device identity into the sidecar \u2014 index, name, UUID, driver_version, compute capability and total memory from nvidia-smi or torch.cuda \u2014 and make verify_sidecar compare it, so two states generated on different devices cannot be paired silently",
+  "for_the_verifier": "add prediction_provenance.py to CODE_FINGERPRINT_MODULES so the contract's own implementation is hashed into every sidecar and into the freeze",
+  "status": "NOT IMPLEMENTED. Each would change a sealed file or the sidecar contract, so none can be applied to this result; they belong to the next protocol, where they can be frozen before inference."
+ }
+}

@@ -467,6 +467,20 @@ def scored(farm, protocol, adapters, photographs) -> Path:
     return farm
 
 
+#: Module-scoped and defined at MODULE level on purpose.  A class-scoped fixture
+#: written as an instance method is deprecated and removed in pytest 10
+#: (``PytestRemovedIn10Warning: Class-scoped fixture defined as instance
+#: method``), and the eight tests below all take ``report``, so hoisting it
+#: changes no signature.  The file is read once per module rather than once per
+#: class, which is also the cheaper of the two.
+@pytest.fixture(scope="module")
+def report() -> dict:
+    """The committed confirmation result, or a refusal to guess at one."""
+    assert REAL_ANALYSIS.exists(), \
+        f"{REAL_ANALYSIS} is absent: stage 5 has not been filed"
+    return json.loads(REAL_ANALYSIS.read_text())
+
+
 class TestTheRealRepositoryHoldsTheScoredConfirmation:
     """The post-condition every other test in this file now depends on.
 
@@ -482,12 +496,6 @@ class TestTheRealRepositoryHoldsTheScoredConfirmation:
     Every test here needs neither adapter nor photograph, so unlike the
     fabricating tests it runs in CI and in a fresh clone.
     """
-
-    @pytest.fixture(scope="class")
-    def report(self) -> dict:
-        assert REAL_ANALYSIS.exists(), \
-            f"{REAL_ANALYSIS} is absent: stage 5 has not been filed"
-        return json.loads(REAL_ANALYSIS.read_text())
 
     def test_the_report_was_written_with_nothing_refused(self, report):
         assert report["refusals"] == []

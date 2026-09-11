@@ -1,0 +1,7 @@
+  freeze ok, states ['B3', 'B0', 'MG'], 1209 queries
+  frozen code hashes, frozen dataset hashes, pinned photographs and per-query image resolution all verified
+  B3: adapter present and matching the frozen contract
+  B0: adapter present and matching the frozen contract
+  MG: adapter present and matching the frozen contract
+  base model Qwen/Qwen3.5-9B pinned at revision c202236235762e1c871ad0ccb60c8ee5ba337b9a
+  snapshot the lanes will load: /scratch/wutiantong/.cache/huggingface/hub/models--Qwen--Qwen3.5-9B/snapshots/c202236235762e1c871ad0ccb60c8ee5ba337b9a

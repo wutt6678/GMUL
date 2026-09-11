@@ -111,6 +111,12 @@ jobs:
               "data/mllmu_hier_confirm100/predictions/predictions_B3.generation_order.json",
               "data/mllmu_hier_confirm100/predictions/predictions_B0.generation_order.json",
               "data/mllmu_hier_confirm100/predictions/predictions_MG.generation_order.json",
+              # 11C post-run audit: what the scoring run did not record.  Filed
+              # after the result was seen, marked post_hoc inside itself, and
+              # binding nothing; committed so the limitation is public record.
+              # The raw run logs beside it are not listed here because this step
+              # json.loads every entry and they are plain text.
+              "data/reports/mllmu_confirm100_execution_provenance.json",
           ]
           missing = [p for p in required if not Path(p).exists()]
           if missing:

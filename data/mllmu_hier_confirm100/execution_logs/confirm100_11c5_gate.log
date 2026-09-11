@@ -1,0 +1,17 @@
+[2026-09-09 17:44:05] INFO     evaluate_confirmation_split — confirmation dataset confirm100_v1: 1209 queries, 317 associations
+[2026-09-09 17:44:05] INFO     evaluate_confirmation_split — frozen generation config: {'batch_size': 8, 'image_batch_size': 8, 'max_new_tokens': 96, 'do_sample': False, 'max_image_pixels': 147456, 'max_length': 1536}
+[2026-09-09 17:44:05] INFO     evaluate_confirmation_split — base model Qwen/Qwen3.5-9B pinned at revision c202236235762e1c871ad0ccb60c8ee5ba337b9a
+[2026-09-09 17:44:05] INFO     evaluate_confirmation_split — generation order sha256: 364ecf5030af647a9fa87937be0f9672e6e2c46c3e7fa43e0227372ac9b28fe2
+[2026-09-09 17:44:05] INFO     evaluate_confirmation_split — scored states: ['B3', 'B0', 'MG'] (and no others)
+[2026-09-09 17:44:05] INFO     evaluate_confirmation_split — preflight: 10 fingerprinted-module hash(es), 7 analysis-script hash(es) plus paired_ci, and 3 dataset artifact(s) with the image-manifest roll-up all compared with the freeze; 402 pinned photograph(s) re-hashed; 864 of 1209 queries are image-route and every one resolves to a frozen byte
+
+confirmation predictions — 3/3 states complete and provenance-verified
+  dataset      data/mllmu_hier_confirm100 (confirm100_v1)
+  experiment   mllmu_confirm100_iter11c
+  base model   Qwen/Qwen3.5-9B @ c202236235762e1c871ad0ccb60c8ee5ba337b9a
+  queries      1209 per state, order sha256 364ecf5030af647a
+  states       ['B3', 'B0', 'MG']
+    B3  ok
+    B0  ok
+    MG  ok
+  all three states verified — run python scripts/analyze_confirmation_split.py to assemble the analysis

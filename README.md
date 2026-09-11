@@ -29,6 +29,7 @@ load-bearing fact rather than an omission. Every stage has now run.
 | Confirmation split (11C stage 3) | `data/mllmu_hier_confirm100/` — 1,209 queries, 402 photographs sealed by hash | **built, sealed, committed** |
 | Protocol freeze (11C stage 2, re-frozen through 5R) | `data/reports/mllmu_pilot100_confirmation_freeze.json` — `refusals: []`, `--check-only` clean | **frozen, committed** |
 | Confirmation scoring (11C stage 5) | `data/mllmu_hier_confirm100/predictions/` — three files of 1,209 rows each, bound by sidecar; `data/reports/mllmu_confirm100_final_analysis.json` | **run once, scored, committed** |
+| Post-run execution audit | `data/reports/mllmu_confirm100_execution_provenance.json`, derived from the committed `data/mllmu_hier_confirm100/execution_logs/` | **filed post-hoc; `post_hoc: true`, binds nothing** |
 
 **Both preregistered claims were confirmed.** Entity-macro `B3 − B0` over all 72
 target entities (42 persons, 30 species), 864 paired target probes, one-sided
@@ -57,8 +58,11 @@ here because they are part of it rather than decoration:
 
 * retention is *lower* under `B3` — `retain_same` −0.0476 CI [−0.119, +0.019],
   `retain_other` −0.1111 CI [−0.2224, +0.0002]. Both are descriptive: no
-  preregistered claim covers retention, no p-value is computed, and the second
-  interval stops a hair short of zero.
+  preregistered claim covers retention and no p-value is computed. Both intervals
+  **include zero**, so neither is a demonstrated cost — `retain_other`'s upper
+  bound of +0.0002 is as near to excluding zero as an interval can be without
+  excluding it, which is a reason to measure retention properly in its own study,
+  not a finding about it.
 * over-forgetting on the person stratum is 0.0198 under `B3` against 0.0000
   under `B0`, CI [+0.0000, +0.0595]. The photograph stratum shows none.
 * `B3 − MG` on FILR is +0.0938 CI [+0.0451, +0.1493] with
@@ -166,10 +170,10 @@ here instead of hiding every other result behind a collection error in CI.
 ## Tests
 
 ```bash
-pytest tests/unit -q          # 1548 tests, CPU only, ~2.8 min on the artifact box
+pytest tests/unit -q          # 1574 tests, CPU only, ~3.2 min on the artifact box
 ```
 
-The same 1548 pass with `torch`, `transformers`, `peft`, `accelerate` and
+The same 1574 pass with `torch`, `transformers`, `peft`, `accelerate` and
 `datasets` made unimportable, which is how the CPU-only contract is checked on a
 machine that has the GPU stack installed. `.github/workflows/tests.yml` runs the
 unit suite plus a step that loads every committed report the evidence claims
@@ -186,9 +190,10 @@ are gitignored inputs rather than unfinished work:
 
 Both guards skip naming what is absent, and both run on the machine that trained
 the adapters and fetched the pool — the machine that ran the three GPU passes.
-Measured: **1470 passed / 78 skipped / 0 failed** in a bare clone with a venv
+Measured: **1496 passed / 78 skipped / 0 failed** in a bare clone with a venv
 built from `requirements/ci-unit.txt` alone — with and without CI's
-`--maxfail=5` — and **1548 passed / 0 skipped** here.
+`--maxfail=5` — and **1574 passed / 0 skipped** here. The whole suite also passes
+with `PytestRemovedIn10Warning` promoted to an error.
 The committed half of each boundary — the manifest pinning 402 paths and hashes,
 the pool's disjointness from exploratory media, the fetch provenance behind it —
 is asserted in `test_iteration11c_probes.py` and needs no bytes at all.
@@ -204,8 +209,13 @@ result produced here is hard to produce accidentally.
   every parameter the claims depend on — estimand, family, α, test, seeds,
   bootstrap counts, generation configuration, dataset and code hashes.
   `--check-only` re-derives the freeze from the repository and reports DRIFT if
-  anything moved; re-freezing needs `--allow-refreeze` and is refused once a
-  confirmation prediction exists.
+  anything moved. Overwriting the freeze needs `--allow-refreeze`; without it the
+  script refuses whenever a freeze already exists. **The flag is the only gate.**
+  The code does not check whether confirmation predictions exist, so "re-freeze
+  only before scoring" is a procedural rule and not an enforced one — its refusal
+  message asks the operator to pass the flag only if the confirmation is unscored,
+  which is a request, not a check. What actually makes the rule stick is
+  consequence; see the next bullet.
 * **Code and data are hash-bound, and the hashes are compared.** Four sets of
   pins are re-checked against the bytes on disk at every runtime entry point —
   the scorer, the analyzer and the chain's own preconditions: the ten
@@ -223,6 +233,29 @@ result produced here is hard to produce accidentally.
   verifies. Only the freeze holds a value that was fixed before the bytes could
   be touched — which is why a prompt rewritten behind an unchanged `query_id` is
   refused now and was not before.
+* **Scoring seals the code permanently, and a re-freeze cannot undo it.** Two
+  different comparisons bind the same modules. `verify_frozen_code` compares the
+  *freeze* against the bytes on disk, so re-freezing satisfies it. `verify_sidecar`
+  compares each sidecar's **recorded** `code.modules_sha256` against a fingerprint
+  built fresh from disk, and a sidecar is immutable history written at generation
+  time — so editing any of the eighteen pinned paths (the ten modules, the seven
+  analysis scripts, `paired_ci.py`) moves the disk side only and the committed
+  predictions can never verify again. Measured, not reasoned: `verify_sidecar`
+  returns 0 refusals on the tree as committed and returns `module hash differs
+  (scoring or generation logic changed since this file was generated)` when one
+  entry is altered. The sealing date is therefore the *generation* date, not the
+  freeze date.
+* **What the run did not record is on the record.** `scripts/audit_confirmation_execution.py`
+  files `data/reports/mllmu_confirm100_execution_provenance.json`, clearly marked
+  `post_hoc: true` and binding nothing. It records that the three states were
+  generated at one commit (`73f49fd`) with identical package environments; that
+  `prediction_provenance.py` — the module implementing `verify_sidecar` itself —
+  was pinned by no hash; and that no GPU model, UUID, driver version, CUDA version
+  or compute capability was captured anywhere, so **physical-GPU equivalence across
+  the three states cannot be established retrospectively**. Only the device index
+  survives, and all three successful generations claimed index 3. None of this
+  licenses rescoring: a repeat is a new replication with its own protocol, never a
+  re-run of this one.
 * **Every prediction carries a provenance sidecar** binding the adapter bytes
   and `adapter_config.json`, the dataset version and artifact hashes, the image
   manifest, the generation configuration, the code fingerprint and the base-model
@@ -248,12 +281,17 @@ result produced here is hard to produce accidentally.
 bash scripts/lanes/confirm100_11c5_chain.sh
 ```
 
-This ran once, on 2026-09-09, and produced the committed result above. It is not
-a command to re-run. With all three states verified it queues no lanes, but it
-does re-assemble the report and so overwrites `generated_utc`; and regenerating a
-state after seeing the verdict is a protocol amendment that belongs in the
-freeze, not a retry. The steps are documented because the run that mattered went
-through them, and the logs beside them record that it did.
+This ran once, on 2026-09-09, and produced the committed result above. It cannot
+be re-run: after its preconditions it checks for the analysis report and, finding
+it, stops with `STOPPING: … already exists` and **exit status 3** — before it asks
+which states are outstanding and before it queues a single lane. That guard is what
+makes "scored exactly once" a property of the script rather than of operator
+discipline, and `tests/unit/test_iteration11c5_chain.py` asserts the status.
+Regenerating a state after seeing the verdict would be a protocol amendment that
+belongs in the freeze, not a retry. The steps are documented because the run that
+mattered went through them, and the logs it wrote — including the two
+out-of-memory retries and every `CLAIMED GPU` line — are committed under
+`data/mllmu_hier_confirm100/execution_logs/`.
 
 One invocation, six steps:
 
