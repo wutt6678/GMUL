@@ -11,9 +11,13 @@ per epoch, so
 is proportional to its GPU time (every candidate uses the same recipe,
 the same base model and the same multimodal formatting).  Lanes are
 packed longest-processing-time-first, which keeps the makespan close to
-max(total/lanes, largest_single_candidate) — important because B3
-candidates carry the 387-example retain group while B1/B2 carry only the
-90-example target groups.
+max(total/lanes, largest_single_candidate) — important wherever candidates
+carry unequal groups, as the B3/B4 rows do (a retain group several times the
+size of the 90-example target groups).
+
+Costs are read from the group files the TAG actually trains on, so the
+Iteration-12 grid is costed against its 183-example fit-half retain group and
+not the pilot-100's 387.
 
 B0 (no-op) costs nothing and is pinned to lane 0 so it always exists
 before any lane tries to score it.  Candidates whose adapters are already
@@ -27,12 +31,24 @@ import json
 from pathlib import Path
 
 from granunlearn.config import _find_repo_root
-from granunlearn.training.candidate_grid import grid_for_tag
+from granunlearn.training.candidate_grid import (
+    dataset_dir_for_tag,
+    grid_for_tag,
+    groups_subdir_for_tag,
+)
 
 
-def group_sizes(dataset_dir: Path) -> dict[str, int]:
+def group_sizes(dataset_dir: Path, subdir: str = "unlearning") -> dict[str, int]:
+    """Examples per knowledge group, read from the group files a tag uses.
+
+    ``subdir`` matters: Iteration 12 trains on ``unlearning_iter12/``, whose
+    retain group is the 183-example FIT half.  Costing that grid against the
+    pilot-100 group directory would charge every candidate for 387 examples it
+    never sees and pack the lanes against a cost model that does not describe
+    the run.
+    """
     sizes: dict[str, int] = {}
-    for p in sorted((dataset_dir / "unlearning").glob("*.jsonl")):
+    for p in sorted((dataset_dir / subdir).glob("*.jsonl")):
         sizes[p.stem] = sum(1 for line in p.read_text().splitlines()
                             if line.strip())
     return sizes
@@ -48,7 +64,8 @@ def candidate_cost(spec, sizes: dict[str, int],
     if missing:
         raise SystemExit(
             f"{spec.candidate_id}: unknown knowledge groups {missing} — "
-            f"run scripts/build_unlearning_groups.py first")
+            f"build them first (scripts/build_unlearning_groups.py, or "
+            f"scripts/build_iter12_retention_probe.py for the iter12 tag)")
     return epochs * per_epoch
 
 
@@ -74,7 +91,7 @@ def plan_lanes(grid, sizes: dict[str, int], n_lanes: int,
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--tag", default="pilot100",
-                    choices=("smoke", "pilot100"))
+                    choices=("smoke", "pilot100", "iter12"))
     ap.add_argument("--lanes", type=int, default=3)
     ap.add_argument("--default-epochs", type=int, default=10)
     ap.add_argument("--include-trained", action="store_true",
@@ -84,10 +101,10 @@ def main() -> None:
     args = ap.parse_args()
 
     repo_root = _find_repo_root(Path.cwd()) or Path.cwd()
-    dataset_dir = repo_root / "data" / f"mllmu_hier_{args.tag}"
+    dataset_dir = repo_root / dataset_dir_for_tag(args.tag)
     ckpt_root = repo_root / "data" / "checkpoints" / \
         f"mllmu_{args.tag}_unlearn"
-    sizes = group_sizes(dataset_dir)
+    sizes = group_sizes(dataset_dir, groups_subdir_for_tag(args.tag))
     grid = grid_for_tag(args.tag)
     if not args.include_trained:
         todo = [c for c in grid
