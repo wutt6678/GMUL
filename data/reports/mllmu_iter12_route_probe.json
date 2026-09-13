@@ -1,0 +1,263 @@
+{
+  "iteration": "12",
+  "stage": "1c",
+  "purpose": "State the route-stratified retention measurement basis before any candidate is scored against it. The frozen floor reads four text-route numbers; the probe half's associations also back image-route families over identical association sets with disjoint templates, and their predictions already exist for every Stage-1 and Stage-1b state, so the denominators double at zero GPU cost.",
+  "reuses_partition": {
+    "report": "data/reports/mllmu_iter12_retention_probe.json",
+    "probe_entities": 35,
+    "fit_entities": 35,
+    "re_derived_and_matched": true,
+    "rule": "sha256('42:iter12probe:<entity_id>'), ascending, first half probe",
+    "why_not_a_new_partition": "A new split would make Stage 1c incomparable with the filed Stage-1 and Stage-1b results and would be a second post-hoc choice. The route strata sit on exactly the entities the filed results were measured on."
+  },
+  "no_prediction_is_read": {
+    "holds": true,
+    "inputs": [
+      "data/mllmu_hier_pilot100/queries.parquet",
+      "data/mllmu_hier_pilot100/associations.parquet",
+      "data/reports/mllmu_iter12_retention_probe.json",
+      "data/reports/mllmu_pilot100_target_retain.json"
+    ],
+    "why_this_matters": "The image route was identified after Stage 1b was scored, so this basis is not blind. Every field here is a property of the dataset and the frozen partition, never of a prediction, so --check-only re-derives the whole document without loading a single parquet of model outputs and a reviewer can confirm the basis was chosen from structure rather than from outcomes. The route asymmetry that motivated it is an outcome and lives in the analysis report instead."
+  },
+  "floor_numbers": {
+    "count": 8,
+    "keys": [
+      "text.retain_same_entity.entity_macro",
+      "text.retain_same_entity.row_micro",
+      "text.retain_other_entity.entity_macro",
+      "text.retain_other_entity.row_micro",
+      "image.retain_same_entity_image.entity_macro",
+      "image.retain_same_entity_image.row_micro",
+      "image.retain_other_entity_image.entity_macro",
+      "image.retain_other_entity_image.row_micro"
+    ],
+    "routes": [
+      "text",
+      "image"
+    ],
+    "estimands": [
+      "entity_macro",
+      "row_micro"
+    ],
+    "rule": "candidate >= b0 - epsilon on all eight; missing disqualifies",
+    "epsilon": 1e-09,
+    "epsilon_is_a_tolerance_not_a_margin": true,
+    "pooled_reported_but_not_floored": [
+      "retain_same_entity_all_routes",
+      "retain_other_entity_all_routes"
+    ],
+    "why_stratified_not_pooled": "Pooling would average two instruments that do not measure the same thing and report a number describing neither. Each route keeps its own four numbers and the floor requires all eight, which makes it HARDER to pass than the four-number floor it extends."
+  },
+  "measurement_basis": {
+    "splits": [
+      "train",
+      "val"
+    ],
+    "per_route": {
+      "text": {
+        "retain_same_entity": {
+          "probe_queries": 408,
+          "probe_entities": 35,
+          "max_queries_for_one_entity": 14,
+          "row_micro": {
+            "min_resolvable_gap": 0.0024509804,
+            "why": "one flipped outcome out of 408 pooled queries"
+          },
+          "entity_macro": {
+            "min_resolvable_gap": 0.0020408163,
+            "why": "one flipped outcome in the widest of 35 entities (14 queries), then averaged over entities"
+          }
+        },
+        "retain_other_entity": {
+          "probe_queries": 76,
+          "probe_entities": 23,
+          "max_queries_for_one_entity": 8,
+          "row_micro": {
+            "min_resolvable_gap": 0.0131578947,
+            "why": "one flipped outcome out of 76 pooled queries"
+          },
+          "entity_macro": {
+            "min_resolvable_gap": 0.0054347826,
+            "why": "one flipped outcome in the widest of 23 entities (8 queries), then averaged over entities"
+          }
+        }
+      },
+      "image": {
+        "retain_same_entity_image": {
+          "probe_queries": 408,
+          "probe_entities": 35,
+          "max_queries_for_one_entity": 14,
+          "row_micro": {
+            "min_resolvable_gap": 0.0024509804,
+            "why": "one flipped outcome out of 408 pooled queries"
+          },
+          "entity_macro": {
+            "min_resolvable_gap": 0.0020408163,
+            "why": "one flipped outcome in the widest of 35 entities (14 queries), then averaged over entities"
+          }
+        },
+        "retain_other_entity_image": {
+          "probe_queries": 76,
+          "probe_entities": 23,
+          "max_queries_for_one_entity": 8,
+          "row_micro": {
+            "min_resolvable_gap": 0.0131578947,
+            "why": "one flipped outcome out of 76 pooled queries"
+          },
+          "entity_macro": {
+            "min_resolvable_gap": 0.0054347826,
+            "why": "one flipped outcome in the widest of 23 entities (8 queries), then averaged over entities"
+          }
+        }
+      }
+    },
+    "note": "The frozen test split is not part of the selection basis and the sealed confirmation split is never read."
+  },
+  "route_independence": {
+    "scope": [
+      "train",
+      "val"
+    ],
+    "retain_same_entity": {
+      "text_queries": 774,
+      "image_queries": 774,
+      "association_sets_identical": true,
+      "num_associations": 387,
+      "template_sets_disjoint": true,
+      "text_templates": [
+        "retain_same_entity:0",
+        "retain_same_entity:1",
+        "retain_same_entity:2"
+      ],
+      "image_templates": [
+        "retain_same_entity_image:0",
+        "retain_same_entity_image:1",
+        "retain_same_entity_image:2"
+      ],
+      "shared_templates": [],
+      "routes": {
+        "text": [
+          "text_to_text"
+        ],
+        "image": [
+          "image_to_text"
+        ]
+      },
+      "probe_entities_text": 35,
+      "probe_entities_image": 35,
+      "same_probe_entities": true
+    },
+    "retain_other_entity": {
+      "text_queries": 180,
+      "image_queries": 180,
+      "association_sets_identical": true,
+      "num_associations": 65,
+      "template_sets_disjoint": true,
+      "text_templates": [
+        "retain_other_entity:0",
+        "retain_other_entity:1",
+        "retain_other_entity:2"
+      ],
+      "image_templates": [
+        "retain_other_entity_image:0",
+        "retain_other_entity_image:1",
+        "retain_other_entity_image:2"
+      ],
+      "shared_templates": [],
+      "routes": {
+        "text": [
+          "text_to_text"
+        ],
+        "image": [
+          "image_to_text"
+        ]
+      },
+      "probe_entities_text": 23,
+      "probe_entities_image": 23,
+      "same_probe_entities": true
+    },
+    "image_provenance": {
+      "probe_image_queries": 484,
+      "image_seen_in_training": {
+        "seen_in_training": 479,
+        "held_out": 5
+      },
+      "image_split": {
+        "train": 479,
+        "val": 5
+      },
+      "note": "Almost every probe image query uses a photograph that was in training, with wording that was not: this is the sealed metric's seen_photo_unseen_wording stratum. The ASSOCIATION is never rehearsed -- the probe half is excluded from the replay group -- and the photograph was in training for B0 and every candidate alike, so candidate-minus-B0 on this route is a fair comparison. It is nonetheless a different instrument from the text route, which is the reason for stratifying rather than pooling."
+    },
+    "text_provenance": {
+      "probe_text_queries": 484,
+      "queries_carrying_an_image": 0,
+      "note": "The text route carries no image at all."
+    }
+  },
+  "power_ceiling": {
+    "train+val, text route (the frozen basis)": {
+      "per_number": {
+        "text.retain_same_entity": 408,
+        "text.retain_other_entity": 76
+      },
+      "retain_same_total": 408,
+      "retain_other_total": 76,
+      "row_micro_resolution_same": 0.0024509804,
+      "row_micro_resolution_other": 0.0131578947
+    },
+    "train+val, both routes (what Stage 1c reads)": {
+      "per_number": {
+        "text.retain_same_entity": 408,
+        "text.retain_other_entity": 76,
+        "image.retain_same_entity_image": 408,
+        "image.retain_other_entity_image": 76
+      },
+      "retain_same_total": 816,
+      "retain_other_total": 152,
+      "row_micro_resolution_same": 0.0012254902,
+      "row_micro_resolution_other": 0.0065789474
+    },
+    "all splits, text route": {
+      "per_number": {
+        "text.retain_same_entity": 612,
+        "text.retain_other_entity": 114
+      },
+      "retain_same_total": 612,
+      "retain_other_total": 114,
+      "row_micro_resolution_same": 0.0016339869,
+      "row_micro_resolution_other": 0.0087719298
+    },
+    "all splits, both routes (the absolute ceiling)": {
+      "per_number": {
+        "text.retain_same_entity": 612,
+        "text.retain_other_entity": 114,
+        "image.retain_same_entity_image": 612,
+        "image.retain_other_entity_image": 114
+      },
+      "retain_same_total": 1224,
+      "retain_other_total": 228,
+      "row_micro_resolution_same": 0.0008169935,
+      "row_micro_resolution_other": 0.0043859649
+    },
+    "what_the_ceiling_means": {
+      "retain_other_is_the_binding_number": true,
+      "why": "retain_other reaches only 23 probe donor entities, so its largest possible denominator in this dataset is 228 queries and its best possible row-micro resolution is 0.0043859649. The pool is exhausted: 90 target plus 387 retained associations account for all 477, so there is no reserve to draw a larger probe from.",
+      "consequence": "Stage 1c roughly doubles the frozen basis and makes both parents' shortfalls exceed their between-seed spread, but it does not make retain-other well powered. A mechanism whose retention effect is smaller than about 0.0043859649 cannot be resolved on this dataset at all, at any number of seeds."
+    }
+  },
+  "numerical_tolerance": {
+    "floor_epsilon": 1e-09,
+    "smallest_resolvable_gap_over_the_eight_numbers": 0.0020408163,
+    "epsilon_is_below_every_resolvable_gap": true,
+    "what_this_forbids": "Requiring any improvement over B0. Stratifying does not change the tolerance, and the tolerance is still not a margin."
+  },
+  "what_this_basis_is_frozen_for": "Stage 2. The mechanism tested next is judged on all eight numbers, frozen before it is trained. Stage 1c also re-scores Stage 1 and Stage 1b on this basis, but that re-scoring RE-DECIDES NOTHING: the filed four-number verdicts stand as filed, the text stratum is required to reproduce them exactly, and all eight Stage-1 candidates fail on both routes.",
+  "limitations": [
+    "retain_other reaches 23 probe donor entities. Even at the absolute ceiling -- every split and both routes -- it is a small denominator, and a no-margin point floor on it stays weak. This is a property of pilot-100, not of the stratification.",
+    "The probe half carries 1 of the 6 taxonomic retained associations, so both routes speak almost entirely to semantic and numeric knowledge. Taxonomic retention remains unmeasured, not preserved.",
+    "Almost all probe image queries are seen_photo_unseen_wording. The image route therefore measures recall cued by a familiar photograph under novel wording, which is not the same instrument as the text route and must not be averaged with it.",
+    "Adding four conditions to the floor makes it harder to pass. That is the point, but it also means a Stage-2 mechanism could fail on the image route while preserving text-route retention, and the report has to say which route failed rather than only that the floor failed.",
+    "This basis was identified after Stage 1b was scored. It is disclosed, it is derived only from dataset structure, and its direction is against interest -- it enlarges the measured retention loss -- but it is not blind and is not claimed to be."
+  ]
+}

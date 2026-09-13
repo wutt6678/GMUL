@@ -33,6 +33,7 @@ load-bearing fact rather than an omission. Every stage has now run.
 | Iteration 12 selection protocol (exploratory) | `data/reports/mllmu_iter12_retention_probe.json` — the fit/probe partition of the 70 retained entities; `data/reports/mllmu_iter12_selection_protocol_freeze.json` — D_G's direction, tolerance and tie-break, the retention floor, the 9-row grid | **frozen, committed; frozen before any candidate was trained, and the freeze now refuses to be rewritten** |
 | Iteration 12 Stage 1 (exploratory) | `data/reports/mllmu_iter12_retention_selection.json` — 9 rows scored, 8 disqualified by the retention floor, B0 selected | **run once, 2026-09-12 → 09-13; a negative result: no replay setting preserves retention on never-rehearsed entities** |
 | Iteration 12 Stage 1b (exploratory) | `data/reports/mllmu_iter12_seed_replication.json` — two near-miss parents at four seeds each, scored by the frozen mean-based floor; `data/reports/mllmu_iter12_seed_replication_freeze.json`; `data/reports/mllmu_iter12_seed_replication.REPAIR.json` | **run once, 2026-09-13; a negative result: neither parent clears the floor on a four-seed mean, and every one of the eight numbers straddles the anchor** |
+| Iteration 12 Stage 1c (exploratory) | `data/reports/mllmu_iter12_route_probe.json` — the route-stratified measurement basis, derived from the dataset with no prediction read; `data/reports/mllmu_iter12_route_stratification_freeze.json` — the eight-number floor, bound to 19 prediction parquets and one generation contract; `data/reports/mllmu_iter12_route_stratified.json` | **re-scored from existing predictions, 2026-09-14, zero GPU-hours; verdict unchanged — 0/8 eligible on eight numbers exactly as on four — and Stage 1b's straddling failures become decisive on the image route, where every seed of `ep5` fell below the anchor on all four numbers** |
 
 **Both preregistered claims were confirmed.** Entity-macro `B3 − B0` over all 72
 target entities (42 persons, 30 species), 864 paired target probes, one-sided
@@ -173,10 +174,10 @@ here instead of hiding every other result behind a collection error in CI.
 ## Tests
 
 ```bash
-pytest tests/unit -q          # 1752 tests, CPU only, ~3.0 min on the artifact box
+pytest tests/unit -q          # 1845 tests, CPU only, ~3.2 min on the artifact box
 ```
 
-The same 1752 pass with `torch`, `transformers`, `peft`, `accelerate` and
+The same 1845 pass with `torch`, `transformers`, `peft`, `accelerate` and
 `datasets` made unimportable, which is how the CPU-only contract is checked on a
 machine that has the GPU stack installed. `.github/workflows/tests.yml` runs the
 unit suite plus a step that loads every committed report the evidence claims
@@ -186,20 +187,29 @@ from the repository's *history* rather than trusting the report that states them
 under `actions/checkout`'s default depth of 1 those commits are absent, so the
 checks would skip and report green without verifying anything.
 
-Two coverage boundaries are stated rather than left to a skip count, and both
-are gitignored inputs rather than unfinished work:
+Three coverage boundaries are stated rather than left to a skip count, and all
+three are gitignored inputs rather than unfinished work:
 
 * fabricating a **provenance-verified** prediction file needs the real adapter
   bytes, because `PredictionFingerprint.build` hashes them;
 * asserting an exact answer from the image preflight — or running the scorer's
   `main()`, which re-hashes the pool in every mode — needs the 402 sealed
-  photographs.
+  photographs;
+* re-hashing the 19 prediction parquets Stage 1c is bound to, and re-running its
+  analyzer, needs those parquets. What a clone *can* check is everything the
+  committed freeze and report assert about them, so the skip is limited to the
+  byte re-verification: the freeze still records 19 sha256s and one measurement
+  contract, and the tests that read that record run everywhere. Its
+  `--check-only` reports "19 parquet(s) without one" rather than passing over a
+  shorter list, and the analyzer refuses rather than silently re-scoring fewer
+  states.
 
-Both guards skip naming what is absent, and both run on the machine that trained
-the adapters and fetched the pool — the machine that ran the three GPU passes.
-Measured: **1673 passed / 79 skipped / 0 failed** in a bare clone with a venv
-built from `requirements/ci-unit.txt` alone, and **1752 passed / 0 skipped**
-here. The same clone taken at `--depth 1` gives **1669 / 83 / 0**: the four
+All three guards skip naming what is absent, and all three run on the machine
+that trained the adapters and fetched the pool — the machine that ran the GPU
+passes.
+Measured: **1763 passed / 82 skipped / 0 failed** in a bare clone with a venv
+built from `requirements/ci-unit.txt` alone, and **1845 passed / 0 skipped**
+here. The same clone taken at `--depth 1` gives **1759 / 86 / 0**: the four
 extra skips are exactly the history-derived checks, which is what
 `fetch-depth: 0` in the workflow exists to prevent. The whole suite also passes
 with `PytestRemovedIn10Warning` promoted to an error.
@@ -699,6 +709,105 @@ many seeds are run. Four seeds per parent bounds training-seed variance loosely
 and licenses no interval claim, and only the two near-miss parents were
 replicated — this says nothing about the other six Stage-1 candidates.
 
+### Stage 1c: the floor was reading one of two routes
+
+Stage 1b ended on a measurement-power limit, so the next question was whether
+the probe could be made powerful enough to decide anything. `query_generation.py`
+is one of the eighteen paths the confirmation freeze sealed, so generating more
+queries per association is unavailable. But each of the probe half's 204
+associations backs **two** retention families per split — `retain_same_entity` /
+`retain_other_entity`, whose route is `text_to_text`, and `retain_same_entity_image`
+/ `retain_other_entity_image`, whose route is `image_to_text` — and the sealed
+`compute_hierarchy_metrics` has always emitted blocks for both, plus a pooled
+`*_all_routes`. The frozen floor read only the text pair.
+
+Because Stage 1 generated all 4,518 train+val queries for ten states and Stage 1b
+did the same for seven, the image-route predictions were already on disk. Stage 1c
+therefore costs **zero GPU-hours**: it re-scores what exists on eight numbers
+instead of four.
+
+Stratified rather than pooled, because the two routes are not interchangeable
+instruments. Across the eight Stage-1 candidates, difference against B0:
+
+| number | text route | image route | candidates failing |
+| --- | --- | --- | --- |
+| retain-same row-micro | −0.0558 (sd 0.0434) | **−0.1373** (sd 0.0620) | 8/8 vs 8/8 |
+| retain-other row-micro | −0.0559 (sd 0.0335) | **−0.1382** (sd 0.0617) | 7/8 vs 8/8 |
+| retain-other entity-macro | −0.0237 (sd 0.0434) | **−0.1562** (sd 0.0826) | 6/8 vs 8/8 |
+
+Averaging those would report a single number describing neither. So each route
+keeps its own four numbers and the floor requires all eight — which makes it
+*harder* to pass than the rule it extends. **0/8 candidates are eligible on the
+eight numbers, exactly as 0/8 were on the four**, so no Stage-1 verdict changes.
+
+The route asymmetry is not a property of the image route. MG, the
+granularity-controlled reference that D_G targets, loses almost nothing on it
+(retain-same **+0.0074**, retain-other −0.0263) against text-route losses of
+−0.0269 and −0.0132. The 2.5× asymmetry belongs to the replay candidates, not to
+photograph-cued recall in general.
+
+**What stratifying does and does not buy.** It does not enlarge any denominator:
+each of the eight numbers still sits on 408 or 76 queries, because the association
+pool is exhausted (90 target + 387 retained = all 477) and retain-other reaches
+only 23 probe donors. The pooled `*_all_routes` rate, which *would* double n to
+816 and 152, is reported beside the decision and floors nothing. The absolute
+ceiling inside pilot-100 is 1,224 and 228 queries — every split and both routes —
+so a mechanism whose retention effect is smaller than about 0.0044 is not
+resolvable on this dataset at any number of seeds.
+
+What the second instrument does buy is decidability. Recomputing Stage 1b's four
+seeds per parent:
+
+| parent | route | numbers where sd < \|shortfall\| | numbers where every seed fell below |
+| --- | --- | --- | --- |
+| `B4_w2.0_lam0.5_lr2e-05_ep3` | text | 0/4 | 0/4 (all `straddles`) |
+| `B4_w2.0_lam0.5_lr2e-05_ep3` | image | **3/4** | **3/4** |
+| `B4_w4.0_lam0.5_lr2e-05_ep5` | text | 0/4 | 0/4 (all `straddles`) |
+| `B4_w4.0_lam0.5_lr2e-05_ep5` | image | **4/4** | **4/4** |
+
+For ep5 the image-route retain-same shortfall is −0.0980 — **40.0 queries of
+408** — against a between-seed sd of 0.0120, about 5 queries. The ratio of spread
+to shortfall falls from 1.96 on the text route to 0.12. Stage 1b could only say
+"the seeds straddle the anchor and the noise exceeds the gap"; Stage 1c can say
+"every independent seed fell below it, by more than the spread". Both parents
+still fail, and now the failure is not inside the noise.
+
+Two guards make this a re-scoring rather than a re-deciding. The analyzer
+recomputes the frozen four-number floor for every state and **refuses to write**
+unless the stratified verdict restricted to the text stratum equals the filed one
+number by number and flag by flag — it compared 36 Stage-1 numbers and 8
+Stage-1b numbers with zero problems. And because the image route is the one whose
+correctness flips when batch composition changes, the freeze binds the sha256 of
+all 19 prediction parquets *and* their sidecars, and verifies they are one
+measurement contract (`image_batch_size 1` throughout); the seed-42 replicates are
+read from Stage 1's directory and the other three from Stage 1b's, so a contract
+difference between them would have put the headline comparison on two
+instruments.
+
+Disclosed: this basis was identified **after** Stage 1b was scored, so it is not
+blind. Two things keep it from being a rule chosen for its answer. It was found in
+the dataset's structure — the image families cover identical association sets
+(387/387), share zero templates with the text ones, and are emitted by the sealed
+metric — and every field of the basis report is derived from `queries.parquet`,
+`associations.parquet` and the frozen partition with **no prediction read**, so
+`--check-only` re-derives the whole document and a reviewer can confirm that
+without loading a single model output. And its direction is against interest: it
+adds four conditions and enlarges the failure it reports. Pooling, stratifying and
+dropping the image route were all computed; stratifying is frozen, and the pooled
+numbers are in the report so that choice is visible.
+
+The freeze refuses to be written once the analysis report exists — the analogue of
+Stage 1b's post-training refusal for a study that trains nothing, since here the
+thing a rule must not postdate is the score. It was amended twice before any score
+was filed, both recorded with reasons and both moving only protocol-path hashes.
+Nothing frozen was edited: `retention_selection.py` and the sealed
+`hierarchy_metrics.py` are imported and called, and Stage 1c is four new protocol
+paths plus its own freeze. 93 tests, and 8 mutations of the module and the freeze
+— image failures made non-disqualifying, the consistency gate turned into a
+no-op, each cross-check removed or inverted, the pooled families admitted to the
+floor, a contract conflict made harmless, the text stratum un-delegated — were
+each caught.
+
 ## Iteration history
 
 `git log --oneline` is the authoritative narrative and its commit messages carry
@@ -729,4 +838,17 @@ and the seed sd on retain-other row-micro (0.0225, 0.0515) exceeded the very
 shortfall it was adjudicating (−0.0165, −0.0263). The binding limit is therefore
 measurement power, not the anchor and not the mechanism. The frozen analyzer
 crashed on a field that is not decision-bearing and was completed by a separate
-script that leaves every frozen byte untouched.
+script that leaves every frozen byte untouched. · **12c** the power limit was
+attacked from the dataset instead of from the GPU: the probe's associations turn
+out to back image-route retention families that the sealed metric has always
+emitted and the frozen floor never read, and their predictions were already
+generated, so the floor was extended to eight numbers at **zero GPU-hours**. The
+verdict did not move — 0/8 eligible on eight exactly as on four, and the text
+stratum reproduces all 36 filed Stage-1 numbers and all 8 Stage-1b numbers
+exactly — but the second instrument is more sensitive: the image route loses
+−0.1373 against the text route's −0.0558 on retain-same across the eight
+candidates, and MG loses almost nothing on it. Of the sixteen numbers now
+measured, the same seven have every seed below the anchor *and* a spread smaller
+than the shortfall they adjudicate; of the original eight, none had either.
+Stratifying enlarged no denominator; pilot-100's ceiling is 228 retain-other
+queries, so the binding limit is still the dataset.

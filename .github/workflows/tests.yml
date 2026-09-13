@@ -151,6 +151,14 @@ jobs:
               # that the preregistered code did not run to completion unaided.
               "data/reports/mllmu_iter12_seed_replication.json",
               "data/reports/mllmu_iter12_seed_replication.REPAIR.json",
+              # Stage 1c: the route-stratified floor.  All three are required
+              # because the study trains nothing -- its whole claim is that the
+              # result is reproducible from committed files, so a clone missing
+              # any of them would still pass the unit tests while being unable
+              # to check that claim.
+              "data/reports/mllmu_iter12_route_probe.json",
+              "data/reports/mllmu_iter12_route_stratification_freeze.json",
+              "data/reports/mllmu_iter12_route_stratified.json",
               # The fit-half training groups.  retain.jsonl IS the frozen
               # partition, so the protocol's central claim -- that the probe
               # half was never rehearsed by any candidate -- is checkable from

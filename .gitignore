@@ -230,6 +230,15 @@ data/salmu_hierarchical/official_salmubench_results*/
 # result rather than inside it, because adding it to the report would mean
 # editing a file the freeze has locked.
 !data/reports/mllmu_iter12_seed_replication.REPAIR.json
+# Stage 1c: the route-stratified retention floor.  The basis report is derived
+# from the dataset alone with no prediction read, the freeze binds the exact
+# parquet bytes the re-scoring reads, and the analysis report is the result.  All
+# three are committed because a re-scoring that trains nothing has to be
+# reproducible from committed files and nothing else -- the predictions
+# themselves stay ignored below, which is why the freeze hashes them instead.
+!data/reports/mllmu_iter12_route_probe.json
+!data/reports/mllmu_iter12_route_stratification_freeze.json
+!data/reports/mllmu_iter12_route_stratified.json
 # The fit-half training groups ARE the frozen partition: retain.jsonl is the
 # 183 replayed associations, and its absence would make the protocol's central
 # claim -- that the probe half was never rehearsed -- unverifiable from a
