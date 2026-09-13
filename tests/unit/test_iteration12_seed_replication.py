@@ -46,11 +46,16 @@ from granunlearn.training.seed_replication import (
     PARENTS,
     SEED_CKPT_ROOT,
     aggregate,
+    dataset_dir,
     mean_candidate,
     parent_specs,
     range_classification,
     replicate_id,
     replicates,
+    seed_ckpt_root,
+    seed_predictions_dir,
+    stage1_ckpt_root,
+    stage1_predictions_dir,
     to_train,
 )
 
@@ -322,6 +327,70 @@ class TestTheFreezeAndTheResultDoNotShareAPath:
         assert SEED_CKPT_ROOT != "data/checkpoints/mllmu_iter12_unlearn"
         for r in replicates():
             assert "__s" in r.replicate_id
+
+
+# ──────────────────────────────────────────────────────────────────────
+class TestEveryPathHasExactlyOneOwner:
+    """Regression: ``data/data/mllmu_hier_pilot100/...``.
+
+    ``dataset_dir_for_tag`` returns a path that ALREADY carries the ``data/``
+    prefix.  The analyzer's ``main()`` joined it correctly while its
+    determinism control prepended ``"data"`` again, so the control raised
+    FileNotFoundError two seconds into the first run -- after the chain had
+    claimed a GPU.  The bug is invisible in the source and only appears when the
+    file is opened, which is why the fix is one owner for every path rather than
+    two careful call sites.
+    """
+
+    def test_the_trap_itself_is_pinned(self):
+        #: If this ever stops being true, every helper below needs re-reading --
+        #: and a future "fix" that re-adds the prefix would otherwise look
+        #: correct.
+        from granunlearn.training.candidate_grid import dataset_dir_for_tag
+        assert dataset_dir_for_tag("iter12").startswith("data/")
+
+    @pytest.mark.parametrize("helper", [
+        dataset_dir, stage1_predictions_dir, seed_predictions_dir,
+        stage1_ckpt_root, seed_ckpt_root])
+    def test_no_helper_double_prefixes_data(self, helper):
+        p = str(helper(REPO_ROOT))
+        assert "data/data" not in p
+        assert p.count("/data/") <= 1
+
+    def test_the_helpers_resolve_to_the_committed_layout(self):
+        rel = {f.__name__: str(f(REPO_ROOT).relative_to(REPO_ROOT)) for f in
+               (dataset_dir, stage1_predictions_dir, seed_predictions_dir,
+                stage1_ckpt_root, seed_ckpt_root)}
+        assert rel == {
+            "dataset_dir": "data/mllmu_hier_pilot100",
+            "stage1_predictions_dir":
+                "data/mllmu_hier_pilot100/predictions_iter12",
+            "seed_predictions_dir":
+                "data/mllmu_hier_pilot100/predictions_iter12_seeds",
+            "stage1_ckpt_root": "data/checkpoints/mllmu_iter12_unlearn",
+            "seed_ckpt_root": "data/checkpoints/mllmu_iter12_seeds",
+        }
+
+    def test_the_two_studies_do_not_share_a_checkpoint_root(self):
+        assert stage1_ckpt_root(REPO_ROOT) != seed_ckpt_root(REPO_ROOT)
+        assert seed_predictions_dir(REPO_ROOT) != stage1_predictions_dir(REPO_ROOT)
+
+    def test_the_scripts_use_the_shared_helpers_not_their_own_joins(self):
+        #: Identity, not source text: if either script rebinds one of these
+        #: names to a local lambda or re-joins the constant itself, the object it
+        #: calls is no longer the one this test holds.
+        assert aisr.stage1_predictions_dir is stage1_predictions_dir
+        assert aisr.seed_predictions_dir is seed_predictions_dir
+        assert aisr.dataset_dir is dataset_dir
+        assert tisr.srd.dataset_dir is dataset_dir
+        assert tisr.srd.seed_ckpt_root is seed_ckpt_root
+
+    def test_the_trainer_resolves_its_four_paths_without_a_double_prefix(self):
+        ds, mf, out, groups = tisr.resolve_paths(REPO_ROOT)
+        for p in (ds, mf, out, groups):
+            assert "data/data" not in str(p)
+        assert groups == ds / "unlearning_iter12"
+        assert out == seed_ckpt_root(REPO_ROOT)
 
 
 # ──────────────────────────────────────────────────────────────────────

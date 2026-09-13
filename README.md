@@ -173,10 +173,10 @@ here instead of hiding every other result behind a collection error in CI.
 ## Tests
 
 ```bash
-pytest tests/unit -q          # 1703 tests, CPU only, ~3.0 min on the artifact box
+pytest tests/unit -q          # 1713 tests, CPU only, ~3.0 min on the artifact box
 ```
 
-The same 1703 pass with `torch`, `transformers`, `peft`, `accelerate` and
+The same 1713 pass with `torch`, `transformers`, `peft`, `accelerate` and
 `datasets` made unimportable, which is how the CPU-only contract is checked on a
 machine that has the GPU stack installed. `.github/workflows/tests.yml` runs the
 unit suite plus a step that loads every committed report the evidence claims
@@ -193,9 +193,9 @@ are gitignored inputs rather than unfinished work:
 
 Both guards skip naming what is absent, and both run on the machine that trained
 the adapters and fetched the pool — the machine that ran the three GPU passes.
-Measured: **1625 passed / 78 skipped / 0 failed** in a bare clone with a venv
+Measured: **1635 passed / 78 skipped / 0 failed** in a bare clone with a venv
 built from `requirements/ci-unit.txt` alone — with and without CI's
-`--maxfail=5` — and **1703 passed / 0 skipped** here. The whole suite also passes
+`--maxfail=5` — and **1713 passed / 0 skipped** here. The whole suite also passes
 with `PytestRemovedIn10Warning` promoted to an error.
 The committed half of each boundary — the manifest pinning 402 paths and hashes,
 the pool's disjointness from exploratory media, the fetch provenance behind it —

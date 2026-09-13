@@ -2,9 +2,9 @@
   "iteration": 12,
   "stage": "1b \u2014 seed replication of the two near-miss candidates",
   "exploratory": true,
-  "frozen_at_utc": "2026-09-13T07:44:46+00:00",
-  "git_commit": "28fa61f2fd64967d920facc3014b9247ad4a92ea",
-  "git_dirty": "M .github/workflows/tests.yml\n M .gitignore\n?? data/reports/mllmu_iter12_seed_replication_freeze.json\n?? scripts/analyze_iter12_seed_replication.py\n?? scripts/freeze_iter12_seed_replication.py\n?? scripts/lanes/iter12_seeds.sh\n?? scripts/train_iter12_seed_replicates.py\n?? src/granunlearn/training/seed_replication.py\n?? tests/unit/test_iteration12_seed_replication.py",
+  "frozen_at_utc": "2026-09-13T08:03:05+00:00",
+  "git_commit": "96666267c99d0f0c7283982c8abb3b0d5f59a94b",
+  "git_dirty": "M scripts/analyze_iter12_seed_replication.py\n M scripts/train_iter12_seed_replicates.py\n M src/granunlearn/training/seed_replication.py\n M tests/unit/test_iteration12_seed_replication.py",
   "question": "are the two smallest Stage-1 retain-same shortfalls stable across independent training seeds, or one draw?",
   "why_this_study_exists": {
     "stage1_result": "all eight B4 replay candidates disqualified; B0 selected; the Stage-2 gate opened",
@@ -266,9 +266,9 @@
   "hashes": {
     "protocol_paths": {
       "scripts/freeze_iter12_seed_replication.py": "d063162a753e222ab857959dcd87e22fa43a63783abec9dc074dc5fa8a7bf9c5",
-      "src/granunlearn/training/seed_replication.py": "abc55f1f5b413b12c2fb66e5fad7b44a4117af015dcb267547b5645e912f4727",
-      "scripts/train_iter12_seed_replicates.py": "38beadb6cd0d8cd2ff918cea93794b400a81a39b566c0eea661a9d1f065b1560",
-      "scripts/analyze_iter12_seed_replication.py": "b8c501be0baa2fae5de899f59ddc6a6b11b48765aff789346018b52b149e9367"
+      "src/granunlearn/training/seed_replication.py": "c55894ebed37132a3dcf003c7a48a90c67929c17289bb4f9ce66ae19aff05b2a",
+      "scripts/train_iter12_seed_replicates.py": "ea719ada94972fe5ccbba4a35e8055eefe6d62f85d1cc537a2fb4a28a20ea775",
+      "scripts/analyze_iter12_seed_replication.py": "b5e7bf8fcd43bcde8f53051b3c33cfabe5ac91b0e522df4d4d2c8bcde47004f9"
     },
     "depends_on_unchanged": {
       "src/granunlearn/evaluation/retention_selection.py": "ff0ae167a9df495753b6a52d30fd0af0e16df81e910b039d1aaeb3ac190cdb79",
@@ -340,6 +340,17 @@
       "fields_that_changed": [
         "hashes.protocol_paths.scripts/analyze_iter12_seed_replication.py",
         "hashes.protocol_paths.scripts/train_iter12_seed_replicates.py"
+      ],
+      "no_replicate_had_been_trained": true
+    },
+    {
+      "utc": "2026-09-13T08:03:05+00:00",
+      "reason": "Fixed a real path defect the first run exposed after two seconds: control_b0 built its Stage-1 predictions path as repo_root/'data'/dataset_dir_for_tag('iter12'), but dataset_dir_for_tag already returns a data/-prefixed path, so it opened data/data/mllmu_hier_pilot100/... and raised FileNotFoundError after the chain had claimed a GPU. Every path this study touches now resolves through five helpers in seed_replication.py, used by both the analyzer and the trainer, with tests pinning the trap (dataset_dir_for_tag starts with data/) and asserting no helper emits a double prefix. No seed, parent, rule, epsilon, contract or anchor value changed.",
+      "supersedes_sha256": "8c4a2bd4fd042710a26d63a8be6002aca084d25f78ca6d65c077b2b10ad7d278",
+      "fields_that_changed": [
+        "hashes.protocol_paths.scripts/analyze_iter12_seed_replication.py",
+        "hashes.protocol_paths.scripts/train_iter12_seed_replicates.py",
+        "hashes.protocol_paths.src/granunlearn/training/seed_replication.py"
       ],
       "no_replicate_had_been_trained": true
     }

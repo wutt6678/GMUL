@@ -58,20 +58,20 @@ from granunlearn.evaluation.reference_eval import (
     load_queries_parquet,
 )
 from granunlearn.logging_utils import setup_logger
-from granunlearn.training.candidate_grid import dataset_dir_for_tag
 from granunlearn.training.seed_replication import (
     FLOOR_NUMBERS,
     OUT_REPORT,
-    SEED_CKPT_ROOT,
-    SEED_PREDICTIONS_SUBDIR,
-    STAGE1_CKPT_ROOT,
     STAGE1_FREEZE_REPORT,
-    STAGE1_PREDICTIONS_SUBDIR,
     STAGE1_SELECTION_REPORT,
     aggregate,
+    dataset_dir,
     mean_candidate,
     range_classification,
     replicates,
+    seed_ckpt_root,
+    seed_predictions_dir,
+    stage1_ckpt_root,
+    stage1_predictions_dir,
 )
 
 log = setup_logger("iter12_seed_replication")
@@ -172,11 +172,10 @@ def control_b0(args, repo_root: Path, data_dir: Path, predictions_dir: Path,
     nothing else.  Measured rather than assumed, because the answer decides
     whether the anchor is a point or a distribution.
     """
-    stage1_dir = repo_root / "data" / dataset_dir_for_tag("iter12") \
-        / STAGE1_PREDICTIONS_SUBDIR
+    stage1_dir = stage1_predictions_dir(repo_root)
     before = load_predictions_parquet(
         stage1_dir / prediction_filename("B0"))
-    adapter = repo_root / STAGE1_CKPT_ROOT / "B0" / "adapters"
+    adapter = stage1_ckpt_root(repo_root) / "B0" / "adapters"
     after = _generate_state(
         "B0", adapter, queries, by_assoc, repo_root, args.device,
         predictions_dir, data_dir, args.model_id, generation_config,
@@ -254,11 +253,11 @@ def main() -> None:
         raise SystemExit("REFUSING: the seed-replication freeze does not match "
                          "the repository:\n  " + "\n  ".join(reasons))
 
-    data_dir = repo_root / dataset_dir_for_tag("iter12")
-    predictions_dir = data_dir / SEED_PREDICTIONS_SUBDIR
+    data_dir = dataset_dir(repo_root)
+    predictions_dir = seed_predictions_dir(repo_root)
     out_report = repo_root / OUT_REPORT
     assert_no_forbidden_evidence(
-        [data_dir, predictions_dir, out_report, repo_root / SEED_CKPT_ROOT],
+        [data_dir, predictions_dir, out_report, seed_ckpt_root(repo_root)],
         repo_root)
     generation_config = enforce_contract(args, repo_root, predictions_dir)
     predictions_dir.mkdir(parents=True, exist_ok=True)
@@ -288,8 +287,8 @@ def main() -> None:
                              f"{sorted(unknown)}")
         reps = [r for r in reps if r.replicate_id in wanted]
 
-    stage1_dir = data_dir / STAGE1_PREDICTIONS_SUBDIR
-    ckpt_root = repo_root / SEED_CKPT_ROOT
+    stage1_dir = stage1_predictions_dir(repo_root)
+    ckpt_root = seed_ckpt_root(repo_root)
     per_replicate: dict[str, dict[str, Any]] = {}
     missing: list[str] = []
     for r in reps:
@@ -301,7 +300,7 @@ def main() -> None:
                 continue
             preds = load_predictions_parquet(ppath)
             source = str(ppath.relative_to(repo_root))
-            adapter = repo_root / STAGE1_CKPT_ROOT / r.parent / "adapters"
+            adapter = stage1_ckpt_root(repo_root) / r.parent / "adapters"
         else:
             adapter = ckpt_root / r.replicate_id / "adapters"
             if not adapter.exists():

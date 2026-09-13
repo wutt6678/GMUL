@@ -29,16 +29,15 @@ import freeze_iter12_seed_replication as fisr
 
 from granunlearn.config import _find_repo_root
 from granunlearn.logging_utils import setup_logger
+from granunlearn.training import seed_replication as srd
 from granunlearn.training.candidate_grid import (
     CandidateSpec,
-    dataset_dir_for_tag,
     groups_subdir_for_tag,
     validate_grid,
 )
 from granunlearn.training.reference_trainer import ReferenceRecipe
 from granunlearn.training.seed_replication import (
     BASE_SEED,
-    SEED_CKPT_ROOT,
     replicate_id,
     replicates,
     to_train,
@@ -74,10 +73,10 @@ def resolve_paths(repo_root: Path) -> tuple[Path, Path, Path, Path]:
     the output root differs, and it differs so that a replicate can never
     overwrite a Stage-1 adapter.
     """
-    dataset_dir = repo_root / dataset_dir_for_tag("iter12")
+    dataset_dir = srd.dataset_dir(repo_root)
     mf_adapters = repo_root / "data" / "checkpoints" / \
         "mllmu_pilot100" / "MF" / "adapters"
-    out_root = repo_root / SEED_CKPT_ROOT
+    out_root = srd.seed_ckpt_root(repo_root)
     groups_dir = dataset_dir / groups_subdir_for_tag("iter12")
     return dataset_dir, mf_adapters, out_root, groups_dir
 

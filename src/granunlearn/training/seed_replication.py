@@ -60,7 +60,11 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
 
-from granunlearn.training.candidate_grid import CandidateSpec, grid_for_tag
+from granunlearn.training.candidate_grid import (
+    CandidateSpec,
+    dataset_dir_for_tag,
+    grid_for_tag,
+)
 
 #: The two Stage-1 rows replicated.  Chosen BEFORE any replicate was trained,
 #: from the filed Stage-1 report, as the two candidates whose retain-same
@@ -156,6 +160,38 @@ def parent_specs() -> dict[str, CandidateSpec]:
 
 def replicate_id(parent: str, seed: int) -> str:
     return f"{parent}__s{seed}"
+
+
+# ── path resolution ───────────────────────────────────────────────────
+#: Every path this study touches is resolved HERE and nowhere else.  Two call
+#: sites building the same path independently is how ``data/data/...`` got into
+#: the determinism control: ``dataset_dir_for_tag`` already returns a
+#: ``data/``-prefixed relative path, and prepending ``"data"`` again is invisible
+#: in the source and only appears when the file is opened.  A single owner makes
+#: that disagreement impossible rather than unlikely.
+
+
+def dataset_dir(repo_root):
+    """The pilot-100 dataset this study reuses (already ``data/``-prefixed)."""
+    return repo_root / dataset_dir_for_tag("iter12")
+
+
+def stage1_predictions_dir(repo_root):
+    """Where Stage 1 filed its predictions, including the B0 anchor."""
+    return dataset_dir(repo_root) / STAGE1_PREDICTIONS_SUBDIR
+
+
+def seed_predictions_dir(repo_root):
+    """This study's own predictions directory."""
+    return dataset_dir(repo_root) / SEED_PREDICTIONS_SUBDIR
+
+
+def stage1_ckpt_root(repo_root):
+    return repo_root / STAGE1_CKPT_ROOT
+
+
+def seed_ckpt_root(repo_root):
+    return repo_root / SEED_CKPT_ROOT
 
 
 def replicates() -> list[Replicate]:
