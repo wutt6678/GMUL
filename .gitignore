@@ -220,6 +220,11 @@ data/salmu_hierarchical/official_salmubench_results*/
 !data/reports/mllmu_iter12_retention_probe.json
 !data/reports/mllmu_iter12_selection_protocol_freeze.json
 !data/reports/mllmu_iter12_retention_selection.json
+# Stage 1b: the seed-replication protocol and its result.  Both negated now even
+# though the result does not exist yet -- a negation for an absent file is inert,
+# and adding it later is the step that gets forgotten.
+!data/reports/mllmu_iter12_seed_replication_freeze.json
+!data/reports/mllmu_iter12_seed_replication.json
 # The fit-half training groups ARE the frozen partition: retain.jsonl is the
 # 183 replayed associations, and its absence would make the protocol's central
 # claim -- that the probe half was never rehearsed -- unverifiable from a
@@ -228,3 +233,4 @@ data/salmu_hierarchical/official_salmubench_results*/
 # Predictions from this study stay ignored, like the pilot-100 ones: they are
 # regenerable, large, and the selection report is the committed roll-up.
 data/mllmu_hier_pilot100/predictions_iter12/
+data/mllmu_hier_pilot100/predictions_iter12_seeds/

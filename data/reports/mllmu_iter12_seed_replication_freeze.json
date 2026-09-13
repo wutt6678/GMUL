@@ -1,0 +1,347 @@
+{
+  "iteration": 12,
+  "stage": "1b \u2014 seed replication of the two near-miss candidates",
+  "exploratory": true,
+  "frozen_at_utc": "2026-09-13T07:44:46+00:00",
+  "git_commit": "28fa61f2fd64967d920facc3014b9247ad4a92ea",
+  "git_dirty": "M .github/workflows/tests.yml\n M .gitignore\n?? data/reports/mllmu_iter12_seed_replication_freeze.json\n?? scripts/analyze_iter12_seed_replication.py\n?? scripts/freeze_iter12_seed_replication.py\n?? scripts/lanes/iter12_seeds.sh\n?? scripts/train_iter12_seed_replicates.py\n?? src/granunlearn/training/seed_replication.py\n?? tests/unit/test_iteration12_seed_replication.py",
+  "question": "are the two smallest Stage-1 retain-same shortfalls stable across independent training seeds, or one draw?",
+  "why_this_study_exists": {
+    "stage1_result": "all eight B4 replay candidates disqualified; B0 selected; the Stage-2 gate opened",
+    "what_stage1_could_not_decide": "the floor is a point comparison over one training seed, so a shortfall of 3 queries and a shortfall of 59 are the same kind of verdict",
+    "post_hoc_check_that_shaped_this_design": "re-scoring the same eight candidates against a more lenient MG anchor also rejects all eight, so the binding limitation is the measurement, not the choice of anchor"
+  },
+  "parents": {
+    "ids": [
+      "B4_w4.0_lam0.5_lr2e-05_ep5",
+      "B4_w2.0_lam0.5_lr2e-05_ep3"
+    ],
+    "selection_rule": "the two candidates whose retain-same row-micro shortfall against B0 is smallest when expressed in QUERIES, taken from the filed Stage-1 report",
+    "not_selected_on": "D_G. Selecting the two best on the criterion would be selecting on the outcome being revisited",
+    "stage1_shortfalls": {
+      "B4_w4.0_lam0.5_lr2e-05_ep5": {
+        "retain_same_entity.row_micro": {
+          "candidate": 0.5221,
+          "b0": 0.5294,
+          "difference": -0.0073,
+          "passes": false,
+          "num_queries": 408,
+          "difference_in_queries": -2.98
+        },
+        "retain_same_entity.entity_macro": {
+          "candidate": 0.5188,
+          "b0": 0.5256,
+          "difference": -0.0068,
+          "passes": false,
+          "num_queries": 408,
+          "difference_in_queries": -2.77
+        },
+        "retain_other_entity.row_micro": {
+          "candidate": 0.4211,
+          "b0": 0.4737,
+          "difference": -0.0526,
+          "passes": false,
+          "num_queries": 76,
+          "difference_in_queries": -4.0
+        },
+        "retain_other_entity.entity_macro": {
+          "candidate": 0.4909,
+          "b0": 0.5072,
+          "difference": -0.0163,
+          "passes": false,
+          "num_queries": 76,
+          "difference_in_queries": -1.24
+        }
+      },
+      "B4_w2.0_lam0.5_lr2e-05_ep3": {
+        "retain_same_entity.row_micro": {
+          "candidate": 0.5196,
+          "b0": 0.5294,
+          "difference": -0.0098,
+          "passes": false,
+          "num_queries": 408,
+          "difference_in_queries": -4.0
+        },
+        "retain_same_entity.entity_macro": {
+          "candidate": 0.5006,
+          "b0": 0.5256,
+          "difference": -0.025,
+          "passes": false,
+          "num_queries": 408,
+          "difference_in_queries": -10.2
+        },
+        "retain_other_entity.row_micro": {
+          "candidate": 0.4342,
+          "b0": 0.4737,
+          "difference": -0.0395,
+          "passes": false,
+          "num_queries": 76,
+          "difference_in_queries": -3.0
+        },
+        "retain_other_entity.entity_macro": {
+          "candidate": 0.4928,
+          "b0": 0.5072,
+          "difference": -0.0144,
+          "passes": false,
+          "num_queries": 76,
+          "difference_in_queries": -1.09
+        }
+      }
+    }
+  },
+  "seeds": {
+    "base_reused_from_stage1": 42,
+    "why_reused": "its adapter and predictions were produced and scored by Stage 1; re-running the same seed would produce a second draw from an identical RNG state and say nothing about between-seed variance",
+    "new": [
+      43,
+      44,
+      45
+    ],
+    "why_these": "the three integers after the recipe default, fixed here before training so they cannot be chosen after seeing results",
+    "all": [
+      42,
+      43,
+      44,
+      45
+    ],
+    "k": 4,
+    "chosen_before_any_replicate_was_trained": true
+  },
+  "what_a_seed_varies": {
+    "measured_not_assumed": true,
+    "consumed_at": [
+      "unlearning_trainer.set_recipe_seeds(recipe.seed) \u2014 LoRA initialisation and dropout",
+      "random.Random(f\"{recipe.seed}:{epoch}:{gi}\").shuffle(order) \u2014 the per-group per-epoch order of the interleaved stream"
+    ],
+    "does_not_vary": "which examples are trained on, so the fit/probe partition is untouched by replication",
+    "reachability_asserted_at_runtime": "the trainer raises unless ReferenceRecipe(**overrides).seed equals the replicate's seed"
+  },
+  "primary_rule": {
+    "statement": "for each of the four frozen numbers, the MEAN over replicates must be at or above the Stage-1 B0 anchor",
+    "scored_by": "granunlearn.evaluation.retention_selection.floor_check \u2014 imported, not reimplemented",
+    "epsilon": 1e-09,
+    "epsilon_is_the_stage1_epsilon": true,
+    "mean_is_compared_unrounded": true,
+    "why_unrounded": "rounding the mean to the four decimals its inputs carry would let a rounding step decide a comparison the inputs did not",
+    "no_margin": true,
+    "margin_required": 0.0,
+    "rejected_alternative": {
+      "value": 0.02,
+      "status": "rejected in Stage 1 and not reintroduced here",
+      "why": "it is not a resolvable gap, not an interval width and not a pre-registered effect size"
+    }
+  },
+  "reported_but_not_decision_bearing": {
+    "per_number": [
+      "mean",
+      "min",
+      "max",
+      "sd",
+      "replicates_at_or_above_anchor",
+      "range_classification"
+    ],
+    "range_values": [
+      "every_replicate_below",
+      "straddles",
+      "every_replicate_at_or_above"
+    ],
+    "why_not_an_interval": "with k=4 an interval imports a distributional assumption the design does not need; the observed range answers whether every independent seed fell below the anchor",
+    "distance_to_mg": "reported per replicate and as a mean; the floor decides eligibility, exactly as in Stage 1"
+  },
+  "anchor": {
+    "source": "data/reports/mllmu_iter12_retention_selection.json",
+    "field": "floor.b0",
+    "values": {
+      "retain_same_entity.row_micro": 0.5294,
+      "retain_same_entity.entity_macro": 0.5256,
+      "retain_other_entity.row_micro": 0.4737,
+      "retain_other_entity.entity_macro": 0.5072
+    },
+    "denominators": {
+      "retain_same_entity": 408,
+      "retain_other_entity": 76
+    },
+    "why_a_point": "B0 is the no-op copy of MF and takes zero training steps, so it has no seed variance; the determinism control below is what tests whether it has generation variance"
+  },
+  "generation_determinism_control": {
+    "runs_before": "any replicate verdict is reported",
+    "what_it_does": "regenerates B0 into this study's own predictions directory under the Stage-1 contract and compares it row by row with Stage 1's B0 parquet",
+    "stops_the_study_if": "any of the four floor numbers moves",
+    "why": "a point floor over a non-reproducible anchor is not interpretable and replication cannot repair it",
+    "already_measured_from_two_existing_parcets": {
+      "comparison": "identical B0 adapter bytes generated under image_batch_size 8 (pilot-100) and 1 (Stage 1)",
+      "correctness_flips": 15,
+      "rows": 4518,
+      "raw_output_differences": 60,
+      "flips_by_family": {
+        "retain_same_entity_image": 9,
+        "retain_other_entity_image": 2,
+        "image_fine_direct": 3,
+        "multimodal_image_text": 1
+      },
+      "flips_inside_either_probe_subset": 0,
+      "why_zero": "the floor's 408 + 76 probe queries are 100% text_to_text; every flip is image-route",
+      "d_g_components_that_moved": {
+        "filr": -0.0004,
+        "wrong": 0.0008
+      },
+      "consequence_for_d_g": "generation noise of order 2e-4, ~17x smaller than the gap between Stage 1's two best candidates (0.027343 vs 0.030686), so it does not reorder them \u2014 but D_G's sixth decimal is not physically meaningful, and the frozen tie-break compares at exactly six decimals",
+      "what_it_cannot_show": "whether generation is deterministic under a FIXED contract, which is the assumption every replicate comparison rests on \u2014 hence the control"
+    }
+  },
+  "generation_contract": {
+    "inherited_from": "data/reports/mllmu_iter12_selection_protocol_freeze.json",
+    "must_match": {
+      "batch_size": 8,
+      "image_batch_size": 1,
+      "max_new_tokens": 96,
+      "max_length": 1536,
+      "max_image_pixels": 147456,
+      "do_sample": false,
+      "model_id": "Qwen/Qwen3.5-9B"
+    },
+    "must_differ": {
+      "predictions_dir": "data/mllmu_hier_pilot100/predictions_iter12",
+      "experiment_id": "mllmu_iter12_stage1"
+    },
+    "this_study_uses": {
+      "experiment_id": "mllmu_iter12_seeds",
+      "predictions_dir": "data/mllmu_hier_pilot100/predictions_iter12_seeds"
+    },
+    "why_a_separate_directory": "the control regenerates B0, so this study needs a file called predictions_tv_B0.parquet. In Stage 1's directory that name is already taken by filed evidence whose sidecar carries a different experiment_id, so the sidecar would refuse reuse and REGENERATE OVER IT. A separate directory makes that impossible rather than unlikely \u2014 the same reasoning Stage 1 recorded for not using the pilot-100 directory"
+  },
+  "evidence_base": {
+    "reads": [
+      "pilot-100 train+val predictions",
+      "the fit-half training groups",
+      "the filed Stage-1 selection report"
+    ],
+    "never_read": [
+      "data/mllmu_hier_confirm100",
+      "data/reports/mllmu_confirm100_final_analysis.json"
+    ],
+    "reused_artifacts": {
+      "seed_42_replicate_predictions": "data/mllmu_hier_pilot100/predictions_iter12/",
+      "seed_42_replicate_adapters": "data/checkpoints/mllmu_iter12_unlearn/",
+      "mg_reference_vector": "data/reports/mllmu_iter12_retention_selection.json (reference.vector), read not regenerated"
+    }
+  },
+  "replicate_set": {
+    "ids": [
+      "B4_w4.0_lam0.5_lr2e-05_ep5__s42",
+      "B4_w4.0_lam0.5_lr2e-05_ep5__s43",
+      "B4_w4.0_lam0.5_lr2e-05_ep5__s44",
+      "B4_w4.0_lam0.5_lr2e-05_ep5__s45",
+      "B4_w2.0_lam0.5_lr2e-05_ep3__s42",
+      "B4_w2.0_lam0.5_lr2e-05_ep3__s43",
+      "B4_w2.0_lam0.5_lr2e-05_ep3__s44",
+      "B4_w2.0_lam0.5_lr2e-05_ep3__s45"
+    ],
+    "needing_a_gpu": [
+      "B4_w4.0_lam0.5_lr2e-05_ep5__s43",
+      "B4_w4.0_lam0.5_lr2e-05_ep5__s44",
+      "B4_w4.0_lam0.5_lr2e-05_ep5__s45",
+      "B4_w2.0_lam0.5_lr2e-05_ep3__s43",
+      "B4_w2.0_lam0.5_lr2e-05_ep3__s44",
+      "B4_w2.0_lam0.5_lr2e-05_ep3__s45"
+    ],
+    "reused": [
+      "B4_w4.0_lam0.5_lr2e-05_ep5__s42",
+      "B4_w2.0_lam0.5_lr2e-05_ep3__s42"
+    ],
+    "cost_measured_from_stage1": {
+      "training_seconds_per_candidate_ep5": 1609.2,
+      "generation_minutes_per_state_median": 40.2,
+      "trainings": 6,
+      "generations": 7,
+      "plus_one_for": "the determinism control"
+    }
+  },
+  "refusal_policy": {
+    "refuses_to_freeze_when": "any replicate adapter exists",
+    "unconditional": true,
+    "no_flag_reaches_past_it": true,
+    "reason": "a replication protocol written after its replicates were trained could be fitted to them, which is the one thing a replication is supposed to make impossible"
+  },
+  "hashes": {
+    "protocol_paths": {
+      "scripts/freeze_iter12_seed_replication.py": "d063162a753e222ab857959dcd87e22fa43a63783abec9dc074dc5fa8a7bf9c5",
+      "src/granunlearn/training/seed_replication.py": "abc55f1f5b413b12c2fb66e5fad7b44a4117af015dcb267547b5645e912f4727",
+      "scripts/train_iter12_seed_replicates.py": "38beadb6cd0d8cd2ff918cea93794b400a81a39b566c0eea661a9d1f065b1560",
+      "scripts/analyze_iter12_seed_replication.py": "b8c501be0baa2fae5de899f59ddc6a6b11b48765aff789346018b52b149e9367"
+    },
+    "depends_on_unchanged": {
+      "src/granunlearn/evaluation/retention_selection.py": "ff0ae167a9df495753b6a52d30fd0af0e16df81e910b039d1aaeb3ac190cdb79",
+      "src/granunlearn/evaluation/reference_eval.py": "645440c1fd36c07f94d6771e099be7db1bfa6fb8915fcdb0df81ab373da115dd",
+      "src/granunlearn/evaluation/hierarchy_metrics.py": "67e75fd4b12c3f22bfe86f7c77678df945d5a1152a43447d0a088da10b46966c",
+      "src/granunlearn/training/candidate_grid.py": "bf9df2a61dbc3308875a0bed77787d146b5aebfdc7382699768c179b7b7a5f54",
+      "src/granunlearn/training/unlearning_trainer.py": "7aba41087368563ed99934c0371562f0c15abee024931b0b87698104b391e541",
+      "src/granunlearn/training/reference_trainer.py": "9bfce242d3763daf129af6d19e9ba1cc357334c7ffc03f629c2d318a239c0840",
+      "scripts/select_unlearning_checkpoints.py": "ecacee99a9dd52cba7c419081e11a628f931fc40e8300b45b489946e6da25f2d",
+      "scripts/freeze_iter12_selection_protocol.py": "dd9007a5e78179fa8594f8d2354ff8ba9b667235774834a57a58009b62147f29"
+    },
+    "data_paths": {
+      "data/reports/mllmu_iter12_selection_protocol_freeze.json": "aa5d486a474eefee541bb871db383d0fed486a6ae536f31bc63ddd4418caeefe",
+      "data/reports/mllmu_iter12_retention_selection.json": "0dde0cc74bd0c8caf45dc030ef0df55f256810abe49e5a1ad654ead6a1f52816",
+      "data/reports/mllmu_iter12_retention_probe.json": "3c45905ec8369687875d90d945480be43c9478e1247dee9ac2a57c5dc95f15bb",
+      "data/mllmu_hier_pilot100/unlearning_iter12/fine_target.jsonl": "60ef46ac72d601deb64b55b5a5ddfb31c168983dd2adf5a594bd8ce73e8f6765",
+      "data/mllmu_hier_pilot100/unlearning_iter12/target_level.jsonl": "0c56833660ea701b61de426f2dc2bc4b7823cc5fe59c93840a364bdbd9a0fcbf",
+      "data/mllmu_hier_pilot100/unlearning_iter12/retain.jsonl": "1221a45f08958a0542c0c40b8f219181d248ee0318e0c41cf403a90634276e3c"
+    }
+  },
+  "limitations": [
+    "Replication does not increase the query count. The probe half is 35 entities / 408 retain-same and 23 donors / 76 retain-other queries, fixed by the association pool, so retain-other stays resolvable only in units of 1/76 = 0.0132 however many seeds are run.",
+    "k=4 per parent. A mean over four draws bounds training-seed variance loosely and licenses no interval claim.",
+    "Two parents only. This says nothing about the other six Stage-1 candidates.",
+    "The probe half carries 1 of the 6 taxonomic retained associations, so taxonomic retention remains unmeasured, as in Stage 1.",
+    "Exploratory: no hypothesis is tested and no error rate is controlled. A pass is a reason to design a confirmatory protocol, not a claim."
+  ],
+  "probe_partition": {
+    "source": "data/reports/mllmu_iter12_retention_probe.json",
+    "rule": {
+      "unit": "entity",
+      "why_entity_not_association": "An association-level split leaves a probe fact belonging to an entity whose other facts were rehearsed, so the entity was partly seen.  Entity-level makes 'never replayed' true of a whole entity's knowledge.",
+      "seed": 42,
+      "ordering": "entities sorted ascending by sha256('42:iter12probe:<entity_id>')",
+      "cut": "first half of the ordering is PROBE, remainder is FIT",
+      "derived_from": "data/reports/mllmu_pilot100_target_retain.json",
+      "no_randomness_beyond_the_seed": true
+    },
+    "probe_entities": 35,
+    "probe_associations": 204,
+    "replayed_by_any_candidate": false
+  },
+  "amendments": [
+    {
+      "utc": "2026-09-13T07:00:34+00:00",
+      "reason": "Added the guarded --refreeze/--reason amendment path to this script after the initial freeze; the script hashes itself, so the amendment records the change instead of leaving the freeze stale.",
+      "supersedes_sha256": "a5d08836704c19908bb8d04ba1e4bec414086db5118cd37917b34e9625c52025",
+      "fields_that_changed": [
+        "hashes.protocol_paths.scripts/freeze_iter12_seed_replication.py"
+      ],
+      "no_replicate_had_been_trained": true
+    },
+    {
+      "utc": "2026-09-13T07:04:04+00:00",
+      "reason": "Added the LPT lane planner to the trainer, removed an unused import and an unused local from the analyzer, replaced a hardcoded seed literal with BASE_SEED, and sorted the import block. All three are protocol paths, so the freeze re-binds them; no criterion value, seed, parent or rule changed.",
+      "supersedes_sha256": "044a602d42a45aa25fabf65accbce2583ce58b263dd0766402c3f644a1346c1a",
+      "fields_that_changed": [
+        "hashes.protocol_paths.scripts/analyze_iter12_seed_replication.py",
+        "hashes.protocol_paths.scripts/freeze_iter12_seed_replication.py",
+        "hashes.protocol_paths.scripts/train_iter12_seed_replicates.py",
+        "hashes.protocol_paths.src/granunlearn/training/seed_replication.py"
+      ],
+      "no_replicate_had_been_trained": true
+    },
+    {
+      "utc": "2026-09-13T07:44:46+00:00",
+      "reason": "Fixed a real defect the tests caught: the analyzer read the Stage-1 generation contract through a non-existent attribute (fisr.STAGE1_FREEZE instead of the imported STAGE1_FREEZE_REPORT), which would have raised AttributeError at run time in enforce_contract. Also made the trainer tolerate only the frozen validator's grid-structural B0 error, with a guard that stops if that message ever changes, and factored the determinism control's decision into compare_floor_numbers so it is testable without a parquet. No seed, parent, rule, epsilon or contract value changed.",
+      "supersedes_sha256": "e734566d78acb7c8bc266fb646df51bebae0d1d1836ba17ba2e5f9fe62058fe3",
+      "fields_that_changed": [
+        "hashes.protocol_paths.scripts/analyze_iter12_seed_replication.py",
+        "hashes.protocol_paths.scripts/train_iter12_seed_replicates.py"
+      ],
+      "no_replicate_had_been_trained": true
+    }
+  ]
+}

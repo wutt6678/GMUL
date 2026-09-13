@@ -32,6 +32,7 @@ load-bearing fact rather than an omission. Every stage has now run.
 | Post-run execution audit | `data/reports/mllmu_confirm100_execution_provenance.json`, derived from the committed `data/mllmu_hier_confirm100/execution_logs/` | **filed post-hoc; `post_hoc: true`, binds nothing** |
 | Iteration 12 selection protocol (exploratory) | `data/reports/mllmu_iter12_retention_probe.json` — the fit/probe partition of the 70 retained entities; `data/reports/mllmu_iter12_selection_protocol_freeze.json` — D_G's direction, tolerance and tie-break, the retention floor, the 9-row grid | **frozen, committed; frozen before any candidate was trained, and the freeze now refuses to be rewritten** |
 | Iteration 12 Stage 1 (exploratory) | `data/reports/mllmu_iter12_retention_selection.json` — 9 rows scored, 8 disqualified by the retention floor, B0 selected | **run once, 2026-09-12 → 09-13; a negative result: no replay setting preserves retention on never-rehearsed entities** |
+| Iteration 12 Stage 1b (exploratory) | `data/reports/mllmu_iter12_seed_replication_freeze.json` — the two near-miss parents, four seeds each, the mean-based rule and the determinism control | **frozen before any replicate was trained; not yet run** |
 
 **Both preregistered claims were confirmed.** Entity-macro `B3 − B0` over all 72
 target entities (42 persons, 30 species), 864 paired target probes, one-sided
@@ -172,10 +173,10 @@ here instead of hiding every other result behind a collection error in CI.
 ## Tests
 
 ```bash
-pytest tests/unit -q          # 1629 tests, CPU only, ~3.0 min on the artifact box
+pytest tests/unit -q          # 1703 tests, CPU only, ~3.0 min on the artifact box
 ```
 
-The same 1629 pass with `torch`, `transformers`, `peft`, `accelerate` and
+The same 1703 pass with `torch`, `transformers`, `peft`, `accelerate` and
 `datasets` made unimportable, which is how the CPU-only contract is checked on a
 machine that has the GPU stack installed. `.github/workflows/tests.yml` runs the
 unit suite plus a step that loads every committed report the evidence claims
@@ -192,9 +193,9 @@ are gitignored inputs rather than unfinished work:
 
 Both guards skip naming what is absent, and both run on the machine that trained
 the adapters and fetched the pool — the machine that ran the three GPU passes.
-Measured: **1551 passed / 78 skipped / 0 failed** in a bare clone with a venv
+Measured: **1625 passed / 78 skipped / 0 failed** in a bare clone with a venv
 built from `requirements/ci-unit.txt` alone — with and without CI's
-`--maxfail=5` — and **1629 passed / 0 skipped** here. The whole suite also passes
+`--maxfail=5` — and **1703 passed / 0 skipped** here. The whole suite also passes
 with `PytestRemovedIn10Warning` promoted to an error.
 The committed half of each boundary — the manifest pinning 402 paths and hashes,
 the pool's disjointness from exploratory media, the fetch provenance behind it —
@@ -561,6 +562,74 @@ refuses to be rewritten because nine candidates have adapters (`--refreeze` exit
 permanently break `--check-only` and the selector's own freeze verification — a
 worse artifact than a misnamed directory. Recorded here instead.
 
+### Stage 1b: seed replication, frozen before any replicate was trained
+
+Two candidates missed retain-same by 3 and 4 queries out of 408. A point floor
+over a single training seed cannot distinguish "this method loses retention"
+from "this draw lost retention", so Stage 1b re-runs those two at four seeds and
+asks the floor of a **mean**.
+
+The parents are `B4_w4.0_lam0.5_lr2e-05_ep5` and `B4_w2.0_lam0.5_lr2e-05_ep3`,
+chosen as the two smallest retain-same shortfalls expressed in queries. They are
+deliberately *not* the two best on D_G — selecting on the criterion being
+revisited would be selecting on the outcome. Seeds are 42 (reused from Stage 1,
+since re-running an identical RNG state says nothing about between-seed
+variance) plus 43, 44 and 45, fixed before training.
+
+**A measurement that cost nothing and changed the design.** Two B0 parquets
+already existed, generated from *identical* adapter bytes under different
+`image_batch_size` (8 in the pilot run, 1 in Stage 1). They disagree on 60 of
+4,518 raw outputs and flip `is_correct_branch` on **15** rows — every one of
+them image-route. The floor's 408 + 76 probe queries are **100% `text_to_text`**,
+and **zero** of the 15 flips land in either subset. So generation instability is
+real, confined to the image route, and does not reach the retention floor:
+replicate retention differences will be attributable to the training seed alone.
+The same comparison moved the full train+val vector's `filr` by −0.0004 and
+`wrong` by +0.0008, which puts D_G's generation noise near 2e-4 — about 17×
+smaller than the gap between Stage 1's two best candidates (0.027343 vs
+0.030686), so it does not reorder them, but the sixth decimal the frozen
+tie-break compares at is not physically meaningful.
+
+What that comparison *cannot* show is whether generation is deterministic under
+a **fixed** contract, which is the assumption every replicate comparison rests
+on. So the chain runs a control first and on its own: regenerate B0 under the
+Stage-1 contract and compare row by row. If any of the four floor numbers moves,
+the study stops before training anything — a point floor over a
+non-reproducible anchor is not interpretable, and replication cannot repair it.
+
+The primary rule is the mean over replicates, at or above the Stage-1 B0 anchor
+on all four numbers, scored by the **frozen** `floor_check` with the **frozen**
+`1e-9` epsilon and no margin. The mean is compared unrounded: rounding it to the
+four decimals its inputs carry would let a rounding step decide a comparison the
+inputs did not. Min, max, sd, the count of replicates individually at or above
+the anchor, and a non-parametric range classification (`every_replicate_below` /
+`straddles` / `every_replicate_at_or_above`) are all reported and none is
+decision-bearing — with k=4 an interval would import a distributional
+assumption the design does not need.
+
+Nothing frozen was edited to build this. The Stage-1 freeze refuses to be
+rewritten now that nine candidates have adapters, and `candidate_grid.py`,
+`retention_selection.py`, `unlearning_trainer.py` and the sealed
+`select_unlearning_checkpoints.py` are all hash-bound, so Stage 1b is four new
+protocol paths plus its own freeze, which *imports* the Stage-1 freeze's hashing
+and document-flattening rather than copying them — so "does this still match the
+repository" means the same thing in both studies. The new freeze refuses to be
+written once any replicate adapter exists, refuses a bare overwrite, and refuses
+`--refreeze` without `--reason`; its three amendments so far moved only
+protocol-path hashes and no criterion field.
+
+Cost, taken from Stage 1's own measurements rather than guessed: 6 trainings at
+1609 s (ep5) and ~965 s (ep3), plus 7 generations at a 40.2-minute median —
+roughly 7 GPU-hours.
+
+**Status: frozen, not run.** `data/reports/mllmu_iter12_seed_replication.json`
+does not exist yet and the workflow's required list deliberately does not name
+it; the freeze does, so a clone can check that this protocol predates its own
+replicates. Replication will not increase the query count — the probe half is
+fixed at 35 entities / 408 and 23 donors / 76 by the association pool — so
+retain-other stays resolvable only in units of 1/76 = 0.0132 however many seeds
+are run.
+
 ## Iteration history
 
 `git log --oneline` is the authoritative narrative and its commit messages carry
@@ -579,4 +648,7 @@ claims corrected · **12** retention, as a separate exploratory study: the
 fit/probe partition that makes a retention floor measurable at all, a selection
 protocol frozen before any candidate was trained, and Stage 1 run under it —
 which disqualified all eight replay settings and selected the no-op, leaving the
-anchor, not the mechanism, as the thing Stage 2 has to reconsider.
+anchor, not the mechanism, as the thing Stage 2 has to reconsider · **12b** the
+two near-misses re-run at four seeds each, frozen first, after a free
+measurement showed the floor's probe queries are entirely text-route and so
+unaffected by the generation instability that does move the image route.
