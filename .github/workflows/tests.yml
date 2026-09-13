@@ -129,6 +129,7 @@ jobs:
               # yet would fail this step on every push until then.
               "data/reports/mllmu_iter12_retention_probe.json",
               "data/reports/mllmu_iter12_selection_protocol_freeze.json",
+              "data/reports/mllmu_iter12_retention_selection.json",
               # The fit-half training groups.  retain.jsonl IS the frozen
               # partition, so the protocol's central claim -- that the probe
               # half was never rehearsed by any candidate -- is checkable from

@@ -30,7 +30,8 @@ load-bearing fact rather than an omission. Every stage has now run.
 | Protocol freeze (11C stage 2, re-frozen through 5R) | `data/reports/mllmu_pilot100_confirmation_freeze.json` — `refusals: []`, `--check-only` clean | **frozen, committed** |
 | Confirmation scoring (11C stage 5) | `data/mllmu_hier_confirm100/predictions/` — three files of 1,209 rows each, bound by sidecar; `data/reports/mllmu_confirm100_final_analysis.json` | **run once, scored, committed** |
 | Post-run execution audit | `data/reports/mllmu_confirm100_execution_provenance.json`, derived from the committed `data/mllmu_hier_confirm100/execution_logs/` | **filed post-hoc; `post_hoc: true`, binds nothing** |
-| Iteration 12 selection protocol (exploratory) | `data/reports/mllmu_iter12_retention_probe.json` — the fit/probe partition of the 70 retained entities; `data/reports/mllmu_iter12_selection_protocol_freeze.json` — D_G's direction, tolerance and tie-break, the retention floor, the 9-row grid | **frozen, committed; no candidate trained, no GPU hour spent** |
+| Iteration 12 selection protocol (exploratory) | `data/reports/mllmu_iter12_retention_probe.json` — the fit/probe partition of the 70 retained entities; `data/reports/mllmu_iter12_selection_protocol_freeze.json` — D_G's direction, tolerance and tie-break, the retention floor, the 9-row grid | **frozen, committed; frozen before any candidate was trained, and the freeze now refuses to be rewritten** |
+| Iteration 12 Stage 1 (exploratory) | `data/reports/mllmu_iter12_retention_selection.json` — 9 rows scored, 8 disqualified by the retention floor, B0 selected | **run once, 2026-09-12 → 09-13; a negative result: no replay setting preserves retention on never-rehearsed entities** |
 
 **Both preregistered claims were confirmed.** Entity-macro `B3 − B0` over all 72
 target entities (42 persons, 30 species), 864 paired target probes, one-sided
@@ -510,11 +511,55 @@ the row-micro rate through filtered inputs, `paired_ci.py` and
 cross-checks all five sealed dependencies against the hashes the confirmation
 freeze recorded. The analysis report is still `b330b3c0488af6a0`.
 
-**Status: frozen, not run.** The partition, the grid, the criterion and the gates
-are committed; no Iteration-12 candidate has been trained and no GPU hour has been
-spent. `data/reports/mllmu_iter12_retention_selection.json` does not exist yet,
-and the workflow's required-report list deliberately does not name it — a required
-file that does not exist would fail every push until Stage 1 runs.
+### Stage 1 result: the floor rejected every replay setting
+
+Stage 1 ran 2026-09-12 13:48 → 2026-09-13 00:34. The four training lanes waited
+roughly four hours for a quiet device, trained 13:48→18:04, then MG and B0 were
+generated serially (2h14m), the remaining eight in parallel (4h16m), and the
+selection itself took 17 seconds. Every B4 trained on the **fit half**: retain
+183 examples, 363-example stream, 230 optimizer steps at ep5 (138 at ep3, 368 at
+ep8); B0 took 0 steps, being the no-op copy. No candidate trained on the pilot's
+387-example retain group, so no probe association was ever rehearsed.
+
+**All eight replay candidates are disqualified. B0 is the only eligible row and is
+selected**, at D_G = 0.101757 against the best unlearner's 0.027343. The frozen
+Stage-2 gate opens: the best eligible row does not strictly improve on the
+reference row `B4_w1.0_lam0.5_lr2e-05_ep5` (0.046729), which was itself
+disqualified.
+
+Retain-**same** shortfalls are robust — 408 queries, so one flipped outcome is
+0.00245, and the observed shortfalls run from −0.0073 to −0.1446 row-micro, i.e.
+3 to 59 queries. A dose-response is visible: w0.5 −0.0760, w1.0 −0.0613,
+w1.3539 −0.0368, w2.0 −0.0539, w4.0 −0.0073. Stronger replay does protect
+retention and never reaches the no-op.
+
+Retain-**other** verdicts are not robust — 76 queries, so one flipped outcome is
+0.0132. `B4_w2.0_lam0.5_lr2e-05_ep8` is the only candidate to exceed B0 there
+(+0.0131, exactly one query) and it holds the second-best D_G (0.030686); it
+fails retain-same by −0.0564 (23 queries) and is therefore ineligible. That is
+not revisited: freezing the rule before training is what makes a result like this
+one a result rather than a starting point for choosing a different estimand.
+
+The structural finding is about the constraint. The floor is anchored on B0,
+which performs **no unlearning at all**, so "retain at least as well as B0 on
+entities you never rehearsed" can only be met by (almost) not unlearning. That is
+what was measured: the single eligible row is the no-op, 3.7× the best
+unlearner's distance to MG. Stage 2's MF-preservation regularizer faces the same
+anchor, and will return the no-op again unless the anchor itself is reconsidered
+— which is a design decision to make *before* Stage 2 is frozen, not after it is
+scored.
+
+**A defect, deliberately left in place.** The selector hardcodes the method label
+`B4` in its staging path and its log line, so the winner B0 is staged at
+`data/checkpoints/mllmu_iter12_unlearn/selected/B4/adapters`. The bytes are
+correct — byte-identical to MF, sha256 `4ee78bd1bb5cf6a7…`, exactly what a no-op
+copy should be — and the report says `"selected": "B0"`, but the directory name is
+wrong and would mislead anyone browsing the checkpoint tree. It cannot be fixed:
+the selector is one of the eight hash-bound protocol paths, and the freeze now
+refuses to be rewritten because nine candidates have adapters (`--refreeze` exits
+1), which is the arm built for exactly this situation. Correcting the label would
+permanently break `--check-only` and the selector's own freeze verification — a
+worse artifact than a misnamed directory. Recorded here instead.
 
 ## Iteration history
 
@@ -531,5 +576,7 @@ findings in 11C-5R, four in 11C-5R2), the dedicated scorer and analyzer, and the
 scored result they produced — both preregistered claims confirmed · **11C-5R3**
 the post-run audit of what that scoring run did not record, and three README
 claims corrected · **12** retention, as a separate exploratory study: the
-fit/probe partition that makes a retention floor measurable at all, and a
-selection protocol frozen before any candidate was trained.
+fit/probe partition that makes a retention floor measurable at all, a selection
+protocol frozen before any candidate was trained, and Stage 1 run under it —
+which disqualified all eight replay settings and selected the no-op, leaving the
+anchor, not the mechanism, as the thing Stage 2 has to reconsider.
