@@ -1,0 +1,243 @@
+{
+  "grid_rule": {
+    "beta_star_is": "the strength at which beta * KL(p_MF || p_candidate) equals lambda * avg_loss_fine_target at the END of the incumbent reference row's training, i.e. the anchor term is exactly as large as the term it is meant to bound",
+    "incumbent_reference_row": "B4_w1.0_lam0.5_lr2e-05_ep5",
+    "lambda_fine_suppression": 0.5,
+    "incumbent_avg_loss_fine_target": 6.6061,
+    "incumbent_suppression_magnitude": 3.30305,
+    "incumbent_mean_kl_vs_mf": 0.242124,
+    "beta_star": 13.641977,
+    "multipliers": [
+      0.3333333333333333,
+      1.0,
+      3.0,
+      10.0
+    ],
+    "why_these_multipliers": "1.5 orders of magnitude centred on the incumbent's operating point. A sweep narrower than that could sit entirely on one side of the transition between 'the anchor does nothing' and 'the anchor prevents the transformation', and neither end would be measured.",
+    "beta_grid": [
+      4.5473,
+      13.642,
+      40.9259,
+      136.4198
+    ],
+    "derived_from": "committed training summaries and measured KL only; no retention number, prediction parquet or evaluation query",
+    "nll_agreement_max": 3.814697265625e-06
+  },
+  "cache_provenance": {
+    "mf_adapter_sha256": "4c5d158895480a762f7319ebb2ff04aa87d4818a37877e9236553bdb97dc2f76",
+    "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+    "num_examples": 183,
+    "num_positions": 1489,
+    "vocab_size": 248320,
+    "preserve_group_sha256": "1221a45f08958a0542c0c40b8f219181d248ee0318e0c41cf403a90634276e3c"
+  },
+  "measurement": {
+    "adapters": {
+      "B0": {
+        "adapter_dir": "data/checkpoints/mllmu_iter12_unlearn/B0/adapters",
+        "adapter_sha256": "4c5d158895480a762f7319ebb2ff04aa87d4818a37877e9236553bdb97dc2f76",
+        "mean_kl_vs_mf": 0.0,
+        "mean_nll": 0.006314,
+        "num_positions": 1489,
+        "nll_by_group": {
+          "fine_target": 0.012235,
+          "target_level": 3.650324,
+          "retain": 0.006314
+        },
+        "committed_objective": {
+          "avg_loss_fine_target": null,
+          "avg_loss_retain": null,
+          "avg_loss_target_level": null,
+          "avg_objective": null
+        }
+      },
+      "B4_w0.5_lam0.5_lr2e-05_ep5": {
+        "adapter_dir": "data/checkpoints/mllmu_iter12_unlearn/B4_w0.5_lam0.5_lr2e-05_ep5/adapters",
+        "adapter_sha256": "5f5155386ec789a9ac925748b7431c5a865ead163d9011dbedeb389e0b0040de",
+        "mean_kl_vs_mf": 0.849322,
+        "mean_nll": 0.828159,
+        "num_positions": 1489,
+        "nll_by_group": {
+          "fine_target": 12.776811,
+          "target_level": 0.051542,
+          "retain": 0.828159
+        },
+        "committed_objective": {
+          "avg_loss_fine_target": 8.4714,
+          "avg_loss_retain": 0.9824,
+          "avg_loss_target_level": 0.2487,
+          "avg_objective": -0.7409
+        }
+      },
+      "B4_w1.0_lam0.5_lr2e-05_ep5": {
+        "adapter_dir": "data/checkpoints/mllmu_iter12_unlearn/B4_w1.0_lam0.5_lr2e-05_ep5/adapters",
+        "adapter_sha256": "846f585a8e909d0b583ebbdc2d198d91d18335cc8ef6e0cd80c2e42076230e2b",
+        "mean_kl_vs_mf": 0.242124,
+        "mean_nll": 0.214875,
+        "num_positions": 1489,
+        "nll_by_group": {
+          "fine_target": 7.616449,
+          "target_level": 0.07764,
+          "retain": 0.214875
+        },
+        "committed_objective": {
+          "avg_loss_fine_target": 6.6061,
+          "avg_loss_retain": 0.4943,
+          "avg_loss_target_level": 0.0697,
+          "avg_objective": -0.5524
+        }
+      },
+      "B4_w1.3539_lam0.5_lr2e-05_ep5": {
+        "adapter_dir": "data/checkpoints/mllmu_iter12_unlearn/B4_w1.3539_lam0.5_lr2e-05_ep5/adapters",
+        "adapter_sha256": "ccbae5220a5662e202881adf701cdfb8a3ab165012f321eb8087482d10b8ddd5",
+        "mean_kl_vs_mf": 0.174549,
+        "mean_nll": 0.143238,
+        "num_positions": 1489,
+        "nll_by_group": {
+          "fine_target": 7.397482,
+          "target_level": 0.086331,
+          "retain": 0.143238
+        },
+        "committed_objective": {
+          "avg_loss_fine_target": 5.4485,
+          "avg_loss_retain": 0.2794,
+          "avg_loss_target_level": 0.0725,
+          "avg_objective": -0.4667
+        }
+      },
+      "B4_w2.0_lam0.5_lr2e-05_ep3": {
+        "adapter_dir": "data/checkpoints/mllmu_iter12_unlearn/B4_w2.0_lam0.5_lr2e-05_ep3/adapters",
+        "adapter_sha256": "4aed6add8caa8283d81c6f60d10cd8f3b808fb4144fd55c71ebb8d4d73913a7d",
+        "mean_kl_vs_mf": 0.06317,
+        "mean_nll": 0.051535,
+        "num_positions": 1489,
+        "nll_by_group": {
+          "fine_target": 1.708266,
+          "target_level": 0.2258,
+          "retain": 0.051535
+        },
+        "committed_objective": {
+          "avg_loss_fine_target": 1.1343,
+          "avg_loss_retain": 0.0692,
+          "avg_loss_target_level": 0.3205,
+          "avg_objective": 0.0086
+        }
+      },
+      "B4_w2.0_lam0.5_lr2e-05_ep5": {
+        "adapter_dir": "data/checkpoints/mllmu_iter12_unlearn/B4_w2.0_lam0.5_lr2e-05_ep5/adapters",
+        "adapter_sha256": "73685155130c8396d589dfe7cdd4de7fcffd4941b126492b71e79b8993822639",
+        "mean_kl_vs_mf": 0.042564,
+        "mean_nll": 0.011163,
+        "num_positions": 1489,
+        "nll_by_group": {
+          "fine_target": 4.500029,
+          "target_level": 0.101735,
+          "retain": 0.011163
+        },
+        "committed_objective": {
+          "avg_loss_fine_target": 2.2856,
+          "avg_loss_retain": 0.0747,
+          "avg_loss_target_level": 0.0917,
+          "avg_objective": -0.1853
+        }
+      },
+      "B4_w2.0_lam0.5_lr2e-05_ep8": {
+        "adapter_dir": "data/checkpoints/mllmu_iter12_unlearn/B4_w2.0_lam0.5_lr2e-05_ep8/adapters",
+        "adapter_sha256": "2154bbc1959fb086d9c3821f374e8efd21bad08d46d01ddfae77a341918c4b67",
+        "mean_kl_vs_mf": 0.054647,
+        "mean_nll": 0.002649,
+        "num_positions": 1489,
+        "nll_by_group": {
+          "fine_target": 11.828579,
+          "target_level": 0.055073,
+          "retain": 0.002649
+        },
+        "committed_objective": {
+          "avg_loss_fine_target": 12.3996,
+          "avg_loss_retain": 0.0906,
+          "avg_loss_target_level": 0.1162,
+          "avg_objective": -1.417
+        }
+      },
+      "B4_w2.0_lam0.5_lr5e-05_ep5": {
+        "adapter_dir": "data/checkpoints/mllmu_iter12_unlearn/B4_w2.0_lam0.5_lr5e-05_ep5/adapters",
+        "adapter_sha256": "692f1b96307bb57286262ea1f0e68982cce356a8c674e6b03747fae2763d3034",
+        "mean_kl_vs_mf": 0.077365,
+        "mean_nll": 0.023881,
+        "num_positions": 1489,
+        "nll_by_group": {
+          "fine_target": 8.693947,
+          "target_level": 0.198299,
+          "retain": 0.023881
+        },
+        "committed_objective": {
+          "avg_loss_fine_target": 6.3754,
+          "avg_loss_retain": 0.1383,
+          "avg_loss_target_level": 0.0645,
+          "avg_objective": -0.6349
+        }
+      },
+      "B4_w4.0_lam0.5_lr2e-05_ep5": {
+        "adapter_dir": "data/checkpoints/mllmu_iter12_unlearn/B4_w4.0_lam0.5_lr2e-05_ep5/adapters",
+        "adapter_sha256": "f8af008369823d1d866bc46eff2d3908cf82a1ee5b9b6360468c6783ed1a095b",
+        "mean_kl_vs_mf": 0.030829,
+        "mean_nll": 0.001138,
+        "num_positions": 1489,
+        "nll_by_group": {
+          "fine_target": 2.906911,
+          "target_level": 0.115734,
+          "retain": 0.001138
+        },
+        "committed_objective": {
+          "avg_loss_fine_target": 1.6554,
+          "avg_loss_retain": 0.006,
+          "avg_loss_target_level": 0.1095,
+          "avg_objective": -0.166
+        }
+      },
+      "MF": {
+        "adapter_dir": "data/checkpoints/mllmu_pilot100/MF/adapters",
+        "adapter_sha256": "4c5d158895480a762f7319ebb2ff04aa87d4818a37877e9236553bdb97dc2f76",
+        "mean_kl_vs_mf": 0.0,
+        "mean_nll": 0.006314,
+        "num_positions": 1489,
+        "nll_by_group": {
+          "fine_target": 0.012235,
+          "target_level": 3.650324,
+          "retain": 0.006314
+        },
+        "committed_objective": {
+          "avg_loss_fine_target": null,
+          "avg_loss_retain": null,
+          "avg_loss_target_level": null,
+          "avg_objective": null
+        }
+      },
+      "MG": {
+        "adapter_dir": "data/checkpoints/mllmu_pilot100/MG/adapters",
+        "adapter_sha256": "ec7ec1921906f2e9484021b8e3bf4dba9c68f58e109b801abccbd770c4fd566b",
+        "mean_kl_vs_mf": 0.029634,
+        "mean_nll": 0.014404,
+        "num_positions": 1489,
+        "nll_by_group": {
+          "fine_target": 1.364301,
+          "target_level": 0.028428,
+          "retain": 0.014404
+        },
+        "committed_objective": {
+          "avg_loss_fine_target": null,
+          "avg_loss_retain": null,
+          "avg_loss_target_level": null,
+          "avg_objective": null
+        }
+      }
+    },
+    "reads_no_retention_number": true,
+    "reads_no_prediction_parquet": true,
+    "reads_no_evaluation_query": true,
+    "inputs": "Stage-1 adapters and the training summaries they committed",
+    "nll_agreement_max": 3.814697265625e-06,
+    "device": "cuda:0",
+    "model_id": "Qwen/Qwen3.5-9B"
+  }
+}

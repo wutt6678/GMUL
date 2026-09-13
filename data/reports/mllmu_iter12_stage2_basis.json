@@ -1,0 +1,698 @@
+{
+  "iteration": "12",
+  "stage": 2,
+  "purpose": "Record the two decisions Stage 2 rests on -- what the retention floor is anchored at, and which mechanisms are trained -- with the measurements they come from, before any Stage-2 adapter exists.",
+  "generated_from": [
+    "data/reports/mllmu_iter12_route_stratified.json",
+    "data/reports/mllmu_iter12_retention_selection.json",
+    "data/reports/mllmu_iter12_anchor_calibration.json",
+    "data/reports/mllmu_iter12_route_probe.json",
+    "data/reports/mllmu_iter12_retention_probe.json"
+  ],
+  "reads_no_prediction_parquet": true,
+  "trains_nothing": true,
+  "generates_nothing": true,
+  "retention_numbers_are_quoted_not_recomputed": "Every retention value here was filed by Stage 1, 1b or 1c and is read from those reports. Nothing is recomputed from a model output, so --check-only can re-derive this document byte for byte and a Stage-2 outcome could not have reached it.",
+  "anchor_decision": {
+    "decision": "Stage 2's decision-bearing floor is anchored at MG on all eight numbers, with the frozen 1e-9 epsilon and no margin. The B0-anchored verdict is computed and reported for every Stage-2 state as well, unchanged.",
+    "decided_before": "any Stage-2 adapter was trained",
+    "pre_registered_by": "README.md, which states that Stage 2 faces the same anchor and will return the no-op again unless the anchor itself is reconsidered, and that this is a design decision to make before Stage 2 is frozen, not after it is scored.",
+    "matched_comparison": {
+      "num_associations": 477,
+      "num_retained_associations": 387,
+      "num_target_associations": 90,
+      "retained_completions_identical": 387,
+      "retained_completions_differing": 0,
+      "all_retained_completions_identical": true,
+      "target_completions_differing": 90,
+      "all_target_completions_differ": true,
+      "mf_covers_probe_half": 204,
+      "mg_covers_probe_half": 204,
+      "probe_half_associations": 204,
+      "iter12_preserve_group_covers_probe_half": 0,
+      "what_this_isolates": "MG and MF are trained by one recipe on datasets whose 387 retained completions are identical and whose 90 target completions all differ, and both cover the probe half. Their retention difference is therefore the cost of the granularity transformation itself, with recipe, retained knowledge and information held equal -- not a cost of unlearning from MF."
+    },
+    "the_oracle_fails_the_frozen_floor": {
+      "mg_clears_of_eight": 2,
+      "of": 8,
+      "worst_number": "image.retain_other_entity_image.entity_macro",
+      "worst_shortfall": -0.087,
+      "mg_difference_vs_b0": {
+        "text.retain_same_entity.entity_macro": -0.0382,
+        "text.retain_same_entity.row_micro": -0.0269,
+        "text.retain_other_entity.entity_macro": -0.0815,
+        "text.retain_other_entity.row_micro": -0.0132,
+        "image.retain_same_entity_image.entity_macro": 0.0329,
+        "image.retain_same_entity_image.row_micro": 0.0074,
+        "image.retain_other_entity_image.entity_macro": -0.087,
+        "image.retain_other_entity_image.row_micro": -0.0263
+      },
+      "why_this_decides_it": "D_G, the selection criterion this project has used since Iteration 9, measures distance TO MG. A floor whose reference point MG itself fails disqualifies the state the criterion is aiming at, so it can only rank candidates by how little they did."
+    },
+    "re_anchoring_changes_no_filed_verdict": {
+      "stage1_candidates": 8,
+      "eligible_on_b0": 0,
+      "eligible_on_mg": 0,
+      "per_candidate": {
+        "B4_w0.5_lam0.5_lr2e-05_ep5": {
+          "eligible_on_b0": false,
+          "eligible_on_mg": false
+        },
+        "B4_w1.0_lam0.5_lr2e-05_ep5": {
+          "eligible_on_b0": false,
+          "eligible_on_mg": false
+        },
+        "B4_w1.3539_lam0.5_lr2e-05_ep5": {
+          "eligible_on_b0": false,
+          "eligible_on_mg": false
+        },
+        "B4_w2.0_lam0.5_lr2e-05_ep3": {
+          "eligible_on_b0": false,
+          "eligible_on_mg": false
+        },
+        "B4_w2.0_lam0.5_lr2e-05_ep5": {
+          "eligible_on_b0": false,
+          "eligible_on_mg": false
+        },
+        "B4_w2.0_lam0.5_lr2e-05_ep8": {
+          "eligible_on_b0": false,
+          "eligible_on_mg": false
+        },
+        "B4_w2.0_lam0.5_lr5e-05_ep5": {
+          "eligible_on_b0": false,
+          "eligible_on_mg": false
+        },
+        "B4_w4.0_lam0.5_lr2e-05_ep5": {
+          "eligible_on_b0": false,
+          "eligible_on_mg": false
+        }
+      },
+      "why_this_matters": "A rule change that turned filed failures into passes would be a goalpost move. This one turns none: Stage 1 is 0 of 8 eligible under either anchor."
+    },
+    "the_new_floor_does_not_licence_inaction": {
+      "b0_clears_of_eight": 6,
+      "of": 8,
+      "numbers_where_mg_is_above_b0": [
+        "image.retain_same_entity_image.entity_macro",
+        "image.retain_same_entity_image.row_micro"
+      ],
+      "why_this_matters": "Under the MG anchor the no-op is not eligible either, so the rule cannot be satisfied by declining to unlearn -- the failure mode the B0 anchor had."
+    },
+    "anchor_values": {
+      "text.retain_same_entity.entity_macro": 0.4874,
+      "text.retain_same_entity.row_micro": 0.5025,
+      "text.retain_other_entity.entity_macro": 0.4257,
+      "text.retain_other_entity.row_micro": 0.4605,
+      "image.retain_same_entity_image.entity_macro": 0.5382,
+      "image.retain_same_entity_image.row_micro": 0.5221,
+      "image.retain_other_entity_image.entity_macro": 0.413,
+      "image.retain_other_entity_image.row_micro": 0.4474
+    },
+    "anchor_state": "MG",
+    "reported_baseline_values": {
+      "text.retain_same_entity.entity_macro": 0.5256,
+      "text.retain_same_entity.row_micro": 0.5294,
+      "text.retain_other_entity.entity_macro": 0.5072,
+      "text.retain_other_entity.row_micro": 0.4737,
+      "image.retain_same_entity_image.entity_macro": 0.5053,
+      "image.retain_same_entity_image.row_micro": 0.5147,
+      "image.retain_other_entity_image.entity_macro": 0.5,
+      "image.retain_other_entity_image.row_micro": 0.4737
+    },
+    "reported_baseline_state": "B0",
+    "denominators": {
+      "text.retain_same_entity.entity_macro": 408,
+      "text.retain_same_entity.row_micro": 408,
+      "text.retain_other_entity.entity_macro": 76,
+      "text.retain_other_entity.row_micro": 76,
+      "image.retain_same_entity_image.entity_macro": 408,
+      "image.retain_same_entity_image.row_micro": 408,
+      "image.retain_other_entity_image.entity_macro": 76,
+      "image.retain_other_entity_image.row_micro": 76
+    },
+    "epsilon": 1e-09,
+    "margin": 0.0,
+    "anchor_predictions_are_already_bound": "MG's parquet is one of the nineteen the Stage-1c freeze bound by sha256 under the single verified generation contract, so the anchor's eight numbers come from bytes already hashed rather than from a regeneration.",
+    "a_defect_left_in_place": "route_stratified_retention.floor_check_stratified labels its baseline field 'b0' and its comparison string 'candidate >= b0 - eps' regardless of which baseline is passed. That module is hash-bound by the Stage-1c freeze, so the names cannot be corrected; under Stage 2's primary gate the field named 'b0' holds MG's values, and the Stage-2 report says so explicitly."
+  },
+  "mechanism_decision": {
+    "preregistered_mechanism": "MF-preservation regularizer",
+    "preregistered_by": "scripts/freeze_iter12_selection_protocol.py, whose stage_2 block names the mechanism and whose stage2_gate reports stage2_opens true; retention_selection.stage2_gate's own docstring asks 'Does the MF-preservation regularizer stage open?'",
+    "calibration_report": "data/reports/mllmu_iter12_anchor_calibration.json",
+    "calibration_reads": "Stage-1 adapters and the training summaries they committed",
+    "calibration_reads_no_retention_number": true,
+    "nll_agreement_max": 3.814697265625e-06,
+    "controls": {
+      "MF_against_itself": 0.0,
+      "B0_whose_adapter_is_a_copy_of_MF": 0.0,
+      "why_these_matter": "Both are exactly zero, so the extraction, the position shift and the KL are measuring what they claim before any difference between adapters is read as one."
+    },
+    "the_anchor_quantity_does_not_determine_retention": {
+      "oracle_versus_nearest_candidate": {
+        "mg_drift": 0.029634,
+        "candidate": "B4_w4.0_lam0.5_lr2e-05_ep5",
+        "candidate_drift": 0.030829,
+        "drift_apart": 0.001195,
+        "retention_apart": {
+          "text.retain_same_entity.entity_macro": 0.0314,
+          "text.retain_same_entity.row_micro": 0.0196,
+          "text.retain_other_entity.entity_macro": 0.0652,
+          "text.retain_other_entity.row_micro": 0.0394,
+          "image.retain_same_entity_image.entity_macro": 0.1253,
+          "image.retain_same_entity_image.row_micro": 0.1054,
+          "image.retain_other_entity_image.entity_macro": 0.0108,
+          "image.retain_other_entity_image.row_micro": 0.0527
+        }
+      },
+      "close_drift_pairs": [
+        {
+          "states": [
+            "B4_w4.0_lam0.5_lr2e-05_ep5",
+            "B4_w2.0_lam0.5_lr2e-05_ep5"
+          ],
+          "drift_apart": 0.011735,
+          "retention_apart": {
+            "text.retain_same_entity.entity_macro": 0.0627,
+            "text.retain_same_entity.row_micro": 0.0466,
+            "text.retain_other_entity.entity_macro": 0.0054,
+            "text.retain_other_entity.row_micro": 0.0132,
+            "image.retain_same_entity_image.entity_macro": 0.053,
+            "image.retain_same_entity_image.row_micro": 0.0442,
+            "image.retain_other_entity_image.entity_macro": 0.0326,
+            "image.retain_other_entity_image.row_micro": 0.0394
+          },
+          "worst_retention_gap": 0.0627,
+          "floor_resolution_retain_other": 0.0065789474
+        },
+        {
+          "states": [
+            "B4_w2.0_lam0.5_lr2e-05_ep5",
+            "B4_w2.0_lam0.5_lr2e-05_ep8"
+          ],
+          "drift_apart": 0.012083,
+          "retention_apart": {
+            "text.retain_same_entity.entity_macro": 0.0133,
+            "text.retain_same_entity.row_micro": 0.0025,
+            "text.retain_other_entity.entity_macro": 0.0652,
+            "text.retain_other_entity.row_micro": 0.0789,
+            "image.retain_same_entity_image.entity_macro": 0.0168,
+            "image.retain_same_entity_image.row_micro": 0.0147,
+            "image.retain_other_entity_image.entity_macro": 0.0761,
+            "image.retain_other_entity_image.row_micro": 0.0658
+          },
+          "worst_retention_gap": 0.0789,
+          "floor_resolution_retain_other": 0.0065789474
+        },
+        {
+          "states": [
+            "B4_w2.0_lam0.5_lr2e-05_ep8",
+            "B4_w2.0_lam0.5_lr2e-05_ep3"
+          ],
+          "drift_apart": 0.008523,
+          "retention_apart": {
+            "text.retain_same_entity.entity_macro": 0.0312,
+            "text.retain_same_entity.row_micro": 0.0466,
+            "text.retain_other_entity.entity_macro": 0.0579,
+            "text.retain_other_entity.row_micro": 0.0526,
+            "image.retain_same_entity_image.entity_macro": 0.1566,
+            "image.retain_same_entity_image.row_micro": 0.1496,
+            "image.retain_other_entity_image.entity_macro": 0.1956,
+            "image.retain_other_entity_image.row_micro": 0.1447
+          },
+          "worst_retention_gap": 0.1956,
+          "floor_resolution_retain_other": 0.0065789474
+        },
+        {
+          "states": [
+            "B4_w2.0_lam0.5_lr2e-05_ep3",
+            "B4_w2.0_lam0.5_lr5e-05_ep5"
+          ],
+          "drift_apart": 0.014195,
+          "retention_apart": {
+            "text.retain_same_entity.entity_macro": 0.1265,
+            "text.retain_same_entity.row_micro": 0.1348,
+            "text.retain_other_entity.entity_macro": 0.0942,
+            "text.retain_other_entity.row_micro": 0.0526,
+            "image.retain_same_entity_image.entity_macro": 0.1607,
+            "image.retain_same_entity_image.row_micro": 0.1692,
+            "image.retain_other_entity_image.entity_macro": 0.1739,
+            "image.retain_other_entity_image.row_micro": 0.1316
+          },
+          "worst_retention_gap": 0.1739,
+          "floor_resolution_retain_other": 0.0065789474
+        }
+      ],
+      "floor_resolution": {
+        "scope": "train+val, both routes (what Stage 1c reads)",
+        "row_micro_resolution_retain_same": 0.0012254902,
+        "row_micro_resolution_retain_other": 0.0065789474,
+        "retain_same_total": 816,
+        "retain_other_total": 152,
+        "binding_number": "retain_other",
+        "absolute_ceiling": {
+          "per_number": {
+            "text.retain_same_entity": 612,
+            "text.retain_other_entity": 114,
+            "image.retain_same_entity_image": 612,
+            "image.retain_other_entity_image": 114
+          },
+          "retain_same_total": 1224,
+          "retain_other_total": 228,
+          "row_micro_resolution_same": 0.0008169935,
+          "row_micro_resolution_other": 0.0043859649
+        },
+        "what_the_ceiling_means": {
+          "retain_other_is_the_binding_number": true,
+          "why": "retain_other reaches only 23 probe donor entities, so its largest possible denominator in this dataset is 228 queries and its best possible row-micro resolution is 0.0043859649. The pool is exhausted: 90 target plus 387 retained associations account for all 477, so there is no reserve to draw a larger probe from.",
+          "consequence": "Stage 1c roughly doubles the frozen basis and makes both parents' shortfalls exceed their between-seed spread, but it does not make retain-other well powered. A mechanism whose retention effect is smaller than about 0.0043859649 cannot be resolved on this dataset at all, at any number of seeds."
+        }
+      },
+      "reading": "States at the same distance from MF on the 183 preserved prompts differ in probe-half retention by far more than the floor can resolve. Controlling that distance therefore does not control what the floor measures."
+    },
+    "the_anchor_optimum_is_the_wrong_place": {
+      "kl_zero_is": "MF, which performs no unlearning at all",
+      "mg_drift_from_mf": 0.029634,
+      "reading": "A KL anchor's minimum is at MF, not at MG, so a strong beta drives a candidate toward the no-op rather than toward the target state."
+    },
+    "spearman_rho_by_predictor": {
+      "kl_from_mf_on_the_183_preserved_prompts": {
+        "text.retain_same_entity.entity_macro": -0.595,
+        "text.retain_same_entity.row_micro": -0.619,
+        "text.retain_other_entity.entity_macro": -0.263,
+        "text.retain_other_entity.row_micro": -0.449,
+        "image.retain_same_entity_image.entity_macro": -0.619,
+        "image.retain_same_entity_image.row_micro": -0.619,
+        "image.retain_other_entity_image.entity_macro": -0.571,
+        "image.retain_other_entity_image.row_micro": -0.571,
+        "D_G": 0.524
+      },
+      "fine_target_nll": {
+        "text.retain_same_entity.entity_macro": -0.738,
+        "text.retain_same_entity.row_micro": -0.833,
+        "text.retain_other_entity.entity_macro": -0.204,
+        "text.retain_other_entity.row_micro": -0.364,
+        "image.retain_same_entity_image.entity_macro": -0.976,
+        "image.retain_same_entity_image.row_micro": -0.976,
+        "image.retain_other_entity_image.entity_macro": -1.0,
+        "image.retain_other_entity_image.row_micro": -1.0,
+        "D_G": -0.024
+      },
+      "target_level_nll": {
+        "text.retain_same_entity.entity_macro": 0.333,
+        "text.retain_same_entity.row_micro": 0.405,
+        "text.retain_other_entity.entity_macro": -0.156,
+        "text.retain_other_entity.row_micro": 0.073,
+        "image.retain_same_entity_image.entity_macro": 0.643,
+        "image.retain_same_entity_image.row_micro": 0.643,
+        "image.retain_other_entity_image.entity_macro": 0.762,
+        "image.retain_other_entity_image.row_micro": 0.762,
+        "D_G": 0.381
+      },
+      "retain_nll_fit_half": {
+        "text.retain_same_entity.entity_macro": -0.476,
+        "text.retain_same_entity.row_micro": -0.452,
+        "text.retain_other_entity.entity_macro": -0.252,
+        "text.retain_other_entity.row_micro": -0.424,
+        "image.retain_same_entity_image.entity_macro": -0.405,
+        "image.retain_same_entity_image.row_micro": -0.405,
+        "image.retain_other_entity_image.entity_macro": -0.357,
+        "image.retain_other_entity_image.row_micro": -0.357,
+        "D_G": 0.524
+      },
+      "num_candidates": 8,
+      "reading": "fine_target NLL ranks the image-route numbers perfectly and the text-route ones strongly; the drift the anchor controls reaches neither. And fine_target NLL has essentially no rank relationship with D_G, so the overshoot it measures buys nothing at the criterion."
+    },
+    "the_operating_point": {
+      "mf_fine_target_nll": 0.012235,
+      "mg_fine_target_nll": 1.364301,
+      "candidate_fine_target_nll": {
+        "B4_w0.5_lam0.5_lr2e-05_ep5": 12.776811,
+        "B4_w1.0_lam0.5_lr2e-05_ep5": 7.616449,
+        "B4_w1.3539_lam0.5_lr2e-05_ep5": 7.397482,
+        "B4_w2.0_lam0.5_lr2e-05_ep3": 1.708266,
+        "B4_w2.0_lam0.5_lr2e-05_ep5": 4.500029,
+        "B4_w2.0_lam0.5_lr2e-05_ep8": 11.828579,
+        "B4_w2.0_lam0.5_lr5e-05_ep5": 8.693947,
+        "B4_w4.0_lam0.5_lr2e-05_ep5": 2.906911
+      },
+      "candidates_below_the_oracle": [],
+      "reading": "Every Stage-1 candidate drove the fine fact's NLL past the level the oracle sits at. The overshoot is displacement from MF that the transformation did not require."
+    },
+    "mechanisms_trained": {
+      "B5_bounded_ascent": "the incumbent recipe with -lambda * NLL(fine_target) replaced by -lambda * min(NLL(fine_target), cap), whose gradient is exactly zero above the cap. Targets the coordinate the measurement says governs, and decouples how far to suppress from how long to train, which Stage 1 coupled through the epoch count.",
+      "B6_mf_preservation_anchor": "the preregistered regularizer: KL(p_MF || p_theta) over the supervised positions of the fit-half retain group, at the beta the calibration derived. Trained because an observational argument over eight points is not an experiment, and a mechanism this study was preregistered with deserves to be run rather than argued away.",
+      "B6R_hybrid": "replay and the anchor on the same forward pass, through anchor_weight rather than a second group entry, so the epoch keeps its 363 micro-batches and the schedule under test does not move."
+    },
+    "beta_star": 13.641977,
+    "beta_star_derivation": {
+      "beta_star_is": "the strength at which beta * KL(p_MF || p_candidate) equals lambda * avg_loss_fine_target at the END of the incumbent reference row's training, i.e. the anchor term is exactly as large as the term it is meant to bound",
+      "incumbent_reference_row": "B4_w1.0_lam0.5_lr2e-05_ep5",
+      "lambda_fine_suppression": 0.5,
+      "incumbent_avg_loss_fine_target": 6.6061,
+      "incumbent_suppression_magnitude": 3.30305,
+      "incumbent_mean_kl_vs_mf": 0.242124,
+      "beta_star": 13.641977,
+      "multipliers": [
+        0.3333333333333333,
+        1.0,
+        3.0,
+        10.0
+      ],
+      "why_these_multipliers": "1.5 orders of magnitude centred on the incumbent's operating point. A sweep narrower than that could sit entirely on one side of the transition between 'the anchor does nothing' and 'the anchor prevents the transformation', and neither end would be measured.",
+      "beta_grid": [
+        4.5473,
+        13.642,
+        40.9259,
+        136.4198
+      ],
+      "derived_from": "committed training summaries and measured KL only; no retention number, prediction parquet or evaluation query",
+      "nll_agreement_max": 3.814697265625e-06
+    }
+  },
+  "cap_grid": {
+    "values": [
+      0.5,
+      1.0,
+      2.0,
+      4.0
+    ],
+    "units": "nats of per-token NLL on the fine completion",
+    "applies_to": "fine_target only; the rewrite and the replay are uncapped",
+    "derived_from_the_oracle": false,
+    "oracle_position_reported_not_used": 1.364301,
+    "mf_position": 0.012235,
+    "uncapped_point": "B4_w1.0_lam0.5_lr2e-05_ep5",
+    "uncapped_point_fine_target_nll": 7.616449,
+    "candidate_range_observed": [
+      1.708266,
+      12.776811
+    ],
+    "why_this_range": "The caps bracket the oracle's measured level from both sides and reach into the range the Stage-1 candidates actually occupied. The range was chosen AFTER measuring MG's level, which is disclosed here rather than left implicit; what is not true is that any oracle value enters the training procedure, because the cap is a swept constant and MG's 1.3643 appears in no candidate's spec. The sweep's uncapped end is the incumbent Stage-1 row, which already exists with predictions on disk and costs nothing.",
+    "what_frac_at_cap_means": "Each B5 summary records frac_at_cap_fine_target per epoch: the share of micro-batches where the cap was already binding. A cap that never binds reproduces the incumbent exactly, which was verified on a stub model before this basis was written, and a cap that binds from the first step was set below where the model started. Either would make the row uninformative, and this field says which happened."
+  },
+  "grid": {
+    "num_rows": 8,
+    "num_trained": 7,
+    "rows": [
+      {
+        "candidate_id": "B0",
+        "method": "B0",
+        "noop": true,
+        "groups": [],
+        "overrides": {}
+      },
+      {
+        "candidate_id": "B5_cap0.5_lam0.5_lr2e-05_ep5",
+        "method": "B5",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd_capped",
+            "weight": 0.5,
+            "cap": 0.5,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        }
+      },
+      {
+        "candidate_id": "B5_cap1.0_lam0.5_lr2e-05_ep5",
+        "method": "B5",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd_capped",
+            "weight": 0.5,
+            "cap": 1.0,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        }
+      },
+      {
+        "candidate_id": "B5_cap2.0_lam0.5_lr2e-05_ep5",
+        "method": "B5",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd_capped",
+            "weight": 0.5,
+            "cap": 2.0,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        }
+      },
+      {
+        "candidate_id": "B5_cap4.0_lam0.5_lr2e-05_ep5",
+        "method": "B5",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd_capped",
+            "weight": 0.5,
+            "cap": 4.0,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        }
+      },
+      {
+        "candidate_id": "B5_cap2.0_lam0.5_lr2e-05_ep8",
+        "method": "B5",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd_capped",
+            "weight": 0.5,
+            "cap": 2.0,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 8
+        }
+      },
+      {
+        "candidate_id": "B6_beta13.642_lam0.5_lr2e-05_ep5",
+        "method": "B6",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "anchor",
+            "weight": 13.642,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        }
+      },
+      {
+        "candidate_id": "B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5",
+        "method": "B6",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": 13.642
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        }
+      }
+    ],
+    "held_fixed_across_every_trained_row": {
+      "fine_suppression_weight": 0.5,
+      "target_level_weight": 1.0,
+      "replay_weight_where_present": 1.0,
+      "init_adapter": "the pilot-100 canonical MF adapter",
+      "recipe": "ReferenceRecipe, overridden only in learning_rate and num_epochs",
+      "knowledge_groups": "the fit-half groups of unlearning_iter12/"
+    },
+    "the_frozen_validator_was_run": {
+      "residual_errors": [],
+      "filtered_messages": [
+        "B5_cap0.5_lam0.5_lr2e-05_ep5: unknown method B5",
+        "B5_cap0.5_lam0.5_lr2e-05_ep5: bad mode gd_capped",
+        "B5_cap1.0_lam0.5_lr2e-05_ep5: unknown method B5",
+        "B5_cap1.0_lam0.5_lr2e-05_ep5: bad mode gd_capped",
+        "B5_cap2.0_lam0.5_lr2e-05_ep5: unknown method B5",
+        "B5_cap2.0_lam0.5_lr2e-05_ep5: bad mode gd_capped",
+        "B5_cap4.0_lam0.5_lr2e-05_ep5: unknown method B5",
+        "B5_cap4.0_lam0.5_lr2e-05_ep5: bad mode gd_capped",
+        "B5_cap2.0_lam0.5_lr2e-05_ep8: unknown method B5",
+        "B5_cap2.0_lam0.5_lr2e-05_ep8: bad mode gd_capped",
+        "B6_beta13.642_lam0.5_lr2e-05_ep5: unknown method B6",
+        "B6_beta13.642_lam0.5_lr2e-05_ep5: bad mode anchor",
+        "B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5: unknown method B6"
+      ],
+      "filtered_because": "candidate_grid.py is hash-bound, so its METHODS tuple and its mode vocabulary were frozen before Stage 2 existed and cannot be extended. Only 'unknown method' and 'bad mode' are filtered, by exact substring, and the residual must be empty -- so every other structural check the frozen validator makes still applies to this grid.",
+      "filtered_gap_substrings": [
+        "unknown method",
+        "bad mode"
+      ]
+    }
+  },
+  "measurement_limits": {
+    "probe_denominators": "408 retain-same and 76 retain-other, per route",
+    "resolution": {
+      "scope": "train+val, both routes (what Stage 1c reads)",
+      "row_micro_resolution_retain_same": 0.0012254902,
+      "row_micro_resolution_retain_other": 0.0065789474,
+      "retain_same_total": 816,
+      "retain_other_total": 152,
+      "binding_number": "retain_other",
+      "absolute_ceiling": {
+        "per_number": {
+          "text.retain_same_entity": 612,
+          "text.retain_other_entity": 114,
+          "image.retain_same_entity_image": 612,
+          "image.retain_other_entity_image": 114
+        },
+        "retain_same_total": 1224,
+        "retain_other_total": 228,
+        "row_micro_resolution_same": 0.0008169935,
+        "row_micro_resolution_other": 0.0043859649
+      },
+      "what_the_ceiling_means": {
+        "retain_other_is_the_binding_number": true,
+        "why": "retain_other reaches only 23 probe donor entities, so its largest possible denominator in this dataset is 228 queries and its best possible row-micro resolution is 0.0043859649. The pool is exhausted: 90 target plus 387 retained associations account for all 477, so there is no reserve to draw a larger probe from.",
+        "consequence": "Stage 1c roughly doubles the frozen basis and makes both parents' shortfalls exceed their between-seed spread, but it does not make retain-other well powered. A mechanism whose retention effect is smaller than about 0.0043859649 cannot be resolved on this dataset at all, at any number of seeds."
+      }
+    },
+    "retain_other_stays_weakly_powered": "23 probe donors and 38 queries per split, 228 at the absolute ceiling, so one flipped outcome is 0.0132 and no number of seeds changes that.",
+    "the_ceiling_is_the_dataset": "The association pool is exhausted -- 90 target plus 387 retained is all 477 -- and query_generation.py is one of the eighteen paths the confirmation freeze sealed.",
+    "one_seed_is_not_enough": "Stage 1b measured a between-seed sd of 0.0120 to 0.0515 on these numbers, which exceeds the retain-other resolution. Stage 2 trains one seed per row, so a row that clears the primary gate by less than that spread is a candidate for replication rather than a result, and the report must say so instead of ranking on it."
+  },
+  "never_read": [
+    "data/mllmu_hier_confirm100",
+    "data/reports/mllmu_confirm100_final_analysis.json"
+  ],
+  "gpu_hours_spent_on_this_basis": 0.0,
+  "gpu_hours_spent_on_the_calibration": "about 0.5: eleven adapters, one forward pass each over the three knowledge groups, on a GPU that was otherwise idle"
+}

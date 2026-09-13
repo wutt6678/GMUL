@@ -248,3 +248,27 @@ data/salmu_hierarchical/official_salmubench_results*/
 # regenerable, large, and the selection report is the committed roll-up.
 data/mllmu_hier_pilot100/predictions_iter12/
 data/mllmu_hier_pilot100/predictions_iter12_seeds/
+# Stage 2: the bounded-suppression and MF-anchor study.  The basis derives the
+# grid from committed training summaries, the calibration records the KL/NLL
+# measurement the mechanism decision rests on, the freeze hash-binds both plus
+# the code that implements them, and the selection report is the result.  All
+# four are committed for the reason Stage 1b's CI failure established: a freeze
+# that binds a report absent from the clone fails its own --check-only in CI,
+# and the failure reads as a broken protocol rather than as an uncommitted file.
+!data/reports/mllmu_iter12_anchor_calibration.json
+!data/reports/mllmu_iter12_stage2_basis.json
+!data/reports/mllmu_iter12_stage2_freeze.json
+!data/reports/mllmu_iter12_stage2_selection.json
+# Stage-2 predictions stay ignored like Stage 1's: regenerable, large, and the
+# selection report is the committed roll-up.  The freeze hashes the three
+# Stage-1 parquets Stage 2 REUSES, so their absence from a clone is reported as
+# "fewer bytes to check" rather than silently verified as nothing.
+data/mllmu_hier_pilot100/predictions_iter12_stage2/
+# The MF reference cache's SIDECAR is committed and its 1.48 GB tensor is not
+# (excluded by *.pt above).  The sidecar is what makes "anchored against MF"
+# checkable rather than described: it records the sha256 of the MF adapter, the
+# base-model revision, the encoding contract and the 1,489 supervised positions
+# per example.  Rebuilding it needs a GPU, so a clone that could not see it
+# could not verify the anchor's provenance at all.
+!data/mllmu_hier_pilot100/mf_reference_logprobs/
+!data/mllmu_hier_pilot100/mf_reference_logprobs/sidecar.json

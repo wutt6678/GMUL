@@ -808,6 +808,130 @@ no-op, each cross-check removed or inverted, the pooled families admitted to the
 floor, a contract conflict made harmless, the text stratum un-delegated — were
 each caught.
 
+### Stage 2: the anchor was the defect, and the mechanism was chosen by measurement
+
+Stage 1c ended with 0/8 eligible and a floor whose sensitivity was no longer the
+binding limit, and this README had already said what Stage 2 therefore faced: the
+same anchor would return the no-op again, so the anchor itself had to be
+reconsidered, and that was a decision to make **before** Stage 2 was frozen rather
+than after it was scored. Stage 2 does both things it preregistered — it moves the
+anchor and it changes the objective — and it derives the second from a measurement
+of adapters that already existed, at zero GPU cost.
+
+**The anchor.** `D_G`, the criterion this project has used since Iteration 9,
+measures distance *to MG*. Under the floor Stage 1 froze, whose reference point is
+the no-op `B0`, **MG itself clears only 2 of the eight numbers**, its worst
+shortfall −0.087 on `image.retain_other_entity_image.entity_macro`. A floor whose
+reference point the oracle fails disqualifies the state the criterion is aiming at,
+so it can only rank candidates by how little they did — which is what Stage 1
+observed, selecting the no-op. The floor is therefore re-anchored at MG.
+
+Two checks keep that from being a rule moved to change an answer. Re-anchoring
+**changes no filed verdict**: all eight Stage-1 candidates are ineligible on `B0`
+and on MG alike, 0/8 either way, so nothing already committed moves. And the new
+floor **does not licence inaction**: `B0` clears only 6 of 8 under the MG anchor,
+because MG sits above the no-op on both image retain-same numbers, so declining to
+unlearn is not eligible either. `B0`'s eight values are still computed and reported
+beside the primary gate on every candidate, so a reader can see both rules at once.
+Disclosed: `floor_check_stratified` labels its baseline field `b0` and its
+comparison string `candidate >= b0 - eps` whichever baseline is passed, and that
+module is hash-bound by the Stage-1c freeze, so under Stage 2's primary gate the
+field named `b0` holds MG's values. The names cannot be corrected; the report says
+so explicitly instead.
+
+**The mechanism.** `build_mf_reference_logprobs.py --calibrate` loaded all eleven
+adapters the repository already had — MF, MG, `B0` and the eight Stage-1
+candidates — and measured each one's KL from MF on the 183 fit-half prompts the
+anchor would pin, plus each one's NLL on all three knowledge groups, reading **no
+retention number, no prediction parquet and no evaluation query**. Joined
+afterwards against the eight numbers Stage 1c filed:
+
+* the quantity Stage 2 was preregistered to control **does not determine
+  retention**. MG sits 0.0296 nats from MF and `B4_w4.0_lam0.5_lr2e-05_ep5` sits
+  0.0308, yet their image retain-same row-micro differs by 0.1054. Two further
+  pairs within 0.015 of each other in drift differ by 0.1496 and 0.1692 in
+  retention, against a floor that resolves 0.0044.
+* the anchor's own optimum is **the wrong place**: `KL = 0` is MF, which performs
+  no unlearning at all, while the oracle sits at 0.0296. A strong beta drives a
+  candidate toward MF rather than toward MG.
+* what *does* rank them is how far the suppression term drove the fine fact.
+  Spearman rho between `fine_target` NLL and image retention is **−0.976 and
+  −1.000**, against −0.571 to −0.619 for the drift.
+* and the overshoot buys nothing: rho between `fine_target` NLL and `D_G` is
+  **−0.024**. MG sits at 1.3643 nats, the nearest candidate at 1.7083, the rest
+  running to 12.7768 — every candidate pushed the fine fact further than the state
+  it is scored by distance to.
+
+So Stage 2 trains **both** mechanisms and lets the frozen floor decide, because an
+eight-point observational argument is not an experiment and the mechanism Stage 2
+was preregistered with deserves to be run rather than argued away. `B5` bounds the
+ascent — `-λ·min(NLL, cap)`, gradient exactly zero above the cap — which is the
+coordinate the measurement says governs. `B6` is the MF-preservation anchor at
+`beta = 13.642`, derived as the strength at which `beta · KL` equals the
+suppression term's magnitude at the end of the incumbent's training
+(0.5 × 6.6061 / 0.242124), so it is read from committed training summaries and
+never from a retention number.
+
+Seven rows train: four caps (0.5, 1.0, 2.0, 4.0 nats) at the incumbent budget;
+the 2.0-nat cap repeated at eight epochs, because Stage 1 coupled "how far to
+suppress" to "how long to train" through the epoch count and a cap decouples them;
+and two anchor rows — `B6` with replay *replaced* by the KL, and `B6R` with the KL
+*beside* it, spent through `anchor_weight` rather than a second group entry so the
+epoch keeps its 363 micro-batches and the schedule under test does not move. The
+caps are swept, not derived from the oracle: the training procedure never reads MG,
+whose own level is reported afterwards and bracketed by the range. Everything else
+is the incumbent recipe — λ 0.5, target-level weight 1.0, replay weight 1.0, lr,
+budget — and the incumbent row itself is the sweep's `cap = ∞` point, reused from
+Stage 1 for the price of a sha256.
+
+**Why the loop is copied, and how the copy is policed.** `train_unlearning` is
+hash-bound and cannot grow a mode, so `train_with_preservation` is a second copy of
+it — and a second copy can drift, which would appear as a difference between Stage
+1 and Stage 2 having nothing to do with either mechanism. Two independent checks
+bound that: `--control` trains the incumbent row through the new loop with every
+group in a plain `sft`/`gd` mode and compares the adapter to the one Stage 1 filed
+by sha256 over the whole directory, **refusing to train a single candidate** if the
+digests differ; and 83 tests drive both loops against one stub model on CPU and
+assert bit-identical parameters *and* identical epoch summaries, so a divergence is
+caught without a GPU. The anchor's correctness rests on three guards that run at
+every step: the NLL recomputed from the extracted log-probabilities must equal the
+loss the model returned (a causal LM predicts `labels[i]` from `logits[i-1]`, and an
+off-by-one there is invisible in the numbers — it just anchors every position
+against its neighbour's reference distribution; measured agreement 7.5e-09), the
+cached supervised tokens must equal the current ones, and the cache's recorded MF
+digest must match the adapter the run starts from. The reference is cached exact
+rather than top-k truncated — 1,489 positions × 248,320 vocabulary = 1.479 GB in
+fp32 — so no second model is resident beside a co-tenant.
+
+The freeze binds eight protocol paths, seventeen modules Stage 2 imports and must
+not edit, and eighteen committed data paths, plus — separately, because they are
+gitignored — the sha256 of the three prediction parquets Stage 2 *reuses* (`B0`,
+MG and the incumbent, read from Stage 1's directory rather than regenerated) and of
+the cache. The generation contract is **inherited** from the Stage-1 freeze rather
+than restated, and the selector refuses a run whose batch layout differs, because
+the image route is precisely the one whose correctness flips with batch
+composition. It refuses to write a report unless the whole grid has predictions,
+recomputes all eight numbers for each reused state and refuses unless they equal
+the values Stage 1c filed, and refuses any path resolving inside the sealed 11C
+confirmation. Its refusal is keyed on adapters and evaluated before any flag, so
+`--refreeze` cannot reach past it — the control's adapter included, since a control
+run under an unfrozen loop proves nothing about the frozen one. It was amended
+twice before any adapter existed, both recorded with reasons and neither moving the
+criterion: once for a self-describing field, once to correct four cache figures in
+a docstring that had been estimated before the cache was built and was wrong on
+every one of them (1,434 rows of 248,077 at 1.42 GB, against the 1,489 rows of
+248,320 at 1.479 GB the sidecar records). A test now reads those figures back from
+the committed sidecar, because an estimate in a docstring is otherwise compared
+against nothing. 17 mutations — the clamp removed, capped rows made to descend,
+the capped value booked as the group's NLL, the accumulation tail normalised by the
+full window, supervised positions read one place late, the alignment and NLL guards
+disabled, an unknown cache row served from a neighbour, the anchor permitted on a
+target group, the seal compared as a string so `..` walks past it, the floor gate
+made to pass whatever it is given, the control's adapter made invisible to the
+freeze, and four grid edits — were each caught, with the freeze's own hash check
+deselected so that every mutation had to be caught by a test exercising the
+behaviour rather than by the file having changed.
+
 ## Iteration history
 
 `git log --oneline` is the authoritative narrative and its commit messages carry
@@ -851,4 +975,26 @@ candidates, and MG loses almost nothing on it. Of the sixteen numbers now
 measured, the same seven have every seed below the anchor *and* a spread smaller
 than the shortfall they adjudicate; of the original eight, none had either.
 Stratifying enlarged no denominator; pilot-100's ceiling is 228 retain-other
-queries, so the binding limit is still the dataset.
+queries, so the binding limit is still the dataset. · **12d** Stage 2 took the
+point Stage 1c left — that the anchor, not the sensitivity, was what returned the
+no-op — and acted on it: MG, the state `D_G` measures distance *to*, clears only
+**2 of 8** numbers under a floor referenced to `B0`, so the floor was re-anchored
+at MG, changing **no filed verdict** (all eight Stage-1 candidates are ineligible
+on both anchors) and not licencing inaction (`B0` clears 6 of 8 under the new one).
+The mechanism was then chosen by measuring the eleven adapters the repository
+already had, at zero GPU cost: the drift the preregistered anchor controls does not
+determine retention (MG and `B4_w4.0` are 0.0012 apart in drift and 0.1054 apart in
+image retain-same, against a floor resolving 0.0044), its optimum is MF rather than
+the oracle, and what *does* rank the candidates is how far the suppression term
+drove the fine fact (rho **−0.976 / −1.000** with image retention versus −0.571 to
+−0.619 for the drift, and **−0.024** with `D_G`, so the overshoot past MG's 1.3643
+nats buys nothing). Both mechanisms are trained anyway and the frozen floor
+decides: seven rows — four ascent caps, the 2.0-nat cap repeated at eight epochs to
+test the decoupling of suppression from budget, and the MF anchor alone and beside
+replay at `beta = 13.642` derived from committed training summaries. Because
+`train_unlearning` is hash-bound and cannot grow a mode, the new loop is a second
+copy of it, policed twice: a byte-reproduction control on the incumbent adapter
+that refuses to train anything if the digests differ, and 83 tests that drive both
+loops against one stub model and require bit-identical parameters. 17 mutations
+caught; the freeze was amended twice before any adapter existed and now cannot be
+amended at all.

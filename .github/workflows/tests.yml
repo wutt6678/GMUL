@@ -164,6 +164,25 @@ jobs:
               # half was never rehearsed by any candidate -- is checkable from
               # a clone rather than taken on trust.
               "data/mllmu_hier_pilot100/unlearning_iter12/retain.jsonl",
+              # Stage 2: the bounded-suppression and MF-anchor study.  The
+              # calibration measured KL and NLL for the eleven adapters this
+              # repository already had and is what the mechanism decision is
+              # derived from; the basis records that decision; the freeze
+              # hash-binds both together with the eight paths that implement
+              # them.  All three are required because the freeze's own
+              # --check-only reads them -- a clone missing one would fail the
+              # protocol check rather than skip it.  The Stage-2 selection
+              # report is added when Stage 2 actually runs, for the reason
+              # given above.
+              "data/reports/mllmu_iter12_anchor_calibration.json",
+              "data/reports/mllmu_iter12_stage2_basis.json",
+              "data/reports/mllmu_iter12_stage2_freeze.json",
+              # The MF reference cache's sidecar.  Its 1.48 GB tensor stays
+              # gitignored, but the sidecar is what makes "anchored against MF"
+              # checkable from a clone rather than described: it records the
+              # sha256 of the MF adapter, the base-model revision and the
+              # encoding contract.  Rebuilding it needs a GPU.
+              "data/mllmu_hier_pilot100/mf_reference_logprobs/sidecar.json",
           ]
           missing = [p for p in required if not Path(p).exists()]
           if missing:
