@@ -225,6 +225,11 @@ data/salmu_hierarchical/official_salmubench_results*/
 # and adding it later is the step that gets forgotten.
 !data/reports/mllmu_iter12_seed_replication_freeze.json
 !data/reports/mllmu_iter12_seed_replication.json
+# The disclosure that the frozen analyzer crashed on a non-decision-bearing
+# field and that a separate script completed its report.  Committed beside the
+# result rather than inside it, because adding it to the report would mean
+# editing a file the freeze has locked.
+!data/reports/mllmu_iter12_seed_replication.REPAIR.json
 # The fit-half training groups ARE the frozen partition: retain.jsonl is the
 # 183 replayed associations, and its absence would make the protocol's central
 # claim -- that the probe half was never rehearsed -- unverifiable from a

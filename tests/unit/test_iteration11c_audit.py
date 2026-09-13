@@ -25,6 +25,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+import yaml
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
@@ -61,6 +64,23 @@ def _flat(doc: dict, prefix: tuple = ()) -> dict:
 def _sidecar(state: str) -> dict:
     path = PREDICTIONS / f"predictions_{state}.parquet.provenance.json"
     return json.loads(path.read_text())
+
+
+def _require_history() -> str:
+    """Skip the checks that read the scoring commit out of git history.
+
+    "Can this clone see that commit?" is answered by the audit module rather
+    than re-probed here, so there is one implementation of it and one place for
+    it to be wrong.  A shallow clone is a legitimate thing to run the suite
+    from — ``actions/checkout`` produces one by default — so skipping is the
+    honest response; ``TestTheHistoryTheAuditNeedsIsActuallyProvided`` is what
+    stops that skip from silently becoming permanent.
+    """
+    commit = json.loads(REPORT.read_text())["code_identity"]["scoring_commit"]
+    if not ace.history_available(commit):
+        pytest.skip(f"the scoring commit {commit[:12]} is not in this clone "
+                    f"(a shallow checkout); fetch full history to run this")
+    return commit
 
 
 def _lane_log(state: str) -> dict:
@@ -185,10 +205,16 @@ class TestTheCodeIdentityIsReadRatherThanAsserted:
         """
         identity = json.loads(REPORT.read_text())["code_identity"]
         gap = identity["verifier_binding_gap"]
+        _require_history()
         blob = subprocess.run(
             ("git", "show", f"{identity['scoring_commit']}:{ace.VERIFIER}"),
             cwd=REPO_ROOT, capture_output=True, check=False)
-        assert blob.returncode == 0, "the scoring commit is not in this history"
+        #: The commit's presence is already established, so a failure here is
+        #: the other fact and must not be reported as the first one: the path
+        #: is genuinely absent from that commit.
+        assert blob.returncode == 0, (
+            f"{ace.VERIFIER} was not tracked at the scoring commit, so the "
+            f"audit's recoverability claim is false")
         at_commit = hashlib.sha256(blob.stdout).hexdigest()
         on_disk = hashlib.sha256(
             (REPO_ROOT / ace.VERIFIER).read_bytes()).hexdigest()
@@ -226,6 +252,10 @@ class TestTheReportIsReproducibleFromTheRepository:
         assert first, "the comparison covered no fields at all"
 
     def test_the_committed_report_matches_a_fresh_build(self):
+        #: Needs history, unlike the test above: two degraded builds still agree
+        #: with each other, but a degraded build never agrees with the filed
+        #: report, which was assembled from a clone that could see the commit.
+        _require_history()
         committed = _flat(json.loads(REPORT.read_text()))
         fresh = _flat(ace.build_report(REPO_ROOT))
         assert committed == fresh, (
@@ -309,6 +339,9 @@ class TestTheAuditRefusesRatherThanGuessing:
         assert "REFUSED" in capsys.readouterr().out
 
     def test_the_real_repository_does_not_refuse(self, tmp_path, monkeypatch):
+        #: The write path needs history: without the scoring commit the report
+        #: would be missing three findings, and main() refuses to file that.
+        _require_history()
         before = ace._sha256(REPORT)
         dest = tmp_path / "audit.json"
         monkeypatch.setattr(sys, "argv", ["audit", "--output", str(dest)])
@@ -318,10 +351,141 @@ class TestTheAuditRefusesRatherThanGuessing:
             "an audit run with an explicit --output still rewrote the committed "
             "report")
 
+    def test_stdout_still_works_without_history_and_says_what_it_cannot_answer(
+            self, monkeypatch, capsys):
+        """``--stdout`` is not refused, and the degradation is visible in it.
+
+        Printing cannot touch the filed report, so refusing it would only hide
+        the three fields that explain why the checkout is short.  Their
+        replacement text is what tells a reader that this is a clone artifact
+        rather than a finding about the repository.
+
+        All three git entry points are patched, not just the probe: in a real
+        depth-1 clone the ``.gitignore`` lookup fails too, and patching the
+        probe alone would leave that one answering from real history — which is
+        why this test passed in a shallow clone and failed in a full one until
+        the simulation was made faithful.
+        """
+        before = ace._sha256(REPORT)
+        monkeypatch.setattr(ace, "history_available", lambda commit: False)
+        monkeypatch.setattr(ace, "_git", lambda *a: None)
+        monkeypatch.setattr(ace, "_git_blob_sha256", lambda c, p: None)
+        monkeypatch.setattr(sys, "argv", ["audit", "--stdout"])
+        assert ace.main() == 0
+        doc = json.loads(capsys.readouterr().out)
+        gap = doc["code_identity"]["verifier_binding_gap"]
+        assert gap["recoverable_from_git_because_tracked"] is None
+        assert gap["unchanged_since_scoring"] is None
+        assert doc["code_identity"]["why_b0_and_mg_report_dirty"] == \
+            ace.UNANSWERABLE_IN_THIS_CLONE
+        assert ace._sha256(REPORT) == before
+
     def test_stdout_mode_writes_nothing(self, monkeypatch, capsys):
         before = ace._sha256(REPORT)
         monkeypatch.setattr(sys, "argv", ["audit", "--stdout"])
         assert ace.main() == 0
         doc = json.loads(capsys.readouterr().out)
         assert doc["post_hoc"] is True
+        assert ace._sha256(REPORT) == before
+
+
+class TestTheHistoryTheAuditNeedsIsActuallyProvided:
+    """A skip is honest only if something fails when the reason to skip returns.
+
+    ``actions/checkout`` defaults to ``fetch-depth: 1``.  Under a depth-1
+    checkout the 11C scoring commit is absent, so the checks that re-derive the
+    audit's claims from history cannot run and ``code_identity`` cannot answer
+    three of its own questions.  Skipping there is right for a laptop and wrong
+    for CI, so the CI setting is asserted here: remove it and a test fails,
+    instead of three verifications quietly becoming no-ops that still report
+    green.
+    """
+
+    WORKFLOW = REPO_ROOT / ".github" / "workflows" / "tests.yml"
+
+    def test_ci_checks_out_full_history(self):
+        doc = yaml.safe_load(self.WORKFLOW.read_text())
+        steps = doc["jobs"]["unit-tests"]["steps"]
+        checkouts = [s for s in steps
+                     if str(s.get("uses", "")).startswith("actions/checkout")]
+        assert len(checkouts) == 1, checkouts
+        depth = checkouts[0].get("with", {}).get("fetch-depth")
+        assert depth == 0, (
+            f"actions/checkout defaults to fetch-depth: 1, under which the "
+            f"scoring commit is absent and the history-derived audit checks "
+            f"skip instead of verifying; got {depth!r}")
+
+    def test_a_depth_1_clone_really_cannot_see_the_scoring_commit(
+            self, tmp_path, monkeypatch):
+        """The cause, reproduced rather than simulated.
+
+        The other tests here patch ``history_available`` to False; this one
+        shows that False is what a depth-1 checkout actually produces, which is
+        the single link a simulation cannot cover — and the link that was
+        wrong, since git reports the missing COMMIT as a missing PATH.
+        """
+        commit = json.loads(
+            REPORT.read_text())["code_identity"]["scoring_commit"]
+        clone = tmp_path / "depth1"
+        out = subprocess.run(
+            ("git", "clone", "--quiet", "--depth", "1",
+             REPO_ROOT.as_uri(), str(clone)),
+            capture_output=True, text=True, check=False)
+        if out.returncode != 0:
+            pytest.skip(f"cannot make a depth-1 clone here: {out.stderr}")
+        monkeypatch.setattr(ace, "REPO_ROOT", clone)
+        assert ace.history_available(commit) is False
+        #: And the probe is not simply always False — the tip resolves.
+        assert ace.history_available("HEAD") is True
+        blob = subprocess.run(("git", "show", f"{commit}:{ace.VERIFIER}"),
+                              cwd=clone, capture_output=True, text=True,
+                              check=False)
+        assert blob.returncode != 0
+        #: The message that made this look like a repository fact.
+        assert "exists on disk, but not in" in blob.stderr
+
+    def test_the_degraded_fields_say_unknown_rather_than_no(
+            self, monkeypatch):
+        """The defect: three fields turned an unanswerable question into a
+        false negative, and two of them contradicted the audit's own
+        mitigation."""
+        monkeypatch.setattr(ace, "history_available", lambda commit: False)
+        monkeypatch.setattr(ace, "_git", lambda *a: None)
+        monkeypatch.setattr(ace, "_git_blob_sha256", lambda c, p: None)
+        sidecars = {s: _sidecar(s) for s in STATES}
+        ci = ace.code_identity(REPO_ROOT, sidecars)
+        gap = ci["verifier_binding_gap"]
+        #: Not False: False would assert the verifier is untracked and that it
+        #: changed, and the audit's mitigation is that neither holds.
+        assert gap["recoverable_from_git_because_tracked"] is None
+        assert gap["unchanged_since_scoring"] is None
+        assert gap["sha256_at_the_scoring_commit"] is None
+        assert ci["predictions_dir_ignored_at_the_scoring_commit"] is None
+        #: Not "investigate": there is nothing to investigate, the question was
+        #: never asked.
+        assert ci["why_b0_and_mg_report_dirty"] == \
+            ace.UNANSWERABLE_IN_THIS_CLONE
+        assert "investigate" not in ci["why_b0_and_mg_report_dirty"]
+
+    def test_the_audit_refuses_to_write_without_history(
+            self, tmp_path, monkeypatch, capsys):
+        """Building a degraded report is harmless; committing one is not.
+
+        The filed audit is the record, and overwriting it from a depth-1
+        checkout would replace three findings with unknowns while every other
+        field still looked authoritative.
+        """
+        before = ace._sha256(REPORT)
+        monkeypatch.setattr(ace, "history_available", lambda commit: False)
+        #: Under tmp_path, not under data/reports: a test that writes into the
+        #: repository when it fails leaves the failure behind as a stray
+        #: artifact that the next run then has to explain.
+        dest = tmp_path / "must_not_be_written.json"
+        monkeypatch.setattr(sys, "argv",
+                            ["audit", "--output", str(dest)])
+        assert ace.main() == 1
+        said = capsys.readouterr().out
+        assert "REFUSED" in said
+        assert "fetch-depth: 0" in said
+        assert not dest.exists()
         assert ace._sha256(REPORT) == before

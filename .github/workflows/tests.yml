@@ -18,6 +18,19 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history, because three tests re-derive claims from the
+          # repository's past rather than trusting the report that states them:
+          # the 11C audit's verifier-binding gap (was the unpinned verifier
+          # recoverable at the scoring commit?) and the 11C-5R seal (does the
+          # sealed hash really bind the defective module's bytes?).  Under the
+          # default fetch-depth: 1 those commits are absent, and git reports a
+          # missing COMMIT as a missing PATH — "exists on disk, but not in
+          # <sha>" — so the checks failed on a clone artifact that reads like a
+          # repository fact.  Skipping them instead would leave the audit's
+          # central recoverability claim verified nowhere but on one laptop.
+          # 94 commits, 24 MB: history is cheap here.
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -131,6 +144,13 @@ jobs:
               "data/reports/mllmu_iter12_selection_protocol_freeze.json",
               "data/reports/mllmu_iter12_retention_selection.json",
               "data/reports/mllmu_iter12_seed_replication_freeze.json",
+              # Stage 1b's result, and the disclosure that the frozen analyzer
+              # crashed on a non-decision-bearing field and a separate script
+              # completed it.  The second is required beside the first because
+              # a reader who found only the result would have no way to know
+              # that the preregistered code did not run to completion unaided.
+              "data/reports/mllmu_iter12_seed_replication.json",
+              "data/reports/mllmu_iter12_seed_replication.REPAIR.json",
               # The fit-half training groups.  retain.jsonl IS the frozen
               # partition, so the protocol's central claim -- that the probe
               # half was never rehearsed by any candidate -- is checkable from

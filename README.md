@@ -32,7 +32,7 @@ load-bearing fact rather than an omission. Every stage has now run.
 | Post-run execution audit | `data/reports/mllmu_confirm100_execution_provenance.json`, derived from the committed `data/mllmu_hier_confirm100/execution_logs/` | **filed post-hoc; `post_hoc: true`, binds nothing** |
 | Iteration 12 selection protocol (exploratory) | `data/reports/mllmu_iter12_retention_probe.json` — the fit/probe partition of the 70 retained entities; `data/reports/mllmu_iter12_selection_protocol_freeze.json` — D_G's direction, tolerance and tie-break, the retention floor, the 9-row grid | **frozen, committed; frozen before any candidate was trained, and the freeze now refuses to be rewritten** |
 | Iteration 12 Stage 1 (exploratory) | `data/reports/mllmu_iter12_retention_selection.json` — 9 rows scored, 8 disqualified by the retention floor, B0 selected | **run once, 2026-09-12 → 09-13; a negative result: no replay setting preserves retention on never-rehearsed entities** |
-| Iteration 12 Stage 1b (exploratory) | `data/reports/mllmu_iter12_seed_replication_freeze.json` — the two near-miss parents, four seeds each, the mean-based rule and the determinism control | **frozen before any replicate was trained; not yet run** |
+| Iteration 12 Stage 1b (exploratory) | `data/reports/mllmu_iter12_seed_replication.json` — two near-miss parents at four seeds each, scored by the frozen mean-based floor; `data/reports/mllmu_iter12_seed_replication_freeze.json`; `data/reports/mllmu_iter12_seed_replication.REPAIR.json` | **run once, 2026-09-13; a negative result: neither parent clears the floor on a four-seed mean, and every one of the eight numbers straddles the anchor** |
 
 **Both preregistered claims were confirmed.** Entity-macro `B3 − B0` over all 72
 target entities (42 persons, 30 species), 864 paired target probes, one-sided
@@ -173,14 +173,18 @@ here instead of hiding every other result behind a collection error in CI.
 ## Tests
 
 ```bash
-pytest tests/unit -q          # 1713 tests, CPU only, ~3.0 min on the artifact box
+pytest tests/unit -q          # 1752 tests, CPU only, ~3.0 min on the artifact box
 ```
 
-The same 1713 pass with `torch`, `transformers`, `peft`, `accelerate` and
+The same 1752 pass with `torch`, `transformers`, `peft`, `accelerate` and
 `datasets` made unimportable, which is how the CPU-only contract is checked on a
 machine that has the GPU stack installed. `.github/workflows/tests.yml` runs the
 unit suite plus a step that loads every committed report the evidence claims
-depend on.
+depend on, and checks out with **`fetch-depth: 0`**: four tests re-derive claims
+from the repository's *history* rather than trusting the report that states them
+— the 11C audit's verifier-binding gap and the 11C-5R seal's module hash — and
+under `actions/checkout`'s default depth of 1 those commits are absent, so the
+checks would skip and report green without verifying anything.
 
 Two coverage boundaries are stated rather than left to a skip count, and both
 are gitignored inputs rather than unfinished work:
@@ -193,9 +197,11 @@ are gitignored inputs rather than unfinished work:
 
 Both guards skip naming what is absent, and both run on the machine that trained
 the adapters and fetched the pool — the machine that ran the three GPU passes.
-Measured: **1635 passed / 78 skipped / 0 failed** in a bare clone with a venv
-built from `requirements/ci-unit.txt` alone — with and without CI's
-`--maxfail=5` — and **1713 passed / 0 skipped** here. The whole suite also passes
+Measured: **1673 passed / 79 skipped / 0 failed** in a bare clone with a venv
+built from `requirements/ci-unit.txt` alone, and **1752 passed / 0 skipped**
+here. The same clone taken at `--depth 1` gives **1669 / 83 / 0**: the four
+extra skips are exactly the history-derived checks, which is what
+`fetch-depth: 0` in the workflow exists to prevent. The whole suite also passes
 with `PytestRemovedIn10Warning` promoted to an error.
 The committed half of each boundary — the manifest pinning 402 paths and hashes,
 the pool's disjointness from exploratory media, the fetch provenance behind it —
@@ -615,20 +621,83 @@ protocol paths plus its own freeze, which *imports* the Stage-1 freeze's hashing
 and document-flattening rather than copying them — so "does this still match the
 repository" means the same thing in both studies. The new freeze refuses to be
 written once any replicate adapter exists, refuses a bare overwrite, and refuses
-`--refreeze` without `--reason`; its three amendments so far moved only
-protocol-path hashes and no criterion field.
+`--refreeze` without `--reason`; its four amendments all moved only protocol-path
+hashes and no criterion field, and the fifth was refused — the six replicates
+were on disk by then, so the protocol can no longer be edited by anyone.
 
 Cost, taken from Stage 1's own measurements rather than guessed: 6 trainings at
 1609 s (ep5) and ~965 s (ep3), plus 7 generations at a 40.2-minute median —
 roughly 7 GPU-hours.
 
-**Status: frozen, not run.** `data/reports/mllmu_iter12_seed_replication.json`
-does not exist yet and the workflow's required list deliberately does not name
-it; the freeze does, so a clone can check that this protocol predates its own
-replicates. Replication will not increase the query count — the probe half is
-fixed at 35 entities / 408 and 23 donors / 76 by the association pool — so
-retain-other stays resolvable only in units of 1/76 = 0.0132 however many seeds
-are run.
+**Result: both parents fail on the mean.** The control ran first and passed more
+strongly than the design required — regenerating B0 from the Stage-1 adapter
+under the Stage-1 contract reproduced all 4,518 predictions with **zero** rows
+differing on any of the seven recorded fields, `raw_output` included. So the
+anchor is a point, not a draw, and every difference below is the training seed
+and nothing else.
+
+| parent | ret-same row-micro | ret-same entity-macro | ret-other row-micro | ret-other entity-macro | clears |
+| --- | --- | --- | --- | --- | --- |
+| `B4_w2.0_lam0.5_lr2e-05_ep3` | +0.0055 | −0.0078 | −0.0165 | +0.0032 | 2/4 |
+| `B4_w4.0_lam0.5_lr2e-05_ep5` | −0.0037 | −0.0073 | −0.0263 | −0.0176 | 0/4 |
+
+Each cell is the four-seed mean minus the Stage-1 B0 anchor. The rule is all
+four at or above, with no margin, so both are disqualified — the verdict Stage 1
+reached from one seed, now reached from four.
+
+**The informative part is the spread, not the verdict.** All eight numbers are
+classified `straddles`: for none of them did every seed fall below the anchor,
+and for none did every seed clear it. On retain-other row-micro, the binding
+failure, the seed-to-seed sd is 0.0225 (ep3) and 0.0515 (ep5) against shortfalls
+of −0.0165 and −0.0263 — **the noise is larger than the gap it is being asked to
+adjudicate**. In the only units this measure has, those shortfalls are 1.25 and
+2.0 queries out of 76, while one seed alone moved the number by up to 9 (ep5's
+range is 0.3947–0.5132).
+
+That answers a sharper question than the one asked. The floor is not failing to
+detect a real retention loss; it is being applied at a resolution the probe half
+cannot support. This is a limit on measurement power, not a finding about
+replay.
+
+D_G, reported and not decision-bearing, moved as well: ep3's Stage-1 single-seed
+0.061929 turns out to have been the *worst* of its four seeds (mean 0.055779, sd
+0.006951), and ep5's 0.041957 sits above its mean of 0.040861 (sd 0.007779). A
+seed sd of ~0.007 on D_G exceeds the 0.003343 that separated Stage 1's two best
+candidates, which supersedes the generation-noise bound quoted above: the frozen
+tie-break's sixth decimal is dominated by training-seed variance rather than by
+generation, and Stage 1's ordering of near-tied candidates was not resolvable.
+
+**The frozen analyzer crashed, and a separate script finished it.**
+`analyze_iter12_seed_replication.py:325` stored `rs.distance_to_mg(...)` whole,
+but that function returns `tuple[float | None, list[str]]` — its own caller in
+`retention_selection.py` unpacks it into `dist, used`. Line 386 collected those
+tuples into `dists` and line 394 handed them to `aggregate`, whose first
+statement is `float(v)`, so the run died with a `TypeError` *after* all eight
+replicates had been scored and *before* the report was assembled.
+
+Both files on that path are frozen protocol paths, and the freeze refuses
+amendment now that six replicates exist — correctly, since a protocol edited
+after its replicates could be fitted to them. So the frozen bytes stayed frozen
+and `scripts/repair_iter12_seed_replication_scoring.py` runs them with that one
+call unwrapped, proving rather than asserting that this cannot move the verdict:
+the four protocol paths still hash to what the freeze records; an AST walk
+recomputed at run time shows no decision-path function reaches
+`distance_to_mg`; the analyzer has exactly one call site for it; and all eight
+calls the patch served were recorded by caller frame as coming from that site.
+`distance_to_mg` is not decision-bearing in any case — the report says so itself:
+"the floor decides eligibility".
+
+What that cannot claim is that the preregistered analysis ran to completion
+unaided. It did not. The disclosure is filed *beside* the result in
+`mllmu_iter12_seed_replication.REPAIR.json` rather than inside it, because
+adding it to the report would mean editing a file the freeze has locked.
+
+Replication did not increase the query count, which was known before it ran: the
+probe half is fixed at 35 entities / 408 and 23 donors / 76 by the association
+pool, so retain-other stays resolvable only in units of 1/76 = 0.0132 however
+many seeds are run. Four seeds per parent bounds training-seed variance loosely
+and licenses no interval claim, and only the two near-miss parents were
+replicated — this says nothing about the other six Stage-1 candidates.
 
 ## Iteration history
 
@@ -651,4 +720,13 @@ which disqualified all eight replay settings and selected the no-op, leaving the
 anchor, not the mechanism, as the thing Stage 2 has to reconsider · **12b** the
 two near-misses re-run at four seeds each, frozen first, after a free
 measurement showed the floor's probe queries are entirely text-route and so
-unaffected by the generation instability that does move the image route.
+unaffected by the generation instability that does move the image route — and
+run, to a second negative result. The determinism control passed with **zero**
+differing rows across all 4,518 predictions and all seven recorded fields, so
+the anchor is a point; neither parent then cleared the floor on a four-seed mean
+(2/4 and 0/4 of the four numbers), every one of the eight straddled the anchor,
+and the seed sd on retain-other row-micro (0.0225, 0.0515) exceeded the very
+shortfall it was adjudicating (−0.0165, −0.0263). The binding limit is therefore
+measurement power, not the anchor and not the mechanism. The frozen analyzer
+crashed on a field that is not decision-bearing and was completed by a separate
+script that leaves every frozen byte untouched.

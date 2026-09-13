@@ -1,0 +1,650 @@
+{
+  "iteration": 12,
+  "stage": "1b \u2014 seed replication of the two near-miss candidates",
+  "exploratory": true,
+  "question": "are the two smallest Stage-1 retain-same shortfalls stable across independent training seeds, or one draw?",
+  "primary_rule": {
+    "statement": "for each of the four frozen numbers, the MEAN over replicates must be at or above the Stage-1 B0 anchor",
+    "scored_by": "granunlearn.evaluation.retention_selection.floor_check",
+    "epsilon": 1e-09,
+    "mean_is_compared_unrounded": true,
+    "why_unrounded": "rounding the mean to the four decimals its inputs carry would let a rounding step decide a comparison the inputs did not",
+    "no_margin": true,
+    "margin_required": 0.0
+  },
+  "reported_but_not_decision_bearing": {
+    "range_classification": "every_replicate_below / straddles / every_replicate_at_or_above",
+    "why_not_an_interval": "with k=4 an interval imports a distributional assumption the design does not need; the observed range answers whether every independent seed fell below the anchor",
+    "distance_to_mg": "reported per replicate and as a mean, but the floor decides eligibility, exactly as in Stage 1"
+  },
+  "anchor": {
+    "source": "data/reports/mllmu_iter12_retention_selection.json",
+    "values": {
+      "retain_same_entity.row_micro": 0.5294,
+      "retain_same_entity.entity_macro": 0.5256,
+      "retain_other_entity.row_micro": 0.4737,
+      "retain_other_entity.entity_macro": 0.5072
+    },
+    "why_a_point": "B0 is the no-op copy of MF and takes zero training steps, so it has no seed variance; the control below tests whether it has generation variance"
+  },
+  "generation_determinism_control": {
+    "question": "is generation deterministic under a FIXED contract?",
+    "why_it_matters": "every replicate comparison assumes the anchor is a point; if it is not, a point floor is not interpretable and replication cannot repair it",
+    "adapter_is_a_byte_copy_of_mf_and_trains_zero_steps": true,
+    "num_queries": 4518,
+    "rows_differing_by_field": {
+      "is_correct_branch": 0,
+      "parsed_answer": 0,
+      "matched_canonical_id": 0,
+      "predicted_level": 0,
+      "is_finer_than_target": 0,
+      "is_coarser_than_target": 0,
+      "raw_output": 0
+    },
+    "floor_numbers_that_moved": {},
+    "floor_is_reproducible": true,
+    "already_known": {
+      "measurement": "two existing B0 parquets from identical adapter bytes under image_batch_size 8 and 1",
+      "correctness_flips": 15,
+      "of_which_inside_either_probe_subset": 0,
+      "why": "all 15 flips are image-route; the floor's 408 + 76 probe queries are 100% text_to_text",
+      "d_g_components_that_moved": {
+        "filr": -0.0004,
+        "wrong": 0.0008
+      }
+    }
+  },
+  "measurement_contract": {
+    "batch_size": 8,
+    "image_batch_size": 1,
+    "max_new_tokens": 96,
+    "max_length": 1536,
+    "max_image_pixels": 147456,
+    "do_sample": false,
+    "model_id": "Qwen/Qwen3.5-9B"
+  },
+  "study_identity": {
+    "predictions_dir": "data/mllmu_hier_pilot100/predictions_iter12_seeds",
+    "experiment_id": "mllmu_iter12_seeds"
+  },
+  "replicates": {
+    "B4_w4.0_lam0.5_lr2e-05_ep5__s42": {
+      "parent": "B4_w4.0_lam0.5_lr2e-05_ep5",
+      "seed": 42,
+      "reused_from_stage1": true,
+      "predictions": "data/mllmu_hier_pilot100/predictions_iter12/predictions_tv_B4_w4.0_lam0.5_lr2e-05_ep5.parquet",
+      "probe_retention": {
+        "scope": [
+          "train",
+          "val"
+        ],
+        "probe_entities": 35,
+        "retain_same_entity": {
+          "num_queries": 408,
+          "num_entities": 35,
+          "row_micro": 0.5221,
+          "entity_macro": 0.5188
+        },
+        "retain_other_entity": {
+          "num_queries": 76,
+          "num_entities": 23,
+          "row_micro": 0.4211,
+          "entity_macro": 0.4909
+        }
+      },
+      "trainval_vector": {
+        "filr": 0.2074,
+        "tga": 0.3473,
+        "ancestor": 0.2222,
+        "retain_same": 0.5917,
+        "retain_other": 0.5889,
+        "over": 0.0337,
+        "wrong": 0.2325
+      },
+      "distance_to_mg": 0.041957
+    },
+    "B4_w4.0_lam0.5_lr2e-05_ep5__s43": {
+      "parent": "B4_w4.0_lam0.5_lr2e-05_ep5",
+      "seed": 43,
+      "reused_from_stage1": false,
+      "predictions": "data/mllmu_hier_pilot100/predictions_iter12_seeds/predictions_tv_B4_w4.0_lam0.5_lr2e-05_ep5__s43.parquet",
+      "probe_retention": {
+        "scope": [
+          "train",
+          "val"
+        ],
+        "probe_entities": 35,
+        "retain_same_entity": {
+          "num_queries": 408,
+          "num_entities": 35,
+          "row_micro": 0.5441,
+          "entity_macro": 0.5393
+        },
+        "retain_other_entity": {
+          "num_queries": 76,
+          "num_entities": 23,
+          "row_micro": 0.5132,
+          "entity_macro": 0.5181
+        }
+      },
+      "trainval_vector": {
+        "filr": 0.1889,
+        "tga": 0.3827,
+        "ancestor": 0.3074,
+        "retain_same": 0.5943,
+        "retain_other": 0.6333,
+        "over": 0.0329,
+        "wrong": 0.223
+      },
+      "distance_to_mg": 0.0459
+    },
+    "B4_w4.0_lam0.5_lr2e-05_ep5__s44": {
+      "parent": "B4_w4.0_lam0.5_lr2e-05_ep5",
+      "seed": 44,
+      "reused_from_stage1": false,
+      "predictions": "data/mllmu_hier_pilot100/predictions_iter12_seeds/predictions_tv_B4_w4.0_lam0.5_lr2e-05_ep5__s44.parquet",
+      "probe_retention": {
+        "scope": [
+          "train",
+          "val"
+        ],
+        "probe_entities": 35,
+        "retain_same_entity": {
+          "num_queries": 408,
+          "num_entities": 35,
+          "row_micro": 0.5172,
+          "entity_macro": 0.5117
+        },
+        "retain_other_entity": {
+          "num_queries": 76,
+          "num_entities": 23,
+          "row_micro": 0.4605,
+          "entity_macro": 0.4964
+        }
+      },
+      "trainval_vector": {
+        "filr": 0.2362,
+        "tga": 0.3494,
+        "ancestor": 0.2778,
+        "retain_same": 0.5762,
+        "retain_other": 0.5944,
+        "over": 0.03,
+        "wrong": 0.2173
+      },
+      "distance_to_mg": 0.046043
+    },
+    "B4_w4.0_lam0.5_lr2e-05_ep5__s45": {
+      "parent": "B4_w4.0_lam0.5_lr2e-05_ep5",
+      "seed": 45,
+      "reused_from_stage1": false,
+      "predictions": "data/mllmu_hier_pilot100/predictions_iter12_seeds/predictions_tv_B4_w4.0_lam0.5_lr2e-05_ep5__s45.parquet",
+      "probe_retention": {
+        "scope": [
+          "train",
+          "val"
+        ],
+        "probe_entities": 35,
+        "retain_same_entity": {
+          "num_queries": 408,
+          "num_entities": 35,
+          "row_micro": 0.5196,
+          "entity_macro": 0.5035
+        },
+        "retain_other_entity": {
+          "num_queries": 76,
+          "num_entities": 23,
+          "row_micro": 0.3947,
+          "entity_macro": 0.4529
+        }
+      },
+      "trainval_vector": {
+        "filr": 0.17,
+        "tga": 0.4029,
+        "ancestor": 0.2963,
+        "retain_same": 0.5879,
+        "retain_other": 0.5278,
+        "over": 0.0383,
+        "wrong": 0.214
+      },
+      "distance_to_mg": 0.029543
+    },
+    "B4_w2.0_lam0.5_lr2e-05_ep3__s42": {
+      "parent": "B4_w2.0_lam0.5_lr2e-05_ep3",
+      "seed": 42,
+      "reused_from_stage1": true,
+      "predictions": "data/mllmu_hier_pilot100/predictions_iter12/predictions_tv_B4_w2.0_lam0.5_lr2e-05_ep3.parquet",
+      "probe_retention": {
+        "scope": [
+          "train",
+          "val"
+        ],
+        "probe_entities": 35,
+        "retain_same_entity": {
+          "num_queries": 408,
+          "num_entities": 35,
+          "row_micro": 0.5196,
+          "entity_macro": 0.5006
+        },
+        "retain_other_entity": {
+          "num_queries": 76,
+          "num_entities": 23,
+          "row_micro": 0.4342,
+          "entity_macro": 0.4928
+        }
+      },
+      "trainval_vector": {
+        "filr": 0.2959,
+        "tga": 0.2959,
+        "ancestor": 0.2667,
+        "retain_same": 0.5827,
+        "retain_other": 0.4778,
+        "over": 0.0267,
+        "wrong": 0.2346
+      },
+      "distance_to_mg": 0.061929
+    },
+    "B4_w2.0_lam0.5_lr2e-05_ep3__s43": {
+      "parent": "B4_w2.0_lam0.5_lr2e-05_ep3",
+      "seed": 43,
+      "reused_from_stage1": false,
+      "predictions": "data/mllmu_hier_pilot100/predictions_iter12_seeds/predictions_tv_B4_w2.0_lam0.5_lr2e-05_ep3__s43.parquet",
+      "probe_retention": {
+        "scope": [
+          "train",
+          "val"
+        ],
+        "probe_entities": 35,
+        "retain_same_entity": {
+          "num_queries": 408,
+          "num_entities": 35,
+          "row_micro": 0.5343,
+          "entity_macro": 0.5192
+        },
+        "retain_other_entity": {
+          "num_queries": 76,
+          "num_entities": 23,
+          "row_micro": 0.4474,
+          "entity_macro": 0.4982
+        }
+      },
+      "trainval_vector": {
+        "filr": 0.2844,
+        "tga": 0.3086,
+        "ancestor": 0.2778,
+        "retain_same": 0.5982,
+        "retain_other": 0.5611,
+        "over": 0.0239,
+        "wrong": 0.2284
+      },
+      "distance_to_mg": 0.056429
+    },
+    "B4_w2.0_lam0.5_lr2e-05_ep3__s44": {
+      "parent": "B4_w2.0_lam0.5_lr2e-05_ep3",
+      "seed": 44,
+      "reused_from_stage1": false,
+      "predictions": "data/mllmu_hier_pilot100/predictions_iter12_seeds/predictions_tv_B4_w2.0_lam0.5_lr2e-05_ep3__s44.parquet",
+      "probe_retention": {
+        "scope": [
+          "train",
+          "val"
+        ],
+        "probe_entities": 35,
+        "retain_same_entity": {
+          "num_queries": 408,
+          "num_entities": 35,
+          "row_micro": 0.549,
+          "entity_macro": 0.5311
+        },
+        "retain_other_entity": {
+          "num_queries": 76,
+          "num_entities": 23,
+          "row_micro": 0.4605,
+          "entity_macro": 0.5145
+        }
+      },
+      "trainval_vector": {
+        "filr": 0.2856,
+        "tga": 0.3165,
+        "ancestor": 0.2815,
+        "retain_same": 0.5943,
+        "retain_other": 0.5056,
+        "over": 0.0247,
+        "wrong": 0.2259
+      },
+      "distance_to_mg": 0.058843
+    },
+    "B4_w2.0_lam0.5_lr2e-05_ep3__s45": {
+      "parent": "B4_w2.0_lam0.5_lr2e-05_ep3",
+      "seed": 45,
+      "reused_from_stage1": false,
+      "predictions": "data/mllmu_hier_pilot100/predictions_iter12_seeds/predictions_tv_B4_w2.0_lam0.5_lr2e-05_ep3__s45.parquet",
+      "probe_retention": {
+        "scope": [
+          "train",
+          "val"
+        ],
+        "probe_entities": 35,
+        "retain_same_entity": {
+          "num_queries": 408,
+          "num_entities": 35,
+          "row_micro": 0.5368,
+          "entity_macro": 0.5203
+        },
+        "retain_other_entity": {
+          "num_queries": 76,
+          "num_entities": 23,
+          "row_micro": 0.4868,
+          "entity_macro": 0.5362
+        }
+      },
+      "trainval_vector": {
+        "filr": 0.2576,
+        "tga": 0.3313,
+        "ancestor": 0.263,
+        "retain_same": 0.5969,
+        "retain_other": 0.5333,
+        "over": 0.0255,
+        "wrong": 0.2292
+      },
+      "distance_to_mg": 0.045914
+    }
+  },
+  "verdicts": {
+    "B4_w2.0_lam0.5_lr2e-05_ep3": {
+      "replicates": [
+        "B4_w2.0_lam0.5_lr2e-05_ep3__s42",
+        "B4_w2.0_lam0.5_lr2e-05_ep3__s43",
+        "B4_w2.0_lam0.5_lr2e-05_ep3__s44",
+        "B4_w2.0_lam0.5_lr2e-05_ep3__s45"
+      ],
+      "seeds": [
+        42,
+        43,
+        44,
+        45
+      ],
+      "seed_42_reused_from_stage1": true,
+      "per_number": {
+        "retain_same_entity.row_micro": {
+          "k": 4,
+          "values": [
+            0.5196,
+            0.5343,
+            0.549,
+            0.5368
+          ],
+          "mean": 0.534925,
+          "min": 0.5196,
+          "max": 0.549,
+          "sd": 0.012067414801853834,
+          "anchor": 0.5294,
+          "mean_minus_anchor": 0.005525000000000002,
+          "replicates_at_or_above_anchor": 3,
+          "range_classification": "straddles"
+        },
+        "retain_same_entity.entity_macro": {
+          "k": 4,
+          "values": [
+            0.5006,
+            0.5192,
+            0.5311,
+            0.5203
+          ],
+          "mean": 0.5178,
+          "min": 0.5006,
+          "max": 0.5311,
+          "sd": 0.012661490170328804,
+          "anchor": 0.5256,
+          "mean_minus_anchor": -0.007799999999999918,
+          "replicates_at_or_above_anchor": 1,
+          "range_classification": "straddles"
+        },
+        "retain_other_entity.row_micro": {
+          "k": 4,
+          "values": [
+            0.4342,
+            0.4474,
+            0.4605,
+            0.4868
+          ],
+          "mean": 0.457225,
+          "min": 0.4342,
+          "max": 0.4868,
+          "sd": 0.022450593904542196,
+          "anchor": 0.4737,
+          "mean_minus_anchor": -0.016475000000000017,
+          "replicates_at_or_above_anchor": 1,
+          "range_classification": "straddles"
+        },
+        "retain_other_entity.entity_macro": {
+          "k": 4,
+          "values": [
+            0.4928,
+            0.4982,
+            0.5145,
+            0.5362
+          ],
+          "mean": 0.510425,
+          "min": 0.4928,
+          "max": 0.5362,
+          "sd": 0.01950254256928226,
+          "anchor": 0.5072,
+          "mean_minus_anchor": 0.0032250000000000334,
+          "replicates_at_or_above_anchor": 2,
+          "range_classification": "straddles"
+        }
+      },
+      "floor_on_the_mean": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "retain_same_entity.entity_macro": {
+            "candidate": 0.5178,
+            "b0": 0.5256,
+            "difference": -0.0078,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "retain_same_entity.row_micro": {
+            "candidate": 0.534925,
+            "b0": 0.5294,
+            "difference": 0.005525,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "retain_other_entity.entity_macro": {
+            "candidate": 0.510425,
+            "b0": 0.5072,
+            "difference": 0.003225,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "retain_other_entity.row_micro": {
+            "candidate": 0.457225,
+            "b0": 0.4737,
+            "difference": -0.016475,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "direction": "candidate_must_be_at_or_above_b0",
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+      },
+      "passes_on_the_mean": false,
+      "distance_to_mg": {
+        "k": 4,
+        "values": [
+          0.061929,
+          0.056429,
+          0.058843,
+          0.045914
+        ],
+        "mean": 0.05577875,
+        "min": 0.045914,
+        "max": 0.061929,
+        "sd": 0.006951050777880034,
+        "stage1_single_seed": 0.061929
+      },
+      "stage1_verdict": "disqualified",
+      "stage1_worst_shortfall": -0.0395
+    },
+    "B4_w4.0_lam0.5_lr2e-05_ep5": {
+      "replicates": [
+        "B4_w4.0_lam0.5_lr2e-05_ep5__s42",
+        "B4_w4.0_lam0.5_lr2e-05_ep5__s43",
+        "B4_w4.0_lam0.5_lr2e-05_ep5__s44",
+        "B4_w4.0_lam0.5_lr2e-05_ep5__s45"
+      ],
+      "seeds": [
+        42,
+        43,
+        44,
+        45
+      ],
+      "seed_42_reused_from_stage1": true,
+      "per_number": {
+        "retain_same_entity.row_micro": {
+          "k": 4,
+          "values": [
+            0.5221,
+            0.5441,
+            0.5172,
+            0.5196
+          ],
+          "mean": 0.5257499999999999,
+          "min": 0.5172,
+          "max": 0.5441,
+          "sd": 0.012395832633053223,
+          "anchor": 0.5294,
+          "mean_minus_anchor": -0.003650000000000042,
+          "replicates_at_or_above_anchor": 1,
+          "range_classification": "straddles"
+        },
+        "retain_same_entity.entity_macro": {
+          "k": 4,
+          "values": [
+            0.5188,
+            0.5393,
+            0.5117,
+            0.5035
+          ],
+          "mean": 0.518325,
+          "min": 0.5035,
+          "max": 0.5393,
+          "sd": 0.015317174456580877,
+          "anchor": 0.5256,
+          "mean_minus_anchor": -0.00727499999999992,
+          "replicates_at_or_above_anchor": 1,
+          "range_classification": "straddles"
+        },
+        "retain_other_entity.row_micro": {
+          "k": 4,
+          "values": [
+            0.4211,
+            0.5132,
+            0.4605,
+            0.3947
+          ],
+          "mean": 0.44737499999999997,
+          "min": 0.3947,
+          "max": 0.5132,
+          "sd": 0.05154359805058239,
+          "anchor": 0.4737,
+          "mean_minus_anchor": -0.026325000000000043,
+          "replicates_at_or_above_anchor": 1,
+          "range_classification": "straddles"
+        },
+        "retain_other_entity.entity_macro": {
+          "k": 4,
+          "values": [
+            0.4909,
+            0.5181,
+            0.4964,
+            0.4529
+          ],
+          "mean": 0.489575,
+          "min": 0.4529,
+          "max": 0.5181,
+          "sd": 0.027123590593184123,
+          "anchor": 0.5072,
+          "mean_minus_anchor": -0.017625000000000002,
+          "replicates_at_or_above_anchor": 1,
+          "range_classification": "straddles"
+        }
+      },
+      "floor_on_the_mean": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "retain_same_entity.entity_macro": {
+            "candidate": 0.518325,
+            "b0": 0.5256,
+            "difference": -0.007275,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "retain_same_entity.row_micro": {
+            "candidate": 0.5257499999999999,
+            "b0": 0.5294,
+            "difference": -0.00365,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "retain_other_entity.entity_macro": {
+            "candidate": 0.489575,
+            "b0": 0.5072,
+            "difference": -0.017625,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "retain_other_entity.row_micro": {
+            "candidate": 0.44737499999999997,
+            "b0": 0.4737,
+            "difference": -0.026325,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "direction": "candidate_must_be_at_or_above_b0",
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+      },
+      "passes_on_the_mean": false,
+      "distance_to_mg": {
+        "k": 4,
+        "values": [
+          0.041957,
+          0.0459,
+          0.046043,
+          0.029543
+        ],
+        "mean": 0.04086075,
+        "min": 0.029543,
+        "max": 0.046043,
+        "sd": 0.007779095593319317,
+        "stage1_single_seed": 0.041957
+      },
+      "stage1_verdict": "disqualified",
+      "stage1_worst_shortfall": -0.0526
+    }
+  },
+  "never_read": [
+    "data/mllmu_hier_confirm100",
+    "data/reports/mllmu_confirm100_final_analysis.json"
+  ],
+  "limitations": [
+    "Replication does not increase the query count. The probe half is 35 entities / 408 retain-same and 23 donors / 76 retain-other queries, fixed by the association pool, so retain-other remains resolvable only in units of 1/76 = 0.0132 however many seeds are run.",
+    "k=4 replicates per parent (seed 42 reused from Stage 1 plus 43, 44, 45). A mean over four draws bounds training-seed variance loosely; it does not license an interval claim.",
+    "Two parents only, chosen as the two smallest retain-same shortfalls in the filed Stage-1 report. This says nothing about the other six candidates.",
+    "Exploratory: no hypothesis is tested and no error rate is controlled. A pass here is a reason to design a confirmatory protocol, not a claim."
+  ]
+}

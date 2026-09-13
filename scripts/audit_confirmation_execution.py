@@ -98,7 +98,9 @@ def _git(*args: str) -> str | None:
 
     A clone without full history, or a source tarball, must still produce a
     report; the fields that needed git are then recorded as unavailable rather
-    than invented.
+    than invented.  ``history_available`` is what makes that promise hold: it
+    separates "this clone cannot answer" from "the answer is no", which a bare
+    None return cannot.
     """
     try:
         out = subprocess.run(("git", *args), cwd=REPO_ROOT,
@@ -106,6 +108,33 @@ def _git(*args: str) -> str | None:
     except (OSError, subprocess.SubprocessError):
         return None
     return out.stdout if out.returncode == 0 else None
+
+
+def history_available(commit: str) -> bool:
+    """Whether ``commit`` is present in THIS clone.
+
+    ``actions/checkout`` defaults to ``fetch-depth: 1``, and under a depth-1
+    clone every ``git show <commit>:<path>`` this module makes fails.  Git then
+    names a missing COMMIT as a missing PATH — "path ... exists on disk, but
+    not in '<sha>'" — which reads like a fact about the repository rather than
+    an artifact of the checkout, and inferring unavailability from those calls'
+    failures therefore reported three false negatives instead of three unknowns.
+
+    Probed with ``cat-file -e`` rather than inferred, so the question is asked
+    once and answered the same way everywhere.
+    """
+    #: ``cat-file -e`` prints nothing on success, so ``_git`` returns "" —
+    #: falsy but not None, which is why this compares against None.
+    return _git("cat-file", "-e", f"{commit}^{{commit}}") is not None
+
+
+#: Stands in for a field whose question this clone cannot answer.  A string
+#: rather than None wherever the field is prose, so a degraded report reads as
+#: unanswerable instead of quietly looking like a negative finding.
+UNANSWERABLE_IN_THIS_CLONE = (
+    "unanswerable in this clone: the scoring commit is not in its history, so "
+    "the evidence this would be read from cannot be fetched (git fetch "
+    "--unshallow; in CI, fetch-depth: 0)")
 
 
 def _git_blob_sha256(commit: str, path: str) -> str | None:
@@ -307,6 +336,13 @@ def code_identity(root: Path, sidecars: dict[str, dict]) -> dict[str, Any]:
     dirty = {s: sidecars[s]["code"]["git_dirty"] for s in STATES}
     scoring_commit = next(iter(commits.values()))
     one_commit = len(set(commits.values())) == 1
+    #: Asked before any ``git show <scoring_commit>:...`` below.  Three fields
+    #: here state facts about the REPOSITORY — was the verifier tracked, has it
+    #: changed, was the predictions directory ignored — and a clone that cannot
+    #: see the scoring commit cannot answer them.  Left to fail, each of those
+    #: read the failed query as a negative answer and reported the verifier as
+    #: untracked and as modified since scoring.
+    saw_history = history_available(scoring_commit)
 
     #: ``git_dirty`` is a bare ``git status --porcelain``, which counts untracked
     #: files.  Whether the predictions directory was ignored AT THE SCORING
@@ -326,6 +362,23 @@ def code_identity(root: Path, sidecars: dict[str, dict]) -> dict[str, Any]:
     verifier_then = _git_blob_sha256(scoring_commit, VERIFIER)
     verifier_now = _sha256(root / VERIFIER)
 
+    #: Three branches, not two.  ``predictions_ignored_then is None`` means the
+    #: .gitignore at the scoring commit could not be read, which is not the same
+    #: finding as reading it and seeing the predictions directory tracked:
+    #: reporting "not explained; investigate" there would send a reader after a
+    #: contradiction that exists only in this checkout.
+    if one_commit and predictions_ignored_then is False:
+        why_dirty: Any = (
+            "B3 ran first, when the predictions directory did not exist, so its "
+            "tree was clean. Its three outputs were untracked at that commit, so "
+            "porcelain listed them, and every later lane saw a dirty tree. No "
+            "step of the chain edits a tracked file.")
+    elif predictions_ignored_then is None:
+        why_dirty = UNANSWERABLE_IN_THIS_CLONE
+    else:
+        why_dirty = ("not explained by the untracked-predictions account; "
+                     "investigate before relying on this report")
+
     return {
         "scoring_commit": scoring_commit,
         "all_three_states_generated_at_one_commit": one_commit,
@@ -335,14 +388,7 @@ def code_identity(root: Path, sidecars: dict[str, dict]) -> dict[str, Any]:
             "prediction_provenance.git_dirty runs `git status --porcelain` with "
             "no --untracked-files flag, so UNTRACKED files count as dirty"),
         "predictions_dir_ignored_at_the_scoring_commit": predictions_ignored_then,
-        "why_b0_and_mg_report_dirty": (
-            "B3 ran first, when the predictions directory did not exist, so its "
-            "tree was clean. Its three outputs were untracked at that commit, so "
-            "porcelain listed them, and every later lane saw a dirty tree. No "
-            "step of the chain edits a tracked file." if one_commit
-            and predictions_ignored_then is False else
-            "not explained by the untracked-predictions account; investigate "
-            "before relying on this report"),
+        "why_b0_and_mg_report_dirty": why_dirty,
         "limitation_of_a_single_dirty_boolean": (
             "git_dirty cannot distinguish 'only untracked evidence appeared' "
             "from 'a tracked file was modified', because it reduces a porcelain "
@@ -365,8 +411,14 @@ def code_identity(root: Path, sidecars: dict[str, dict]) -> dict[str, Any]:
                 for s in STATES),
             "sha256_at_the_scoring_commit": verifier_then,
             "sha256_now": verifier_now,
-            "unchanged_since_scoring": verifier_then == verifier_now,
-            "recoverable_from_git_because_tracked": verifier_then is not None,
+            #: Both of these are answers about the repository, so a clone that
+            #: cannot see the scoring commit gets None rather than False: False
+            #: would assert that the verifier changed, and that it is untracked,
+            #: and the audit's whole mitigation rests on the opposite being true.
+            "unchanged_since_scoring": (
+                None if not saw_history else verifier_then == verifier_now),
+            "recoverable_from_git_because_tracked": (
+                None if not saw_history else verifier_then is not None),
             "consequence": (
                 "the verifier's own bytes were pinned by nothing at generation "
                 "time, so the record cannot show that the contract being "
@@ -604,8 +656,29 @@ def main() -> int:
     report = build_report(root)
     text = json.dumps(report, indent=1, sort_keys=True) + "\n"
     if args.stdout:
+        #: Deliberately not refused.  ``--stdout`` cannot touch the filed
+        #: report, and a degraded document whose three unanswerable fields say
+        #: "unanswerable in this clone" is more useful than an error that hides
+        #: them — it is how a reader finds out why the checkout is short.
         print(text, end="")
         return 0
+
+    #: Building a report this clone cannot fully answer is harmless; WRITING it
+    #: is not, because the committed audit is the filed record and overwriting
+    #: it from a depth-1 checkout would replace three findings with unknowns
+    #: while every other field still looked authoritative.  Refused here rather
+    #: than left to the reader to notice the None values.
+    commit = report["code_identity"]["scoring_commit"]
+    if not history_available(commit):
+        print(f"REFUSED — the scoring commit {commit[:12]} is not in this "
+              f"clone, so code_identity could not answer whether the verifier "
+              f"is tracked, whether it changed, or whether the predictions "
+              f"directory was ignored then. Fetch full history first: "
+              f"`git fetch --unshallow`, or `fetch-depth: 0` on "
+              f"actions/checkout. Use --stdout to see the degraded report "
+              f"without writing it.")
+        return 1
+
     out = Path(args.output) if args.output else root / OUT_REPORT
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(text)

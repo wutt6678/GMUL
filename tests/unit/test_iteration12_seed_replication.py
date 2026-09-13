@@ -310,10 +310,31 @@ class TestTheFreezeAndTheResultDoNotShareAPath:
         assert json.loads(
             (REPO_ROOT / FREEZE_REPORT).read_text())["stage"].startswith("1b")
 
-    def test_the_result_path_is_still_free(self):
-        #: It must be: nothing has been scored yet, and a result file present
-        #: before the replicates exist would be a report about nothing.
-        assert not (REPO_ROOT / OUT_REPORT).exists()
+    def test_a_result_cannot_predate_its_own_evidence(self):
+        """The invariant behind the old ``test_the_result_path_is_still_free``.
+
+        That test asserted the result file did not exist, which held only until
+        the study was scored: it pinned a transient precondition of the
+        repository instead of a property of the protocol, so scoring the study
+        turned it into a failure.  What it was protecting is this — a result
+        written before its replicates existed would be a report about nothing —
+        and that holds in both regimes.
+        """
+        result = REPO_ROOT / OUT_REPORT
+        if not result.exists():
+            pytest.skip("the study has not been scored yet")
+        doc = json.loads(result.read_text())
+        assert len(doc["replicates"]) == len(replicates())
+        #: Adapters are gitignored, so a clone has none and the filesystem is
+        #: not evidence there — the report's own replicate set is.  Checked
+        #: where the adapters exist rather than skipped everywhere, because on
+        #: the machine that ran the study the two counts must agree.
+        trained = fisr.trained_replicates(REPO_ROOT)
+        if trained:
+            assert len(trained) == len(to_train())
+        #: And it is a result, not a second freeze at the wrong path — the
+        #: collision this whole class exists to prevent.
+        assert "verdicts" in doc and "hashes" not in doc
 
     def test_the_studies_do_not_share_a_predictions_directory(self):
         assert aisr.EXPERIMENT_ID != "mllmu_iter12_stage1"
@@ -402,8 +423,40 @@ class TestTheFreezeIsBoundAndRefusesToPostdateItsReplicates:
         (adir / "adapter_model.safetensors").write_bytes(b"x")
         assert fisr.trained_replicates(tmp_path) == [rid]
 
-    def test_trained_replicates_is_empty_now(self):
-        assert fisr.trained_replicates(REPO_ROOT) == []
+    def test_trained_replicates_is_empty_for_a_root_without_adapters(
+            self, tmp_path):
+        """The refusal is not vacuously always-on.
+
+        This used to assert ``trained_replicates(REPO_ROOT) == []``, which was
+        true only until the study ran: it pinned a transient precondition of
+        the repository rather than a property of the function, so the chain
+        training its six replicates turned it into a failure.  An empty root is
+        the same evidence and does not expire.
+        """
+        assert fisr.trained_replicates(tmp_path) == []
+        (tmp_path / SEED_CKPT_ROOT).mkdir(parents=True)
+        assert fisr.trained_replicates(tmp_path) == []
+
+    def test_the_refusal_is_armed_once_the_study_has_run(self):
+        """State-aware, so it holds both before and after the chain trains.
+
+        The guard's whole purpose is to make a post-hoc amendment impossible
+        once a replicate exists; this is the check that it has actually become
+        impossible rather than remaining a hypothetical.
+        """
+        before = sha(REPO_ROOT / FREEZE_REPORT)
+        trained = fisr.trained_replicates(REPO_ROOT)
+        if not trained:
+            pytest.skip("no replicate has been trained yet, so the "
+                        "post-training refusal is not armed")
+        p = subprocess.run(
+            [PY, "scripts/freeze_iter12_seed_replication.py",
+             "--refreeze", "--reason", "probe"],
+            cwd=REPO_ROOT, capture_output=True, text=True, check=False)
+        assert p.returncode == 1
+        assert "already have adapters" in p.stderr
+        assert sha(REPO_ROOT / FREEZE_REPORT) == before, \
+            "a --refreeze with a reason reached past the post-training refusal"
 
     def test_the_refusal_is_evaluated_before_anything_is_written(
             self, monkeypatch, capsys):
@@ -418,23 +471,69 @@ class TestTheFreezeIsBoundAndRefusesToPostdateItsReplicates:
         assert sha(REPO_ROOT / FREEZE_REPORT) == before, \
             "--refreeze reached past the post-training refusal"
 
-    def test_a_bare_rewrite_is_refused(self):
-        before = sha(REPO_ROOT / FREEZE_REPORT)
-        p = subprocess.run(
-            [PY, "scripts/freeze_iter12_seed_replication.py"],
-            cwd=REPO_ROOT, capture_output=True, text=True, check=False)
-        assert p.returncode == 1
-        assert "REFUSING to overwrite" in p.stderr
-        assert sha(REPO_ROOT / FREEZE_REPORT) == before
+    def _pre_training_regime(self, tmp_path, monkeypatch, argv):
+        """Run ``main()`` as if no replicate had been trained yet.
 
-    def test_an_amendment_without_a_reason_is_refused(self):
-        before = sha(REPO_ROOT / FREEZE_REPORT)
-        p = subprocess.run(
-            [PY, "scripts/freeze_iter12_seed_replication.py", "--refreeze"],
-            cwd=REPO_ROOT, capture_output=True, text=True, check=False)
-        assert p.returncode == 1
-        assert "--refreeze requires --reason" in p.stderr
-        assert sha(REPO_ROOT / FREEZE_REPORT) == before
+        Two patches, and the second is not decoration.  ``trained_replicates``
+        is patched empty so the pre-training refusals are reachable at all now
+        that six adapters exist — they used to be reachable only by running the
+        script before the chain did.  ``OUT_REPORT`` is redirected so that if an
+        ordering bug ever let ``main()`` past a refusal, it would overwrite a
+        copy rather than the committed freeze: a test whose failure mode is
+        destroying the artifact it checks is worse than no test.
+        """
+        real = REPO_ROOT / FREEZE_REPORT
+        before = sha(real)
+        redirect = tmp_path / "freeze.json"
+        redirect.write_text(real.read_text())
+        monkeypatch.setattr(fisr, "trained_replicates", lambda root: [])
+        #: Absolute, and ``repo_root / OUT_REPORT`` therefore yields the
+        #: redirect rather than something inside the repository.
+        monkeypatch.setattr(fisr, "OUT_REPORT", str(redirect))
+        monkeypatch.setattr(sys, "argv",
+                            ["freeze", "--repo-root", str(REPO_ROOT), *argv])
+        return real, before, redirect
+
+    def test_a_bare_rewrite_is_refused(self, tmp_path, monkeypatch):
+        real, before, redirect = self._pre_training_regime(
+            tmp_path, monkeypatch, [])
+        with pytest.raises(SystemExit) as exc:
+            fisr.main()
+        assert "REFUSING to overwrite" in str(exc.value)
+        assert sha(real) == before
+        assert sha(redirect) == before, "the refusal wrote anyway"
+
+    def test_an_amendment_without_a_reason_is_refused(
+            self, tmp_path, monkeypatch):
+        real, before, redirect = self._pre_training_regime(
+            tmp_path, monkeypatch, ["--refreeze"])
+        with pytest.raises(SystemExit) as exc:
+            fisr.main()
+        assert "--refreeze requires --reason" in str(exc.value)
+        assert sha(real) == before
+        assert sha(redirect) == before, "the refusal wrote anyway"
+
+    def test_an_amendment_with_a_reason_lands_on_the_copy(
+            self, tmp_path, monkeypatch, capsys):
+        """The amendment path, testable only because the output is redirected.
+
+        Against the real freeze this could never be exercised: running it would
+        append an amendment to a filed artifact, and after the chain trained
+        there is no way to undo that without editing the file the refusal
+        exists to protect.
+        """
+        real, before, redirect = self._pre_training_regime(
+            tmp_path, monkeypatch, ["--refreeze", "--reason", "test only"])
+        fisr.main()
+        assert "AMENDED" in capsys.readouterr().out
+        amended = json.loads(redirect.read_text())
+        assert len(amended["amendments"]) == \
+            len(seed_freeze()["amendments"]) + 1
+        last = amended["amendments"][-1]
+        assert last["reason"] == "test only"
+        assert last["no_replicate_had_been_trained"] is True
+        assert len(last["supersedes_sha256"]) == 64
+        assert sha(real) == before, "the amendment reached the committed freeze"
 
     def test_the_committed_freeze_verifies(self):
         assert fisr.verify_freeze(REPO_ROOT) == []
@@ -445,8 +544,10 @@ class TestTheFreezeIsBoundAndRefusesToPostdateItsReplicates:
             assert a["reason"] and len(a["supersedes_sha256"]) == 64
 
     def test_amendments_record_which_fields_changed(self):
-        #: Both amendments so far re-bound protocol-path hashes and moved no
-        #: criterion field.  That is the point of recording the list.
+        #: Every amendment so far re-bound protocol-path hashes and moved no
+        #: criterion field, which is the point of recording the list.  Stated
+        #: without a count: the number grows as the protocol is corrected, and
+        #: a comment naming it goes stale the first time that happens.
         for a in seed_freeze()["amendments"]:
             assert all(f.startswith("hashes.protocol_paths.")
                        for f in a["fields_that_changed"]), \

@@ -1,0 +1,190 @@
+{
+  "what_this_is": "a record that the frozen Stage-1b analyzer crashed and that this script completed its report by running it with one call unwrapped. It is not part of the preregistered protocol and no frozen file was edited to produce it.",
+  "generated_utc": "2026-09-13T14:49:11+00:00",
+  "git_commit": "db961898964815cfcc39aa592cf8a4dbfbc51630",
+  "frozen_files_edited": [],
+  "the_bug": {
+    "site": "scripts/analyze_iter12_seed_replication.py:325",
+    "stored": "rs.distance_to_mg(...) \u2014 a tuple[float | None, list]",
+    "intended": "the distance alone; that function's own caller in retention_selection.py unpacks it as dist, used",
+    "where_it_surfaces": "line 386 collects those tuples into `dists` and line 394 passes them to aggregate, whose first statement is float(v)",
+    "decision_bearing": false,
+    "why_not": "the report says distance_to_mg is 'reported per replicate and as a mean, but the floor decides eligibility, exactly as in Stage 1'"
+  },
+  "why_a_separate_file": "both files on that path are PROTOCOL_PATHS in the Stage-1b freeze, which refuses amendment once replicates have adapters on disk; that refusal is the control, so it was honoured rather than worked around by deleting the freeze",
+  "the_patch": {
+    "target": "granunlearn.evaluation.retention_selection.distance_to_mg",
+    "effect": "returns the first element of the tuple it would have returned",
+    "scope": "the duration of one aisr.main() call, restored in a finally block",
+    "proof_it_cannot_move_the_verdict": {
+      "walked": {
+        "src/granunlearn/evaluation/retention_selection.py": {
+          "floor_check": [],
+          "probe_retention": [
+            "_rows",
+            "entity_macro_rate",
+            "entity_of",
+            "row_micro_rate"
+          ],
+          "trainval_vector": []
+        },
+        "src/granunlearn/training/seed_replication.py": {
+          "mean_candidate": [
+            "aggregate"
+          ],
+          "aggregate": [],
+          "range_classification": []
+        }
+      },
+      "functions_reaching_distance_to_mg": [],
+      "conclusion": "none of the decision-bearing functions can see the patched call, so the patch cannot move the verdict"
+    },
+    "proof_only_one_site_saw_it": {
+      "calls_served": 8,
+      "expected_call_site": "scripts/analyze_iter12_seed_replication.py:325",
+      "call_sites_in_the_analyzer": [
+        325
+      ],
+      "calls_from_anywhere_else": []
+    },
+    "other_files_that_mention_the_function": {
+      "files_mentioning_it": [
+        "scripts/analyze_iter12_seed_replication.py",
+        "scripts/evaluate_pilot100_final.py",
+        "scripts/freeze_confirmation_protocol.py",
+        "scripts/freeze_iter12_seed_replication.py",
+        "scripts/freeze_iter12_selection_protocol.py",
+        "scripts/select_iter12_retention_checkpoints.py",
+        "scripts/select_salmu_unlearning_checkpoints.py",
+        "scripts/select_unlearning_checkpoints.py",
+        "src/granunlearn/evaluation/retention_selection.py",
+        "src/granunlearn/evaluation/selection.py",
+        "tests/unit/test_iteration12_protocol.py",
+        "tests/unit/test_iteration12_seed_replication.py",
+        "tests/unit/test_pilot100_evidence.py",
+        "tests/unit/test_selection.py"
+      ],
+      "per_file": {
+        "scripts/analyze_iter12_seed_replication.py": [
+          "325:            \"distance_to_mg\": rs.distance_to_mg(",
+          "386:        dists = [per_replicate[k][\"distance_to_mg\"] for k in kids]",
+          "394:            \"distance_to_mg\": {**aggregate(dists),",
+          "397:                                   [\"distance_to_mg\"]},",
+          "435:            \"distance_to_mg\": (\"reported per replicate and as a mean, but the \""
+        ],
+        "scripts/evaluate_pilot100_final.py": [
+          "677:            \"distance_to_mg_trainval\":",
+          "678:                selection[\"candidates\"].get(cid, {}).get(\"distance_to_mg\"),"
+        ],
+        "scripts/freeze_confirmation_protocol.py": [
+          "1627:            entry[\"distance_to_mg_on_the_exploratory_split\"] = \\",
+          "1628:                cand.get(\"distance_to_mg\")"
+        ],
+        "scripts/freeze_iter12_seed_replication.py": [
+          "245:            \"distance_to_mg\": ("
+        ],
+        "scripts/freeze_iter12_selection_protocol.py": [
+          "23:* **the tie-break** -- ``(distance_to_mg, candidate_id)`` ascending.  The id",
+          "251:                \"rule\": \"(distance_to_mg, candidate_id) ascending\","
+        ],
+        "scripts/select_iter12_retention_checkpoints.py": [
+          "320:                 report[\"candidates\"][cid][\"distance_to_mg\"])"
+        ],
+        "scripts/select_salmu_unlearning_checkpoints.py": [
+          "70:def distance_to_mg(vec: dict[str, float],",
+          "268:        dist, used = distance_to_mg(vec, mg_vec)"
+        ],
+        "scripts/select_unlearning_checkpoints.py": [
+          "387:                     report[\"candidates\"][cid][\"distance_to_mg\"])"
+        ],
+        "src/granunlearn/evaluation/retention_selection.py": [
+          "34:3. **the tie-break.**  ``(distance_to_mg, candidate_id)`` ordered ascending,",
+          "57::func:`distance_to_mg_on_probe` is reported beside the decision and is NOT",
+          "284:def distance_to_mg(vector: dict[str, float | None],",
+          "296:def distance_to_mg_on_probe(vector: dict[str, float | None],",
+          "336:        dist, used = distance_to_mg(vector, reference_vector, weights)",
+          "339:        dg_probe, _ = distance_to_mg_on_probe(",
+          "344:            \"distance_to_mg\": dist,",
+          "349:            \"distance_to_mg_on_probe\": dg_probe,",
+          "350:            \"distance_to_mg_on_probe_is_decision_bearing\": False,",
+          "356:        rows[c][\"distance_to_mg\"], c))",
+          "363:        best = rows[selected][\"distance_to_mg\"]",
+          "366:                      and rows[cid][\"distance_to_mg\"] == best)",
+          "387:                \"rule\": \"(distance_to_mg, candidate_id) ascending\",",
+          "442:    ref_dist = rows[reference_row][\"distance_to_mg\"]",
+          "447:            \"best_eligible_distance_to_mg\": None,",
+          "449:            \"reference_distance_to_mg\": ref_dist,",
+          "452:    best = rows[selected][\"distance_to_mg\"]",
+          "461:        \"best_eligible_distance_to_mg\": best,",
+          "463:        \"reference_distance_to_mg\": ref_dist,"
+        ],
+        "src/granunlearn/evaluation/selection.py": [
+          "113:            \"distance_to_mg\": dist,",
+          "122:            if r[\"method\"] != method or r[\"distance_to_mg\"] is None:",
+          "124:            if best is None or r[\"distance_to_mg\"] < \\",
+          "125:                    rows[best][\"distance_to_mg\"]:"
+        ],
+        "tests/unit/test_iteration12_protocol.py": [
+          "16:* the TIE-BREAK \u2014 ``(distance_to_mg, candidate_id)``, which carries no",
+          "412:        d_at, _ = rs.distance_to_mg(at_mg, mg)",
+          "413:        d_below, _ = rs.distance_to_mg(below, mg)",
+          "414:        d_above, _ = rs.distance_to_mg(above, mg)",
+          "445:        assert first[\"candidates\"][\"B4_w2.0_b\"][\"distance_to_mg\"] == \\",
+          "446:            first[\"candidates\"][\"B4_w0.5_a\"][\"distance_to_mg\"]",
+          "456:        assert rs.distance_to_mg(vec, mg) == \\",
+          "472:        assert tb[\"rule\"] == \"(distance_to_mg, candidate_id) ascending\"",
+          "521:        assert gate[\"best_eligible_distance_to_mg\"] < \\",
+          "522:            gate[\"reference_distance_to_mg\"]"
+        ],
+        "tests/unit/test_iteration12_seed_replication.py": [
+          "166:            key=lambda c: rep[\"candidates\"][c][\"distance_to_mg\"])[:2]",
+          "296:        assert \"the floor decides eligibility\" in fz[\"distance_to_mg\"]"
+        ],
+        "tests/unit/test_pilot100_evidence.py": [
+          "160:            same = [(c, i[\"distance_to_mg\"])",
+          "193:        sel_d = rep[\"candidates\"][rep[\"selected\"][\"B1\"]][\"distance_to_mg\"]",
+          "195:            assert rep[\"candidates\"][cid][\"distance_to_mg\"] > sel_d, cid"
+        ],
+        "tests/unit/test_selection.py": [
+          "99:        assert report[\"candidates\"][\"X\"][\"distance_to_mg\"] is not None"
+        ]
+      }
+    }
+  },
+  "crash_reproduced_first": {
+    "command_returncode": 1,
+    "exception": "TypeError: float() argument must be a string or a real number, not 'tuple'",
+    "reproduced": true,
+    "crash_line": "File \"/scratch/wutiantong/GMUL/granularity-unlearning/scripts/analyze_iter12_seed_replication.py\", line 394, in main",
+    "report_sha256_before_the_crashed_run": "b92119a72b7028d7e93251f261224699fefb1cf74437188a15bdb01875cb1a57",
+    "report_sha256_after_the_crashed_run": "b92119a72b7028d7e93251f261224699fefb1cf74437188a15bdb01875cb1a57",
+    "the_crashed_run_wrote_or_changed_the_report": false
+  },
+  "frozen_protocol_paths_verified_before_running": {
+    "num_protocol_paths": 4,
+    "per_path": {
+      "scripts/analyze_iter12_seed_replication.py": {
+        "freeze_records": "b5e7bf8fcd43bcde8f53051b3c33cfabe5ac91b0e522df4d4d2c8bcde47004f9",
+        "now": "b5e7bf8fcd43bcde8f53051b3c33cfabe5ac91b0e522df4d4d2c8bcde47004f9",
+        "matches": true
+      },
+      "scripts/freeze_iter12_seed_replication.py": {
+        "freeze_records": "d063162a753e222ab857959dcd87e22fa43a63783abec9dc074dc5fa8a7bf9c5",
+        "now": "d063162a753e222ab857959dcd87e22fa43a63783abec9dc074dc5fa8a7bf9c5",
+        "matches": true
+      },
+      "scripts/train_iter12_seed_replicates.py": {
+        "freeze_records": "ea719ada94972fe5ccbba4a35e8055eefe6d62f85d1cc537a2fb4a28a20ea775",
+        "now": "ea719ada94972fe5ccbba4a35e8055eefe6d62f85d1cc537a2fb4a28a20ea775",
+        "matches": true
+      },
+      "src/granunlearn/training/seed_replication.py": {
+        "freeze_records": "c55894ebed37132a3dcf003c7a48a90c67929c17289bb4f9ce66ae19aff05b2a",
+        "now": "c55894ebed37132a3dcf003c7a48a90c67929c17289bb4f9ce66ae19aff05b2a",
+        "matches": true
+      }
+    },
+    "all_match": true
+  },
+  "what_still_cannot_be_claimed": "that the preregistered analysis ran to completion unaided. It did not: it crashed, and a script written after the crash finished it. The decision rule is the frozen one and the frozen bytes are unchanged, but the ordering 'protocol then result' holds for the rule and not for this script."
+}
