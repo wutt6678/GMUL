@@ -77,6 +77,20 @@ def freeze_doc() -> dict:
     return json.loads(FREEZE.read_text())
 
 
+def _history_is_shallow() -> bool:
+    """Whether this checkout can answer "what was HEAD at time T" at all.
+
+    Asked of git rather than inferred from what the function under test returned,
+    because a test that branched on the result would pass against a script that
+    disclosed unconditionally and never measured anything.  The workflow clones
+    with ``fetch-depth: 0``, so CI takes the other branch -- which is why the
+    disclosure is also driven deterministically in its own test below.
+    """
+    return subprocess.run(
+        ("git", "rev-parse", "--is-shallow-repository"), cwd=REPO_ROOT,
+        capture_output=True, text=True, check=False).stdout.strip() == "true"
+
+
 def selector_lines() -> list[str]:
     return SELECTOR.read_text().splitlines()
 
@@ -631,6 +645,16 @@ class TestTheThirdDefectIsDisclosedRatherThanPatched:
         for rel, entry in out["per_freeze"].items():
             if entry["git_commit"] is not None:
                 continue
+            if _history_is_shallow():
+                #: A depth-1 checkout does not contain the commit that preceded
+                #: the freeze, so there is nothing to reconstruct FROM.  Asserted
+                #: rather than skipped, and the assertion is about the shape: the
+                #: disclosure must carry no field a reader could mistake for a
+                #: measurement, which is what makes it a disclosure.
+                assert entry["reconstructed_head"] is None, rel
+                assert entry["so_no_bound_path_was_compared"] is True, rel
+                assert "the_tree_was_therefore_dirty" not in entry, rel
+                continue
             assert re.fullmatch(r"[0-9a-f]{40}", entry["reconstructed_head"]), rel
             assert entry["the_tree_was_therefore_dirty"] is True, rel
             assert entry["which_contradicts_git_dirty"] is False, rel
@@ -653,6 +677,40 @@ class TestTheThirdDefectIsDisclosedRatherThanPatched:
                     "every_differing_path_is_a_documented_amendment"] is None, rel
             if entry["bound_paths_absent_there"]:
                 assert entry["every_absent_path_exists_there"] is True, rel
+
+    def test_a_checkout_without_the_history_says_so_rather_than_measuring_nothing(
+            self):
+        """The disclosure branch, driven deterministically rather than hoped for.
+
+        CI clones with ``fetch-depth: 0``, so a shallow checkout is not something
+        the suite would otherwise ever see -- and a branch no test reaches is a
+        branch a mutation can rewrite unnoticed.  A timestamp before the first
+        commit produces the same "no commit precedes this" condition in ANY clone,
+        full or shallow, so the branch is exercised everywhere.
+
+        What it must not do is return the successful shape with empty lists.
+        ``the_tree_was_therefore_dirty`` is ``bool(differing or absent)``, so
+        measuring nothing would compute to False and file as a measurement that
+        found the tree clean -- the opposite of the finding this disclosure exists
+        to make.
+        """
+        doc = freeze_doc()
+        doc["frozen_at_utc"] = "1970-01-01T00:00:00+00:00"
+        entry = rep._reconstruct_the_commit(fis2.OUT_REPORT, doc)
+        assert entry["reconstructed_head"] is None
+        assert entry["so_no_bound_path_was_compared"] is True
+        assert "1970-01-01" in entry["history_insufficient_in_this_clone"]
+        #: It names what it would have measured, so the absence is informative
+        #: rather than a hole.
+        assert "hashes.protocol_paths" in entry[
+            "what_would_be_measured_with_history"]
+        #: And it carries none of the fields whose values would read as findings.
+        for measured in ("the_tree_was_therefore_dirty",
+                         "bound_paths_matching_that_commit",
+                         "bound_paths_differing_there",
+                         "bound_paths_absent_there",
+                         "which_contradicts_git_dirty"):
+            assert measured not in entry, measured
 
     def test_the_record_does_not_repeat_the_mistake_it_discloses(self):
         r = record()

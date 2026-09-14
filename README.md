@@ -1192,12 +1192,26 @@ selector refuse to run the study it governs. What a freeze exists to answer — 
 bytes, from which commit, in what tree state — is, for these two, nothing, and the
 reconstruction is labelled a reconstruction rather than filed as provenance.
 
-71 tests in `tests/unit/test_iteration12_stage2_repair.py` hold all of this, torch-free
+It also does not pretend to work in a checkout that has no history to reconstruct
+from. A depth-1 clone holds one commit, dated after every freeze, so
+`rev-list --before=<frozen_at_utc>` answers with nothing. The first version of this
+raised, which failed eight tests in a shallow clone for a reason that was about the
+clone and was indistinguishable from the repair being broken. It now returns a
+disclosure naming the timestamp it could not resolve, and carrying none of the
+fields whose values would read as findings — because `the_tree_was_therefore_dirty`
+is `bool(differing or absent)`, so measuring nothing computes to `False` and files
+as a measurement that found the tree clean: the opposite of the finding, arrived at
+by comparing nothing. The workflow clones with `fetch-depth: 0`, so CI takes the
+reconstructing branch, and the disclosure is driven deterministically anyway by a
+timestamp before the first commit — a branch no test reaches is a branch a mutation
+can rewrite unnoticed.
+
+72 tests in `tests/unit/test_iteration12_stage2_repair.py` hold all of this, torch-free
 and GPU-free; the arity audit that would have caught the first defect before the grid's
 generation ran — 96.72 minutes for the seven lanes, from the chain log's own two
 timestamps — is one of them, and it pins 27 audited calls
 because a first version resolved half the call sites, reported no problems, and was
-worse than no audit at all for looking like one. 29 mutations — the patched name
+worse than no audit at all for looking like one. 31 mutations — the patched name
 changed, the anchor named as a candidate that exists, a three-argument call declared
 sufficient, `rank_key` dropped from the decision-bearing set, the key tokeniser
 reverted to substring matching (which reports a timestamp in a report that has none,
@@ -1207,9 +1221,11 @@ on the wrong dot, a byte-identical rewrite reported as a change, both chain-log
 refusals returned to silent `None`s, every call reported as supplied including the
 callee's own, one of the two patches no longer restored, the scoring lane allowed to
 skip the crash proof, a generation lane pointed at the frozen selector directly, the
-`check` phase weakened from the adapter file to the directory, and nine edits to the
-filed record itself — were each caught, 0 survived, and every file was restored
-byte-identically. `--check-only` re-derives the record from the frozen bytes, the
+`check` phase weakened from the adapter file to the directory, a checkout with no
+history reporting the tree it never looked at and the same disclosure claiming it had
+compared the bound paths, and nine edits to the filed record itself — were each
+caught, 0 survived, and every file was restored byte-identically. `--check-only`
+re-derives the record from the frozen bytes, the
 committed evidence log and both earlier filings of itself, and refuses a record whose
 anchor proof is null — a gate verified against the filing it replaced rather than
 assumed to bite. Those two earlier filings are committed under `outputs/superseded/`
@@ -1362,5 +1378,8 @@ filed freezes record `git_commit: null` and `git_dirty: false` — the second fa
 since 40 of the Stage-2 freeze's 43 bound paths match HEAD reconstructed from its own
 timestamp and the three that differ are the three its amendment log names. Both fields
 are volatile, so no verdict depends on them, and each script binds itself, so neither
-can be edited. 71 tests, 29 mutations caught and 0 survived, and the five recorded
+can be edited. 72 tests, 31 mutations caught and 0 survived, and the five recorded
 scoring invocations left one distinct sha256 of the selection report between them.
+The provenance reconstruction also refuses to fabricate an answer in a checkout with
+no history: a depth-1 clone gets a disclosure naming the timestamp it could not
+resolve, not a `the_tree_was_therefore_dirty: false` computed from nothing.

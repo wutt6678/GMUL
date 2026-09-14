@@ -142,6 +142,18 @@ and filed: the mis-bound calls parsed out of both scripts, the exclusion read ou
 candidate commit that is then tested against the hashes the freeze recorded.  It is
 disclosed because "which bytes, from which commit, in what tree state" is the question
 a freeze exists to answer, and for these two it answers nothing.
+
+That reconstruction needs history, and a checkout may not have any.  A depth-1 clone
+holds one commit dated after every freeze, so ``rev-list --before=<frozen_at_utc>``
+answers with nothing.  It neither raises -- which fails a suite in a clone for a
+reason that is about the clone, and is indistinguishable from this script being
+broken -- nor returns the measured shape with empty lists, which would compute
+``the_tree_was_therefore_dirty`` to ``False`` and file as a measurement that found
+the tree clean.  It returns a disclosure naming the timestamp it could not resolve.
+``.github/workflows/tests.yml`` clones with ``fetch-depth: 0``, so CI reconstructs;
+the disclosure is driven by a test in every checkout all the same, using a timestamp
+before the first commit, because a branch no test reaches is a branch a mutation can
+rewrite unnoticed.
 """
 from __future__ import annotations
 
@@ -760,7 +772,35 @@ def _reconstruct_the_commit(rel: str, doc: dict[str, Any]) -> dict[str, Any]:
                        check=False)
     commit = p.stdout.strip() or None
     if commit is None:
-        raise SystemExit(f"REFUSING: no commit precedes {doc['frozen_at_utc']}")
+        #: Not a refusal, and not a fabricated answer either.  A SHALLOW checkout
+        #: does not contain the commit that preceded the freeze, so there is
+        #: nothing to reconstruct from -- which is a property of the checkout and
+        #: not of the freeze.  ``freeze_iter12_stage2.py --check-only`` reports an
+        #: absent reference cache the same way: named, and not counted as a
+        #: failure.  .github/workflows/tests.yml clones with ``fetch-depth: 0``
+        #: precisely so this branch is not the one CI takes.
+        #:
+        #: The two ways this could go quietly wrong are both refused here.  It
+        #: must not return the successful shape with empty lists, because
+        #: ``the_tree_was_therefore_dirty`` would then compute to False and read
+        #: as a measurement that found the tree clean -- the opposite of the
+        #: finding, arrived at by measuring nothing.  And it must not raise,
+        #: because that fails a suite in a clone for a reason that is about the
+        #: clone, which is indistinguishable from the repair being broken.
+        return {
+            "reconstructed_head": None,
+            "history_insufficient_in_this_clone": (
+                f"no commit in this checkout precedes {doc['frozen_at_utc']}, so "
+                "the freeze's own timestamp cannot be turned into a HEAD. Nothing "
+                "was measured and nothing below is a measurement. "
+                ".github/workflows/tests.yml clones with fetch-depth: 0, where the "
+                "reconstruction does run."),
+            "so_no_bound_path_was_compared": True,
+            "what_would_be_measured_with_history": (
+                "every path in hashes.protocol_paths, hashes.depends_on_unchanged "
+                "and hashes.data_paths against that commit's blobs -- which is what "
+                "refutes the filed git_dirty: false"),
+        }
 
     matching, differing, absent = [], [], []
     for group in ("protocol_paths", "depends_on_unchanged", "data_paths"):
@@ -1539,6 +1579,14 @@ def main() -> int:
     provenance = the_freeze_records_no_git_provenance()
     for rel, entry in sorted(provenance["per_freeze"].items()):
         if entry["git_commit"] is None:
+            if entry["reconstructed_head"] is None:
+                #: The shallow-checkout branch.  Said out loud rather than
+                #: printed as a reconstruction of nothing, which is what
+                #: ``None[:7]`` would have raised on anyway.
+                print(f"  {rel}: git_commit null, git_dirty "
+                      f"{entry['git_dirty']!r}, and NOT reconstructed here -- "
+                      f"{entry['history_insufficient_in_this_clone']}")
+                continue
             print(f"  {rel}: git_commit null, git_dirty "
                   f"{entry['git_dirty']!r}, reconstructed HEAD "
                   f"{entry['reconstructed_head'][:7]} "
