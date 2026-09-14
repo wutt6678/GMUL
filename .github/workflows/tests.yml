@@ -177,6 +177,14 @@ jobs:
               "data/reports/mllmu_iter12_anchor_calibration.json",
               "data/reports/mllmu_iter12_stage2_basis.json",
               "data/reports/mllmu_iter12_stage2_freeze.json",
+              # The faithfulness control's result.  The control is what licences
+              # the Stage-2 comparison at all, and it writes into
+              # data/checkpoints/, which is gitignored -- so without this copy
+              # the numbers behind "the two training loops agree" would exist on
+              # one machine only.  It also carries the correction to a sentence
+              # in the control's own report that the freeze will not let be
+              # fixed where it was written.
+              "data/reports/mllmu_iter12_stage2_control_reading.json",
               # The MF reference cache's sidecar.  Its 1.48 GB tensor stays
               # gitignored, but the sidecar is what makes "anchored against MF"
               # checkable from a clone rather than described: it records the

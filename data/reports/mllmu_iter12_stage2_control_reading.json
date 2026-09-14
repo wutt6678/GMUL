@@ -1,0 +1,108 @@
+{
+  "what_this_is": "The Stage-2 faithfulness control's result, copied out of a gitignored checkpoint directory into a committed report, plus a correction to one sentence in it that is wrong. Written by scripts/annotate_iter12_stage2_control.py, which reads the control's own CONTROL.json and recomputes nothing.",
+  "read_from": "data/checkpoints/mllmu_iter12_stage2/_control/control_loop_equivalence/CONTROL.json",
+  "why_it_is_not_left_there": "data/checkpoints/ is gitignored, so the artifact that licences the whole Stage-2 comparison would exist on one machine only. A clone could not check the claim that the two training loops agree.",
+  "control": "control_loop_equivalence",
+  "gate_passed": true,
+  "python_hash_seed": "0",
+  "epochs": 2,
+  "runs": {
+    "A_frozen_loop": "data/checkpoints/mllmu_iter12_stage2/_control/control_loop_equivalence/A_frozen_loop/adapters",
+    "A2_frozen_loop_again": "data/checkpoints/mllmu_iter12_stage2/_control/control_loop_equivalence/A2_frozen_loop_again/adapters",
+    "B_new_loop_no_cap_no_anchor": "data/checkpoints/mllmu_iter12_stage2/_control/control_loop_equivalence/B_new_loop_no_cap_no_anchor/adapters"
+  },
+  "num_optimizer_steps_by_run": {
+    "A_frozen_loop": 92,
+    "A2_frozen_loop_again": 92,
+    "B_new_loop_no_cap_no_anchor": 92
+  },
+  "the_gate": {
+    "required": "no wider than the measured noise floor",
+    "noise_floor_frozen_loop_vs_itself": {
+      "comparable": true,
+      "num_tensors": 256,
+      "bitwise_identical": false,
+      "max_abs_gap": 0.0005809729918837547,
+      "mean_abs_gap": 0.00016494915919906816,
+      "worst_tensor": "base_model.model.model.language_model.layers.7.self_attn.o_proj.lora_A.weight"
+    },
+    "gap_frozen_vs_new": {
+      "comparable": true,
+      "num_tensors": 256,
+      "bitwise_identical": false,
+      "max_abs_gap": 0.0005031587788835168,
+      "mean_abs_gap": 0.00013841999464148103,
+      "worst_tensor": "base_model.model.model.language_model.layers.7.mlp.gate_proj.lora_B.weight"
+    },
+    "across_is_within_the_floor": true,
+    "across_to_floor_ratio": 0.8661,
+    "read_this_way": "the gap between the two loops is narrower than the gap between two runs of ONE of them on both the worst tensor and the mean over all 256, so the two loops are not distinguishable at the resolution this stack has"
+  },
+  "filed_stage1_adapter_reported_not_gated": {
+    "path": "data/checkpoints/mllmu_iter12_unlearn/B4_w1.0_lam0.5_lr2e-05_ep5/adapters",
+    "gap": {
+      "comparable": true,
+      "num_tensors": 256,
+      "bitwise_identical": false,
+      "max_abs_gap": 0.0028204936534166336,
+      "mean_abs_gap": 0.0017195167306454096,
+      "worst_tensor": "base_model.model.model.language_model.layers.31.mlp.down_proj.lora_A.weight"
+    },
+    "why_this_is_not_a_gate": "the filed adapter was written by a process whose PYTHONHASHSEED was randomised and is not recoverable, so its target_modules order -- and therefore its bytes and, through the dropout stream, its weights -- cannot be reproduced by any later run. The first version of this control gated on exactly that and refused, correctly, on a criterion no run could satisfy."
+  },
+  "a_wording_defect_in_the_control_report": {
+    "the_sentence": "the two loops produced bitwise-identical adapters under a pinned hash seed, so a difference between Stage 1 and Stage 2 is attributable to the objective and not to the code that runs it",
+    "and_the_log_line": "CONTROL PASSED: the two loops agree bitwise (noise floor max 0.0005809729918837547)",
+    "what_is_wrong_with_it": "It says the adapters were bitwise-identical. They were not: gate.gap_frozen_vs_new.bitwise_identical is false in the same document, and the gate decided on its magnitude branch.",
+    "the_fields_that_are_authoritative": [
+      "gate.required",
+      "gate.gap_frozen_vs_new.bitwise_identical",
+      "gate.gap_frozen_vs_new.max_abs_gap",
+      "noise_floor_frozen_loop_vs_itself"
+    ],
+    "how_it_happened": "The sentence is written for the branch that fires when the noise floor is exactly zero, which is the branch the CPU stub tests exercise and the branch a pinned hash seed in one process was expected to buy. On a GPU the floor is not zero (max 5.810e-04), so the magnitude branch decided and the prose did not follow it. It is a defect in a summary string, not in the gate: the comparison, the branch selection and the recorded numbers are all correct.",
+    "why_it_is_not_corrected_in_place": "scripts/train_iter12_stage2.py is one of the eight protocol paths the Stage-2 freeze binds by sha256, and the freeze refuses amendment once any adapter exists -- which the control itself caused, by design. Editing the sentence would fail --check-only, and select_iter12_stage2.py refuses to run when the freeze does not match, so the study would be unable to score. The correction is filed here instead, which is what the freeze's own disclosure section does for the naming defect it cannot fix either."
+  },
+  "the_hash_seed_pinning_did_what_it_claimed": {
+    "target_modules_order_by_run": {
+      "A_frozen_loop": [
+        "q_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj",
+        "k_proj",
+        "v_proj"
+      ],
+      "A2_frozen_loop_again": [
+        "q_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj",
+        "k_proj",
+        "v_proj"
+      ],
+      "B_new_loop_no_cap_no_anchor": [
+        "q_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj",
+        "k_proj",
+        "v_proj"
+      ]
+    },
+    "all_runs_share_one_order": true,
+    "the_shared_order_is_also_the_filed_order": false,
+    "why_this_matters": "PeftConfig.target_modules is a set, so its serialised order -- and the LoRA injection order behind it, which decides which module draws which dropout mask -- depends on PYTHONHASHSEED. One shared order across all three runs is the pinning working, and it is what makes the three comparable at all. That the shared order is NOT the filed one is the reason the retired criterion could not be satisfied by any run: pinning a seed reproduces an order, and only the seed that wrote the filed adapter would have reproduced that one."
+  },
+  "what_the_noise_is_made_of": {
+    "in_process_pinned_seed_floor": 0.0005809729918837547,
+    "across_the_two_loops": 0.0005031587788835168,
+    "against_the_filed_adapter": 0.0028204936534166336,
+    "filed_to_floor_ratio": 4.8548,
+    "cross_process_unpinned_from_the_superseded_run": 0.0017257087165489793,
+    "read_this_way": "Pinning the seed and staying in one process cut the run-to-run gap 3.0-fold against the superseded cross-process measurement (1.726e-03 down to 5.810e-04), and what is left is GPU floating-point nondeterminism. The filed adapter sits 4.8548 times further away again (2.820e-03), and that distance is dominated by its different target_modules order rather than by anything the two loops compute differently."
+  }
+}

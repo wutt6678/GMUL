@@ -1741,6 +1741,144 @@ def test_the_freeze_names_the_tests_that_hold_the_widened_seal():
         f"named-but-absent {sorted(set(named) - structural)}")
 
 
+CONTROL_READING = REPO_ROOT / "data/reports/mllmu_iter12_stage2_control_reading.json"
+
+
+def control_reading() -> dict:
+    return json.loads(CONTROL_READING.read_text())
+
+
+def test_the_control_reading_agrees_with_its_own_numbers():
+    """The report that carries the control's numbers must not contradict them.
+
+    The control's verdict is what licences the whole Stage-2 comparison, and
+    this report is the copy of it a clone can actually read.  So the verdict is
+    re-derived here from the gaps beside it: a report saying the gate passed
+    while its own two maxima said otherwise would be worse than no report,
+    because it would look like the check had been done.
+    """
+    d = control_reading()
+    gate = d["the_gate"]
+    floor = gate["noise_floor_frozen_loop_vs_itself"]
+    across = gate["gap_frozen_vs_new"]
+    assert floor["comparable"] and across["comparable"]
+    assert gate["across_is_within_the_floor"] == \
+        (across["max_abs_gap"] <= floor["max_abs_gap"])
+    assert d["gate_passed"] == gate["across_is_within_the_floor"], (
+        "the control's verdict and the comparison its own numbers support "
+        "disagree")
+    assert gate["across_to_floor_ratio"] == round(
+        across["max_abs_gap"] / floor["max_abs_gap"], 4)
+    #: Both sides compared the same 256 tensors, or the ratio means nothing.
+    assert floor["num_tensors"] == across["num_tensors"] == 256
+    #: And all three runs trained the same distance.  Two runs of different
+    #: length would differ for a reason that has nothing to do with either loop,
+    #: so equal step counts are part of what makes the comparison mean anything.
+    steps = d["num_optimizer_steps_by_run"]
+    assert len(steps) == 3 and None not in steps.values(), steps
+    assert len(set(steps.values())) == 1, (
+        f"the three runs trained different numbers of optimizer steps: {steps}")
+    #: The prose is generated from the numbers rather than asserted beside
+    #: them, so which of its two forms appeared has to match the mean too.
+    mean_also = across["mean_abs_gap"] <= floor["mean_abs_gap"]
+    assert ("on both the worst tensor and the mean" in gate["read_this_way"]) \
+        is mean_also, (
+        "the gate's prose claims the mean went one way and the numbers say "
+        "the other")
+
+
+def test_the_pinned_seed_gave_all_three_runs_one_target_modules_order():
+    """The mechanism, confirmed on the runs rather than argued from the docs.
+
+    One shared order across A, A2 and B is what makes the three comparable at
+    all, and its NOT being the filed order is the finding that retired the
+    first criterion: pinning a seed reproduces an order, and only the seed that
+    wrote the filed adapter would have reproduced that one.
+    """
+    h = control_reading()["the_hash_seed_pinning_did_what_it_claimed"]
+    orders = h["target_modules_order_by_run"]
+    assert len(orders) == 3, orders
+    assert h["all_runs_share_one_order"] is True
+    assert len({tuple(v) for v in orders.values()}) == 1
+    assert sorted(next(iter(orders.values()))) == [
+        "down_proj", "gate_proj", "k_proj", "o_proj", "q_proj", "up_proj",
+        "v_proj"], "the seven target modules changed, which no Stage-2 row asked for"
+    assert h["the_shared_order_is_also_the_filed_order"] is False, (
+        "the pinned order matching the filed one would contradict the finding "
+        "that the filed order is not recoverable")
+
+
+def test_the_control_reading_discloses_the_sentence_it_cannot_fix():
+    """A wrong sentence in a bound file, said so rather than left to be found.
+
+    ``train_iter12_stage2.py``'s ``detail`` string claims the adapters were
+    bitwise-identical; the gate passed on its magnitude branch and the same
+    document records ``bitwise_identical: false``.  The script is hash-bound
+    and the freeze locked when the control wrote its first adapter, so the
+    sentence cannot be corrected where it was written -- which is a reason to
+    disclose it, not a reason to leave a reader to discover the contradiction.
+    """
+    w = control_reading()["a_wording_defect_in_the_control_report"]
+    assert "bitwise-identical" in w["the_sentence"]
+    assert control_reading()["the_gate"]["gap_frozen_vs_new"][
+        "bitwise_identical"] is False, (
+        "the defect this section discloses is no longer present, so the "
+        "disclosure is stale and should be removed rather than kept")
+    assert "gate.gap_frozen_vs_new.bitwise_identical" in \
+        w["the_fields_that_are_authoritative"]
+    for key in ("what_is_wrong_with_it", "how_it_happened",
+                "why_it_is_not_corrected_in_place"):
+        assert w[key].strip(), f"the disclosure is missing {key}"
+    #: The two facts that make the sentence uncorrectable, rather than any
+    #: particular phrasing of them: the script is bound by the freeze, and the
+    #: freeze stopped accepting amendments once the control wrote an adapter.
+    why = w["why_it_is_not_corrected_in_place"]
+    assert "train_iter12_stage2.py" in why and "binds by sha256" in why, (
+        "the disclosure does not say the script holding the sentence is bound")
+    assert "refuses amendment" in why and "--check-only" in why, (
+        "the disclosure does not say what correcting it would cost")
+
+
+def test_the_control_reading_is_a_copy_of_the_control_not_a_restatement():
+    """The numbers must be the control's own, not a transcription of them.
+
+    Skipped in a clone, where ``data/checkpoints/`` does not exist -- which is
+    precisely why the copy is committed.  ``--check-only`` is the same
+    comparison driven through the script, so it is exercised here too.
+    """
+    root = sg.control_dir(REPO_ROOT)
+    found = sorted(p for p in root.iterdir() if p.is_dir()) if root.exists() else []
+    if not found or not (found[0] / "CONTROL.json").exists():
+        pytest.skip(f"{root} holds no finished control in this clone")
+    control = json.loads((found[0] / "CONTROL.json").read_text())
+    d = control_reading()
+    assert d["gate_passed"] == control["gate_passed"]
+    assert d["the_gate"]["noise_floor_frozen_loop_vs_itself"] == \
+        control["noise_floor_frozen_loop_vs_itself"]
+    assert d["the_gate"]["gap_frozen_vs_new"] == control["gate"]["gap_frozen_vs_new"]
+    assert d["python_hash_seed"] == control["python_hash_seed"]
+    assert d["a_wording_defect_in_the_control_report"]["the_sentence"] == \
+        control["detail"]
+    res = run("annotate_iter12_stage2_control.py", "--check-only")
+    assert res.returncode == 0, res.stdout + res.stderr
+
+
+def test_the_reading_refuses_to_silently_replace_a_filed_one():
+    """Re-running the annotator must not overwrite what was filed.
+
+    A report that can be regenerated in place can also be regenerated
+    differently, and then the numbers a reader checked yesterday are not the
+    numbers in the file today.
+    """
+    if not CONTROL_READING.exists():
+        pytest.skip("the control reading is not in this clone")
+    before = CONTROL_READING.read_bytes()
+    res = run("annotate_iter12_stage2_control.py")
+    assert res.returncode != 0
+    assert "REFUSING to overwrite" in (res.stdout + res.stderr)
+    assert CONTROL_READING.read_bytes() == before
+
+
 def test_the_freeze_still_refuses_once_an_adapter_exists(tmp_path, monkeypatch):
     """The refusal is keyed on adapters, evaluated first and unconditionally, so
     ``--refreeze`` cannot reach past it."""
@@ -1862,3 +2000,75 @@ def test_a_parquet_the_freeze_never_bound_is_refused(tmp_path):
         p.write_bytes(b"x")
     with pytest.raises(SystemExit, match="binds no sha256"):
         sis2.verify_reused_bytes(tmp_path)
+
+
+# ── the check phase, and the empty directory that makes it necessary ──────
+#: The lane script is READ here, never sourced or executed: sourcing it would
+#: claim the chain lock and launch GPU work, and these tests have to be runnable
+#: while the real chain is mid-training.
+LANE_SCRIPT = REPO_ROOT / "scripts" / "lanes" / "iter12_stage2.sh"
+TRAINER = REPO_ROOT / "src" / "granunlearn" / "training" / "preservation_trainer.py"
+
+
+def _lane_phase(start: str, end: str) -> str:
+    """One phase of the lane script, lifted out between its banner comments.
+
+    Lifted rather than retyped, and for the reason every structural test in
+    this file has: a test that quoted the gate back would pass against the
+    quote.  Bounded by the NEXT banner so that the assertions below about what
+    the phase does NOT contain are about the phase -- the rest of the file
+    mentions adapters in its header, in MF_ADAPTERS and in the pre phase, and an
+    unbounded search would read those as the check's own.
+    """
+    text = LANE_SCRIPT.read_text()
+    i = text.index(start)
+    return text[i:text.index(end, i)]
+
+
+def test_an_adapter_directory_is_created_before_it_is_written_so_it_can_be_empty():
+    """The precondition that makes the check phase necessary rather than fussy.
+
+    ``preservation_trainer`` mkdirs ``<row>/adapters`` on the way in and fills it
+    only at the end, so a chain interrupted mid-training leaves a directory that
+    looks exactly like a trained row and holds nothing.  Both the lane planner and
+    the trainer's own resume path skip a row when that directory EXISTS, so the
+    interrupted row would be skipped on a relaunch and never retrained.
+
+    Asserted as an ORDER between the two lines rather than as their presence,
+    because the hazard is not that the directory is created but that it is created
+    FIRST.  Reversing the order would make the skip condition sound and this test
+    is what notices if it is ever relied on to be.
+    """
+    src = TRAINER.read_text()
+    made = src.index('(output_dir / "adapters").mkdir')
+    saved = src.index('save_pretrained(output_dir / "adapters")')
+    assert made < saved, "the adapters directory is no longer made before it is written"
+    #: And the skip really is keyed on the directory, in both places that skip.
+    train = TRAIN_SCRIPT.read_text()
+    assert '(root / c.candidate_id / "adapters").exists()' in train
+    assert '(out_dir / "adapters").exists()' in train
+
+
+def test_the_lane_check_phase_gates_on_the_adapter_file_not_the_directory():
+    """What stops the empty directory above from becoming a filed partial grid.
+
+    The skip condition is weak by construction and cannot be strengthened:
+    ``train_iter12_stage2.py`` is one of the eight paths the Stage-2 freeze binds
+    by sha256.  So the chain gates afterwards instead, on the adapter FILE, over
+    EVERY row of the grid rather than over the rows that trained -- and it exits
+    non-zero, before the gen phase, so no GPU is spent generating for a candidate
+    that has nothing to load and no report can be filed over a partial grid.
+
+    Three ways this can silently stop working, each asserted: the file test
+    weakened to a directory test (which would agree with the skip and pass over an
+    empty row); the iteration narrowed to what the planner did rather than to the
+    whole grid (which would not ask about the skipped row at all); and the refusal
+    downgraded to a warning (which would report the gap and carry on into gen).
+    """
+    check = _lane_phase("# ── check", "# ── gen")
+    assert '-f "$STAGE2_CKPT/$cid/adapters/adapter_model.safetensors"' in check
+    assert "-d " not in check, "the check was weakened to a directory test"
+    assert "trained_ids" in check, "the check no longer covers the whole grid"
+    assert "exit 4" in check, "a missing adapter no longer stops the chain"
+    #: And the gate must not have drifted onto the skip's own criterion.
+    assert 'adapters").exists()' not in check

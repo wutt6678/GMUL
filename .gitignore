@@ -259,6 +259,14 @@ data/mllmu_hier_pilot100/predictions_iter12_seeds/
 !data/reports/mllmu_iter12_stage2_basis.json
 !data/reports/mllmu_iter12_stage2_freeze.json
 !data/reports/mllmu_iter12_stage2_selection.json
+# The faithfulness control's result, copied out of the gitignored checkpoint
+# directory it is written into.  The control is what licences the whole Stage-2
+# comparison -- that a difference between Stage 1 and Stage 2 is a difference
+# between objectives and not between two copies of a training loop -- so its
+# numbers have to be checkable from a clone, and this report also carries the
+# correction to one sentence in CONTROL.json that the freeze will not let be
+# fixed where it was written.
+!data/reports/mllmu_iter12_stage2_control_reading.json
 # Stage-2 predictions stay ignored like Stage 1's: regenerable, large, and the
 # selection report is the committed roll-up.  The freeze hashes the three
 # Stage-1 parquets Stage 2 REUSES, so their absence from a clone is reported as
