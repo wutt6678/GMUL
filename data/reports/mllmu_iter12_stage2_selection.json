@@ -1,0 +1,4066 @@
+{
+  "iteration": "12",
+  "stage": 2,
+  "criterion": {
+    "primary": "candidate >= MG - epsilon on all eight numbers; a number missing on either side disqualifies",
+    "anchor": "MG",
+    "anchor_values": {
+      "text.retain_same_entity.entity_macro": 0.4874,
+      "text.retain_same_entity.row_micro": 0.5025,
+      "text.retain_other_entity.entity_macro": 0.4257,
+      "text.retain_other_entity.row_micro": 0.4605,
+      "image.retain_same_entity_image.entity_macro": 0.5382,
+      "image.retain_same_entity_image.row_micro": 0.5221,
+      "image.retain_other_entity_image.entity_macro": 0.413,
+      "image.retain_other_entity_image.row_micro": 0.4474
+    },
+    "epsilon": 1e-09,
+    "margin": 0.0,
+    "no_margin_is_used": true,
+    "reported_beside_it": "the frozen B0-anchored eight-number floor, computed for every state and decision-bearing nowhere",
+    "reported_baseline_values": {
+      "text.retain_same_entity.entity_macro": 0.5256,
+      "text.retain_same_entity.row_micro": 0.5294,
+      "text.retain_other_entity.entity_macro": 0.5072,
+      "text.retain_other_entity.row_micro": 0.4737,
+      "image.retain_same_entity_image.entity_macro": 0.5053,
+      "image.retain_same_entity_image.row_micro": 0.5147,
+      "image.retain_other_entity_image.entity_macro": 0.5,
+      "image.retain_other_entity_image.row_micro": 0.4737
+    },
+    "denominators": {
+      "text.retain_same_entity.entity_macro": 408,
+      "text.retain_same_entity.row_micro": 408,
+      "text.retain_other_entity.entity_macro": 76,
+      "text.retain_other_entity.row_micro": 76,
+      "image.retain_same_entity_image.entity_macro": 408,
+      "image.retain_same_entity_image.row_micro": 408,
+      "image.retain_other_entity_image.entity_macro": 76,
+      "image.retain_other_entity_image.row_micro": 76
+    },
+    "among_eligible": "minimise D_G with the frozen tie-break, exactly as Stage 1 did. The floor decides eligibility; D_G only orders the eligible.",
+    "computed_by": "route_stratified_retention.floor_check_stratified -- the same frozen function Stage 1c used, with MG's vector passed as the baseline. That function is generic in its baseline, so no new metric code was written and none was edited.",
+    "the_field_named_b0_holds_the_baseline_passed_in": "floor_check_stratified labels its baseline field 'b0' whatever is passed. Under the primary floor that field holds MG's values; under the reported one it holds B0's. The module is hash-bound by the Stage-1c freeze so the name cannot be corrected."
+  },
+  "consistency_gates": {
+    "reused_states_reproduce_stage1c": {
+      "states_gated": [
+        "B0",
+        "B4_w1.0_lam0.5_lr2e-05_ep5",
+        "MG"
+      ],
+      "numbers_compared": 24,
+      "problems": [],
+      "holds": true,
+      "why_this_gate_exists": "Stage 2 anchors on MG and reports against B0 using parquets Stage 1 generated. If those bytes no longer produce the numbers Stage 1c filed, then either the bytes moved or the metric did, and either way the floor being applied is not the frozen one."
+    }
+  },
+  "anchor_states": {
+    "B0": {
+      "values": {
+        "text.retain_same_entity.entity_macro": 0.5256,
+        "text.retain_same_entity.row_micro": 0.5294,
+        "text.retain_other_entity.entity_macro": 0.5072,
+        "text.retain_other_entity.row_micro": 0.4737,
+        "image.retain_same_entity_image.entity_macro": 0.5053,
+        "image.retain_same_entity_image.row_micro": 0.5147,
+        "image.retain_other_entity_image.entity_macro": 0.5,
+        "image.retain_other_entity_image.row_micro": 0.4737
+      },
+      "reused_from": "data/mllmu_hier_pilot100/predictions_iter12/predictions_tv_B0.parquet",
+      "sha256": "f546cbbb654111db5b24029a4b5e3c475d72bd674b60413fd0aa629f151d16b4",
+      "primary_floor_result": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "text.retain_same_entity.entity_macro": {
+            "candidate": 0.5256,
+            "b0": 0.4874,
+            "difference": 0.0382,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_same_entity.row_micro": {
+            "candidate": 0.5294,
+            "b0": 0.5025,
+            "difference": 0.0269,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.entity_macro": {
+            "candidate": 0.5072,
+            "b0": 0.4257,
+            "difference": 0.0815,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.row_micro": {
+            "candidate": 0.4737,
+            "b0": 0.4605,
+            "difference": 0.0132,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.entity_macro": {
+            "candidate": 0.5053,
+            "b0": 0.5382,
+            "difference": -0.0329,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.row_micro": {
+            "candidate": 0.5147,
+            "b0": 0.5221,
+            "difference": -0.0074,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.entity_macro": {
+            "candidate": 0.5,
+            "b0": 0.413,
+            "difference": 0.087,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.row_micro": {
+            "candidate": 0.4737,
+            "b0": 0.4474,
+            "difference": 0.0263,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "num_numbers": 8,
+        "direction": "candidate_must_be_at_or_above_b0",
+        "per_route": {
+          "text": true,
+          "image": false
+        },
+        "frozen_floor_on_the_text_stratum": {
+          "eligible": true,
+          "epsilon": 1e-09,
+          "epsilon_is_a_tolerance_not_a_margin": true,
+          "checks": {
+            "retain_same_entity.entity_macro": {
+              "candidate": 0.5256,
+              "b0": 0.4874,
+              "difference": 0.0382,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_same_entity.row_micro": {
+              "candidate": 0.5294,
+              "b0": 0.5025,
+              "difference": 0.0269,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.entity_macro": {
+              "candidate": 0.5072,
+              "b0": 0.4257,
+              "difference": 0.0815,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.row_micro": {
+              "candidate": 0.4737,
+              "b0": 0.4605,
+              "difference": 0.0132,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            }
+          },
+          "direction": "candidate_must_be_at_or_above_b0",
+          "estimands_required": [
+            "entity_macro",
+            "row_micro"
+          ],
+          "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+        },
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "routes_required": [
+          "text",
+          "image"
+        ]
+      },
+      "note": "B0 is not eligible under the primary floor either, which is the property the basis required: the new anchor cannot be satisfied by declining to unlearn."
+    },
+    "MG": {
+      "values": {
+        "text.retain_same_entity.entity_macro": 0.4874,
+        "text.retain_same_entity.row_micro": 0.5025,
+        "text.retain_other_entity.entity_macro": 0.4257,
+        "text.retain_other_entity.row_micro": 0.4605,
+        "image.retain_same_entity_image.entity_macro": 0.5382,
+        "image.retain_same_entity_image.row_micro": 0.5221,
+        "image.retain_other_entity_image.entity_macro": 0.413,
+        "image.retain_other_entity_image.row_micro": 0.4474
+      },
+      "reused_from": "data/mllmu_hier_pilot100/predictions_iter12/predictions_tv_MG.parquet",
+      "sha256": "3fdc212d0d839a03f4c01be5baad94181d5c020c4a28251f0ed61f7fd6383434",
+      "is_the_anchor": true,
+      "trivially_eligible": true,
+      "excluded_from_the_ranking": true,
+      "why_excluded": "MG is the oracle the criterion measures distance to. Ranking it among the candidates would let the reference state win its own selection."
+    }
+  },
+  "candidates": {
+    "B0": {
+      "method": "B0",
+      "spec": {
+        "candidate_id": "B0",
+        "reused_from_stage1": true
+      },
+      "vector": {
+        "filr": 0.4465,
+        "tga": 0.1971,
+        "ancestor": 0.2074,
+        "retain_same": 0.5594,
+        "retain_other": 0.6056,
+        "over": 0.0123,
+        "wrong": 0.2206
+      },
+      "distance_to_mg": 0.101757,
+      "used_components": [
+        "filr",
+        "tga",
+        "ancestor",
+        "retain_same",
+        "retain_other",
+        "over",
+        "wrong"
+      ],
+      "values": {
+        "text.retain_same_entity.entity_macro": 0.5256,
+        "text.retain_same_entity.row_micro": 0.5294,
+        "text.retain_other_entity.entity_macro": 0.5072,
+        "text.retain_other_entity.row_micro": 0.4737,
+        "image.retain_same_entity_image.entity_macro": 0.5053,
+        "image.retain_same_entity_image.row_micro": 0.5147,
+        "image.retain_other_entity_image.entity_macro": 0.5,
+        "image.retain_other_entity_image.row_micro": 0.4737
+      },
+      "difference_vs_mg_anchor": {
+        "text.retain_same_entity.entity_macro": 0.0382,
+        "text.retain_same_entity.row_micro": 0.0269,
+        "text.retain_other_entity.entity_macro": 0.0815,
+        "text.retain_other_entity.row_micro": 0.0132,
+        "image.retain_same_entity_image.entity_macro": -0.0329,
+        "image.retain_same_entity_image.row_micro": -0.0074,
+        "image.retain_other_entity_image.entity_macro": 0.087,
+        "image.retain_other_entity_image.row_micro": 0.0263
+      },
+      "difference_vs_b0": {
+        "text.retain_same_entity.entity_macro": 0.0,
+        "text.retain_same_entity.row_micro": 0.0,
+        "text.retain_other_entity.entity_macro": 0.0,
+        "text.retain_other_entity.row_micro": 0.0,
+        "image.retain_same_entity_image.entity_macro": 0.0,
+        "image.retain_same_entity_image.row_micro": 0.0,
+        "image.retain_other_entity_image.entity_macro": 0.0,
+        "image.retain_other_entity_image.row_micro": 0.0
+      },
+      "primary_floor": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "text.retain_same_entity.entity_macro": {
+            "candidate": 0.5256,
+            "b0": 0.4874,
+            "difference": 0.0382,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_same_entity.row_micro": {
+            "candidate": 0.5294,
+            "b0": 0.5025,
+            "difference": 0.0269,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.entity_macro": {
+            "candidate": 0.5072,
+            "b0": 0.4257,
+            "difference": 0.0815,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.row_micro": {
+            "candidate": 0.4737,
+            "b0": 0.4605,
+            "difference": 0.0132,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.entity_macro": {
+            "candidate": 0.5053,
+            "b0": 0.5382,
+            "difference": -0.0329,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.row_micro": {
+            "candidate": 0.5147,
+            "b0": 0.5221,
+            "difference": -0.0074,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.entity_macro": {
+            "candidate": 0.5,
+            "b0": 0.413,
+            "difference": 0.087,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.row_micro": {
+            "candidate": 0.4737,
+            "b0": 0.4474,
+            "difference": 0.0263,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "num_numbers": 8,
+        "direction": "candidate_must_be_at_or_above_b0",
+        "per_route": {
+          "text": true,
+          "image": false
+        },
+        "frozen_floor_on_the_text_stratum": {
+          "eligible": true,
+          "epsilon": 1e-09,
+          "epsilon_is_a_tolerance_not_a_margin": true,
+          "checks": {
+            "retain_same_entity.entity_macro": {
+              "candidate": 0.5256,
+              "b0": 0.4874,
+              "difference": 0.0382,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_same_entity.row_micro": {
+              "candidate": 0.5294,
+              "b0": 0.5025,
+              "difference": 0.0269,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.entity_macro": {
+              "candidate": 0.5072,
+              "b0": 0.4257,
+              "difference": 0.0815,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.row_micro": {
+              "candidate": 0.4737,
+              "b0": 0.4605,
+              "difference": 0.0132,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            }
+          },
+          "direction": "candidate_must_be_at_or_above_b0",
+          "estimands_required": [
+            "entity_macro",
+            "row_micro"
+          ],
+          "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+        },
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "routes_required": [
+          "text",
+          "image"
+        ]
+      },
+      "eligible": false,
+      "reported_b0_floor": {
+        "eligible": true,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "text.retain_same_entity.entity_macro": {
+            "candidate": 0.5256,
+            "b0": 0.5256,
+            "difference": 0.0,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_same_entity.row_micro": {
+            "candidate": 0.5294,
+            "b0": 0.5294,
+            "difference": 0.0,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.entity_macro": {
+            "candidate": 0.5072,
+            "b0": 0.5072,
+            "difference": 0.0,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.row_micro": {
+            "candidate": 0.4737,
+            "b0": 0.4737,
+            "difference": 0.0,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.entity_macro": {
+            "candidate": 0.5053,
+            "b0": 0.5053,
+            "difference": 0.0,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.row_micro": {
+            "candidate": 0.5147,
+            "b0": 0.5147,
+            "difference": 0.0,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.entity_macro": {
+            "candidate": 0.5,
+            "b0": 0.5,
+            "difference": 0.0,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.row_micro": {
+            "candidate": 0.4737,
+            "b0": 0.4737,
+            "difference": 0.0,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "num_numbers": 8,
+        "direction": "candidate_must_be_at_or_above_b0",
+        "per_route": {
+          "text": true,
+          "image": true
+        },
+        "frozen_floor_on_the_text_stratum": {
+          "eligible": true,
+          "epsilon": 1e-09,
+          "epsilon_is_a_tolerance_not_a_margin": true,
+          "checks": {
+            "retain_same_entity.entity_macro": {
+              "candidate": 0.5256,
+              "b0": 0.5256,
+              "difference": 0.0,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_same_entity.row_micro": {
+              "candidate": 0.5294,
+              "b0": 0.5294,
+              "difference": 0.0,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.entity_macro": {
+              "candidate": 0.5072,
+              "b0": 0.5072,
+              "difference": 0.0,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.row_micro": {
+              "candidate": 0.4737,
+              "b0": 0.4737,
+              "difference": 0.0,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            }
+          },
+          "direction": "candidate_must_be_at_or_above_b0",
+          "estimands_required": [
+            "entity_macro",
+            "row_micro"
+          ],
+          "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+        },
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "routes_required": [
+          "text",
+          "image"
+        ]
+      },
+      "eligible_on_the_reported_b0_floor": true,
+      "pooled_all_routes": {
+        "floored": false,
+        "why_reported": "what pooling the two routes would have said, so the stratified choice is checkable against its alternative",
+        "retain_same_entity_all_routes": {
+          "num_queries": 816,
+          "row_micro": 0.5221
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 152,
+          "row_micro": 0.4737
+        }
+      },
+      "training_side": null,
+      "config": {
+        "method_id": "B0",
+        "noop": true,
+        "recipe": {
+          "model_id": "Qwen/Qwen3.5-9B",
+          "lora_r": 16,
+          "lora_alpha": 32,
+          "lora_dropout": 0.05,
+          "lora_target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ],
+          "learning_rate": 0.0001,
+          "weight_decay": 0.0,
+          "num_epochs": 10,
+          "per_device_batch_size": 1,
+          "gradient_accumulation_steps": 8,
+          "max_length": 1536,
+          "max_image_pixels": 147456,
+          "seed": 42,
+          "bf16": true,
+          "gradient_checkpointing": true
+        },
+        "init_adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MF/adapters",
+        "num_optimizer_steps": 0,
+        "groups": [],
+        "note": "MF adapter copied unchanged; must reproduce MF metrics. The recorded recipe is the one inherited from MF — B0 applies no updates of its own."
+      }
+    },
+    "B4_w1.0_lam0.5_lr2e-05_ep5": {
+      "method": "B4",
+      "spec": {
+        "candidate_id": "B4_w1.0_lam0.5_lr2e-05_ep5",
+        "reused_from_stage1": true
+      },
+      "vector": {
+        "filr": 0.1749,
+        "tga": 0.3634,
+        "ancestor": 0.2259,
+        "retain_same": 0.5181,
+        "retain_other": 0.3833,
+        "over": 0.0284,
+        "wrong": 0.2177
+      },
+      "distance_to_mg": 0.046729,
+      "used_components": [
+        "filr",
+        "tga",
+        "ancestor",
+        "retain_same",
+        "retain_other",
+        "over",
+        "wrong"
+      ],
+      "values": {
+        "text.retain_same_entity.entity_macro": 0.4501,
+        "text.retain_same_entity.row_micro": 0.4681,
+        "text.retain_other_entity.entity_macro": 0.5072,
+        "text.retain_other_entity.row_micro": 0.4211,
+        "image.retain_same_entity_image.entity_macro": 0.3515,
+        "image.retain_same_entity_image.row_micro": 0.3603,
+        "image.retain_other_entity_image.entity_macro": 0.3261,
+        "image.retain_other_entity_image.row_micro": 0.3289
+      },
+      "difference_vs_mg_anchor": {
+        "text.retain_same_entity.entity_macro": -0.0373,
+        "text.retain_same_entity.row_micro": -0.0344,
+        "text.retain_other_entity.entity_macro": 0.0815,
+        "text.retain_other_entity.row_micro": -0.0394,
+        "image.retain_same_entity_image.entity_macro": -0.1867,
+        "image.retain_same_entity_image.row_micro": -0.1618,
+        "image.retain_other_entity_image.entity_macro": -0.0869,
+        "image.retain_other_entity_image.row_micro": -0.1185
+      },
+      "difference_vs_b0": {
+        "text.retain_same_entity.entity_macro": -0.0755,
+        "text.retain_same_entity.row_micro": -0.0613,
+        "text.retain_other_entity.entity_macro": 0.0,
+        "text.retain_other_entity.row_micro": -0.0526,
+        "image.retain_same_entity_image.entity_macro": -0.1538,
+        "image.retain_same_entity_image.row_micro": -0.1544,
+        "image.retain_other_entity_image.entity_macro": -0.1739,
+        "image.retain_other_entity_image.row_micro": -0.1448
+      },
+      "primary_floor": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "text.retain_same_entity.entity_macro": {
+            "candidate": 0.4501,
+            "b0": 0.4874,
+            "difference": -0.0373,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_same_entity.row_micro": {
+            "candidate": 0.4681,
+            "b0": 0.5025,
+            "difference": -0.0344,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.entity_macro": {
+            "candidate": 0.5072,
+            "b0": 0.4257,
+            "difference": 0.0815,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.row_micro": {
+            "candidate": 0.4211,
+            "b0": 0.4605,
+            "difference": -0.0394,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.entity_macro": {
+            "candidate": 0.3515,
+            "b0": 0.5382,
+            "difference": -0.1867,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.row_micro": {
+            "candidate": 0.3603,
+            "b0": 0.5221,
+            "difference": -0.1618,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.entity_macro": {
+            "candidate": 0.3261,
+            "b0": 0.413,
+            "difference": -0.0869,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.row_micro": {
+            "candidate": 0.3289,
+            "b0": 0.4474,
+            "difference": -0.1185,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "num_numbers": 8,
+        "direction": "candidate_must_be_at_or_above_b0",
+        "per_route": {
+          "text": false,
+          "image": false
+        },
+        "frozen_floor_on_the_text_stratum": {
+          "eligible": false,
+          "epsilon": 1e-09,
+          "epsilon_is_a_tolerance_not_a_margin": true,
+          "checks": {
+            "retain_same_entity.entity_macro": {
+              "candidate": 0.4501,
+              "b0": 0.4874,
+              "difference": -0.0373,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_same_entity.row_micro": {
+              "candidate": 0.4681,
+              "b0": 0.5025,
+              "difference": -0.0344,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.entity_macro": {
+              "candidate": 0.5072,
+              "b0": 0.4257,
+              "difference": 0.0815,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.row_micro": {
+              "candidate": 0.4211,
+              "b0": 0.4605,
+              "difference": -0.0394,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            }
+          },
+          "direction": "candidate_must_be_at_or_above_b0",
+          "estimands_required": [
+            "entity_macro",
+            "row_micro"
+          ],
+          "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+        },
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "routes_required": [
+          "text",
+          "image"
+        ]
+      },
+      "eligible": false,
+      "reported_b0_floor": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "text.retain_same_entity.entity_macro": {
+            "candidate": 0.4501,
+            "b0": 0.5256,
+            "difference": -0.0755,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_same_entity.row_micro": {
+            "candidate": 0.4681,
+            "b0": 0.5294,
+            "difference": -0.0613,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.entity_macro": {
+            "candidate": 0.5072,
+            "b0": 0.5072,
+            "difference": 0.0,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.row_micro": {
+            "candidate": 0.4211,
+            "b0": 0.4737,
+            "difference": -0.0526,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.entity_macro": {
+            "candidate": 0.3515,
+            "b0": 0.5053,
+            "difference": -0.1538,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.row_micro": {
+            "candidate": 0.3603,
+            "b0": 0.5147,
+            "difference": -0.1544,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.entity_macro": {
+            "candidate": 0.3261,
+            "b0": 0.5,
+            "difference": -0.1739,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.row_micro": {
+            "candidate": 0.3289,
+            "b0": 0.4737,
+            "difference": -0.1448,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "num_numbers": 8,
+        "direction": "candidate_must_be_at_or_above_b0",
+        "per_route": {
+          "text": false,
+          "image": false
+        },
+        "frozen_floor_on_the_text_stratum": {
+          "eligible": false,
+          "epsilon": 1e-09,
+          "epsilon_is_a_tolerance_not_a_margin": true,
+          "checks": {
+            "retain_same_entity.entity_macro": {
+              "candidate": 0.4501,
+              "b0": 0.5256,
+              "difference": -0.0755,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_same_entity.row_micro": {
+              "candidate": 0.4681,
+              "b0": 0.5294,
+              "difference": -0.0613,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.entity_macro": {
+              "candidate": 0.5072,
+              "b0": 0.5072,
+              "difference": 0.0,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.row_micro": {
+              "candidate": 0.4211,
+              "b0": 0.4737,
+              "difference": -0.0526,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            }
+          },
+          "direction": "candidate_must_be_at_or_above_b0",
+          "estimands_required": [
+            "entity_macro",
+            "row_micro"
+          ],
+          "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+        },
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "routes_required": [
+          "text",
+          "image"
+        ]
+      },
+      "eligible_on_the_reported_b0_floor": false,
+      "pooled_all_routes": {
+        "floored": false,
+        "why_reported": "what pooling the two routes would have said, so the stratified choice is checkable against its alternative",
+        "retain_same_entity_all_routes": {
+          "num_queries": 816,
+          "row_micro": 0.4142
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 152,
+          "row_micro": 0.375
+        }
+      },
+      "training_side": null,
+      "config": {
+        "method_id": "B4_w1.0_lam0.5_lr2e-05_ep5",
+        "recipe": {
+          "model_id": "Qwen/Qwen3.5-9B",
+          "lora_r": 16,
+          "lora_alpha": 32,
+          "lora_dropout": 0.05,
+          "lora_target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ],
+          "learning_rate": 2e-05,
+          "weight_decay": 0.0,
+          "num_epochs": 5,
+          "per_device_batch_size": 1,
+          "gradient_accumulation_steps": 8,
+          "max_length": 1536,
+          "max_image_pixels": 147456,
+          "seed": 42,
+          "bf16": true,
+          "gradient_checkpointing": true
+        },
+        "init_adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MF/adapters",
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5,
+            "num_examples": 90
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "num_examples": 90
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0,
+            "num_examples": 183
+          }
+        ],
+        "epochs": [
+          {
+            "epoch": 1,
+            "avg_loss_fine_target": 0.1202,
+            "avg_loss_target_level": 2.0594,
+            "avg_loss_retain": 0.0425,
+            "avg_objective": 0.5171
+          },
+          {
+            "epoch": 2,
+            "avg_loss_fine_target": 0.9027,
+            "avg_loss_target_level": 0.6037,
+            "avg_loss_retain": 0.1402,
+            "avg_objective": 0.1084
+          },
+          {
+            "epoch": 3,
+            "avg_loss_fine_target": 2.0986,
+            "avg_loss_target_level": 0.2871,
+            "avg_loss_retain": 0.1816,
+            "avg_objective": -0.0974
+          },
+          {
+            "epoch": 4,
+            "avg_loss_fine_target": 4.2984,
+            "avg_loss_target_level": 0.1509,
+            "avg_loss_retain": 0.4193,
+            "avg_objective": -0.2841
+          },
+          {
+            "epoch": 5,
+            "avg_loss_fine_target": 6.6061,
+            "avg_loss_target_level": 0.0697,
+            "avg_loss_retain": 0.4943,
+            "avg_objective": -0.5524
+          }
+        ],
+        "num_optimizer_steps": 230,
+        "device": "cuda:0",
+        "train_seconds": 1657.2
+      }
+    },
+    "B5_cap0.5_lam0.5_lr2e-05_ep5": {
+      "method": "B5",
+      "spec": {
+        "candidate_id": "B5_cap0.5_lam0.5_lr2e-05_ep5",
+        "method": "B5",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd_capped",
+            "weight": 0.5,
+            "cap": 0.5,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        },
+        "cap": 0.5,
+        "beta": null
+      },
+      "vector": {
+        "filr": 0.2379,
+        "tga": 0.3403,
+        "ancestor": 0.3037,
+        "retain_same": 0.5788,
+        "retain_other": 0.6278,
+        "over": 0.0235,
+        "wrong": 0.2214
+      },
+      "distance_to_mg": 0.056771,
+      "used_components": [
+        "filr",
+        "tga",
+        "ancestor",
+        "retain_same",
+        "retain_other",
+        "over",
+        "wrong"
+      ],
+      "values": {
+        "text.retain_same_entity.entity_macro": 0.4935,
+        "text.retain_same_entity.row_micro": 0.5098,
+        "text.retain_other_entity.entity_macro": 0.4638,
+        "text.retain_other_entity.row_micro": 0.4211,
+        "image.retain_same_entity_image.entity_macro": 0.4479,
+        "image.retain_same_entity_image.row_micro": 0.451,
+        "image.retain_other_entity_image.entity_macro": 0.4239,
+        "image.retain_other_entity_image.row_micro": 0.3947
+      },
+      "difference_vs_mg_anchor": {
+        "text.retain_same_entity.entity_macro": 0.0061,
+        "text.retain_same_entity.row_micro": 0.0073,
+        "text.retain_other_entity.entity_macro": 0.0381,
+        "text.retain_other_entity.row_micro": -0.0394,
+        "image.retain_same_entity_image.entity_macro": -0.0903,
+        "image.retain_same_entity_image.row_micro": -0.0711,
+        "image.retain_other_entity_image.entity_macro": 0.0109,
+        "image.retain_other_entity_image.row_micro": -0.0527
+      },
+      "difference_vs_b0": {
+        "text.retain_same_entity.entity_macro": -0.0321,
+        "text.retain_same_entity.row_micro": -0.0196,
+        "text.retain_other_entity.entity_macro": -0.0434,
+        "text.retain_other_entity.row_micro": -0.0526,
+        "image.retain_same_entity_image.entity_macro": -0.0574,
+        "image.retain_same_entity_image.row_micro": -0.0637,
+        "image.retain_other_entity_image.entity_macro": -0.0761,
+        "image.retain_other_entity_image.row_micro": -0.079
+      },
+      "primary_floor": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "text.retain_same_entity.entity_macro": {
+            "candidate": 0.4935,
+            "b0": 0.4874,
+            "difference": 0.0061,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_same_entity.row_micro": {
+            "candidate": 0.5098,
+            "b0": 0.5025,
+            "difference": 0.0073,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.entity_macro": {
+            "candidate": 0.4638,
+            "b0": 0.4257,
+            "difference": 0.0381,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.row_micro": {
+            "candidate": 0.4211,
+            "b0": 0.4605,
+            "difference": -0.0394,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.entity_macro": {
+            "candidate": 0.4479,
+            "b0": 0.5382,
+            "difference": -0.0903,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.row_micro": {
+            "candidate": 0.451,
+            "b0": 0.5221,
+            "difference": -0.0711,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.entity_macro": {
+            "candidate": 0.4239,
+            "b0": 0.413,
+            "difference": 0.0109,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.row_micro": {
+            "candidate": 0.3947,
+            "b0": 0.4474,
+            "difference": -0.0527,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "num_numbers": 8,
+        "direction": "candidate_must_be_at_or_above_b0",
+        "per_route": {
+          "text": false,
+          "image": false
+        },
+        "frozen_floor_on_the_text_stratum": {
+          "eligible": false,
+          "epsilon": 1e-09,
+          "epsilon_is_a_tolerance_not_a_margin": true,
+          "checks": {
+            "retain_same_entity.entity_macro": {
+              "candidate": 0.4935,
+              "b0": 0.4874,
+              "difference": 0.0061,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_same_entity.row_micro": {
+              "candidate": 0.5098,
+              "b0": 0.5025,
+              "difference": 0.0073,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.entity_macro": {
+              "candidate": 0.4638,
+              "b0": 0.4257,
+              "difference": 0.0381,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.row_micro": {
+              "candidate": 0.4211,
+              "b0": 0.4605,
+              "difference": -0.0394,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            }
+          },
+          "direction": "candidate_must_be_at_or_above_b0",
+          "estimands_required": [
+            "entity_macro",
+            "row_micro"
+          ],
+          "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+        },
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "routes_required": [
+          "text",
+          "image"
+        ]
+      },
+      "eligible": false,
+      "reported_b0_floor": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "text.retain_same_entity.entity_macro": {
+            "candidate": 0.4935,
+            "b0": 0.5256,
+            "difference": -0.0321,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_same_entity.row_micro": {
+            "candidate": 0.5098,
+            "b0": 0.5294,
+            "difference": -0.0196,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.entity_macro": {
+            "candidate": 0.4638,
+            "b0": 0.5072,
+            "difference": -0.0434,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.row_micro": {
+            "candidate": 0.4211,
+            "b0": 0.4737,
+            "difference": -0.0526,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.entity_macro": {
+            "candidate": 0.4479,
+            "b0": 0.5053,
+            "difference": -0.0574,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.row_micro": {
+            "candidate": 0.451,
+            "b0": 0.5147,
+            "difference": -0.0637,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.entity_macro": {
+            "candidate": 0.4239,
+            "b0": 0.5,
+            "difference": -0.0761,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.row_micro": {
+            "candidate": 0.3947,
+            "b0": 0.4737,
+            "difference": -0.079,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "num_numbers": 8,
+        "direction": "candidate_must_be_at_or_above_b0",
+        "per_route": {
+          "text": false,
+          "image": false
+        },
+        "frozen_floor_on_the_text_stratum": {
+          "eligible": false,
+          "epsilon": 1e-09,
+          "epsilon_is_a_tolerance_not_a_margin": true,
+          "checks": {
+            "retain_same_entity.entity_macro": {
+              "candidate": 0.4935,
+              "b0": 0.5256,
+              "difference": -0.0321,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_same_entity.row_micro": {
+              "candidate": 0.5098,
+              "b0": 0.5294,
+              "difference": -0.0196,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.entity_macro": {
+              "candidate": 0.4638,
+              "b0": 0.5072,
+              "difference": -0.0434,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.row_micro": {
+              "candidate": 0.4211,
+              "b0": 0.4737,
+              "difference": -0.0526,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            }
+          },
+          "direction": "candidate_must_be_at_or_above_b0",
+          "estimands_required": [
+            "entity_macro",
+            "row_micro"
+          ],
+          "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+        },
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "routes_required": [
+          "text",
+          "image"
+        ]
+      },
+      "eligible_on_the_reported_b0_floor": false,
+      "pooled_all_routes": {
+        "floored": false,
+        "why_reported": "what pooling the two routes would have said, so the stratified choice is checkable against its alternative",
+        "retain_same_entity_all_routes": {
+          "num_queries": 816,
+          "row_micro": 0.4804
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 152,
+          "row_micro": 0.4079
+        }
+      },
+      "training_side": {
+        "final_avg_loss_fine_target": 0.7832,
+        "final_frac_at_cap_fine_target": 0.8,
+        "final_avg_kl_retain": null,
+        "final_avg_loss_retain": 0.0112,
+        "num_optimizer_steps": 230,
+        "train_seconds": 1462.4
+      },
+      "config": {
+        "recipe": {
+          "model_id": "Qwen/Qwen3.5-9B",
+          "lora_r": 16,
+          "lora_alpha": 32,
+          "lora_dropout": 0.05,
+          "lora_target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ],
+          "learning_rate": 2e-05,
+          "weight_decay": 0.0,
+          "num_epochs": 5,
+          "per_device_batch_size": 1,
+          "gradient_accumulation_steps": 8,
+          "max_length": 1536,
+          "max_image_pixels": 147456,
+          "seed": 42,
+          "bf16": true,
+          "gradient_checkpointing": true
+        },
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd_capped",
+            "weight": 0.5,
+            "cap": 0.5,
+            "anchor_weight": null,
+            "num_examples": 90
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null,
+            "num_examples": 90
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null,
+            "num_examples": 183
+          }
+        ],
+        "num_optimizer_steps": 230,
+        "init_adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MF/adapters",
+        "noop": null,
+        "preservation_anchor": null
+      }
+    },
+    "B5_cap1.0_lam0.5_lr2e-05_ep5": {
+      "method": "B5",
+      "spec": {
+        "candidate_id": "B5_cap1.0_lam0.5_lr2e-05_ep5",
+        "method": "B5",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd_capped",
+            "weight": 0.5,
+            "cap": 1.0,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        },
+        "cap": 1.0,
+        "beta": null
+      },
+      "vector": {
+        "filr": 0.2078,
+        "tga": 0.3588,
+        "ancestor": 0.3148,
+        "retain_same": 0.5762,
+        "retain_other": 0.6056,
+        "over": 0.0276,
+        "wrong": 0.228
+      },
+      "distance_to_mg": 0.046343,
+      "used_components": [
+        "filr",
+        "tga",
+        "ancestor",
+        "retain_same",
+        "retain_other",
+        "over",
+        "wrong"
+      ],
+      "values": {
+        "text.retain_same_entity.entity_macro": 0.4816,
+        "text.retain_same_entity.row_micro": 0.4975,
+        "text.retain_other_entity.entity_macro": 0.4638,
+        "text.retain_other_entity.row_micro": 0.4079,
+        "image.retain_same_entity_image.entity_macro": 0.4108,
+        "image.retain_same_entity_image.row_micro": 0.4216,
+        "image.retain_other_entity_image.entity_macro": 0.3804,
+        "image.retain_other_entity_image.row_micro": 0.3684
+      },
+      "difference_vs_mg_anchor": {
+        "text.retain_same_entity.entity_macro": -0.0058,
+        "text.retain_same_entity.row_micro": -0.005,
+        "text.retain_other_entity.entity_macro": 0.0381,
+        "text.retain_other_entity.row_micro": -0.0526,
+        "image.retain_same_entity_image.entity_macro": -0.1274,
+        "image.retain_same_entity_image.row_micro": -0.1005,
+        "image.retain_other_entity_image.entity_macro": -0.0326,
+        "image.retain_other_entity_image.row_micro": -0.079
+      },
+      "difference_vs_b0": {
+        "text.retain_same_entity.entity_macro": -0.044,
+        "text.retain_same_entity.row_micro": -0.0319,
+        "text.retain_other_entity.entity_macro": -0.0434,
+        "text.retain_other_entity.row_micro": -0.0658,
+        "image.retain_same_entity_image.entity_macro": -0.0945,
+        "image.retain_same_entity_image.row_micro": -0.0931,
+        "image.retain_other_entity_image.entity_macro": -0.1196,
+        "image.retain_other_entity_image.row_micro": -0.1053
+      },
+      "primary_floor": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "text.retain_same_entity.entity_macro": {
+            "candidate": 0.4816,
+            "b0": 0.4874,
+            "difference": -0.0058,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_same_entity.row_micro": {
+            "candidate": 0.4975,
+            "b0": 0.5025,
+            "difference": -0.005,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.entity_macro": {
+            "candidate": 0.4638,
+            "b0": 0.4257,
+            "difference": 0.0381,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.row_micro": {
+            "candidate": 0.4079,
+            "b0": 0.4605,
+            "difference": -0.0526,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.entity_macro": {
+            "candidate": 0.4108,
+            "b0": 0.5382,
+            "difference": -0.1274,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.row_micro": {
+            "candidate": 0.4216,
+            "b0": 0.5221,
+            "difference": -0.1005,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.entity_macro": {
+            "candidate": 0.3804,
+            "b0": 0.413,
+            "difference": -0.0326,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.row_micro": {
+            "candidate": 0.3684,
+            "b0": 0.4474,
+            "difference": -0.079,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "num_numbers": 8,
+        "direction": "candidate_must_be_at_or_above_b0",
+        "per_route": {
+          "text": false,
+          "image": false
+        },
+        "frozen_floor_on_the_text_stratum": {
+          "eligible": false,
+          "epsilon": 1e-09,
+          "epsilon_is_a_tolerance_not_a_margin": true,
+          "checks": {
+            "retain_same_entity.entity_macro": {
+              "candidate": 0.4816,
+              "b0": 0.4874,
+              "difference": -0.0058,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_same_entity.row_micro": {
+              "candidate": 0.4975,
+              "b0": 0.5025,
+              "difference": -0.005,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.entity_macro": {
+              "candidate": 0.4638,
+              "b0": 0.4257,
+              "difference": 0.0381,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.row_micro": {
+              "candidate": 0.4079,
+              "b0": 0.4605,
+              "difference": -0.0526,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            }
+          },
+          "direction": "candidate_must_be_at_or_above_b0",
+          "estimands_required": [
+            "entity_macro",
+            "row_micro"
+          ],
+          "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+        },
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "routes_required": [
+          "text",
+          "image"
+        ]
+      },
+      "eligible": false,
+      "reported_b0_floor": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "text.retain_same_entity.entity_macro": {
+            "candidate": 0.4816,
+            "b0": 0.5256,
+            "difference": -0.044,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_same_entity.row_micro": {
+            "candidate": 0.4975,
+            "b0": 0.5294,
+            "difference": -0.0319,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.entity_macro": {
+            "candidate": 0.4638,
+            "b0": 0.5072,
+            "difference": -0.0434,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.row_micro": {
+            "candidate": 0.4079,
+            "b0": 0.4737,
+            "difference": -0.0658,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.entity_macro": {
+            "candidate": 0.4108,
+            "b0": 0.5053,
+            "difference": -0.0945,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.row_micro": {
+            "candidate": 0.4216,
+            "b0": 0.5147,
+            "difference": -0.0931,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.entity_macro": {
+            "candidate": 0.3804,
+            "b0": 0.5,
+            "difference": -0.1196,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.row_micro": {
+            "candidate": 0.3684,
+            "b0": 0.4737,
+            "difference": -0.1053,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "num_numbers": 8,
+        "direction": "candidate_must_be_at_or_above_b0",
+        "per_route": {
+          "text": false,
+          "image": false
+        },
+        "frozen_floor_on_the_text_stratum": {
+          "eligible": false,
+          "epsilon": 1e-09,
+          "epsilon_is_a_tolerance_not_a_margin": true,
+          "checks": {
+            "retain_same_entity.entity_macro": {
+              "candidate": 0.4816,
+              "b0": 0.5256,
+              "difference": -0.044,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_same_entity.row_micro": {
+              "candidate": 0.4975,
+              "b0": 0.5294,
+              "difference": -0.0319,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.entity_macro": {
+              "candidate": 0.4638,
+              "b0": 0.5072,
+              "difference": -0.0434,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.row_micro": {
+              "candidate": 0.4079,
+              "b0": 0.4737,
+              "difference": -0.0658,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            }
+          },
+          "direction": "candidate_must_be_at_or_above_b0",
+          "estimands_required": [
+            "entity_macro",
+            "row_micro"
+          ],
+          "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+        },
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "routes_required": [
+          "text",
+          "image"
+        ]
+      },
+      "eligible_on_the_reported_b0_floor": false,
+      "pooled_all_routes": {
+        "floored": false,
+        "why_reported": "what pooling the two routes would have said, so the stratified choice is checkable against its alternative",
+        "retain_same_entity_all_routes": {
+          "num_queries": 816,
+          "row_micro": 0.4596
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 152,
+          "row_micro": 0.3882
+        }
+      },
+      "training_side": {
+        "final_avg_loss_fine_target": 1.1852,
+        "final_frac_at_cap_fine_target": 0.6333,
+        "final_avg_kl_retain": null,
+        "final_avg_loss_retain": 0.019,
+        "num_optimizer_steps": 230,
+        "train_seconds": 1330.5
+      },
+      "config": {
+        "recipe": {
+          "model_id": "Qwen/Qwen3.5-9B",
+          "lora_r": 16,
+          "lora_alpha": 32,
+          "lora_dropout": 0.05,
+          "lora_target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ],
+          "learning_rate": 2e-05,
+          "weight_decay": 0.0,
+          "num_epochs": 5,
+          "per_device_batch_size": 1,
+          "gradient_accumulation_steps": 8,
+          "max_length": 1536,
+          "max_image_pixels": 147456,
+          "seed": 42,
+          "bf16": true,
+          "gradient_checkpointing": true
+        },
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd_capped",
+            "weight": 0.5,
+            "cap": 1.0,
+            "anchor_weight": null,
+            "num_examples": 90
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null,
+            "num_examples": 90
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null,
+            "num_examples": 183
+          }
+        ],
+        "num_optimizer_steps": 230,
+        "init_adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MF/adapters",
+        "noop": null,
+        "preservation_anchor": null
+      }
+    },
+    "B5_cap2.0_lam0.5_lr2e-05_ep5": {
+      "method": "B5",
+      "spec": {
+        "candidate_id": "B5_cap2.0_lam0.5_lr2e-05_ep5",
+        "method": "B5",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd_capped",
+            "weight": 0.5,
+            "cap": 2.0,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        },
+        "cap": 2.0,
+        "beta": null
+      },
+      "vector": {
+        "filr": 0.1934,
+        "tga": 0.3708,
+        "ancestor": 0.3222,
+        "retain_same": 0.5646,
+        "retain_other": 0.45,
+        "over": 0.028,
+        "wrong": 0.223
+      },
+      "distance_to_mg": 0.047371,
+      "used_components": [
+        "filr",
+        "tga",
+        "ancestor",
+        "retain_same",
+        "retain_other",
+        "over",
+        "wrong"
+      ],
+      "values": {
+        "text.retain_same_entity.entity_macro": 0.4891,
+        "text.retain_same_entity.row_micro": 0.4926,
+        "text.retain_other_entity.entity_macro": 0.4312,
+        "text.retain_other_entity.row_micro": 0.3816,
+        "image.retain_same_entity_image.entity_macro": 0.3436,
+        "image.retain_same_entity_image.row_micro": 0.3505,
+        "image.retain_other_entity_image.entity_macro": 0.337,
+        "image.retain_other_entity_image.row_micro": 0.3289
+      },
+      "difference_vs_mg_anchor": {
+        "text.retain_same_entity.entity_macro": 0.0017,
+        "text.retain_same_entity.row_micro": -0.0099,
+        "text.retain_other_entity.entity_macro": 0.0055,
+        "text.retain_other_entity.row_micro": -0.0789,
+        "image.retain_same_entity_image.entity_macro": -0.1946,
+        "image.retain_same_entity_image.row_micro": -0.1716,
+        "image.retain_other_entity_image.entity_macro": -0.076,
+        "image.retain_other_entity_image.row_micro": -0.1185
+      },
+      "difference_vs_b0": {
+        "text.retain_same_entity.entity_macro": -0.0365,
+        "text.retain_same_entity.row_micro": -0.0368,
+        "text.retain_other_entity.entity_macro": -0.076,
+        "text.retain_other_entity.row_micro": -0.0921,
+        "image.retain_same_entity_image.entity_macro": -0.1617,
+        "image.retain_same_entity_image.row_micro": -0.1642,
+        "image.retain_other_entity_image.entity_macro": -0.163,
+        "image.retain_other_entity_image.row_micro": -0.1448
+      },
+      "primary_floor": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "text.retain_same_entity.entity_macro": {
+            "candidate": 0.4891,
+            "b0": 0.4874,
+            "difference": 0.0017,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_same_entity.row_micro": {
+            "candidate": 0.4926,
+            "b0": 0.5025,
+            "difference": -0.0099,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.entity_macro": {
+            "candidate": 0.4312,
+            "b0": 0.4257,
+            "difference": 0.0055,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.row_micro": {
+            "candidate": 0.3816,
+            "b0": 0.4605,
+            "difference": -0.0789,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.entity_macro": {
+            "candidate": 0.3436,
+            "b0": 0.5382,
+            "difference": -0.1946,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.row_micro": {
+            "candidate": 0.3505,
+            "b0": 0.5221,
+            "difference": -0.1716,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.entity_macro": {
+            "candidate": 0.337,
+            "b0": 0.413,
+            "difference": -0.076,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.row_micro": {
+            "candidate": 0.3289,
+            "b0": 0.4474,
+            "difference": -0.1185,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "num_numbers": 8,
+        "direction": "candidate_must_be_at_or_above_b0",
+        "per_route": {
+          "text": false,
+          "image": false
+        },
+        "frozen_floor_on_the_text_stratum": {
+          "eligible": false,
+          "epsilon": 1e-09,
+          "epsilon_is_a_tolerance_not_a_margin": true,
+          "checks": {
+            "retain_same_entity.entity_macro": {
+              "candidate": 0.4891,
+              "b0": 0.4874,
+              "difference": 0.0017,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_same_entity.row_micro": {
+              "candidate": 0.4926,
+              "b0": 0.5025,
+              "difference": -0.0099,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.entity_macro": {
+              "candidate": 0.4312,
+              "b0": 0.4257,
+              "difference": 0.0055,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.row_micro": {
+              "candidate": 0.3816,
+              "b0": 0.4605,
+              "difference": -0.0789,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            }
+          },
+          "direction": "candidate_must_be_at_or_above_b0",
+          "estimands_required": [
+            "entity_macro",
+            "row_micro"
+          ],
+          "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+        },
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "routes_required": [
+          "text",
+          "image"
+        ]
+      },
+      "eligible": false,
+      "reported_b0_floor": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "text.retain_same_entity.entity_macro": {
+            "candidate": 0.4891,
+            "b0": 0.5256,
+            "difference": -0.0365,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_same_entity.row_micro": {
+            "candidate": 0.4926,
+            "b0": 0.5294,
+            "difference": -0.0368,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.entity_macro": {
+            "candidate": 0.4312,
+            "b0": 0.5072,
+            "difference": -0.076,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.row_micro": {
+            "candidate": 0.3816,
+            "b0": 0.4737,
+            "difference": -0.0921,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.entity_macro": {
+            "candidate": 0.3436,
+            "b0": 0.5053,
+            "difference": -0.1617,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.row_micro": {
+            "candidate": 0.3505,
+            "b0": 0.5147,
+            "difference": -0.1642,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.entity_macro": {
+            "candidate": 0.337,
+            "b0": 0.5,
+            "difference": -0.163,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.row_micro": {
+            "candidate": 0.3289,
+            "b0": 0.4737,
+            "difference": -0.1448,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "num_numbers": 8,
+        "direction": "candidate_must_be_at_or_above_b0",
+        "per_route": {
+          "text": false,
+          "image": false
+        },
+        "frozen_floor_on_the_text_stratum": {
+          "eligible": false,
+          "epsilon": 1e-09,
+          "epsilon_is_a_tolerance_not_a_margin": true,
+          "checks": {
+            "retain_same_entity.entity_macro": {
+              "candidate": 0.4891,
+              "b0": 0.5256,
+              "difference": -0.0365,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_same_entity.row_micro": {
+              "candidate": 0.4926,
+              "b0": 0.5294,
+              "difference": -0.0368,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.entity_macro": {
+              "candidate": 0.4312,
+              "b0": 0.5072,
+              "difference": -0.076,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.row_micro": {
+              "candidate": 0.3816,
+              "b0": 0.4737,
+              "difference": -0.0921,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            }
+          },
+          "direction": "candidate_must_be_at_or_above_b0",
+          "estimands_required": [
+            "entity_macro",
+            "row_micro"
+          ],
+          "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+        },
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "routes_required": [
+          "text",
+          "image"
+        ]
+      },
+      "eligible_on_the_reported_b0_floor": false,
+      "pooled_all_routes": {
+        "floored": false,
+        "why_reported": "what pooling the two routes would have said, so the stratified choice is checkable against its alternative",
+        "retain_same_entity_all_routes": {
+          "num_queries": 816,
+          "row_micro": 0.4216
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 152,
+          "row_micro": 0.3553
+        }
+      },
+      "training_side": {
+        "final_avg_loss_fine_target": 1.8007,
+        "final_frac_at_cap_fine_target": 0.4111,
+        "final_avg_kl_retain": null,
+        "final_avg_loss_retain": 0.0472,
+        "num_optimizer_steps": 230,
+        "train_seconds": 1580.8
+      },
+      "config": {
+        "recipe": {
+          "model_id": "Qwen/Qwen3.5-9B",
+          "lora_r": 16,
+          "lora_alpha": 32,
+          "lora_dropout": 0.05,
+          "lora_target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ],
+          "learning_rate": 2e-05,
+          "weight_decay": 0.0,
+          "num_epochs": 5,
+          "per_device_batch_size": 1,
+          "gradient_accumulation_steps": 8,
+          "max_length": 1536,
+          "max_image_pixels": 147456,
+          "seed": 42,
+          "bf16": true,
+          "gradient_checkpointing": true
+        },
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd_capped",
+            "weight": 0.5,
+            "cap": 2.0,
+            "anchor_weight": null,
+            "num_examples": 90
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null,
+            "num_examples": 90
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null,
+            "num_examples": 183
+          }
+        ],
+        "num_optimizer_steps": 230,
+        "init_adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MF/adapters",
+        "noop": null,
+        "preservation_anchor": null
+      }
+    },
+    "B5_cap4.0_lam0.5_lr2e-05_ep5": {
+      "method": "B5",
+      "spec": {
+        "candidate_id": "B5_cap4.0_lam0.5_lr2e-05_ep5",
+        "method": "B5",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd_capped",
+            "weight": 0.5,
+            "cap": 4.0,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        },
+        "cap": 4.0,
+        "beta": null
+      },
+      "vector": {
+        "filr": 0.1728,
+        "tga": 0.3918,
+        "ancestor": 0.3148,
+        "retain_same": 0.5517,
+        "retain_other": 0.3833,
+        "over": 0.0366,
+        "wrong": 0.221
+      },
+      "distance_to_mg": 0.0484,
+      "used_components": [
+        "filr",
+        "tga",
+        "ancestor",
+        "retain_same",
+        "retain_other",
+        "over",
+        "wrong"
+      ],
+      "values": {
+        "text.retain_same_entity.entity_macro": 0.468,
+        "text.retain_same_entity.row_micro": 0.4853,
+        "text.retain_other_entity.entity_macro": 0.4746,
+        "text.retain_other_entity.row_micro": 0.4079,
+        "image.retain_same_entity_image.entity_macro": 0.3653,
+        "image.retain_same_entity_image.row_micro": 0.375,
+        "image.retain_other_entity_image.entity_macro": 0.3696,
+        "image.retain_other_entity_image.row_micro": 0.3684
+      },
+      "difference_vs_mg_anchor": {
+        "text.retain_same_entity.entity_macro": -0.0194,
+        "text.retain_same_entity.row_micro": -0.0172,
+        "text.retain_other_entity.entity_macro": 0.0489,
+        "text.retain_other_entity.row_micro": -0.0526,
+        "image.retain_same_entity_image.entity_macro": -0.1729,
+        "image.retain_same_entity_image.row_micro": -0.1471,
+        "image.retain_other_entity_image.entity_macro": -0.0434,
+        "image.retain_other_entity_image.row_micro": -0.079
+      },
+      "difference_vs_b0": {
+        "text.retain_same_entity.entity_macro": -0.0576,
+        "text.retain_same_entity.row_micro": -0.0441,
+        "text.retain_other_entity.entity_macro": -0.0326,
+        "text.retain_other_entity.row_micro": -0.0658,
+        "image.retain_same_entity_image.entity_macro": -0.14,
+        "image.retain_same_entity_image.row_micro": -0.1397,
+        "image.retain_other_entity_image.entity_macro": -0.1304,
+        "image.retain_other_entity_image.row_micro": -0.1053
+      },
+      "primary_floor": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "text.retain_same_entity.entity_macro": {
+            "candidate": 0.468,
+            "b0": 0.4874,
+            "difference": -0.0194,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_same_entity.row_micro": {
+            "candidate": 0.4853,
+            "b0": 0.5025,
+            "difference": -0.0172,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.entity_macro": {
+            "candidate": 0.4746,
+            "b0": 0.4257,
+            "difference": 0.0489,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.row_micro": {
+            "candidate": 0.4079,
+            "b0": 0.4605,
+            "difference": -0.0526,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.entity_macro": {
+            "candidate": 0.3653,
+            "b0": 0.5382,
+            "difference": -0.1729,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.row_micro": {
+            "candidate": 0.375,
+            "b0": 0.5221,
+            "difference": -0.1471,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.entity_macro": {
+            "candidate": 0.3696,
+            "b0": 0.413,
+            "difference": -0.0434,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.row_micro": {
+            "candidate": 0.3684,
+            "b0": 0.4474,
+            "difference": -0.079,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "num_numbers": 8,
+        "direction": "candidate_must_be_at_or_above_b0",
+        "per_route": {
+          "text": false,
+          "image": false
+        },
+        "frozen_floor_on_the_text_stratum": {
+          "eligible": false,
+          "epsilon": 1e-09,
+          "epsilon_is_a_tolerance_not_a_margin": true,
+          "checks": {
+            "retain_same_entity.entity_macro": {
+              "candidate": 0.468,
+              "b0": 0.4874,
+              "difference": -0.0194,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_same_entity.row_micro": {
+              "candidate": 0.4853,
+              "b0": 0.5025,
+              "difference": -0.0172,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.entity_macro": {
+              "candidate": 0.4746,
+              "b0": 0.4257,
+              "difference": 0.0489,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.row_micro": {
+              "candidate": 0.4079,
+              "b0": 0.4605,
+              "difference": -0.0526,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            }
+          },
+          "direction": "candidate_must_be_at_or_above_b0",
+          "estimands_required": [
+            "entity_macro",
+            "row_micro"
+          ],
+          "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+        },
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "routes_required": [
+          "text",
+          "image"
+        ]
+      },
+      "eligible": false,
+      "reported_b0_floor": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "text.retain_same_entity.entity_macro": {
+            "candidate": 0.468,
+            "b0": 0.5256,
+            "difference": -0.0576,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_same_entity.row_micro": {
+            "candidate": 0.4853,
+            "b0": 0.5294,
+            "difference": -0.0441,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.entity_macro": {
+            "candidate": 0.4746,
+            "b0": 0.5072,
+            "difference": -0.0326,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.row_micro": {
+            "candidate": 0.4079,
+            "b0": 0.4737,
+            "difference": -0.0658,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.entity_macro": {
+            "candidate": 0.3653,
+            "b0": 0.5053,
+            "difference": -0.14,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.row_micro": {
+            "candidate": 0.375,
+            "b0": 0.5147,
+            "difference": -0.1397,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.entity_macro": {
+            "candidate": 0.3696,
+            "b0": 0.5,
+            "difference": -0.1304,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.row_micro": {
+            "candidate": 0.3684,
+            "b0": 0.4737,
+            "difference": -0.1053,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "num_numbers": 8,
+        "direction": "candidate_must_be_at_or_above_b0",
+        "per_route": {
+          "text": false,
+          "image": false
+        },
+        "frozen_floor_on_the_text_stratum": {
+          "eligible": false,
+          "epsilon": 1e-09,
+          "epsilon_is_a_tolerance_not_a_margin": true,
+          "checks": {
+            "retain_same_entity.entity_macro": {
+              "candidate": 0.468,
+              "b0": 0.5256,
+              "difference": -0.0576,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_same_entity.row_micro": {
+              "candidate": 0.4853,
+              "b0": 0.5294,
+              "difference": -0.0441,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.entity_macro": {
+              "candidate": 0.4746,
+              "b0": 0.5072,
+              "difference": -0.0326,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.row_micro": {
+              "candidate": 0.4079,
+              "b0": 0.4737,
+              "difference": -0.0658,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            }
+          },
+          "direction": "candidate_must_be_at_or_above_b0",
+          "estimands_required": [
+            "entity_macro",
+            "row_micro"
+          ],
+          "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+        },
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "routes_required": [
+          "text",
+          "image"
+        ]
+      },
+      "eligible_on_the_reported_b0_floor": false,
+      "pooled_all_routes": {
+        "floored": false,
+        "why_reported": "what pooling the two routes would have said, so the stratified choice is checkable against its alternative",
+        "retain_same_entity_all_routes": {
+          "num_queries": 816,
+          "row_micro": 0.4301
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 152,
+          "row_micro": 0.3882
+        }
+      },
+      "training_side": {
+        "final_avg_loss_fine_target": 2.3548,
+        "final_frac_at_cap_fine_target": 0.2667,
+        "final_avg_kl_retain": null,
+        "final_avg_loss_retain": 0.0929,
+        "num_optimizer_steps": 230,
+        "train_seconds": 1452.6
+      },
+      "config": {
+        "recipe": {
+          "model_id": "Qwen/Qwen3.5-9B",
+          "lora_r": 16,
+          "lora_alpha": 32,
+          "lora_dropout": 0.05,
+          "lora_target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ],
+          "learning_rate": 2e-05,
+          "weight_decay": 0.0,
+          "num_epochs": 5,
+          "per_device_batch_size": 1,
+          "gradient_accumulation_steps": 8,
+          "max_length": 1536,
+          "max_image_pixels": 147456,
+          "seed": 42,
+          "bf16": true,
+          "gradient_checkpointing": true
+        },
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd_capped",
+            "weight": 0.5,
+            "cap": 4.0,
+            "anchor_weight": null,
+            "num_examples": 90
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null,
+            "num_examples": 90
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null,
+            "num_examples": 183
+          }
+        ],
+        "num_optimizer_steps": 230,
+        "init_adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MF/adapters",
+        "noop": null,
+        "preservation_anchor": null
+      }
+    },
+    "B5_cap2.0_lam0.5_lr2e-05_ep8": {
+      "method": "B5",
+      "spec": {
+        "candidate_id": "B5_cap2.0_lam0.5_lr2e-05_ep8",
+        "method": "B5",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd_capped",
+            "weight": 0.5,
+            "cap": 2.0,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 8
+        },
+        "cap": 2.0,
+        "beta": null
+      },
+      "vector": {
+        "filr": 0.1844,
+        "tga": 0.3811,
+        "ancestor": 0.2926,
+        "retain_same": 0.5439,
+        "retain_other": 0.45,
+        "over": 0.0251,
+        "wrong": 0.2292
+      },
+      "distance_to_mg": 0.036957,
+      "used_components": [
+        "filr",
+        "tga",
+        "ancestor",
+        "retain_same",
+        "retain_other",
+        "over",
+        "wrong"
+      ],
+      "values": {
+        "text.retain_same_entity.entity_macro": 0.4616,
+        "text.retain_same_entity.row_micro": 0.4681,
+        "text.retain_other_entity.entity_macro": 0.4638,
+        "text.retain_other_entity.row_micro": 0.3816,
+        "image.retain_same_entity_image.entity_macro": 0.3177,
+        "image.retain_same_entity_image.row_micro": 0.326,
+        "image.retain_other_entity_image.entity_macro": 0.2935,
+        "image.retain_other_entity_image.row_micro": 0.3026
+      },
+      "difference_vs_mg_anchor": {
+        "text.retain_same_entity.entity_macro": -0.0258,
+        "text.retain_same_entity.row_micro": -0.0344,
+        "text.retain_other_entity.entity_macro": 0.0381,
+        "text.retain_other_entity.row_micro": -0.0789,
+        "image.retain_same_entity_image.entity_macro": -0.2205,
+        "image.retain_same_entity_image.row_micro": -0.1961,
+        "image.retain_other_entity_image.entity_macro": -0.1195,
+        "image.retain_other_entity_image.row_micro": -0.1448
+      },
+      "difference_vs_b0": {
+        "text.retain_same_entity.entity_macro": -0.064,
+        "text.retain_same_entity.row_micro": -0.0613,
+        "text.retain_other_entity.entity_macro": -0.0434,
+        "text.retain_other_entity.row_micro": -0.0921,
+        "image.retain_same_entity_image.entity_macro": -0.1876,
+        "image.retain_same_entity_image.row_micro": -0.1887,
+        "image.retain_other_entity_image.entity_macro": -0.2065,
+        "image.retain_other_entity_image.row_micro": -0.1711
+      },
+      "primary_floor": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "text.retain_same_entity.entity_macro": {
+            "candidate": 0.4616,
+            "b0": 0.4874,
+            "difference": -0.0258,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_same_entity.row_micro": {
+            "candidate": 0.4681,
+            "b0": 0.5025,
+            "difference": -0.0344,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.entity_macro": {
+            "candidate": 0.4638,
+            "b0": 0.4257,
+            "difference": 0.0381,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.row_micro": {
+            "candidate": 0.3816,
+            "b0": 0.4605,
+            "difference": -0.0789,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.entity_macro": {
+            "candidate": 0.3177,
+            "b0": 0.5382,
+            "difference": -0.2205,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.row_micro": {
+            "candidate": 0.326,
+            "b0": 0.5221,
+            "difference": -0.1961,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.entity_macro": {
+            "candidate": 0.2935,
+            "b0": 0.413,
+            "difference": -0.1195,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.row_micro": {
+            "candidate": 0.3026,
+            "b0": 0.4474,
+            "difference": -0.1448,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "num_numbers": 8,
+        "direction": "candidate_must_be_at_or_above_b0",
+        "per_route": {
+          "text": false,
+          "image": false
+        },
+        "frozen_floor_on_the_text_stratum": {
+          "eligible": false,
+          "epsilon": 1e-09,
+          "epsilon_is_a_tolerance_not_a_margin": true,
+          "checks": {
+            "retain_same_entity.entity_macro": {
+              "candidate": 0.4616,
+              "b0": 0.4874,
+              "difference": -0.0258,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_same_entity.row_micro": {
+              "candidate": 0.4681,
+              "b0": 0.5025,
+              "difference": -0.0344,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.entity_macro": {
+              "candidate": 0.4638,
+              "b0": 0.4257,
+              "difference": 0.0381,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.row_micro": {
+              "candidate": 0.3816,
+              "b0": 0.4605,
+              "difference": -0.0789,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            }
+          },
+          "direction": "candidate_must_be_at_or_above_b0",
+          "estimands_required": [
+            "entity_macro",
+            "row_micro"
+          ],
+          "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+        },
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "routes_required": [
+          "text",
+          "image"
+        ]
+      },
+      "eligible": false,
+      "reported_b0_floor": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "text.retain_same_entity.entity_macro": {
+            "candidate": 0.4616,
+            "b0": 0.5256,
+            "difference": -0.064,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_same_entity.row_micro": {
+            "candidate": 0.4681,
+            "b0": 0.5294,
+            "difference": -0.0613,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.entity_macro": {
+            "candidate": 0.4638,
+            "b0": 0.5072,
+            "difference": -0.0434,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.row_micro": {
+            "candidate": 0.3816,
+            "b0": 0.4737,
+            "difference": -0.0921,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.entity_macro": {
+            "candidate": 0.3177,
+            "b0": 0.5053,
+            "difference": -0.1876,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.row_micro": {
+            "candidate": 0.326,
+            "b0": 0.5147,
+            "difference": -0.1887,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.entity_macro": {
+            "candidate": 0.2935,
+            "b0": 0.5,
+            "difference": -0.2065,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.row_micro": {
+            "candidate": 0.3026,
+            "b0": 0.4737,
+            "difference": -0.1711,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "num_numbers": 8,
+        "direction": "candidate_must_be_at_or_above_b0",
+        "per_route": {
+          "text": false,
+          "image": false
+        },
+        "frozen_floor_on_the_text_stratum": {
+          "eligible": false,
+          "epsilon": 1e-09,
+          "epsilon_is_a_tolerance_not_a_margin": true,
+          "checks": {
+            "retain_same_entity.entity_macro": {
+              "candidate": 0.4616,
+              "b0": 0.5256,
+              "difference": -0.064,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_same_entity.row_micro": {
+              "candidate": 0.4681,
+              "b0": 0.5294,
+              "difference": -0.0613,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.entity_macro": {
+              "candidate": 0.4638,
+              "b0": 0.5072,
+              "difference": -0.0434,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.row_micro": {
+              "candidate": 0.3816,
+              "b0": 0.4737,
+              "difference": -0.0921,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            }
+          },
+          "direction": "candidate_must_be_at_or_above_b0",
+          "estimands_required": [
+            "entity_macro",
+            "row_micro"
+          ],
+          "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+        },
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "routes_required": [
+          "text",
+          "image"
+        ]
+      },
+      "eligible_on_the_reported_b0_floor": false,
+      "pooled_all_routes": {
+        "floored": false,
+        "why_reported": "what pooling the two routes would have said, so the stratified choice is checkable against its alternative",
+        "retain_same_entity_all_routes": {
+          "num_queries": 816,
+          "row_micro": 0.3971
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 152,
+          "row_micro": 0.3421
+        }
+      },
+      "training_side": {
+        "final_avg_loss_fine_target": 2.9924,
+        "final_frac_at_cap_fine_target": 0.9111,
+        "final_avg_kl_retain": null,
+        "final_avg_loss_retain": 0.0063,
+        "num_optimizer_steps": 368,
+        "train_seconds": 2202.7
+      },
+      "config": {
+        "recipe": {
+          "model_id": "Qwen/Qwen3.5-9B",
+          "lora_r": 16,
+          "lora_alpha": 32,
+          "lora_dropout": 0.05,
+          "lora_target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ],
+          "learning_rate": 2e-05,
+          "weight_decay": 0.0,
+          "num_epochs": 8,
+          "per_device_batch_size": 1,
+          "gradient_accumulation_steps": 8,
+          "max_length": 1536,
+          "max_image_pixels": 147456,
+          "seed": 42,
+          "bf16": true,
+          "gradient_checkpointing": true
+        },
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd_capped",
+            "weight": 0.5,
+            "cap": 2.0,
+            "anchor_weight": null,
+            "num_examples": 90
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null,
+            "num_examples": 90
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null,
+            "num_examples": 183
+          }
+        ],
+        "num_optimizer_steps": 368,
+        "init_adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MF/adapters",
+        "noop": null,
+        "preservation_anchor": null
+      }
+    },
+    "B6_beta13.642_lam0.5_lr2e-05_ep5": {
+      "method": "B6",
+      "spec": {
+        "candidate_id": "B6_beta13.642_lam0.5_lr2e-05_ep5",
+        "method": "B6",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "anchor",
+            "weight": 13.642,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        },
+        "cap": null,
+        "beta": 13.642
+      },
+      "vector": {
+        "filr": 0.23,
+        "tga": 0.344,
+        "ancestor": 0.2852,
+        "retain_same": 0.5956,
+        "retain_other": 0.6778,
+        "over": 0.0296,
+        "wrong": 0.2272
+      },
+      "distance_to_mg": 0.060314,
+      "used_components": [
+        "filr",
+        "tga",
+        "ancestor",
+        "retain_same",
+        "retain_other",
+        "over",
+        "wrong"
+      ],
+      "values": {
+        "text.retain_same_entity.entity_macro": 0.543,
+        "text.retain_same_entity.row_micro": 0.5466,
+        "text.retain_other_entity.entity_macro": 0.5199,
+        "text.retain_other_entity.row_micro": 0.5132,
+        "image.retain_same_entity_image.entity_macro": 0.5043,
+        "image.retain_same_entity_image.row_micro": 0.5098,
+        "image.retain_other_entity_image.entity_macro": 0.4348,
+        "image.retain_other_entity_image.row_micro": 0.4211
+      },
+      "difference_vs_mg_anchor": {
+        "text.retain_same_entity.entity_macro": 0.0556,
+        "text.retain_same_entity.row_micro": 0.0441,
+        "text.retain_other_entity.entity_macro": 0.0942,
+        "text.retain_other_entity.row_micro": 0.0527,
+        "image.retain_same_entity_image.entity_macro": -0.0339,
+        "image.retain_same_entity_image.row_micro": -0.0123,
+        "image.retain_other_entity_image.entity_macro": 0.0218,
+        "image.retain_other_entity_image.row_micro": -0.0263
+      },
+      "difference_vs_b0": {
+        "text.retain_same_entity.entity_macro": 0.0174,
+        "text.retain_same_entity.row_micro": 0.0172,
+        "text.retain_other_entity.entity_macro": 0.0127,
+        "text.retain_other_entity.row_micro": 0.0395,
+        "image.retain_same_entity_image.entity_macro": -0.001,
+        "image.retain_same_entity_image.row_micro": -0.0049,
+        "image.retain_other_entity_image.entity_macro": -0.0652,
+        "image.retain_other_entity_image.row_micro": -0.0526
+      },
+      "primary_floor": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "text.retain_same_entity.entity_macro": {
+            "candidate": 0.543,
+            "b0": 0.4874,
+            "difference": 0.0556,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_same_entity.row_micro": {
+            "candidate": 0.5466,
+            "b0": 0.5025,
+            "difference": 0.0441,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.entity_macro": {
+            "candidate": 0.5199,
+            "b0": 0.4257,
+            "difference": 0.0942,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.row_micro": {
+            "candidate": 0.5132,
+            "b0": 0.4605,
+            "difference": 0.0527,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.entity_macro": {
+            "candidate": 0.5043,
+            "b0": 0.5382,
+            "difference": -0.0339,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.row_micro": {
+            "candidate": 0.5098,
+            "b0": 0.5221,
+            "difference": -0.0123,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.entity_macro": {
+            "candidate": 0.4348,
+            "b0": 0.413,
+            "difference": 0.0218,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.row_micro": {
+            "candidate": 0.4211,
+            "b0": 0.4474,
+            "difference": -0.0263,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "num_numbers": 8,
+        "direction": "candidate_must_be_at_or_above_b0",
+        "per_route": {
+          "text": true,
+          "image": false
+        },
+        "frozen_floor_on_the_text_stratum": {
+          "eligible": true,
+          "epsilon": 1e-09,
+          "epsilon_is_a_tolerance_not_a_margin": true,
+          "checks": {
+            "retain_same_entity.entity_macro": {
+              "candidate": 0.543,
+              "b0": 0.4874,
+              "difference": 0.0556,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_same_entity.row_micro": {
+              "candidate": 0.5466,
+              "b0": 0.5025,
+              "difference": 0.0441,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.entity_macro": {
+              "candidate": 0.5199,
+              "b0": 0.4257,
+              "difference": 0.0942,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.row_micro": {
+              "candidate": 0.5132,
+              "b0": 0.4605,
+              "difference": 0.0527,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            }
+          },
+          "direction": "candidate_must_be_at_or_above_b0",
+          "estimands_required": [
+            "entity_macro",
+            "row_micro"
+          ],
+          "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+        },
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "routes_required": [
+          "text",
+          "image"
+        ]
+      },
+      "eligible": false,
+      "reported_b0_floor": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "text.retain_same_entity.entity_macro": {
+            "candidate": 0.543,
+            "b0": 0.5256,
+            "difference": 0.0174,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_same_entity.row_micro": {
+            "candidate": 0.5466,
+            "b0": 0.5294,
+            "difference": 0.0172,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.entity_macro": {
+            "candidate": 0.5199,
+            "b0": 0.5072,
+            "difference": 0.0127,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.row_micro": {
+            "candidate": 0.5132,
+            "b0": 0.4737,
+            "difference": 0.0395,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.entity_macro": {
+            "candidate": 0.5043,
+            "b0": 0.5053,
+            "difference": -0.001,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.row_micro": {
+            "candidate": 0.5098,
+            "b0": 0.5147,
+            "difference": -0.0049,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.entity_macro": {
+            "candidate": 0.4348,
+            "b0": 0.5,
+            "difference": -0.0652,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.row_micro": {
+            "candidate": 0.4211,
+            "b0": 0.4737,
+            "difference": -0.0526,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "num_numbers": 8,
+        "direction": "candidate_must_be_at_or_above_b0",
+        "per_route": {
+          "text": true,
+          "image": false
+        },
+        "frozen_floor_on_the_text_stratum": {
+          "eligible": true,
+          "epsilon": 1e-09,
+          "epsilon_is_a_tolerance_not_a_margin": true,
+          "checks": {
+            "retain_same_entity.entity_macro": {
+              "candidate": 0.543,
+              "b0": 0.5256,
+              "difference": 0.0174,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_same_entity.row_micro": {
+              "candidate": 0.5466,
+              "b0": 0.5294,
+              "difference": 0.0172,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.entity_macro": {
+              "candidate": 0.5199,
+              "b0": 0.5072,
+              "difference": 0.0127,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.row_micro": {
+              "candidate": 0.5132,
+              "b0": 0.4737,
+              "difference": 0.0395,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            }
+          },
+          "direction": "candidate_must_be_at_or_above_b0",
+          "estimands_required": [
+            "entity_macro",
+            "row_micro"
+          ],
+          "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+        },
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "routes_required": [
+          "text",
+          "image"
+        ]
+      },
+      "eligible_on_the_reported_b0_floor": false,
+      "pooled_all_routes": {
+        "floored": false,
+        "why_reported": "what pooling the two routes would have said, so the stratified choice is checkable against its alternative",
+        "retain_same_entity_all_routes": {
+          "num_queries": 816,
+          "row_micro": 0.5282
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 152,
+          "row_micro": 0.4671
+        }
+      },
+      "training_side": {
+        "final_avg_loss_fine_target": 0.6857,
+        "final_frac_at_cap_fine_target": null,
+        "final_avg_kl_retain": 0.014201,
+        "final_avg_loss_retain": 0.0179,
+        "num_optimizer_steps": 230,
+        "train_seconds": 1219.0
+      },
+      "config": {
+        "recipe": {
+          "model_id": "Qwen/Qwen3.5-9B",
+          "lora_r": 16,
+          "lora_alpha": 32,
+          "lora_dropout": 0.05,
+          "lora_target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ],
+          "learning_rate": 2e-05,
+          "weight_decay": 0.0,
+          "num_epochs": 5,
+          "per_device_batch_size": 1,
+          "gradient_accumulation_steps": 8,
+          "max_length": 1536,
+          "max_image_pixels": 147456,
+          "seed": 42,
+          "bf16": true,
+          "gradient_checkpointing": true
+        },
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5,
+            "cap": null,
+            "anchor_weight": null,
+            "num_examples": 90
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null,
+            "num_examples": 90
+          },
+          {
+            "name": "retain",
+            "mode": "anchor",
+            "weight": 13.642,
+            "cap": null,
+            "anchor_weight": null,
+            "num_examples": 183
+          }
+        ],
+        "num_optimizer_steps": 230,
+        "init_adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MF/adapters",
+        "noop": null,
+        "preservation_anchor": {
+          "cache_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/mllmu_hier_pilot100/mf_reference_logprobs",
+          "kl_direction": "KL(p_MF || p_theta), exact over the full vocabulary",
+          "mf_adapter_sha256": "4c5d158895480a762f7319ebb2ff04aa87d4818a37877e9236553bdb97dc2f76",
+          "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+          "num_preserved_examples": 183,
+          "num_preserved_positions": 1489,
+          "vocab_size": 248320,
+          "cache_tensor_sha256": "dbf8b475e01bf3e13c731f04b94109e8dc37b14d6252598d7e9b6811999e5f6a",
+          "anchored_groups": [
+            "retain"
+          ],
+          "anchor_weight": {
+            "retain": 13.642
+          },
+          "anchor_alongside_supervised_term": {
+            "retain": false
+          },
+          "note": "The anchor term is weight * KL(p_MF || p_theta) over the supervised positions of the fit-half retain group. It is exactly zero with exactly zero gradient at theta = MF, so its optimum is MF -- which is no unlearning at all. That is the behaviour the calibration measured, and it is why this row is a test of the preregistered mechanism rather than a candidate expected to win.",
+          "nll_agreement_max": 1.1920928955078125e-07
+        }
+      }
+    },
+    "B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5": {
+      "method": "B6",
+      "spec": {
+        "candidate_id": "B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5",
+        "method": "B6",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": 13.642
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        },
+        "cap": null,
+        "beta": 13.642
+      },
+      "vector": {
+        "filr": 0.2432,
+        "tga": 0.3395,
+        "ancestor": 0.2963,
+        "retain_same": 0.593,
+        "retain_other": 0.6667,
+        "over": 0.0255,
+        "wrong": 0.2305
+      },
+      "distance_to_mg": 0.062586,
+      "used_components": [
+        "filr",
+        "tga",
+        "ancestor",
+        "retain_same",
+        "retain_other",
+        "over",
+        "wrong"
+      ],
+      "values": {
+        "text.retain_same_entity.entity_macro": 0.5413,
+        "text.retain_same_entity.row_micro": 0.5441,
+        "text.retain_other_entity.entity_macro": 0.4982,
+        "text.retain_other_entity.row_micro": 0.5,
+        "image.retain_same_entity_image.entity_macro": 0.4985,
+        "image.retain_same_entity_image.row_micro": 0.5049,
+        "image.retain_other_entity_image.entity_macro": 0.4565,
+        "image.retain_other_entity_image.row_micro": 0.4342
+      },
+      "difference_vs_mg_anchor": {
+        "text.retain_same_entity.entity_macro": 0.0539,
+        "text.retain_same_entity.row_micro": 0.0416,
+        "text.retain_other_entity.entity_macro": 0.0725,
+        "text.retain_other_entity.row_micro": 0.0395,
+        "image.retain_same_entity_image.entity_macro": -0.0397,
+        "image.retain_same_entity_image.row_micro": -0.0172,
+        "image.retain_other_entity_image.entity_macro": 0.0435,
+        "image.retain_other_entity_image.row_micro": -0.0132
+      },
+      "difference_vs_b0": {
+        "text.retain_same_entity.entity_macro": 0.0157,
+        "text.retain_same_entity.row_micro": 0.0147,
+        "text.retain_other_entity.entity_macro": -0.009,
+        "text.retain_other_entity.row_micro": 0.0263,
+        "image.retain_same_entity_image.entity_macro": -0.0068,
+        "image.retain_same_entity_image.row_micro": -0.0098,
+        "image.retain_other_entity_image.entity_macro": -0.0435,
+        "image.retain_other_entity_image.row_micro": -0.0395
+      },
+      "primary_floor": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "text.retain_same_entity.entity_macro": {
+            "candidate": 0.5413,
+            "b0": 0.4874,
+            "difference": 0.0539,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_same_entity.row_micro": {
+            "candidate": 0.5441,
+            "b0": 0.5025,
+            "difference": 0.0416,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.entity_macro": {
+            "candidate": 0.4982,
+            "b0": 0.4257,
+            "difference": 0.0725,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.row_micro": {
+            "candidate": 0.5,
+            "b0": 0.4605,
+            "difference": 0.0395,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.entity_macro": {
+            "candidate": 0.4985,
+            "b0": 0.5382,
+            "difference": -0.0397,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.row_micro": {
+            "candidate": 0.5049,
+            "b0": 0.5221,
+            "difference": -0.0172,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.entity_macro": {
+            "candidate": 0.4565,
+            "b0": 0.413,
+            "difference": 0.0435,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.row_micro": {
+            "candidate": 0.4342,
+            "b0": 0.4474,
+            "difference": -0.0132,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "num_numbers": 8,
+        "direction": "candidate_must_be_at_or_above_b0",
+        "per_route": {
+          "text": true,
+          "image": false
+        },
+        "frozen_floor_on_the_text_stratum": {
+          "eligible": true,
+          "epsilon": 1e-09,
+          "epsilon_is_a_tolerance_not_a_margin": true,
+          "checks": {
+            "retain_same_entity.entity_macro": {
+              "candidate": 0.5413,
+              "b0": 0.4874,
+              "difference": 0.0539,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_same_entity.row_micro": {
+              "candidate": 0.5441,
+              "b0": 0.5025,
+              "difference": 0.0416,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.entity_macro": {
+              "candidate": 0.4982,
+              "b0": 0.4257,
+              "difference": 0.0725,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.row_micro": {
+              "candidate": 0.5,
+              "b0": 0.4605,
+              "difference": 0.0395,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            }
+          },
+          "direction": "candidate_must_be_at_or_above_b0",
+          "estimands_required": [
+            "entity_macro",
+            "row_micro"
+          ],
+          "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+        },
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "routes_required": [
+          "text",
+          "image"
+        ]
+      },
+      "eligible": false,
+      "reported_b0_floor": {
+        "eligible": false,
+        "epsilon": 1e-09,
+        "epsilon_is_a_tolerance_not_a_margin": true,
+        "checks": {
+          "text.retain_same_entity.entity_macro": {
+            "candidate": 0.5413,
+            "b0": 0.5256,
+            "difference": 0.0157,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_same_entity.row_micro": {
+            "candidate": 0.5441,
+            "b0": 0.5294,
+            "difference": 0.0147,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.entity_macro": {
+            "candidate": 0.4982,
+            "b0": 0.5072,
+            "difference": -0.009,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "text.retain_other_entity.row_micro": {
+            "candidate": 0.5,
+            "b0": 0.4737,
+            "difference": 0.0263,
+            "passes": true,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.entity_macro": {
+            "candidate": 0.4985,
+            "b0": 0.5053,
+            "difference": -0.0068,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_same_entity_image.row_micro": {
+            "candidate": 0.5049,
+            "b0": 0.5147,
+            "difference": -0.0098,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.entity_macro": {
+            "candidate": 0.4565,
+            "b0": 0.5,
+            "difference": -0.0435,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          },
+          "image.retain_other_entity_image.row_micro": {
+            "candidate": 0.4342,
+            "b0": 0.4737,
+            "difference": -0.0395,
+            "passes": false,
+            "comparison": "candidate >= b0 - 1e-09"
+          }
+        },
+        "num_numbers": 8,
+        "direction": "candidate_must_be_at_or_above_b0",
+        "per_route": {
+          "text": false,
+          "image": false
+        },
+        "frozen_floor_on_the_text_stratum": {
+          "eligible": false,
+          "epsilon": 1e-09,
+          "epsilon_is_a_tolerance_not_a_margin": true,
+          "checks": {
+            "retain_same_entity.entity_macro": {
+              "candidate": 0.5413,
+              "b0": 0.5256,
+              "difference": 0.0157,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_same_entity.row_micro": {
+              "candidate": 0.5441,
+              "b0": 0.5294,
+              "difference": 0.0147,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.entity_macro": {
+              "candidate": 0.4982,
+              "b0": 0.5072,
+              "difference": -0.009,
+              "passes": false,
+              "comparison": "candidate >= b0 - 1e-09"
+            },
+            "retain_other_entity.row_micro": {
+              "candidate": 0.5,
+              "b0": 0.4737,
+              "difference": 0.0263,
+              "passes": true,
+              "comparison": "candidate >= b0 - 1e-09"
+            }
+          },
+          "direction": "candidate_must_be_at_or_above_b0",
+          "estimands_required": [
+            "entity_macro",
+            "row_micro"
+          ],
+          "why_both_estimands": "row-micro and entity-macro disagree in sign for retain_other on the pilot-100 evidence, so freezing one of them would be picking the estimand that yields the preferred verdict"
+        },
+        "estimands_required": [
+          "entity_macro",
+          "row_micro"
+        ],
+        "routes_required": [
+          "text",
+          "image"
+        ]
+      },
+      "eligible_on_the_reported_b0_floor": false,
+      "pooled_all_routes": {
+        "floored": false,
+        "why_reported": "what pooling the two routes would have said, so the stratified choice is checkable against its alternative",
+        "retain_same_entity_all_routes": {
+          "num_queries": 816,
+          "row_micro": 0.5245
+        },
+        "retain_other_entity_all_routes": {
+          "num_queries": 152,
+          "row_micro": 0.4671
+        }
+      },
+      "training_side": {
+        "final_avg_loss_fine_target": 0.6469,
+        "final_frac_at_cap_fine_target": null,
+        "final_avg_kl_retain": 0.01368,
+        "final_avg_loss_retain": 0.013,
+        "num_optimizer_steps": 230,
+        "train_seconds": 1488.4
+      },
+      "config": {
+        "recipe": {
+          "model_id": "Qwen/Qwen3.5-9B",
+          "lora_r": 16,
+          "lora_alpha": 32,
+          "lora_dropout": 0.05,
+          "lora_target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ],
+          "learning_rate": 2e-05,
+          "weight_decay": 0.0,
+          "num_epochs": 5,
+          "per_device_batch_size": 1,
+          "gradient_accumulation_steps": 8,
+          "max_length": 1536,
+          "max_image_pixels": 147456,
+          "seed": 42,
+          "bf16": true,
+          "gradient_checkpointing": true
+        },
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5,
+            "cap": null,
+            "anchor_weight": null,
+            "num_examples": 90
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null,
+            "num_examples": 90
+          },
+          {
+            "name": "retain",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": 13.642,
+            "num_examples": 183
+          }
+        ],
+        "num_optimizer_steps": 230,
+        "init_adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MF/adapters",
+        "noop": null,
+        "preservation_anchor": {
+          "cache_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/mllmu_hier_pilot100/mf_reference_logprobs",
+          "kl_direction": "KL(p_MF || p_theta), exact over the full vocabulary",
+          "mf_adapter_sha256": "4c5d158895480a762f7319ebb2ff04aa87d4818a37877e9236553bdb97dc2f76",
+          "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+          "num_preserved_examples": 183,
+          "num_preserved_positions": 1489,
+          "vocab_size": 248320,
+          "cache_tensor_sha256": "dbf8b475e01bf3e13c731f04b94109e8dc37b14d6252598d7e9b6811999e5f6a",
+          "anchored_groups": [
+            "retain"
+          ],
+          "anchor_weight": {
+            "retain": 13.642
+          },
+          "anchor_alongside_supervised_term": {
+            "retain": true
+          },
+          "note": "The anchor term is weight * KL(p_MF || p_theta) over the supervised positions of the fit-half retain group. It is exactly zero with exactly zero gradient at theta = MF, so its optimum is MF -- which is no unlearning at all. That is the behaviour the calibration measured, and it is why this row is a test of the preregistered mechanism rather than a candidate expected to win.",
+          "nll_agreement_max": 5.960464477539063e-08
+        }
+      }
+    }
+  },
+  "eligible": [],
+  "disqualified_by_the_primary_floor": {
+    "B0": {
+      "text.retain_same_entity.entity_macro": true,
+      "text.retain_same_entity.row_micro": true,
+      "text.retain_other_entity.entity_macro": true,
+      "text.retain_other_entity.row_micro": true,
+      "image.retain_same_entity_image.entity_macro": false,
+      "image.retain_same_entity_image.row_micro": false,
+      "image.retain_other_entity_image.entity_macro": true,
+      "image.retain_other_entity_image.row_micro": true
+    },
+    "B4_w1.0_lam0.5_lr2e-05_ep5": {
+      "text.retain_same_entity.entity_macro": false,
+      "text.retain_same_entity.row_micro": false,
+      "text.retain_other_entity.entity_macro": true,
+      "text.retain_other_entity.row_micro": false,
+      "image.retain_same_entity_image.entity_macro": false,
+      "image.retain_same_entity_image.row_micro": false,
+      "image.retain_other_entity_image.entity_macro": false,
+      "image.retain_other_entity_image.row_micro": false
+    },
+    "B5_cap0.5_lam0.5_lr2e-05_ep5": {
+      "text.retain_same_entity.entity_macro": true,
+      "text.retain_same_entity.row_micro": true,
+      "text.retain_other_entity.entity_macro": true,
+      "text.retain_other_entity.row_micro": false,
+      "image.retain_same_entity_image.entity_macro": false,
+      "image.retain_same_entity_image.row_micro": false,
+      "image.retain_other_entity_image.entity_macro": true,
+      "image.retain_other_entity_image.row_micro": false
+    },
+    "B5_cap1.0_lam0.5_lr2e-05_ep5": {
+      "text.retain_same_entity.entity_macro": false,
+      "text.retain_same_entity.row_micro": false,
+      "text.retain_other_entity.entity_macro": true,
+      "text.retain_other_entity.row_micro": false,
+      "image.retain_same_entity_image.entity_macro": false,
+      "image.retain_same_entity_image.row_micro": false,
+      "image.retain_other_entity_image.entity_macro": false,
+      "image.retain_other_entity_image.row_micro": false
+    },
+    "B5_cap2.0_lam0.5_lr2e-05_ep5": {
+      "text.retain_same_entity.entity_macro": true,
+      "text.retain_same_entity.row_micro": false,
+      "text.retain_other_entity.entity_macro": true,
+      "text.retain_other_entity.row_micro": false,
+      "image.retain_same_entity_image.entity_macro": false,
+      "image.retain_same_entity_image.row_micro": false,
+      "image.retain_other_entity_image.entity_macro": false,
+      "image.retain_other_entity_image.row_micro": false
+    },
+    "B5_cap4.0_lam0.5_lr2e-05_ep5": {
+      "text.retain_same_entity.entity_macro": false,
+      "text.retain_same_entity.row_micro": false,
+      "text.retain_other_entity.entity_macro": true,
+      "text.retain_other_entity.row_micro": false,
+      "image.retain_same_entity_image.entity_macro": false,
+      "image.retain_same_entity_image.row_micro": false,
+      "image.retain_other_entity_image.entity_macro": false,
+      "image.retain_other_entity_image.row_micro": false
+    },
+    "B5_cap2.0_lam0.5_lr2e-05_ep8": {
+      "text.retain_same_entity.entity_macro": false,
+      "text.retain_same_entity.row_micro": false,
+      "text.retain_other_entity.entity_macro": true,
+      "text.retain_other_entity.row_micro": false,
+      "image.retain_same_entity_image.entity_macro": false,
+      "image.retain_same_entity_image.row_micro": false,
+      "image.retain_other_entity_image.entity_macro": false,
+      "image.retain_other_entity_image.row_micro": false
+    },
+    "B6_beta13.642_lam0.5_lr2e-05_ep5": {
+      "text.retain_same_entity.entity_macro": true,
+      "text.retain_same_entity.row_micro": true,
+      "text.retain_other_entity.entity_macro": true,
+      "text.retain_other_entity.row_micro": true,
+      "image.retain_same_entity_image.entity_macro": false,
+      "image.retain_same_entity_image.row_micro": false,
+      "image.retain_other_entity_image.entity_macro": true,
+      "image.retain_other_entity_image.row_micro": false
+    },
+    "B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5": {
+      "text.retain_same_entity.entity_macro": true,
+      "text.retain_same_entity.row_micro": true,
+      "text.retain_other_entity.entity_macro": true,
+      "text.retain_other_entity.row_micro": true,
+      "image.retain_same_entity_image.entity_macro": false,
+      "image.retain_same_entity_image.row_micro": false,
+      "image.retain_other_entity_image.entity_macro": true,
+      "image.retain_other_entity_image.row_micro": false
+    }
+  },
+  "eligibility_under_both_anchors": {
+    "B0": {
+      "on_mg": false,
+      "on_b0": true
+    },
+    "B4_w1.0_lam0.5_lr2e-05_ep5": {
+      "on_mg": false,
+      "on_b0": false
+    },
+    "B5_cap0.5_lam0.5_lr2e-05_ep5": {
+      "on_mg": false,
+      "on_b0": false
+    },
+    "B5_cap1.0_lam0.5_lr2e-05_ep5": {
+      "on_mg": false,
+      "on_b0": false
+    },
+    "B5_cap2.0_lam0.5_lr2e-05_ep5": {
+      "on_mg": false,
+      "on_b0": false
+    },
+    "B5_cap4.0_lam0.5_lr2e-05_ep5": {
+      "on_mg": false,
+      "on_b0": false
+    },
+    "B5_cap2.0_lam0.5_lr2e-05_ep8": {
+      "on_mg": false,
+      "on_b0": false
+    },
+    "B6_beta13.642_lam0.5_lr2e-05_ep5": {
+      "on_mg": false,
+      "on_b0": false
+    },
+    "B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5": {
+      "on_mg": false,
+      "on_b0": false
+    }
+  },
+  "ranking_of_eligible": [],
+  "selected": null,
+  "tied_with": [],
+  "a_tie_means": "the criterion did not discriminate and the tie-break -- not the science -- chose the winner",
+  "cap_sweep": {
+    "caps": [
+      0.5,
+      1.0,
+      2.0,
+      4.0
+    ],
+    "units": "nats of per-token NLL on the fine completion",
+    "uncapped_point": "B4_w1.0_lam0.5_lr2e-05_ep5",
+    "uncapped_point_values": {
+      "text.retain_same_entity.entity_macro": 0.4501,
+      "text.retain_same_entity.row_micro": 0.4681,
+      "text.retain_other_entity.entity_macro": 0.5072,
+      "text.retain_other_entity.row_micro": 0.4211,
+      "image.retain_same_entity_image.entity_macro": 0.3515,
+      "image.retain_same_entity_image.row_micro": 0.3603,
+      "image.retain_other_entity_image.entity_macro": 0.3261,
+      "image.retain_other_entity_image.row_micro": 0.3289
+    },
+    "uncapped_point_reused_from": "data/mllmu_hier_pilot100/predictions_iter12/predictions_tv_B4_w1.0_lam0.5_lr2e-05_ep5.parquet",
+    "rows": {
+      "B5_cap0.5_lam0.5_lr2e-05_ep5": {
+        "cap": 0.5,
+        "final_fine_target_nll": 0.7832,
+        "final_frac_at_cap": 0.8,
+        "image_retain_same_row_micro_vs_mg": -0.0711
+      },
+      "B5_cap1.0_lam0.5_lr2e-05_ep5": {
+        "cap": 1.0,
+        "final_fine_target_nll": 1.1852,
+        "final_frac_at_cap": 0.6333,
+        "image_retain_same_row_micro_vs_mg": -0.1005
+      },
+      "B5_cap2.0_lam0.5_lr2e-05_ep5": {
+        "cap": 2.0,
+        "final_fine_target_nll": 1.8007,
+        "final_frac_at_cap": 0.4111,
+        "image_retain_same_row_micro_vs_mg": -0.1716
+      },
+      "B5_cap4.0_lam0.5_lr2e-05_ep5": {
+        "cap": 4.0,
+        "final_fine_target_nll": 2.3548,
+        "final_frac_at_cap": 0.2667,
+        "image_retain_same_row_micro_vs_mg": -0.1471
+      },
+      "B5_cap2.0_lam0.5_lr2e-05_ep8": {
+        "cap": 2.0,
+        "final_fine_target_nll": 2.9924,
+        "final_frac_at_cap": 0.9111,
+        "image_retain_same_row_micro_vs_mg": -0.1961
+      }
+    },
+    "the_question_this_answers": "Does bounding the ascent let a candidate forget as much while retaining more? The incumbent row is the same recipe with no cap at all, so the sweep has its own control and it cost nothing."
+  },
+  "stage_3_gate": {
+    "stage3_opens": true,
+    "reason": "no candidate satisfied the primary retention floor",
+    "best_eligible": null,
+    "best_eligible_distance_to_mg": null,
+    "reference_row": "B4_w1.0_lam0.5_lr2e-05_ep5",
+    "reference_distance_to_mg": 0.046729,
+    "margin_required": 0.0,
+    "no_margin_is_used": true
+  },
+  "tag": "iter12",
+  "protocol_freeze": {
+    "path": "data/reports/mllmu_iter12_stage2_freeze.json",
+    "verified_before_generation": true,
+    "mismatches_found": []
+  },
+  "basis": {
+    "path": "data/reports/mllmu_iter12_stage2_basis.json",
+    "sha256": "ba15115a9f3899d2c2acad526f718cdf9107de8506e18e67e8baa843ff92ae71"
+  },
+  "dataset_version": "pilot100_v2",
+  "predictions_dir": "data/mllmu_hier_pilot100/predictions_iter12_stage2",
+  "reused_predictions": {
+    "B0": {
+      "path": "data/mllmu_hier_pilot100/predictions_iter12/predictions_tv_B0.parquet",
+      "sha256": "f546cbbb654111db5b24029a4b5e3c475d72bd674b60413fd0aa629f151d16b4"
+    },
+    "MG": {
+      "path": "data/mllmu_hier_pilot100/predictions_iter12/predictions_tv_MG.parquet",
+      "sha256": "3fdc212d0d839a03f4c01be5baad94181d5c020c4a28251f0ed61f7fd6383434"
+    },
+    "B4_w1.0_lam0.5_lr2e-05_ep5": {
+      "path": "data/mllmu_hier_pilot100/predictions_iter12/predictions_tv_B4_w1.0_lam0.5_lr2e-05_ep5.parquet",
+      "sha256": "6b93994678df46197c82f2524a5f7f6a672063bc82b5ee87ece335b3ee8b5a1f"
+    }
+  },
+  "generation_contract": {
+    "batch_size": 8,
+    "image_batch_size": 1,
+    "max_new_tokens": 96,
+    "do_sample": false,
+    "max_image_pixels": 147456,
+    "max_length": 1536
+  },
+  "model_id": "Qwen/Qwen3.5-9B",
+  "never_read": [
+    "data/mllmu_hier_confirm100",
+    "data/reports/mllmu_confirm100_final_analysis.json"
+  ],
+  "measurement_limits": {
+    "probe_denominators": "408 retain-same and 76 retain-other, per route",
+    "resolution": {
+      "scope": "train+val, both routes (what Stage 1c reads)",
+      "row_micro_resolution_retain_same": 0.0012254902,
+      "row_micro_resolution_retain_other": 0.0065789474,
+      "retain_same_total": 816,
+      "retain_other_total": 152,
+      "binding_number": "retain_other",
+      "absolute_ceiling": {
+        "per_number": {
+          "text.retain_same_entity": 612,
+          "text.retain_other_entity": 114,
+          "image.retain_same_entity_image": 612,
+          "image.retain_other_entity_image": 114
+        },
+        "retain_same_total": 1224,
+        "retain_other_total": 228,
+        "row_micro_resolution_same": 0.0008169935,
+        "row_micro_resolution_other": 0.0043859649
+      },
+      "what_the_ceiling_means": {
+        "retain_other_is_the_binding_number": true,
+        "why": "retain_other reaches only 23 probe donor entities, so its largest possible denominator in this dataset is 228 queries and its best possible row-micro resolution is 0.0043859649. The pool is exhausted: 90 target plus 387 retained associations account for all 477, so there is no reserve to draw a larger probe from.",
+        "consequence": "Stage 1c roughly doubles the frozen basis and makes both parents' shortfalls exceed their between-seed spread, but it does not make retain-other well powered. A mechanism whose retention effect is smaller than about 0.0043859649 cannot be resolved on this dataset at all, at any number of seeds."
+      }
+    },
+    "retain_other_stays_weakly_powered": "23 probe donors and 38 queries per split, 228 at the absolute ceiling, so one flipped outcome is 0.0132 and no number of seeds changes that.",
+    "the_ceiling_is_the_dataset": "The association pool is exhausted -- 90 target plus 387 retained is all 477 -- and query_generation.py is one of the eighteen paths the confirmation freeze sealed.",
+    "one_seed_is_not_enough": "Stage 1b measured a between-seed sd of 0.0120 to 0.0515 on these numbers, which exceeds the retain-other resolution. Stage 2 trains one seed per row, so a row that clears the primary gate by less than that spread is a candidate for replication rather than a result, and the report must say so instead of ranking on it."
+  },
+  "note": "EXPLORATORY. This report selects a checkpoint; it tests no hypothesis and controls no error rate. Distance is a selection criterion only -- the individual metrics remain the scientific results, and any confirmatory claim about the winner needs its own sealed protocol, frozen before it is scored. Stage 2 trains one seed per row, so a row that clears the primary floor by less than the between-seed spread Stage 1b measured is a candidate for replication rather than a result."
+}

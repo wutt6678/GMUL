@@ -1,0 +1,140 @@
+2026-09-14T19:37:18+08:00 lane waiting for >=22000MiB free (poll 1s): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/repair_iter12_stage2_selection.py --skip-crash-proof --generate-only --candidates B5_cap0.5_lam0.5_lr2e-05_ep5 --device cuda:0
+2026-09-14T19:37:18+08:00 lane waiting for >=22000MiB free (poll 1s): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/repair_iter12_stage2_selection.py --skip-crash-proof --generate-only --candidates B5_cap1.0_lam0.5_lr2e-05_ep5 --device cuda:0
+2026-09-14T19:37:18+08:00 lane waiting for >=22000MiB free (poll 1s): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/repair_iter12_stage2_selection.py --skip-crash-proof --generate-only --candidates B5_cap2.0_lam0.5_lr2e-05_ep5 --device cuda:0
+2026-09-14T19:37:18+08:00 lane waiting for >=22000MiB free (poll 1s): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/repair_iter12_stage2_selection.py --skip-crash-proof --generate-only --candidates B5_cap4.0_lam0.5_lr2e-05_ep5 --device cuda:0
+2026-09-14T19:37:18+08:00 lane waiting for >=22000MiB free (poll 1s): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/repair_iter12_stage2_selection.py --skip-crash-proof --generate-only --candidates B5_cap2.0_lam0.5_lr2e-05_ep8 --device cuda:0
+2026-09-14T19:37:18+08:00 lane waiting for >=22000MiB free (poll 1s): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/repair_iter12_stage2_selection.py --skip-crash-proof --generate-only --candidates B6_beta13.642_lam0.5_lr2e-05_ep5 --device cuda:0
+2026-09-14T19:37:18+08:00 lane waiting for >=22000MiB free (poll 1s): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/repair_iter12_stage2_selection.py --skip-crash-proof --generate-only --candidates B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5 --device cuda:0
+2026-09-14T19:37:20+08:00 CLAIMED GPU 0 (31332MiB free, attempt 1/8): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/repair_iter12_stage2_selection.py --skip-crash-proof --generate-only --candidates B5_cap2.0_lam0.5_lr2e-05_ep8 --device cuda:0
+2026-09-14T19:37:20+08:00 CLAIMED GPU 3 (22770MiB free, attempt 1/8): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/repair_iter12_stage2_selection.py --skip-crash-proof --generate-only --candidates B5_cap2.0_lam0.5_lr2e-05_ep5 --device cuda:0
+repair: verifying the frozen protocol paths are untouched
+  8 protocol paths, 17 dependencies, 18 data paths, all matching the freeze
+repair: deriving the call sites and auditing every other call
+  rt.pooled_all_routes is called at lines [550, 579], both one argument short
+  27 other call(s) audited, no further arity problem
+repair: proving the patch cannot reach the decision
+  8 decision-bearing call(s), none passed the patched field
+repair: proving the anchor is not a candidate
+  MG is the named anchor, is not one of the 8 grid rows, is already filtered at lines [294, 299, 304, 331], and is missing from the two bindings that rank: ['eligible', 'ranked']
+repair: running the frozen selector with probe_entities supplied (35 entities, read from data/reports/mllmu_iter12_retention_probe.json) and MG kept out of the ranking
+[2026-09-14 19:37:31] INFO     select_iter12_stage2 — reused 3 state(s); 24 eight-number values reproduce Stage 1c exactly
+repair: verifying the frozen protocol paths are untouched
+  8 protocol paths, 17 dependencies, 18 data paths, all matching the freeze
+repair: deriving the call sites and auditing every other call
+  rt.pooled_all_routes is called at lines [550, 579], both one argument short
+  27 other call(s) audited, no further arity problem
+repair: proving the patch cannot reach the decision
+  8 decision-bearing call(s), none passed the patched field
+repair: proving the anchor is not a candidate
+  MG is the named anchor, is not one of the 8 grid rows, is already filtered at lines [294, 299, 304, 331], and is missing from the two bindings that rank: ['eligible', 'ranked']
+repair: running the frozen selector with probe_entities supplied (35 entities, read from data/reports/mllmu_iter12_retention_probe.json) and MG kept out of the ranking
+[2026-09-14 19:37:31] INFO     select_iter12_stage2 — reused 3 state(s); 24 eight-number values reproduce Stage 1c exactly
+[2026-09-14 19:37:32] INFO     select_iter12_stage2 — MG train+val vector: {'filr': 0.142, 'tga': 0.4284, 'ancestor': 0.2519, 'retain_same': 0.531, 'retain_other': 0.5444, 'over': 0.0321, 'wrong': 0.2432}
+[2026-09-14 19:37:32] INFO     select_iter12_stage2 — MG train+val vector: {'filr': 0.142, 'tga': 0.4284, 'ancestor': 0.2519, 'retain_same': 0.531, 'retain_other': 0.5444, 'over': 0.0321, 'wrong': 0.2432}
+[2026-09-14 19:37:46] INFO     select_unlearning — [B5_cap2.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap2.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 19:37:47] INFO     select_unlearning — [B5_cap2.0_lam0.5_lr2e-05_ep8] reusing provenance-validated predictions predictions_tv_B5_cap2.0_lam0.5_lr2e-05_ep8.parquet (4518 rows)
+[2026-09-14 19:37:47] INFO     select_iter12_stage2 — [B5_cap2.0_lam0.5_lr2e-05_ep5] fine_target NLL 1.8007 | frac_at_cap 0.4111 | {"text.retain_same_entity.entity_macro": 0.4891, "text.retain_same_entity.row_micro": 0.4926, "text.retain_other_entity.entity_macro": 0.4312, "text.retain_other_entity.row_micro": 0.3816, "image.retain_same_entity_image.entity_macro": 0.3436, "image.retain_same_entity_image.row_micro": 0.3505, "image.retain_other_entity_image.entity_macro": 0.337, "image.retain_other_entity_image.row_micro": 0.3289}
+[2026-09-14 19:37:47] INFO     select_iter12_stage2 — generate-only: 4 state(s) have train+val predictions; no report written, because a report over a subset would name a winner the full grid does not support
+  4 call(s) served, all from scripts/select_iter12_stage2.py lines [550, 579]; 4 call(s) from the callee itself passed through untouched
+  build_report saw 0 row(s), scored 0, dropped []
+[2026-09-14 19:37:47] INFO     select_iter12_stage2 — [B5_cap2.0_lam0.5_lr2e-05_ep8] fine_target NLL 2.9924 | frac_at_cap 0.9111 | {"text.retain_same_entity.entity_macro": 0.4616, "text.retain_same_entity.row_micro": 0.4681, "text.retain_other_entity.entity_macro": 0.4638, "text.retain_other_entity.row_micro": 0.3816, "image.retain_same_entity_image.entity_macro": 0.3177, "image.retain_same_entity_image.row_micro": 0.326, "image.retain_other_entity_image.entity_macro": 0.2935, "image.retain_other_entity_image.row_micro": 0.3026}
+[2026-09-14 19:37:47] INFO     select_iter12_stage2 — generate-only: 4 state(s) have train+val predictions; no report written, because a report over a subset would name a winner the full grid does not support
+  4 call(s) served, all from scripts/select_iter12_stage2.py lines [550, 579]; 4 call(s) from the callee itself passed through untouched
+  build_report saw 0 row(s), scored 0, dropped []
+2026-09-14T19:38:14+08:00 GPU 3 released (success)
+2026-09-14T19:38:15+08:00 GPU 0 released (success)
+2026-09-14T19:38:15+08:00 CLAIMED GPU 0 (31332MiB free, attempt 1/8): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/repair_iter12_stage2_selection.py --skip-crash-proof --generate-only --candidates B5_cap4.0_lam0.5_lr2e-05_ep5 --device cuda:0
+2026-09-14T19:38:16+08:00 CLAIMED GPU 3 (22770MiB free, attempt 1/8): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/repair_iter12_stage2_selection.py --skip-crash-proof --generate-only --candidates B5_cap1.0_lam0.5_lr2e-05_ep5 --device cuda:0
+repair: verifying the frozen protocol paths are untouched
+  8 protocol paths, 17 dependencies, 18 data paths, all matching the freeze
+repair: deriving the call sites and auditing every other call
+  rt.pooled_all_routes is called at lines [550, 579], both one argument short
+  27 other call(s) audited, no further arity problem
+repair: proving the patch cannot reach the decision
+  8 decision-bearing call(s), none passed the patched field
+repair: proving the anchor is not a candidate
+  MG is the named anchor, is not one of the 8 grid rows, is already filtered at lines [294, 299, 304, 331], and is missing from the two bindings that rank: ['eligible', 'ranked']
+repair: running the frozen selector with probe_entities supplied (35 entities, read from data/reports/mllmu_iter12_retention_probe.json) and MG kept out of the ranking
+[2026-09-14 19:38:26] INFO     select_iter12_stage2 — reused 3 state(s); 24 eight-number values reproduce Stage 1c exactly
+repair: verifying the frozen protocol paths are untouched
+  8 protocol paths, 17 dependencies, 18 data paths, all matching the freeze
+repair: deriving the call sites and auditing every other call
+  rt.pooled_all_routes is called at lines [550, 579], both one argument short
+  27 other call(s) audited, no further arity problem
+repair: proving the patch cannot reach the decision
+  8 decision-bearing call(s), none passed the patched field
+repair: proving the anchor is not a candidate
+  MG is the named anchor, is not one of the 8 grid rows, is already filtered at lines [294, 299, 304, 331], and is missing from the two bindings that rank: ['eligible', 'ranked']
+repair: running the frozen selector with probe_entities supplied (35 entities, read from data/reports/mllmu_iter12_retention_probe.json) and MG kept out of the ranking
+[2026-09-14 19:38:27] INFO     select_iter12_stage2 — reused 3 state(s); 24 eight-number values reproduce Stage 1c exactly
+[2026-09-14 19:38:27] INFO     select_iter12_stage2 — MG train+val vector: {'filr': 0.142, 'tga': 0.4284, 'ancestor': 0.2519, 'retain_same': 0.531, 'retain_other': 0.5444, 'over': 0.0321, 'wrong': 0.2432}
+[2026-09-14 19:38:27] INFO     select_iter12_stage2 — MG train+val vector: {'filr': 0.142, 'tga': 0.4284, 'ancestor': 0.2519, 'retain_same': 0.531, 'retain_other': 0.5444, 'over': 0.0321, 'wrong': 0.2432}
+[2026-09-14 19:38:41] INFO     select_unlearning — [B5_cap4.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap4.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 19:38:41] INFO     select_unlearning — [B5_cap1.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap1.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 19:38:41] INFO     select_iter12_stage2 — [B5_cap4.0_lam0.5_lr2e-05_ep5] fine_target NLL 2.3548 | frac_at_cap 0.2667 | {"text.retain_same_entity.entity_macro": 0.468, "text.retain_same_entity.row_micro": 0.4853, "text.retain_other_entity.entity_macro": 0.4746, "text.retain_other_entity.row_micro": 0.4079, "image.retain_same_entity_image.entity_macro": 0.3653, "image.retain_same_entity_image.row_micro": 0.375, "image.retain_other_entity_image.entity_macro": 0.3696, "image.retain_other_entity_image.row_micro": 0.3684}
+[2026-09-14 19:38:41] INFO     select_iter12_stage2 — generate-only: 4 state(s) have train+val predictions; no report written, because a report over a subset would name a winner the full grid does not support
+  4 call(s) served, all from scripts/select_iter12_stage2.py lines [550, 579]; 4 call(s) from the callee itself passed through untouched
+  build_report saw 0 row(s), scored 0, dropped []
+[2026-09-14 19:38:41] INFO     select_iter12_stage2 — [B5_cap1.0_lam0.5_lr2e-05_ep5] fine_target NLL 1.1852 | frac_at_cap 0.6333 | {"text.retain_same_entity.entity_macro": 0.4816, "text.retain_same_entity.row_micro": 0.4975, "text.retain_other_entity.entity_macro": 0.4638, "text.retain_other_entity.row_micro": 0.4079, "image.retain_same_entity_image.entity_macro": 0.4108, "image.retain_same_entity_image.row_micro": 0.4216, "image.retain_other_entity_image.entity_macro": 0.3804, "image.retain_other_entity_image.row_micro": 0.3684}
+[2026-09-14 19:38:41] INFO     select_iter12_stage2 — generate-only: 4 state(s) have train+val predictions; no report written, because a report over a subset would name a winner the full grid does not support
+  4 call(s) served, all from scripts/select_iter12_stage2.py lines [550, 579]; 4 call(s) from the callee itself passed through untouched
+  build_report saw 0 row(s), scored 0, dropped []
+2026-09-14T19:38:52+08:00 GPU 3 released (success)
+2026-09-14T19:38:52+08:00 CLAIMED GPU 3 (22770MiB free, attempt 1/8): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/repair_iter12_stage2_selection.py --skip-crash-proof --generate-only --candidates B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5 --device cuda:0
+2026-09-14T19:38:53+08:00 GPU 0 released (success)
+2026-09-14T19:38:54+08:00 CLAIMED GPU 0 (30920MiB free, attempt 1/8): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/repair_iter12_stage2_selection.py --skip-crash-proof --generate-only --candidates B5_cap0.5_lam0.5_lr2e-05_ep5 --device cuda:0
+repair: verifying the frozen protocol paths are untouched
+  8 protocol paths, 17 dependencies, 18 data paths, all matching the freeze
+repair: deriving the call sites and auditing every other call
+  rt.pooled_all_routes is called at lines [550, 579], both one argument short
+  27 other call(s) audited, no further arity problem
+repair: proving the patch cannot reach the decision
+  8 decision-bearing call(s), none passed the patched field
+repair: proving the anchor is not a candidate
+  MG is the named anchor, is not one of the 8 grid rows, is already filtered at lines [294, 299, 304, 331], and is missing from the two bindings that rank: ['eligible', 'ranked']
+repair: running the frozen selector with probe_entities supplied (35 entities, read from data/reports/mllmu_iter12_retention_probe.json) and MG kept out of the ranking
+[2026-09-14 19:39:04] INFO     select_iter12_stage2 — reused 3 state(s); 24 eight-number values reproduce Stage 1c exactly
+[2026-09-14 19:39:04] INFO     select_iter12_stage2 — MG train+val vector: {'filr': 0.142, 'tga': 0.4284, 'ancestor': 0.2519, 'retain_same': 0.531, 'retain_other': 0.5444, 'over': 0.0321, 'wrong': 0.2432}
+repair: verifying the frozen protocol paths are untouched
+  8 protocol paths, 17 dependencies, 18 data paths, all matching the freeze
+repair: deriving the call sites and auditing every other call
+  rt.pooled_all_routes is called at lines [550, 579], both one argument short
+  27 other call(s) audited, no further arity problem
+repair: proving the patch cannot reach the decision
+  8 decision-bearing call(s), none passed the patched field
+repair: proving the anchor is not a candidate
+  MG is the named anchor, is not one of the 8 grid rows, is already filtered at lines [294, 299, 304, 331], and is missing from the two bindings that rank: ['eligible', 'ranked']
+repair: running the frozen selector with probe_entities supplied (35 entities, read from data/reports/mllmu_iter12_retention_probe.json) and MG kept out of the ranking
+[2026-09-14 19:39:06] INFO     select_iter12_stage2 — reused 3 state(s); 24 eight-number values reproduce Stage 1c exactly
+[2026-09-14 19:39:06] INFO     select_iter12_stage2 — MG train+val vector: {'filr': 0.142, 'tga': 0.4284, 'ancestor': 0.2519, 'retain_same': 0.531, 'retain_other': 0.5444, 'over': 0.0321, 'wrong': 0.2432}
+[2026-09-14 19:39:15] INFO     select_unlearning — [B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 19:39:15] INFO     select_iter12_stage2 — [B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5] fine_target NLL 0.6469 | frac_at_cap None | {"text.retain_same_entity.entity_macro": 0.5413, "text.retain_same_entity.row_micro": 0.5441, "text.retain_other_entity.entity_macro": 0.4982, "text.retain_other_entity.row_micro": 0.5, "image.retain_same_entity_image.entity_macro": 0.4985, "image.retain_same_entity_image.row_micro": 0.5049, "image.retain_other_entity_image.entity_macro": 0.4565, "image.retain_other_entity_image.row_micro": 0.4342}
+[2026-09-14 19:39:15] INFO     select_iter12_stage2 — generate-only: 4 state(s) have train+val predictions; no report written, because a report over a subset would name a winner the full grid does not support
+  4 call(s) served, all from scripts/select_iter12_stage2.py lines [550, 579]; 4 call(s) from the callee itself passed through untouched
+  build_report saw 0 row(s), scored 0, dropped []
+[2026-09-14 19:39:16] INFO     select_unlearning — [B5_cap0.5_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap0.5_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 19:39:16] INFO     select_iter12_stage2 — [B5_cap0.5_lam0.5_lr2e-05_ep5] fine_target NLL 0.7832 | frac_at_cap 0.8 | {"text.retain_same_entity.entity_macro": 0.4935, "text.retain_same_entity.row_micro": 0.5098, "text.retain_other_entity.entity_macro": 0.4638, "text.retain_other_entity.row_micro": 0.4211, "image.retain_same_entity_image.entity_macro": 0.4479, "image.retain_same_entity_image.row_micro": 0.451, "image.retain_other_entity_image.entity_macro": 0.4239, "image.retain_other_entity_image.row_micro": 0.3947}
+[2026-09-14 19:39:16] INFO     select_iter12_stage2 — generate-only: 4 state(s) have train+val predictions; no report written, because a report over a subset would name a winner the full grid does not support
+  4 call(s) served, all from scripts/select_iter12_stage2.py lines [550, 579]; 4 call(s) from the callee itself passed through untouched
+  build_report saw 0 row(s), scored 0, dropped []
+2026-09-14T19:39:21+08:00 GPU 3 released (success)
+2026-09-14T19:39:22+08:00 CLAIMED GPU 3 (22770MiB free, attempt 1/8): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/repair_iter12_stage2_selection.py --skip-crash-proof --generate-only --candidates B6_beta13.642_lam0.5_lr2e-05_ep5 --device cuda:0
+2026-09-14T19:39:22+08:00 GPU 0 released (success)
+repair: verifying the frozen protocol paths are untouched
+  8 protocol paths, 17 dependencies, 18 data paths, all matching the freeze
+repair: deriving the call sites and auditing every other call
+  rt.pooled_all_routes is called at lines [550, 579], both one argument short
+  27 other call(s) audited, no further arity problem
+repair: proving the patch cannot reach the decision
+  8 decision-bearing call(s), none passed the patched field
+repair: proving the anchor is not a candidate
+  MG is the named anchor, is not one of the 8 grid rows, is already filtered at lines [294, 299, 304, 331], and is missing from the two bindings that rank: ['eligible', 'ranked']
+repair: running the frozen selector with probe_entities supplied (35 entities, read from data/reports/mllmu_iter12_retention_probe.json) and MG kept out of the ranking
+[2026-09-14 19:39:33] INFO     select_iter12_stage2 — reused 3 state(s); 24 eight-number values reproduce Stage 1c exactly
+[2026-09-14 19:39:33] INFO     select_iter12_stage2 — MG train+val vector: {'filr': 0.142, 'tga': 0.4284, 'ancestor': 0.2519, 'retain_same': 0.531, 'retain_other': 0.5444, 'over': 0.0321, 'wrong': 0.2432}
+[2026-09-14 19:39:44] INFO     select_unlearning — [B6_beta13.642_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B6_beta13.642_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 19:39:44] INFO     select_iter12_stage2 — [B6_beta13.642_lam0.5_lr2e-05_ep5] fine_target NLL 0.6857 | frac_at_cap None | {"text.retain_same_entity.entity_macro": 0.543, "text.retain_same_entity.row_micro": 0.5466, "text.retain_other_entity.entity_macro": 0.5199, "text.retain_other_entity.row_micro": 0.5132, "image.retain_same_entity_image.entity_macro": 0.5043, "image.retain_same_entity_image.row_micro": 0.5098, "image.retain_other_entity_image.entity_macro": 0.4348, "image.retain_other_entity_image.row_micro": 0.4211}
+[2026-09-14 19:39:44] INFO     select_iter12_stage2 — generate-only: 4 state(s) have train+val predictions; no report written, because a report over a subset would name a winner the full grid does not support
+  4 call(s) served, all from scripts/select_iter12_stage2.py lines [550, 579]; 4 call(s) from the callee itself passed through untouched
+  build_report saw 0 row(s), scored 0, dropped []
+2026-09-14T19:39:50+08:00 GPU 3 released (success)

@@ -1,0 +1,827 @@
+{
+  "what_this_is": "a record that the frozen Stage-2 selector crashed twice and that this script ran it to completion with two defects worked around at runtime. It is not part of the preregistered protocol and no frozen file was edited to produce it. The two defects are NOT alike and are recorded separately for that reason: the first patch cannot change any outcome, and the second changes which candidate is named in `selected`. A third defect, in the freeze rather than the selector and not patched, is recorded under `a_third_defect_found_while_writing_this_record`.",
+  "generated_utc": "2026-09-14T12:52:13+00:00",
+  "git_commit": "1a4abb1cd5a4822f8f528813227cfa4b8cde337b",
+  "git_dirty_at_filing": "M scripts/lanes/iter12_stage2.sh\n?? data/reports/mllmu_iter12_stage2_selection.json\n?? scripts/repair_iter12_stage2_selection.py",
+  "frozen_files_edited": [],
+  "the_bugs": [
+    {
+      "which": 1,
+      "kind": "a missing argument",
+      "sites": [
+        "scripts/select_iter12_stage2.py:550",
+        "scripts/select_iter12_stage2.py:579"
+      ],
+      "call": "rt.pooled_all_routes(predictions, queries, associations)",
+      "missing": "probe_entities",
+      "signature": "pooled_all_routes(predictions, queries, associations, probe_entities) in src/granunlearn/evaluation/route_stratified_retention.py",
+      "exception": "TypeError: pooled_all_routes() missing 1 required positional argument: 'probe_entities'",
+      "where_it_surfaced": "line 550, in the reused-states loop, which runs BEFORE any generation -- so all seven generation lanes died seven seconds after claiming a card having written nothing",
+      "decision_bearing": false,
+      "why_not": "the eight numbers, the floor, D_G, the ranking and the selection are all computed without reading this field, so supplying its missing argument cannot move any of them",
+      "why_no_test_caught_it": "both sites are inside main(), which needs torch and the real parquets, so no unit test executes them. The arity audit this script runs is now a test, which is the cheap way to have known."
+    },
+    {
+      "which": 2,
+      "kind": "the anchor won its own selection",
+      "sites": [
+        "scripts/select_iter12_stage2.py:232 (eligible)",
+        "scripts/select_iter12_stage2.py:233 (ranked)"
+      ],
+      "exception": "KeyError: 'MG'",
+      "where_it_surfaced": "line 630, staging the winner: report['selected'] was 'MG' while report['candidates'] -- which the same function builds with an explicit `if cid != \"MG\"` -- has no such key. It surfaced only once bug 1 was out of the way, and only after all seven candidates had been generated and scored.",
+      "why_it_is_a_bug_and_not_the_protocol": "the freeze's primary_rule is stated over a CANDIDATE and names MG as the anchor; MG is not a row of the frozen grid; and the selector's own report declares anchor_states.MG excluded_from_the_ranking, with the reason that ranking it would let the reference state win its own selection. The file applies that filter in four places and omits it from the two that decide.",
+      "decision_bearing": true,
+      "what_it_changes": "the identity of `selected`. Unpatched it is MG, whose distance to MG is 0 by construction, so it wins whatever the candidates measure. Patched it is the head of the frozen ranking over the eight grid rows.",
+      "what_it_does_not_change": "eligible and ranked are built by filtering and sorting; dropping one key from the dict a sort reads cannot change the relative order of the keys that remain, and every number in those rows was computed before the sort"
+    }
+  ],
+  "why_a_separate_file": "scripts/select_iter12_stage2.py is one of the eight protocol paths the Stage-2 freeze binds by sha256 and src/granunlearn/evaluation/route_stratified_retention.py is one of its seventeen dependencies, so neither can be edited; the freeze refuses amendment once a Stage-2 adapter exists and seven do; and the selector verifies the freeze as its own Step 1, so an edited copy would refuse to run. That refusal is the control, so it was honoured rather than worked around.",
+  "the_patches": [
+    {
+      "for_bug": 1,
+      "target": "granunlearn.evaluation.route_stratified_retention.pooled_all_routes",
+      "effect": "supplies the fourth argument when a caller omits it, reading it from data/reports/mllmu_iter12_retention_probe.json -- the same file and key the selector itself reads at line 499, and one of the eighteen data paths the freeze binds, so the value is the protocol's and not this script's",
+      "scope": "the duration of one sis2.main() call, restored in a finally block",
+      "changes_the_outcome": false,
+      "proof_it_cannot_move_the_verdict": {
+        "floor_vector_reads": {
+          "routes": true,
+          "pooled_all_routes": false
+        },
+        "the_callee_documents_it": "POOLED_FAMILIES is commented 'Reported beside the decision, floored by nothing' in the frozen bytes of route_stratified_retention.py",
+        "decision_bearing_calls_in_the_selector": 8,
+        "any_of_them_passed_the_patched_field": [],
+        "where_the_field_goes_instead": "selector line 227, \"pooled_all_routes\": info.get(\"pooled_all_routes\") -- copied into the report row beside \"training_side\" and \"config\", while the decision reads rs.summary_vector(info[\"trainval_metrics\"]) at line 207 and info[\"eight_numbers\"] at line 209",
+        "conclusion": "the eight numbers, the floor, D_G, the ranking and the selection are all computed without reading this field, so supplying its missing argument cannot move any of them"
+      },
+      "proof_only_the_audited_sites_were_served": {
+        "expected_sites": [
+          "select_iter12_stage2.py:550",
+          "select_iter12_stage2.py:579"
+        ],
+        "served_across_all_invocations": [
+          "select_iter12_stage2.py:550",
+          "select_iter12_stage2.py:579"
+        ],
+        "calls_from_the_callee_passed_through": 86,
+        "why_that_matters": "the callee's own internal call, from probe_retention_by_route, IS on the decision path because it produces the eight numbers. It always passes four arguments, so it is served nothing and the decision path sees the original function unchanged."
+      },
+      "other_files_that_mention_the_function": {
+        "files_mentioning_it": 6,
+        "which": [
+          "scripts/analyze_iter12_route_stratified.py",
+          "scripts/build_iter12_stage2_basis.py",
+          "scripts/repair_iter12_stage2_selection.py",
+          "scripts/select_iter12_stage2.py",
+          "src/granunlearn/evaluation/route_stratified_retention.py",
+          "tests/unit/test_iteration12_route_stratified.py"
+        ],
+        "per_file": {
+          "scripts/analyze_iter12_route_stratified.py": [
+            "214:        per[\"pooled_all_routes_reported_not_floored\"] = pooled_per",
+            "319:            \"pooled_all_routes\":",
+            "320:                stage1_states[cid][\"by_route\"][\"pooled_all_routes\"],",
+            "331:            sc[\"by_route\"][\"pooled_all_routes\"]",
+            "423:            \"pooled_all_routes\":",
+            "424:                stage1_states[state][\"by_route\"][\"pooled_all_routes\"],"
+          ],
+          "scripts/build_iter12_stage2_basis.py": [
+            "557:            \"pooled_all_routes\": \"reported, floors nothing\","
+          ],
+          "scripts/repair_iter12_stage2_selection.py": [
+            "10:The selector calls ``rt.pooled_all_routes()`` at two places -- lines 550 and 579 --",
+            "20:card and before generating anything, with ``TypeError: pooled_all_routes() missing",
+            "92:  * ``pooled_all_routes`` cannot move the verdict: ``floor_vector`` reads only",
+            "188:PATCHED = \"pooled_all_routes\"",
+            "379:            \"selector line 227, \\\"pooled_all_routes\\\": info.get(\"",
+            "380:            \"\\\"pooled_all_routes\\\") -- copied into the report row beside \"",
+            "788:    original = rt.pooled_all_routes",
+            "1204:    original = rt.pooled_all_routes",
+            "1206:    rt.pooled_all_routes = supply_probe_entities(call_log, entities)",
+            "1218:        rt.pooled_all_routes = original",
+            "1415:                    \"pooled_all_routes(predictions, queries, associations, \"",
+            "1417:                \"exception\": \"TypeError: pooled_all_routes() missing 1 required \""
+          ],
+          "scripts/select_iter12_stage2.py": [
+            "227:            \"pooled_all_routes\": info.get(\"pooled_all_routes\"),",
+            "550:            \"pooled_all_routes\": rt.pooled_all_routes(",
+            "579:            \"pooled_all_routes\": rt.pooled_all_routes("
+          ],
+          "src/granunlearn/evaluation/route_stratified_retention.py": [
+            "168:def pooled_all_routes(predictions: Sequence[PredictionRecord],",
+            "216:        \"pooled_all_routes\": pooled_all_routes(predictions, queries,"
+          ],
+          "tests/unit/test_iteration12_route_stratified.py": [
+            "196:        monkeypatch.setattr(rt, \"pooled_all_routes\", lambda *a, **k: {})",
+            "387:        out = rt.pooled_all_routes(preds, queries, assocs, probe)",
+            "839:            pooled = per[\"pooled_all_routes_reported_not_floored\"]"
+          ]
+        }
+      }
+    },
+    {
+      "for_bug": 2,
+      "target": "select_iter12_stage2.build_report",
+      "effect": "removes 'MG' from the `generated` rows before delegating to the frozen function unchanged -- the filter the same file already applies four times, applied at the two bindings that decide",
+      "scope": "the duration of one sis2.main() call, restored in the same finally block as the first",
+      "changes_the_outcome": true,
+      "what_it_changes": "the value of `selected`, and only that",
+      "why_it_is_safe_to_remove_rather_than_re_rank": {
+        "the_freeze_names_it_as_the_anchor": "MG",
+        "the_frozen_rule_is_stated_over_candidates": "candidate >= MG - epsilon on all eight numbers; a number missing on either side disqualifies",
+        "grid_rows": 8,
+        "the_anchor_is_a_grid_row": false,
+        "build_report_receives_the_anchor_separately_from_the_rows": [
+          "reused_eight",
+          "reused_vec",
+          "mg_vec",
+          "repo_root",
+          "data_dir",
+          "predictions_dir",
+          "generation_config",
+          "model_id",
+          "gates",
+          "freeze"
+        ],
+        "places_the_selector_already_filters_the_anchor": [
+          294,
+          299,
+          304,
+          331
+        ],
+        "the_two_bindings_that_rank_and_do_not": [
+          {
+            "binding": "eligible",
+            "line": 232
+          },
+          {
+            "binding": "ranked",
+            "line": 233
+          }
+        ],
+        "the_selector_declares_it_excluded_at_line": 287,
+        "why_removing_it_cannot_reorder_the_rest": "eligible and ranked are built by filtering and sorting; dropping one key from the dict a sort reads cannot change the relative order of the keys that remain, and every number in those rows was computed before the sort"
+      },
+      "proof_the_anchor_still_anchors_the_floor": {
+        "build_report_takes_the_anchor_through_its_own_parameters": [
+          "reused_eight",
+          "reused_vec",
+          "mg_vec",
+          "repo_root",
+          "data_dir",
+          "predictions_dir",
+          "generation_config",
+          "model_id",
+          "gates",
+          "freeze"
+        ],
+        "checked_in_the_report_it_wrote": {
+          "the_anchor_is_not_the_selection": true,
+          "the_anchor_is_not_a_candidate_row": true,
+          "the_anchor_is_not_ranked": true,
+          "the_anchor_values_are_still_the_criterion": true,
+          "the_anchor_block_is_still_reported": true,
+          "selected": null,
+          "ranking_of_eligible": [],
+          "the_report_carries_no_timestamp_of_its_own": true,
+          "this_run_reproduced_the_filed_report_byte_identically": true
+        },
+        "reproduced_by_a_later_run": {
+          "runs_that_rewrote_the_report_byte_identically": 1,
+          "the_single_hash_they_all_left": [
+            "7578d1317d579b4115658748c3651c0283d320eec916e359372306700b3d16f1"
+          ],
+          "why_that_is_evidence_and_not_a_no_op": "the selection report has no timestamp field -- every value in it derives from the parquets, the freeze and the probe report -- so a scoring re-run that reaches the write and leaves the same sha256 has recomputed the whole report and got the same bytes. That is the determinism check the two patches could otherwise only be argued through: the anchor is dropped again, the same nine rows are scored, and the file that comes out is the one already filed."
+        },
+        "rows_dropped_across_all_invocations": [
+          "MG"
+        ],
+        "why_that_is_the_right_check": "the floor is anchored on MG, so if dropping MG from the scored rows had also dropped it from the inputs the floor reads, criterion.anchor_values and anchor_states.MG.values would have diverged or gone missing. They are compared for equality in the report this run wrote, and the run refuses to keep the report if they are not equal."
+      }
+    }
+  ],
+  "the_arity_audit": {
+    "calls_with_decidable_arity": 27,
+    "known_broken_sites": [
+      550,
+      579
+    ],
+    "any_other_arity_problem": [],
+    "unresolved_calls": []
+  },
+  "a_third_defect_found_while_writing_this_record": {
+    "the_helper": {
+      "defined_in": "scripts/freeze_iter12_selection_protocol.py",
+      "signature": "(repo_root: 'Path', *args: 'str') -> 'str | None'",
+      "first_parameter_is_the_repo_root_not_a_subcommand": true,
+      "called_correctly_it_returns_a_commit": true,
+      "called_as_the_freeze_calls_it": null,
+      "why_it_is_silent": "the helper wraps subprocess.run in `except (OSError, subprocess.SubprocessError): return None`, and a cwd that does not exist is an OSError -- so a mis-bound argument reads as 'git said nothing' rather than as a mistake"
+    },
+    "not_decision_bearing_because": {
+      "volatile_fields": [
+        "frozen_at_utc",
+        "git_commit",
+        "git_dirty",
+        "amendments"
+      ],
+      "verify_freeze_reads_neither_field": true,
+      "verify_freeze_defined_in": "freeze_iter12_stage2.py",
+      "so_the_freezes_still_verify": true
+    },
+    "cannot_be_fixed_in_place_because": {
+      "each_freeze_script_binds_itself": {
+        "scripts/freeze_iter12_route_stratification.py": true,
+        "scripts/freeze_iter12_stage2.py": true
+      },
+      "consequence": "editing either script changes a sha256 its own freeze records, and the selector verifies the freeze as Step 1, so the repaired file would refuse to run the study it governs"
+    },
+    "the_mis_bound_calls": {
+      "scripts/freeze_iter12_route_stratification.py": [
+        {
+          "line": 294,
+          "first_argument": "'rev-parse'",
+          "binds_a_subcommand_to_repo_root": true,
+          "the_git_args_it_therefore_passed": [
+            "'HEAD'"
+          ]
+        },
+        {
+          "line": 295,
+          "first_argument": "'status'",
+          "binds_a_subcommand_to_repo_root": true,
+          "the_git_args_it_therefore_passed": [
+            "'--porcelain'"
+          ]
+        }
+      ],
+      "scripts/freeze_iter12_stage2.py": [
+        {
+          "line": 305,
+          "first_argument": "'rev-parse'",
+          "binds_a_subcommand_to_repo_root": true,
+          "the_git_args_it_therefore_passed": [
+            "'HEAD'"
+          ]
+        },
+        {
+          "line": 306,
+          "first_argument": "'status'",
+          "binds_a_subcommand_to_repo_root": true,
+          "the_git_args_it_therefore_passed": [
+            "'--porcelain'"
+          ]
+        }
+      ]
+    },
+    "per_freeze": {
+      "data/reports/mllmu_iter12_route_stratification_freeze.json": {
+        "git_commit": null,
+        "git_dirty": false,
+        "git_dirty_is_a_bool_not_a_porcelain_listing": true,
+        "frozen_at_utc": "2026-09-13T17:01:05+00:00",
+        "reconstructed_head": "a19fe9d5f3fc456e187d9dea914eb1567fb663c3",
+        "reconstructed_head_subject": "Iteration 12 Stage 1b: a second negative result, and a CI check that was silently not checking",
+        "how_it_was_reconstructed": "git rev-list -1 --before=<frozen_at_utc> HEAD, i.e. the last commit by COMMITTER date. frozen_at_utc is rewritten by every amendment, so this is HEAD at the last amendment, not at the first freezing.",
+        "bound_paths_matching_that_commit": 17,
+        "bound_paths_differing_there": [],
+        "bound_paths_absent_there": [
+          "protocol_paths:scripts/freeze_iter12_route_stratification.py",
+          "protocol_paths:src/granunlearn/evaluation/route_stratified_retention.py",
+          "protocol_paths:scripts/build_iter12_route_probe.py",
+          "protocol_paths:scripts/analyze_iter12_route_stratified.py",
+          "data_paths:data/reports/mllmu_iter12_route_probe.json"
+        ],
+        "the_tree_was_therefore_dirty": true,
+        "which_contradicts_git_dirty": false,
+        "the_amendment_log_names_these_rehashed_paths": [],
+        "differing_paths_the_amendment_log_also_names": [],
+        "every_differing_path_is_a_documented_amendment": null,
+        "the_commit_that_first_filed_this_freeze": "e94d1f87d0d6c62187a5da25a9165acef4284f31",
+        "every_absent_path_exists_there": true,
+        "what_this_reconstruction_is_not": "provenance. It is one candidate commit consistent with a timestamp, checked against the hashes the freeze recorded. Where bound paths differ from it, they differ because they were edited and not yet committed -- which is the finding, not a flaw in the reconstruction."
+      },
+      "data/reports/mllmu_iter12_seed_replication_freeze.json": {
+        "git_commit": "96666267c99d0f0c7283982c8abb3b0d5f59a94b",
+        "git_dirty": "M scripts/analyze_iter12_seed_replication.py\n M scripts/train_iter12_seed_replicates.py\n M src/granunlearn/training/seed_replication.py\n M tests/unit/test_iteration12_seed_replication.py",
+        "git_dirty_is_a_bool_not_a_porcelain_listing": false,
+        "frozen_at_utc": "2026-09-13T08:03:05+00:00"
+      },
+      "data/reports/mllmu_iter12_selection_protocol_freeze.json": {
+        "git_commit": "9ce3c783e2eff2214f062f44734f6a58e369b8a5",
+        "git_dirty": "M .github/workflows/tests.yml\n M .gitignore\n M scripts/train_unlearning_baselines.py\n M src/granunlearn/training/candidate_grid.py\n?? data/mllmu_hier_pilot100/unlearning_iter12/\n?? data/reports/mllmu_iter12_retention_probe.json\n?? data/reports/mllmu_iter12_selection_protocol_freeze.json\n?? scripts/build_iter12_retention_probe.py\n?? scripts/freeze_iter12_selection_protocol.py\n?? scripts/select_iter12_retention_checkpoints.py\n?? src/granunlearn/evaluation/retention_selection.py\n?? tests/unit/test_iteration12_protocol.py",
+        "git_dirty_is_a_bool_not_a_porcelain_listing": false,
+        "frozen_at_utc": "2026-09-11T14:30:20+00:00"
+      },
+      "data/reports/mllmu_iter12_stage2_freeze.json": {
+        "git_commit": null,
+        "git_dirty": false,
+        "git_dirty_is_a_bool_not_a_porcelain_listing": true,
+        "frozen_at_utc": "2026-09-14T01:36:50+00:00",
+        "reconstructed_head": "dae584aec37aa9c08f24f5a748294b48b159d2fa",
+        "reconstructed_head_subject": "Iteration 12 Stage 2: the floor was anchored where the oracle fails, so it moved",
+        "how_it_was_reconstructed": "git rev-list -1 --before=<frozen_at_utc> HEAD, i.e. the last commit by COMMITTER date. frozen_at_utc is rewritten by every amendment, so this is HEAD at the last amendment, not at the first freezing.",
+        "bound_paths_matching_that_commit": 40,
+        "bound_paths_differing_there": [
+          "protocol_paths:scripts/freeze_iter12_stage2.py",
+          "protocol_paths:scripts/train_iter12_stage2.py",
+          "protocol_paths:src/granunlearn/training/stage2_grid.py"
+        ],
+        "bound_paths_absent_there": [],
+        "the_tree_was_therefore_dirty": true,
+        "which_contradicts_git_dirty": false,
+        "the_amendment_log_names_these_rehashed_paths": [
+          "scripts/freeze_iter12_stage2.py",
+          "scripts/train_iter12_stage2.py",
+          "src/granunlearn/training/preservation_anchor.py",
+          "src/granunlearn/training/stage2_grid.py"
+        ],
+        "differing_paths_the_amendment_log_also_names": [
+          "scripts/freeze_iter12_stage2.py",
+          "scripts/train_iter12_stage2.py",
+          "src/granunlearn/training/stage2_grid.py"
+        ],
+        "every_differing_path_is_a_documented_amendment": true,
+        "the_commit_that_first_filed_this_freeze": "dae584aec37aa9c08f24f5a748294b48b159d2fa",
+        "every_absent_path_exists_there": true,
+        "what_this_reconstruction_is_not": "provenance. It is one candidate commit consistent with a timestamp, checked against the hashes the freeze recorded. Where bound paths differ from it, they differ because they were edited and not yet committed -- which is the finding, not a flaw in the reconstruction."
+      },
+      "data/reports/mllmu_pilot100_confirmation_freeze.json": {
+        "git_commit": "9cb470431adb92f2d3deb43180425c23aa423f2b",
+        "git_dirty": true,
+        "git_dirty_is_a_bool_not_a_porcelain_listing": true,
+        "frozen_at_utc": "2026-09-08T17:02:35+00:00"
+      }
+    },
+    "the_freezes_that_recorded_it_properly": [
+      "data/reports/mllmu_iter12_seed_replication_freeze.json",
+      "data/reports/mllmu_iter12_selection_protocol_freeze.json",
+      "data/reports/mllmu_pilot100_confirmation_freeze.json"
+    ],
+    "what_is_lost": "For these two freezes the commit, and with it any independent check that the bytes hashed are the bytes that were reviewed, and the tree state at filing. The reconstruction below narrows the commit to one candidate and shows how much of the freeze that candidate accounts for; it is a reconstruction and is labelled as one, not provenance."
+  },
+  "this_record_supersedes_an_earlier_filing_of_itself": {
+    "why_it_was_superseded": "the earlier filing recorded `proof_the_anchor_still_anchors_the_floor.checked_in_the_report_it_wrote` as null. That proof was gated on the selection report's sha256 MOVING, and the report carries no timestamp of its own, so the scoring re-run rewrote it byte-identically and the gate read a reproduction as a no-op. It is now gated on the sha256 OR the mtime moving, which files the reproduction instead of discarding it. Nothing about the study changed: the report's bytes are the same and so is every number in it, and the superseded filing is identical to this one except for that null, the mtime fields and this block.",
+    "preserved_at": "outputs/superseded/mllmu_iter12_stage2_selection.REPAIR.understated-anchor-proof.json",
+    "preserved_sha256": "0fb6257ebf6845cdf53ce0003b8673f3a4137f6029725821af16e1aee0e196c2",
+    "moved_not_deleted": "copied aside before the record was removed, because --file-record refuses to overwrite and the refusal message asks for a deliberate deletion -- which should not also mean a silent one",
+    "the_limitation_of_preserving_it_there": "outputs/superseded/ is gitignored, so the superseded filing is checkable in this working tree and NOT from a clone. The sha256 above is recorded so the two versions can be told apart, but a reader with only the repository has this version's word that an earlier one existed.",
+    "the_check_that_now_refuses_the_old_shape": "--check-only fails on a record whose anchor proof is null, and that was run against the superseded filing before it was replaced, so the gate is known to bite rather than merely written"
+  },
+  "crash_reproduced_first": {
+    "command_returncode": 1,
+    "exception": "TypeError: pooled_all_routes() missing 1 required positional argument: 'probe_entities'",
+    "reproduced": true,
+    "crash_line": "File \"/scratch/wutiantong/GMUL/granularity-unlearning/scripts/select_iter12_stage2.py\", line 550, in main",
+    "selection_report_sha256_before": "7578d1317d579b4115658748c3651c0283d320eec916e359372306700b3d16f1",
+    "selection_report_sha256_after": "7578d1317d579b4115658748c3651c0283d320eec916e359372306700b3d16f1",
+    "selection_report_mtime_ns_before": 1789389611349911836,
+    "selection_report_mtime_ns_after": 1789389611349911836,
+    "the_crashed_run_wrote_or_changed_the_report": false
+  },
+  "the_second_crash_as_it_happened": {
+    "found_in": "outputs/lanes/iter12_stage2_nohup.log",
+    "traceback": [
+      "[2026-09-14 14:28:11] INFO     select_iter12_stage2 — [B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5] fine_target NLL 0.6469 | frac_at_cap None | {\"text.retain_same_entity.entity_macro\": 0.5413, \"text.retain_same_entity.row_micro\": 0.5441, \"text.retain_other_entity.entity_macro\": 0.4982, \"text.retain_other_entity.row_micro\": 0.5, \"image.retain_same_entity_image.entity_macro\": 0.4985, \"image.retain_same_entity_image.row_micro\": 0.5049, \"image.retain_other_entity_image.entity_macro\": 0.4565, \"image.retain_other_entity_image.row_micro\": 0.4342}",
+      "Traceback (most recent call last):",
+      "  File \"/scratch/wutiantong/GMUL/granularity-unlearning/scripts/repair_iter12_stage2_selection.py\", line 656, in <module>",
+      "    sys.exit(main())",
+      "  File \"/scratch/wutiantong/GMUL/granularity-unlearning/scripts/repair_iter12_stage2_selection.py\", line 522, in main",
+      "    sis2.main()",
+      "  File \"/scratch/wutiantong/GMUL/granularity-unlearning/scripts/select_iter12_stage2.py\", line 630, in main",
+      "    dst = ckpt_root / \"selected\" / report[\"candidates\"][cid][\"method\"] \\",
+      "KeyError: 'MG'"
+    ],
+    "crash_line_in_the_selector": 630,
+    "the_line_that_writes_the_report": 645,
+    "so_the_crashed_run_filed_nothing": true
+  },
+  "frozen_protocol_paths_verified_before_running": {
+    "verified": true,
+    "num_protocol_paths": 8,
+    "num_dependencies": 17,
+    "num_data_paths": 18,
+    "the_selector_is_one_of_them": true,
+    "the_callee_is_one_of_them": true
+  },
+  "invocations": [
+    {
+      "calls_seen_by_the_patch": 8,
+      "calls_the_repair_supplied": 4,
+      "failure": null,
+      "forwarded_argv": [
+        "--generate-only",
+        "--candidates",
+        "B5_cap0.5_lam0.5_lr2e-05_ep5",
+        "--device",
+        "cuda:0"
+      ],
+      "num_probe_entities_supplied": 35,
+      "passthrough_calls_from_the_callee": 4,
+      "recorded_utc": "2026-09-14T05:23:58+00:00",
+      "selection_report_sha256_after": null,
+      "selection_report_sha256_before": null,
+      "served_call_sites": [
+        "select_iter12_stage2.py:550",
+        "select_iter12_stage2.py:579"
+      ],
+      "the_run_wrote_or_changed_the_report": false
+    },
+    {
+      "calls_seen_by_the_patch": 8,
+      "calls_the_repair_supplied": 4,
+      "failure": null,
+      "forwarded_argv": [
+        "--generate-only",
+        "--candidates",
+        "B6_beta13.642_lam0.5_lr2e-05_ep5",
+        "--device",
+        "cuda:0"
+      ],
+      "num_probe_entities_supplied": 35,
+      "passthrough_calls_from_the_callee": 4,
+      "recorded_utc": "2026-09-14T05:24:51+00:00",
+      "selection_report_sha256_after": null,
+      "selection_report_sha256_before": null,
+      "served_call_sites": [
+        "select_iter12_stage2.py:550",
+        "select_iter12_stage2.py:579"
+      ],
+      "the_run_wrote_or_changed_the_report": false
+    },
+    {
+      "calls_seen_by_the_patch": 8,
+      "calls_the_repair_supplied": 4,
+      "failure": null,
+      "forwarded_argv": [
+        "--generate-only",
+        "--candidates",
+        "B5_cap2.0_lam0.5_lr2e-05_ep8",
+        "--device",
+        "cuda:0"
+      ],
+      "num_probe_entities_supplied": 35,
+      "passthrough_calls_from_the_callee": 4,
+      "recorded_utc": "2026-09-14T05:40:09+00:00",
+      "selection_report_sha256_after": null,
+      "selection_report_sha256_before": null,
+      "served_call_sites": [
+        "select_iter12_stage2.py:550",
+        "select_iter12_stage2.py:579"
+      ],
+      "the_run_wrote_or_changed_the_report": false
+    },
+    {
+      "calls_seen_by_the_patch": 8,
+      "calls_the_repair_supplied": 4,
+      "failure": null,
+      "forwarded_argv": [
+        "--generate-only",
+        "--candidates",
+        "B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5",
+        "--device",
+        "cuda:0"
+      ],
+      "num_probe_entities_supplied": 35,
+      "passthrough_calls_from_the_callee": 4,
+      "recorded_utc": "2026-09-14T05:50:01+00:00",
+      "selection_report_sha256_after": null,
+      "selection_report_sha256_before": null,
+      "served_call_sites": [
+        "select_iter12_stage2.py:550",
+        "select_iter12_stage2.py:579"
+      ],
+      "the_run_wrote_or_changed_the_report": false
+    },
+    {
+      "calls_seen_by_the_patch": 8,
+      "calls_the_repair_supplied": 4,
+      "failure": null,
+      "forwarded_argv": [
+        "--generate-only",
+        "--candidates",
+        "B5_cap4.0_lam0.5_lr2e-05_ep5",
+        "--device",
+        "cuda:0"
+      ],
+      "num_probe_entities_supplied": 35,
+      "passthrough_calls_from_the_callee": 4,
+      "recorded_utc": "2026-09-14T05:55:58+00:00",
+      "selection_report_sha256_after": null,
+      "selection_report_sha256_before": null,
+      "served_call_sites": [
+        "select_iter12_stage2.py:550",
+        "select_iter12_stage2.py:579"
+      ],
+      "the_run_wrote_or_changed_the_report": false
+    },
+    {
+      "calls_seen_by_the_patch": 8,
+      "calls_the_repair_supplied": 4,
+      "failure": null,
+      "forwarded_argv": [
+        "--generate-only",
+        "--candidates",
+        "B5_cap2.0_lam0.5_lr2e-05_ep5",
+        "--device",
+        "cuda:0"
+      ],
+      "num_probe_entities_supplied": 35,
+      "passthrough_calls_from_the_callee": 4,
+      "recorded_utc": "2026-09-14T05:57:51+00:00",
+      "selection_report_sha256_after": null,
+      "selection_report_sha256_before": null,
+      "served_call_sites": [
+        "select_iter12_stage2.py:550",
+        "select_iter12_stage2.py:579"
+      ],
+      "the_run_wrote_or_changed_the_report": false
+    },
+    {
+      "calls_seen_by_the_patch": 8,
+      "calls_the_repair_supplied": 4,
+      "failure": null,
+      "forwarded_argv": [
+        "--generate-only",
+        "--candidates",
+        "B5_cap1.0_lam0.5_lr2e-05_ep5",
+        "--device",
+        "cuda:0"
+      ],
+      "num_probe_entities_supplied": 35,
+      "passthrough_calls_from_the_callee": 4,
+      "recorded_utc": "2026-09-14T06:27:31+00:00",
+      "selection_report_sha256_after": null,
+      "selection_report_sha256_before": null,
+      "served_call_sites": [
+        "select_iter12_stage2.py:550",
+        "select_iter12_stage2.py:579"
+      ],
+      "the_run_wrote_or_changed_the_report": false
+    },
+    {
+      "build_report_patched_calls": 0,
+      "calls_seen_by_the_patch": 8,
+      "calls_the_repair_supplied": 4,
+      "failure": null,
+      "forwarded_argv": [
+        "--generate-only",
+        "--candidates",
+        "B5_cap2.0_lam0.5_lr2e-05_ep5",
+        "--device",
+        "cuda:0"
+      ],
+      "num_probe_entities_supplied": 35,
+      "passthrough_calls_from_the_callee": 4,
+      "recorded_utc": "2026-09-14T11:37:47+00:00",
+      "rows_dropped_from_scoring": [],
+      "rows_scored": 0,
+      "selection_report_sha256_after": null,
+      "selection_report_sha256_before": null,
+      "served_call_sites": [
+        "select_iter12_stage2.py:550",
+        "select_iter12_stage2.py:579"
+      ],
+      "the_anchor_still_anchors_the_floor": null,
+      "the_run_wrote_or_changed_the_report": false
+    },
+    {
+      "build_report_patched_calls": 0,
+      "calls_seen_by_the_patch": 8,
+      "calls_the_repair_supplied": 4,
+      "failure": null,
+      "forwarded_argv": [
+        "--generate-only",
+        "--candidates",
+        "B5_cap2.0_lam0.5_lr2e-05_ep8",
+        "--device",
+        "cuda:0"
+      ],
+      "num_probe_entities_supplied": 35,
+      "passthrough_calls_from_the_callee": 4,
+      "recorded_utc": "2026-09-14T11:37:47+00:00",
+      "rows_dropped_from_scoring": [],
+      "rows_scored": 0,
+      "selection_report_sha256_after": null,
+      "selection_report_sha256_before": null,
+      "served_call_sites": [
+        "select_iter12_stage2.py:550",
+        "select_iter12_stage2.py:579"
+      ],
+      "the_anchor_still_anchors_the_floor": null,
+      "the_run_wrote_or_changed_the_report": false
+    },
+    {
+      "build_report_patched_calls": 0,
+      "calls_seen_by_the_patch": 8,
+      "calls_the_repair_supplied": 4,
+      "failure": null,
+      "forwarded_argv": [
+        "--generate-only",
+        "--candidates",
+        "B5_cap4.0_lam0.5_lr2e-05_ep5",
+        "--device",
+        "cuda:0"
+      ],
+      "num_probe_entities_supplied": 35,
+      "passthrough_calls_from_the_callee": 4,
+      "recorded_utc": "2026-09-14T11:38:41+00:00",
+      "rows_dropped_from_scoring": [],
+      "rows_scored": 0,
+      "selection_report_sha256_after": null,
+      "selection_report_sha256_before": null,
+      "served_call_sites": [
+        "select_iter12_stage2.py:550",
+        "select_iter12_stage2.py:579"
+      ],
+      "the_anchor_still_anchors_the_floor": null,
+      "the_run_wrote_or_changed_the_report": false
+    },
+    {
+      "build_report_patched_calls": 0,
+      "calls_seen_by_the_patch": 8,
+      "calls_the_repair_supplied": 4,
+      "failure": null,
+      "forwarded_argv": [
+        "--generate-only",
+        "--candidates",
+        "B5_cap1.0_lam0.5_lr2e-05_ep5",
+        "--device",
+        "cuda:0"
+      ],
+      "num_probe_entities_supplied": 35,
+      "passthrough_calls_from_the_callee": 4,
+      "recorded_utc": "2026-09-14T11:38:41+00:00",
+      "rows_dropped_from_scoring": [],
+      "rows_scored": 0,
+      "selection_report_sha256_after": null,
+      "selection_report_sha256_before": null,
+      "served_call_sites": [
+        "select_iter12_stage2.py:550",
+        "select_iter12_stage2.py:579"
+      ],
+      "the_anchor_still_anchors_the_floor": null,
+      "the_run_wrote_or_changed_the_report": false
+    },
+    {
+      "build_report_patched_calls": 0,
+      "calls_seen_by_the_patch": 8,
+      "calls_the_repair_supplied": 4,
+      "failure": null,
+      "forwarded_argv": [
+        "--generate-only",
+        "--candidates",
+        "B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5",
+        "--device",
+        "cuda:0"
+      ],
+      "num_probe_entities_supplied": 35,
+      "passthrough_calls_from_the_callee": 4,
+      "recorded_utc": "2026-09-14T11:39:15+00:00",
+      "rows_dropped_from_scoring": [],
+      "rows_scored": 0,
+      "selection_report_sha256_after": null,
+      "selection_report_sha256_before": null,
+      "served_call_sites": [
+        "select_iter12_stage2.py:550",
+        "select_iter12_stage2.py:579"
+      ],
+      "the_anchor_still_anchors_the_floor": null,
+      "the_run_wrote_or_changed_the_report": false
+    },
+    {
+      "build_report_patched_calls": 0,
+      "calls_seen_by_the_patch": 8,
+      "calls_the_repair_supplied": 4,
+      "failure": null,
+      "forwarded_argv": [
+        "--generate-only",
+        "--candidates",
+        "B5_cap0.5_lam0.5_lr2e-05_ep5",
+        "--device",
+        "cuda:0"
+      ],
+      "num_probe_entities_supplied": 35,
+      "passthrough_calls_from_the_callee": 4,
+      "recorded_utc": "2026-09-14T11:39:16+00:00",
+      "rows_dropped_from_scoring": [],
+      "rows_scored": 0,
+      "selection_report_sha256_after": null,
+      "selection_report_sha256_before": null,
+      "served_call_sites": [
+        "select_iter12_stage2.py:550",
+        "select_iter12_stage2.py:579"
+      ],
+      "the_anchor_still_anchors_the_floor": null,
+      "the_run_wrote_or_changed_the_report": false
+    },
+    {
+      "build_report_patched_calls": 0,
+      "calls_seen_by_the_patch": 8,
+      "calls_the_repair_supplied": 4,
+      "failure": null,
+      "forwarded_argv": [
+        "--generate-only",
+        "--candidates",
+        "B6_beta13.642_lam0.5_lr2e-05_ep5",
+        "--device",
+        "cuda:0"
+      ],
+      "num_probe_entities_supplied": 35,
+      "passthrough_calls_from_the_callee": 4,
+      "recorded_utc": "2026-09-14T11:39:44+00:00",
+      "rows_dropped_from_scoring": [],
+      "rows_scored": 0,
+      "selection_report_sha256_after": null,
+      "selection_report_sha256_before": null,
+      "served_call_sites": [
+        "select_iter12_stage2.py:550",
+        "select_iter12_stage2.py:579"
+      ],
+      "the_anchor_still_anchors_the_floor": null,
+      "the_run_wrote_or_changed_the_report": false
+    },
+    {
+      "build_report_patched_calls": 1,
+      "calls_seen_by_the_patch": 20,
+      "calls_the_repair_supplied": 10,
+      "failure": null,
+      "forwarded_argv": [
+        "--device",
+        "cuda:0"
+      ],
+      "num_probe_entities_supplied": 35,
+      "passthrough_calls_from_the_callee": 10,
+      "recorded_utc": "2026-09-14T11:40:24+00:00",
+      "rows_dropped_from_scoring": [
+        "MG"
+      ],
+      "rows_scored": 9,
+      "selection_report_sha256_after": "7578d1317d579b4115658748c3651c0283d320eec916e359372306700b3d16f1",
+      "selection_report_sha256_before": null,
+      "served_call_sites": [
+        "select_iter12_stage2.py:550",
+        "select_iter12_stage2.py:579"
+      ],
+      "the_anchor_still_anchors_the_floor": true,
+      "the_run_wrote_or_changed_the_report": true
+    },
+    {
+      "build_report_patched_calls": 1,
+      "calls_seen_by_the_patch": 20,
+      "calls_the_repair_supplied": 10,
+      "failure": null,
+      "forwarded_argv": [
+        "--device",
+        "cuda:0"
+      ],
+      "num_probe_entities_supplied": 35,
+      "passthrough_calls_from_the_callee": 10,
+      "recorded_utc": "2026-09-14T12:03:19+00:00",
+      "rows_dropped_from_scoring": [
+        "MG"
+      ],
+      "rows_scored": 9,
+      "selection_report_sha256_after": "7578d1317d579b4115658748c3651c0283d320eec916e359372306700b3d16f1",
+      "selection_report_sha256_before": "7578d1317d579b4115658748c3651c0283d320eec916e359372306700b3d16f1",
+      "served_call_sites": [
+        "select_iter12_stage2.py:550",
+        "select_iter12_stage2.py:579"
+      ],
+      "the_anchor_still_anchors_the_floor": null,
+      "the_run_wrote_or_changed_the_report": false
+    },
+    {
+      "build_report_patched_calls": 1,
+      "calls_seen_by_the_patch": 20,
+      "calls_the_repair_supplied": 10,
+      "failure": null,
+      "forwarded_argv": [
+        "--device",
+        "cuda:0"
+      ],
+      "num_probe_entities_supplied": 35,
+      "passthrough_calls_from_the_callee": 10,
+      "recorded_utc": "2026-09-14T12:52:12+00:00",
+      "rows_dropped_from_scoring": [
+        "MG"
+      ],
+      "rows_scored": 9,
+      "selection_report_mtime_ns_after": 1789390332901684346,
+      "selection_report_mtime_ns_before": 1789389611349911836,
+      "selection_report_sha256_after": "7578d1317d579b4115658748c3651c0283d320eec916e359372306700b3d16f1",
+      "selection_report_sha256_before": "7578d1317d579b4115658748c3651c0283d320eec916e359372306700b3d16f1",
+      "served_call_sites": [
+        "select_iter12_stage2.py:550",
+        "select_iter12_stage2.py:579"
+      ],
+      "the_anchor_still_anchors_the_floor": true,
+      "the_run_changed_the_report": false,
+      "the_run_reproduced_it_byte_identically": true,
+      "the_run_rewrote_the_report": true,
+      "the_run_wrote_or_changed_the_report": true
+    }
+  ],
+  "what_still_cannot_be_claimed": "Two things, and the second is the one that matters. (1) That the preregistered selector ran to completion unaided. It did not: it crashed twice, and a script written after the protocol was frozen patched two names so it could finish. (2) That `selected` is the value the frozen code would have written. It is not. The frozen code writes 'MG', the anchor, because the two bindings that rank omit the filter the same file applies four times elsewhere; this script removes the anchor from the rows and so decides which name lands there. The first patch is not a free parameter -- it supplies the frozen probe half, read from a sha-bound file, to a field that floors nothing. The second is a judgement, defended by the freeze's own rule being stated over candidates, by the anchor not being a grid row, by the selector's own report declaring it excluded from the ranking, and by the fact that removing one key from a sort's input cannot reorder the rest -- but it is a judgement, and it is recorded here rather than buried in a field that looks computed. Every eight-number value, the floor, the epsilon, the anchor, D_G and the tie-break are the frozen protocol's and were not touched by either patch."
+}

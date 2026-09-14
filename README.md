@@ -895,7 +895,7 @@ mode and neither cap nor anchor — and **refuses to train a single candidate**
 unless the gap between A and B is no wider than the gap between A and A2, with
 bitwise equality demanded outright when that floor is exactly zero, compared per
 tensor rather than by digest because a digest says "different" and cannot
-distinguish float noise from a different objective; and 99 tests drive both loops
+distinguish float noise from a different objective; and 102 tests drive both loops
 against one stub model on CPU and assert bit-identical parameters *and* identical
 epoch summaries, so a divergence is caught without a GPU.
 
@@ -1040,22 +1040,212 @@ eight tests that hold that replacement, and to correct a count the previous entr
 got wrong. The third was made only after the failed control's adapter had been
 *moved* out of the root the freeze governs, so its precondition was genuinely
 satisfied rather than bypassed, and the moved run is committed so the reason is
-inspectable. 28 mutations — the clamp removed, capped rows made to descend, the
+inspectable. 32 mutations — the clamp removed, capped rows made to descend, the
 capped value booked as the group's NLL, the accumulation tail normalised by the full
 window, supervised positions read one place late, the alignment and NLL guards
 disabled, an unknown cache row served from a neighbour, the anchor permitted on a
 target group, the seal compared as a string so `..` walks past it, the floor gate
 made to pass whatever it is given, the control's adapter made invisible to the
-freeze, four grid edits, and eleven aimed at the redesigned control (the gate made
+freeze, four grid edits, eleven aimed at the redesigned control (the gate made
 to pass whatever the two loops did, the bitwise demand conditioned away, the gate
 fed the filed adapter so the unsatisfiable criterion returns, the noise floor
 measured against the wrong run, A2 dropped so the floor is assumed rather than
 measured, the hash seed not pinned before training and then accepted rather than
 refused, a failed control and an unrun control each no longer stopping the
 candidates, and the freeze's disclosure and its named test list each quietly
-removed) — were each caught, with the freeze's own hash check deselected so that
+removed), and four aimed at the annotator that files the control's reading (the
+gate's verdict computed the wrong way round, any number of distinct
+`target_modules` orders counted as one, the pinned order reported as the filed one
+whatever it is, and the gate's prose claiming the mean went whichever way it did
+not) — were each caught, with the freeze's own hash check deselected so that
 every mutation had to be caught by a test exercising the behaviour rather than by
 the file having changed.
+
+The last four were held back until every GPU lane had finished, because eleven of
+the earlier mutations edit `train_iter12_stage2.py` and two of the training lanes
+start a fresh `python train_iter12_stage2.py` whenever a card frees up: a lane that
+loaded the file inside the ten-second window a mutation was applied would have
+trained a candidate under edited code, and nothing downstream would have noticed,
+because the adapter would have looked perfectly well formed. One of the four then
+**survived**, and the reason is a limit on comparing an output against a filed copy
+rather than a limit on the suite. `--check-only` rebuilds the reading and diffs it
+against the committed one, but `len(distinct) >= 1` and `len(distinct) == 1` agree
+whenever there is exactly one distinct order — which is what this control has — so
+no comparison against these numbers can separate them, and the claim that makes the
+three runs comparable at all was unpinned. Three tests now drive `build()` from a
+synthetic control in a temporary directory whose three runs *disagree*, in both
+directions and against the filed adapter's order, so the field is pinned rather
+than merely falsifiable. They are built from scratch rather than copied out of
+`data/checkpoints/`, so they run in a clone too, where the gitignored directory the
+reading was copied from does not exist and a skip would have hidden exactly the gap
+they close.
+
+### Stage 2 ran: the MF-preservation anchor missed by fourteen queries, on a floor with no margin
+
+All seven rows trained, generated and scored under the freeze, and `selected` is
+**None**: 0 of 9 candidates clear the primary MG-anchored floor on all eight numbers,
+1 of 9 clears the `B0`-anchored floor reported beside it — and that one is `B0`
+itself, which under that anchor is compared against its own values. The Stage-3 gate
+opens.
+
+The result is not "nothing worked", and the difference from Stage 1 is the point.
+`B6_beta13.642_lam0.5_lr2e-05_ep5`, the MF-preservation anchor, fails **3** of the
+eight numbers where the four ascent caps fail between four and seven of them — four,
+six, seven and seven, and not in cap order — and the uncapped Stage-1
+incumbent fails 7. It clears MG on all four text-route numbers, and its fine-target
+NLL is 0.6857 nats — 0.6469 for `B6R`, against 0.7832 to 2.9924 for capped ascent —
+so the anchor holds the unlearning objective *and* text retention at once rather than
+trading one for the other. All three of its failures are image-route:
+`image.retain_same_entity_image.entity_macro` −0.0339, its `.row_micro` −0.0123, and
+`image.retain_other_entity_image.row_micro` −0.0263. At the denominators Stage 1c
+measured — 408 retain-same and 76 retain-other queries per route, so 816 and 152 rows
+across train+val — those are **10 rows of 816 and 4 rows of 152**. The frozen floor's
+margin is 0.0 and its epsilon 1e-09, so four queries decide it.
+
+The cap sweep moves in the direction the calibration predicted, which is the
+direction that disqualifies it. Loosening the cap raises the fine-target NLL
+monotonically (0.7832 → 1.1852 → 1.8007 → 2.3548 at caps 0.5 → 1.0 → 2.0 → 4.0 nats)
+and lowers image retain-same row-micro (0.4510 → 0.4216 → 0.3505 → 0.3750), while
+`frac_at_cap` falls from 0.80 to 0.2667 — a looser cap binds on fewer tokens, so more
+ascent is actually applied, and the retention cost tracks the ascent rather than the
+nominal cap. Repeating the 2.0-nat cap at eight epochs instead of five takes the NLL
+to 2.9924 with `frac_at_cap` 0.9111 and image retain-same to 0.3260, the worst in the
+grid: suppression and budget are **not** decoupled, and buying more of the first costs
+the second.
+
+So Stage 1 returned the no-op because its anchor disqualified every state including
+the oracle, and Stage 2 re-anchored at MG and returns a mechanism that nearly clears.
+The shortfall is now three image-route numbers totalling fourteen queries rather than
+a floor no state can pass — but the measurement limit is unchanged and is still the
+binding one, 76 retain-other queries per route against pilot-100's ceiling of 228. The
+honest reading is that the MF-preservation anchor is the mechanism Stage 3 should
+carry forward and that this dataset cannot yet resolve whether it clears the floor.
+
+**The result is not the frozen selector's own, and the record filed beside it says so
+in a field named `what_still_cannot_be_claimed`.** `select_iter12_stage2.py` is one of
+the eight protocol paths the freeze binds by sha256, and it crashed twice.
+
+1. Lines **550** and **579** call `rt.pooled_all_routes()` with three positional
+   arguments where the frozen callee requires four. The fourth, `probe_entities`, is
+   already bound at line 499 from `mllmu_iter12_retention_probe.json` — one of the
+   eighteen data paths the freeze binds — and the sibling calls two lines away pass it
+   correctly, so there is exactly one value that can go there and it is the protocol's
+   rather than the repair's. It is in the reused-states loop, which runs *before* any
+   generation, so every lane died having written nothing. The field it fills floors
+   nothing: `floor_vector` reads only
+   `by_route["routes"]`, and the selector copies the field into a report row at line
+   227 without passing it to `summary_vector`, `distance_to_mg`,
+   `floor_check_stratified` or `rank_key` — asserted by walking the argument trees of
+   those eight calls, not by reading the code and agreeing with it.
+2. With that out of the way the run reached line **630** and died on `KeyError: 'MG'`,
+   because the anchor won its own selection. `eligible` and `ranked` at lines 232–233
+   omit the `cid != "MG"` filter the same file applies at 294, 299, 304 and 331, and
+   MG's distance to MG is 0 by construction, so it topped the ranking whatever the
+   seven candidates measured; line 630 then looked the winner up in a dictionary the
+   same function had already excluded it from. The patch removes `"MG"` from the rows
+   handed to `build_report`, which receives the anchor through three parameters of its
+   own — `reused_eight`, `reused_vec`, `mg_vec` — so the floor, the anchor values and
+   the reported MG block are computed from inputs it does not touch, and dropping one
+   key from a sort's input cannot reorder the rest. **That patch decides which name
+   lands in `selected`**: unpatched it is `"MG"`, a reference state that was never a
+   candidate and that would have been selected whatever the data said. It is defended
+   by the freeze's own rule being stated over a *candidate* and naming MG as the
+   anchor, by MG not being a row of the frozen grid, and by the selector's own report
+   declaring it `excluded_from_the_ranking` with the reason that ranking it would let
+   the reference state win its own selection — but it is a judgement made by a script
+   written after the protocol was frozen, and it is recorded as one rather than buried
+   in a field that looks computed.
+
+No frozen byte was edited. The freeze refuses amendment once any Stage-2 adapter
+exists and seven do, and the selector verifies the freeze as its own Step 1 before
+anything expensive, so an edited copy would refuse to run — that refusal is the
+control, and it was honoured rather than worked around: two module attributes are
+rebound for the duration of one `main()` call and both are restored in a `finally`.
+`scripts/repair_iter12_stage2_selection.py` follows the Stage-1b precedent, and proves
+before either patch is allowed near the model that the bound paths still match the
+freeze, that those two sites are the only ones, that **every** call the selector makes
+into a bound module has the right arity (27 audited, 0 unresolved, the two known sites
+the only tolerated problems), that the patched field cannot reach a decision, and that
+the first crash reproduces unpatched in a subprocess with the report hashed *and
+timed* either side. The scoring run rewrote the selection report **byte-identically** —
+the five recorded scoring invocations left one distinct sha256 between them, and the
+first of them is the one that created the file — which is possible because the report
+carries no timestamp of its own, and which is filed as the determinism evidence it is
+rather than as "nothing changed".
+
+A third defect sits in the freeze rather than the selector and is **not** patched.
+`_git` is defined once, as `_git(repo_root, *args)`, and both
+`freeze_iter12_stage2.py` (lines 305–306) and `freeze_iter12_route_stratification.py`
+(294–295) call it as `_git("rev-parse", "HEAD")`, binding a git subcommand to
+`repo_root`. Git is then run inside a directory called `rev-parse`, which does not
+exist, and the helper's `except OSError: return None` turns that into silence rather
+than an error. Both freezes therefore record `git_commit: null`; and because
+`git_dirty` is written as `_git("status", "--porcelain") is not None`, the same `None`
+makes it `false`, so each asserts a clean tree. The Stage-2 tree was dirty: 40 of its
+43 bound paths match HEAD reconstructed from its own `frozen_at_utc` (`dae584a`), and
+the three that differ are exactly the three its amendment log names as re-hashed. For
+Stage 1c, 17 match and the 5 absent are all present in `e94d1f8`, the commit that
+filed it. Both fields are in `VOLATILE_FIELDS` and `verify_freeze` reads neither,
+which is why the freezes still verify and this study ran at all; and each freeze script
+binds *itself* among its own `protocol_paths`, so editing either would make the
+selector refuse to run the study it governs. What a freeze exists to answer — which
+bytes, from which commit, in what tree state — is, for these two, nothing, and the
+reconstruction is labelled a reconstruction rather than filed as provenance.
+
+71 tests in `tests/unit/test_iteration12_stage2_repair.py` hold all of this, torch-free
+and GPU-free; the arity audit that would have caught the first defect before the grid's
+generation ran — 96.72 minutes for the seven lanes, from the chain log's own two
+timestamps — is one of them, and it pins 27 audited calls
+because a first version resolved half the call sites, reported no problems, and was
+worse than no audit at all for looking like one. 29 mutations — the patched name
+changed, the anchor named as a candidate that exists, a three-argument call declared
+sufficient, `rank_key` dropped from the decision-bearing set, the key tokeniser
+reverted to substring matching (which reports a timestamp in a report that has none,
+because "candidates" contains "date"), the disclosure made not to refuse once the
+defect is fixed, a mis-bound `_git` call no longer recognised, the amendment log split
+on the wrong dot, a byte-identical rewrite reported as a change, both chain-log
+refusals returned to silent `None`s, every call reported as supplied including the
+callee's own, one of the two patches no longer restored, the scoring lane allowed to
+skip the crash proof, a generation lane pointed at the frozen selector directly, the
+`check` phase weakened from the adapter file to the directory, and nine edits to the
+filed record itself — were each caught, 0 survived, and every file was restored
+byte-identically. `--check-only` re-derives the record from the frozen bytes, the
+committed evidence log and both earlier filings of itself, and refuses a record whose
+anchor proof is null — a gate verified against the filing it replaced rather than
+assumed to bite. Those two earlier filings are committed under `outputs/superseded/`
+with a measured key-set diff against this one: the first filed its anchor proof as a
+null where a byte-identical reproduction belonged, and the second said the first was
+unreachable from a clone when it was about to become reachable. The evidence log and
+the chain log are committed at the paths the repair reads them from, because a clone
+without them would pass `--check-only`'s invocation checks *vacuously* — an empty log
+holds no failed invocation and no unexpected call site either.
+
+One limit on that log is worth stating rather than leaving to be discovered, and it is
+why the chain's *other* log is committed beside it. `iter12_stage2_nohup.log` is
+whatever the caller redirected stdout to, and the chain is launched with `nohup > `,
+which truncates — so what is committed is the **last** chain run's stdout, not a
+history of them, and the relaunch that carried the repair overwrote the run in which
+the seven generation lanes died on the first defect. That log therefore evidences the
+*second* crash, the `KeyError: 'MG'` the record quotes, and not the first. What
+evidences the first is stronger anyway: the repair re-reproduces it on demand,
+unpatched, in a subprocess, with the report hashed and timed either side, so it is a
+repeatable demonstration rather than a log line a later run can delete.
+`the_second_crash_as_it_happened()` refuses rather than returning `None` if the log is
+ever missing or holds no `KeyError:`, which is the same rule — a parser that cannot
+parse must not be indistinguishable from a log that says something else, because the
+first version of it reported `so_the_crashed_run_filed_nothing: false`, the opposite of
+the truth.
+
+`iter12_stage2_chain.log` is the one that keeps history: the lane script writes it with
+`tee -a` and `>>`, so it holds every phase of every run — the control passing on real
+bytes, seven training lanes, the `check` phase finding all seven adapters, seven
+generation lanes launched at 12:31:19, `received SIGTERM — stopping 7 lane(s) before
+releasing the lock` at 12:33:37 and `lanes stopped; releasing the lock and exiting 143`
+four seconds later, and both score failures. That is the only committed evidence the
+hardened stop path ran for real rather than only against a stub, and it is why the
+generation figure above is quotable at all: `gen: one lane per candidate` at 12:50:51
+and `gen: all generation lanes finished` at 14:27:34 are two of its lines, 96.72
+minutes apart.
 
 ## Iteration history
 
@@ -1119,7 +1309,7 @@ test the decoupling of suppression from budget, and the MF anchor alone and besi
 replay at `beta = 13.642` derived from committed training summaries. Because
 `train_unlearning` is hash-bound and cannot grow a mode, the new loop is a second
 copy of it, policed twice: a GPU control that refuses to train anything unless the
-two loops agree, and 99 tests that drive both loops against one stub model and
+two loops agree, and 102 tests that drive both loops against one stub model and
 require bit-identical parameters. **The control was first frozen as
 byte-reproduction against the incumbent's filed adapter, ran, and refused** — and
 the refusal turned out to be about the criterion, not the loop: `PeftConfig
@@ -1130,8 +1320,11 @@ by about as much as the new loop had (1.726e-03 against 1.812e-03 max per-tensor
 gap), so the control now trains the incumbent objective three times in one process
 under a pinned `PYTHONHASHSEED` and gates the across-loop gap against the
 same-loop gap it *measures*, with the filed adapter still reported beside the gate.
-Both runs are kept under `outputs/superseded/iter12_stage2_control_v1/`. 28
-mutations caught, 0 survived. The freeze was amended four times; the third only
+Both runs are kept under `outputs/superseded/iter12_stage2_control_v1/`. 32
+mutations caught, 0 survived — four of them aimed at the annotator and held back
+until the GPU lanes had finished, one of which survived a comparison against the
+filed reading until a synthetic control pinned what that comparison could not see.
+The freeze was amended four times; the third only
 after the failed control's adapter was moved out of the root the freeze governs, so
 its precondition was genuinely satisfied rather than bypassed, and the fourth
 corrects a count the third got wrong — it said seven structural tests hold the
@@ -1140,4 +1333,34 @@ side of the gate is built from was written after that reason was drafted. The
 criterion did not move: the anchor, its values, the eight numbers, the epsilon, the
 tie-break and the grid are byte-identical to what was frozen, which the run that
 refused could not have influenced because it produced no candidate, no prediction,
-no retention number and no score.
+no retention number and no score. · **12e** Stage 2 ran and returned a second
+negative with far more in it than the first: `selected` is **None**, 0 of 9
+candidates clear the MG-anchored floor on all eight numbers, and the Stage-3 gate
+opens. The MF-preservation anchor is the best row in the grid and not narrowly — it
+fails **3** of 8 where the four ascent caps fail four, six, seven and seven between
+them and the uncapped Stage-1 incumbent fails 7, it clears MG on all four text-route
+numbers, and it holds
+the lowest fine-target NLL of the trained rows (0.6857; `B6R` 0.6469) against
+0.7832–2.9924 for capped ascent. All three of its failures are image-route and
+amount to **10 rows of 816 and 4 rows of 152** against a floor whose margin is 0.0.
+The cap sweep costs retention monotonically as it loosens (image retain-same
+row-micro 0.4510 → 0.4216 → 0.3505 → 0.3750 while `frac_at_cap` falls 0.80 → 0.2667,
+so a looser cap applies *more* ascent), and repeating the 2.0-nat cap at eight epochs
+is the worst cell in the grid — suppression and budget are not decoupled. The result
+is **not the frozen selector's own**: it crashed twice, on a missing fourth argument
+at lines 550 and 579 to a field that floors nothing, and then on `KeyError: 'MG'` at
+line 630 because `eligible` and `ranked` omit the anchor filter the same file applies
+four times elsewhere, so the anchor won its own selection. A separate repair script
+patched two names for one `main()` call and restored both in a `finally`, editing no
+frozen byte; the second patch **does** change `selected` and the record filed beside
+the report says so in a field named `what_still_cannot_be_claimed` rather than
+leaving it to inference. A third defect, disclosed and not patched, is in the freezes
+themselves: `_git(repo_root, *args)` is called as `_git("rev-parse", "HEAD")` by both
+`freeze_iter12_stage2.py` and `freeze_iter12_route_stratification.py`, so the
+subcommand binds to `repo_root`, the helper's `except OSError` swallows it, and both
+filed freezes record `git_commit: null` and `git_dirty: false` — the second falsely,
+since 40 of the Stage-2 freeze's 43 bound paths match HEAD reconstructed from its own
+timestamp and the three that differ are the three its amendment log names. Both fields
+are volatile, so no verdict depends on them, and each script binds itself, so neither
+can be edited. 71 tests, 29 mutations caught and 0 survived, and the five recorded
+scoring invocations left one distinct sha256 of the selection report between them.

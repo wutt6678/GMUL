@@ -1,0 +1,284 @@
+2026-09-14T07:09:24+08:00 chain lock claimed (pid 2311788), 2 lane(s) requested on cuda:0
+2026-09-14T07:09:24+08:00 pre: verifying all three freezes and the bytes Stage 2 reuses
+OK — the Stage-2 freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['reused_predictions_bound', 'reference_cache_bound'])
+  reused_predictions_bound: 3 match, 0 absent from this clone
+  reference_cache_bound: 2 match, 0 absent from this clone
+[2026-09-14 07:09:28] INFO     freeze_iter12_protocol — OK — the Iteration 12 protocol freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments'])
+OK — the Stage-1c route-stratification freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['predictions_bound', 'measurement_contract'])
+  predictions bound: 19 match, 0 absent from this clone
+  measurement contracts: 1 distinct over 19 sidecar(s); 0 parquet(s) without one
+2026-09-14T07:09:28+08:00 pre: OK — three freezes match, 7 row(s) to train
+2026-09-14T07:09:28+08:00 PRE_ONLY=1 — stopping before the control; nothing was trained and the
+2026-09-14T07:09:28+08:00             freeze is still amendable
+2026-09-14T07:10:15+08:00 chain lock claimed (pid 2313840), 2 lane(s) requested on cuda:0
+2026-09-14T07:10:15+08:00 pre: verifying all three freezes and the bytes Stage 2 reuses
+OK — the Stage-2 freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['reused_predictions_bound', 'reference_cache_bound'])
+  reused_predictions_bound: 3 match, 0 absent from this clone
+  reference_cache_bound: 2 match, 0 absent from this clone
+[2026-09-14 07:10:20] INFO     freeze_iter12_protocol — OK — the Iteration 12 protocol freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments'])
+OK — the Stage-1c route-stratification freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['predictions_bound', 'measurement_contract'])
+  predictions bound: 19 match, 0 absent from this clone
+  measurement contracts: 1 distinct over 19 sidecar(s); 0 parquet(s) without one
+2026-09-14T07:10:21+08:00 pre: OK — three freezes match, 7 row(s) to train
+2026-09-14T07:10:21+08:00 ctrl: does the new loop reproduce the incumbent Stage-1 adapter byte for byte?
+2026-09-14T07:10:21+08:00       (this phase locks the freeze: no amendment is possible afterwards)
+2026-09-14T08:01:19+08:00 chain lock claimed (pid 2406152), 2 lane(s) requested on cuda:0, PYTHONHASHSEED=0
+2026-09-14T08:01:19+08:00 pre: verifying all three freezes and the bytes Stage 2 reuses
+  MISMATCH faithfulness_control.a_criterion_this_replaced: frozen=None now='The control as first frozen compared ONE run of the new loop against the adapter Stage 1 FILED, by sha256 over the whole directory. It ran, and refused: identical recipe in all fifteen fields, identical init adapter, identical 230 optimizer steps, and adapter_config.json differing only in the ORDER of the same seven target modules. That order is not reproducible. PeftConfig.target_modules is a Python set, and Python randomises the string hash seed per process unless PYTHONHASHSEED is exported, so the serialised order -- and the LoRA injection order behind it, which decides which module draws which dropout mask -- varies run to run. Four seeds were measured to give four different orders, a pinned seed gives one order every time, and the filed order matched none of the seven seeds tried, so the process that wrote it is not recoverable.'
+  MISMATCH faithfulness_control.control_dir_is_inside_the_refusal: frozen="The control's adapter lives under the Stage-2 checkpoint root, so running it locks this freeze against amendment. That is deliberate: a control run under an unfrozen loop proves nothing about the frozen one." now="The control's adapters live under the Stage-2 checkpoint root, so running it locks this freeze against amendment. That is deliberate: a control run under an unfrozen loop proves nothing about the frozen one."
+  MISMATCH faithfulness_control.reproduces: frozen='B4_w1.0_lam0.5_lr2e-05_ep5' now=None
+  MISMATCH faithfulness_control.reproduces_the_objective_of: frozen=None now='B4_w1.0_lam0.5_lr2e-05_ep5'
+  MISMATCH faithfulness_control.the_evidence_that_it_was_the_stack_not_the_new_loop: frozen=None now='The FROZEN loop, unedited and hash-bound, was re-run on the same spec from the same init adapter. It did not reproduce the filed adapter either, and landed the same distance from it: max per-tensor weight gap 1.726e-03 for the frozen re-run against filed, 1.812e-03 for the new loop against filed, 1.800e-03 between the two re-runs -- three gaps of one order, so the new loop is no further from the filed adapter than the frozen loop is from itself. All three adapters hold the same seven target modules in three different orders. Both runs are kept under outputs/superseded/iter12_stage2_control_v1/, whose README.md records the orders and the gaps.'
+  MISMATCH faithfulness_control.the_gate: frozen=None now="A2 exists to MEASURE the noise floor rather than assume it: gap(A, A2) is how far two runs of the same code land apart on this stack. The gate is that gap(A, B) does not exceed it -- and bitwise equality is demanded outright when the floor is exactly zero, which is what one process and a pinned seed are supposed to buy. A sha256 alone cannot express this: it says 'different' and stops, so it cannot distinguish float noise from a different objective, which is the whole question. The control therefore compares per-tensor gaps and reports the worst tensor."
+  MISMATCH faithfulness_control.the_hash_seed_is_pinned_by_the_lane_script: frozen=None now='scripts/lanes/iter12_stage2.sh exports PYTHONHASHSEED, and train_iter12_stage2.py refuses to run the control at all without it, because a control under a randomised seed measures the seed.'
+  MISMATCH faithfulness_control.what_it_is: frozen='train_with_preservation is a second copy of a training loop, because unlearning_trainer.train_unlearning is hash-bound and cannot grow a mode. --control trains the incumbent Stage-1 row through the new loop with every group in a plain sft/gd mode and compares the adapters by sha256.' now='train_with_preservation is a second copy of a training loop, because unlearning_trainer.train_unlearning is hash-bound and cannot grow a mode. --control trains the incumbent Stage-1 objective THREE times in ONE process under ONE pinned PYTHONHASHSEED: A through the frozen loop, A2 through the frozen loop again, B through the new loop with every group in a plain sft/gd mode and neither a cap nor an anchor.'
+  MISMATCH faithfulness_control.why_replacing_it_is_not_moving_the_goalposts: frozen=None now="The retired criterion was unsatisfiable by construction, so it tested the interpreter's hash seed rather than the two loops, and a gate that cannot pass says nothing when it fails. The replacement asks the question the original was written to ask -- do the two copies compute the same function? -- and asks it in the only way that has an answer, with the environment held still and the noise floor measured instead of assumed. The filed adapter is still loaded, compared and REPORTED beside the gate, so its gap stays visible; it is simply not what the gate reads. Nothing about the anchor, the eight numbers, the epsilon, the tie-break, the grid or the mechanisms moved: the control produced no candidate, no prediction, no retention number and no score, so there was no result for any of them to be fitted to. What changed is a fact about the apparatus. The failed control's directory was MOVED to outputs/superseded rather than deleted, so the adapter that demonstrated the defect is still on disk and inspectable."
+  MISMATCH hashes.protocol_paths.scripts/freeze_iter12_stage2.py: frozen='b9e992fd4f7045396c91d7d33bc27d16dba9b6e1070102f22bf4c34f7129b795' now='089e0f441ca682bec8c3361b88240bb3ca5a1bb02280812c6faa632348d1cd40'
+  MISMATCH hashes.protocol_paths.scripts/train_iter12_stage2.py: frozen='67ca3cc083ec9b053effb8625c255a15e0ab042fcfe1f1cdb928f995a3955358' now='dd848ad469ef16467d3f8d91fae67f62bbfe4f716ced335378b511e14606e660'
+  MISMATCH hashes.protocol_paths.src/granunlearn/training/stage2_grid.py: frozen='cb929993d04ccb9a24accca21a3f7023a22de76ee09ed1ec255089753bc49e3f' now='d80275e4bbf7b4599f6fce07a5506898b9df41693d59611651d6739d5581cf98'
+2026-09-14T08:01:23+08:00 STOPPING: the Stage-2 freeze does not match the repository. A candidate
+2026-09-14T08:01:23+08:00           trained now could not be scored by the protocol it was trained
+2026-09-14T08:01:23+08:00           under, and once an adapter exists the freeze cannot be amended.
+2026-09-14T10:11:59+08:00 reclaiming a lock with no pid recorded, 600s old (> 60s grace)
+2026-09-14T10:11:59+08:00 chain lock claimed (pid 2709269), 2 lane(s) requested on cuda:0, PYTHONHASHSEED=0
+2026-09-14T10:11:59+08:00 pre: verifying all three freezes and the bytes Stage 2 reuses
+OK — the Stage-2 freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['reused_predictions_bound', 'reference_cache_bound'])
+  reused_predictions_bound: 3 match, 0 absent from this clone
+  reference_cache_bound: 2 match, 0 absent from this clone
+[2026-09-14 10:12:04] INFO     freeze_iter12_protocol — OK — the Iteration 12 protocol freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments'])
+OK — the Stage-1c route-stratification freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['predictions_bound', 'measurement_contract'])
+  predictions bound: 19 match, 0 absent from this clone
+  measurement contracts: 1 distinct over 19 sidecar(s); 0 parquet(s) without one
+2026-09-14T10:12:04+08:00 pre: OK — three freezes match, 7 row(s) to train
+2026-09-14T10:12:04+08:00 PRE_ONLY=1 — stopping before the control; nothing was trained and the
+2026-09-14T10:12:04+08:00             freeze is still amendable
+2026-09-14T10:13:52+08:00 reclaiming a lock with no pid recorded, 600s old (> 60s grace)
+2026-09-14T10:13:52+08:00 chain lock claimed (pid 2713793), 2 lane(s) requested on cuda:0, PYTHONHASHSEED=0
+2026-09-14T10:13:52+08:00 pre: verifying all three freezes and the bytes Stage 2 reuses
+OK — the Stage-2 freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['reused_predictions_bound', 'reference_cache_bound'])
+  reused_predictions_bound: 3 match, 0 absent from this clone
+  reference_cache_bound: 2 match, 0 absent from this clone
+[2026-09-14 10:13:57] INFO     freeze_iter12_protocol — OK — the Iteration 12 protocol freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments'])
+OK — the Stage-1c route-stratification freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['predictions_bound', 'measurement_contract'])
+  predictions bound: 19 match, 0 absent from this clone
+  measurement contracts: 1 distinct over 19 sidecar(s); 0 parquet(s) without one
+2026-09-14T10:13:58+08:00 pre: OK — three freezes match, 7 row(s) to train
+2026-09-14T10:13:58+08:00 PRE_ONLY=1 — stopping before the control; nothing was trained and the
+2026-09-14T10:13:58+08:00             freeze is still amendable
+2026-09-14T10:13:59+08:00 reclaiming: pid 2713975 exists but is not this chain (some_unrelated_process 25 )
+2026-09-14T10:13:59+08:00             — the number was recycled after a holder died
+2026-09-14T10:13:59+08:00 chain lock claimed (pid 2714171), 2 lane(s) requested on cuda:0, PYTHONHASHSEED=0
+2026-09-14T10:13:59+08:00 pre: verifying all three freezes and the bytes Stage 2 reuses
+OK — the Stage-2 freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['reused_predictions_bound', 'reference_cache_bound'])
+  reused_predictions_bound: 3 match, 0 absent from this clone
+  reference_cache_bound: 2 match, 0 absent from this clone
+[2026-09-14 10:14:04] INFO     freeze_iter12_protocol — OK — the Iteration 12 protocol freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments'])
+OK — the Stage-1c route-stratification freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['predictions_bound', 'measurement_contract'])
+  predictions bound: 19 match, 0 absent from this clone
+  measurement contracts: 1 distinct over 19 sidecar(s); 0 parquet(s) without one
+2026-09-14T10:14:04+08:00 pre: OK — three freezes match, 7 row(s) to train
+2026-09-14T10:14:04+08:00 PRE_ONLY=1 — stopping before the control; nothing was trained and the
+2026-09-14T10:14:04+08:00             freeze is still amendable
+2026-09-14T10:14:05+08:00 reclaiming a stale lock (pid 4194305 is not running)
+2026-09-14T10:14:05+08:00 chain lock claimed (pid 2714692), 2 lane(s) requested on cuda:0, PYTHONHASHSEED=0
+2026-09-14T10:14:05+08:00 pre: verifying all three freezes and the bytes Stage 2 reuses
+OK — the Stage-2 freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['reused_predictions_bound', 'reference_cache_bound'])
+  reused_predictions_bound: 3 match, 0 absent from this clone
+  reference_cache_bound: 2 match, 0 absent from this clone
+[2026-09-14 10:14:11] INFO     freeze_iter12_protocol — OK — the Iteration 12 protocol freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments'])
+OK — the Stage-1c route-stratification freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['predictions_bound', 'measurement_contract'])
+  predictions bound: 19 match, 0 absent from this clone
+  measurement contracts: 1 distinct over 19 sidecar(s); 0 parquet(s) without one
+2026-09-14T10:14:11+08:00 pre: OK — three freezes match, 7 row(s) to train
+2026-09-14T10:14:11+08:00 PRE_ONLY=1 — stopping before the control; nothing was trained and the
+2026-09-14T10:14:11+08:00             freeze is still amendable
+2026-09-14T10:31:51+08:00 chain lock claimed (pid 2759685), 4 lane(s) requested on cuda:0, PYTHONHASHSEED=0
+2026-09-14T10:31:51+08:00 pre: verifying all three freezes and the bytes Stage 2 reuses
+OK — the Stage-2 freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['reused_predictions_bound', 'reference_cache_bound'])
+  reused_predictions_bound: 3 match, 0 absent from this clone
+  reference_cache_bound: 2 match, 0 absent from this clone
+[2026-09-14 10:31:56] INFO     freeze_iter12_protocol — OK — the Iteration 12 protocol freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments'])
+OK — the Stage-1c route-stratification freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['predictions_bound', 'measurement_contract'])
+  predictions bound: 19 match, 0 absent from this clone
+  measurement contracts: 1 distinct over 19 sidecar(s); 0 parquet(s) without one
+2026-09-14T10:31:56+08:00 pre: OK — three freezes match, 7 row(s) to train
+2026-09-14T10:31:56+08:00 PRE_ONLY=1 — stopping before the control; nothing was trained and the
+2026-09-14T10:31:56+08:00             freeze is still amendable
+2026-09-14T10:32:15+08:00 chain lock claimed (pid 2760795), 4 lane(s) requested on cuda:0, PYTHONHASHSEED=0
+2026-09-14T10:32:15+08:00 pre: verifying all three freezes and the bytes Stage 2 reuses
+OK — the Stage-2 freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['reused_predictions_bound', 'reference_cache_bound'])
+  reused_predictions_bound: 3 match, 0 absent from this clone
+  reference_cache_bound: 2 match, 0 absent from this clone
+[2026-09-14 10:32:19] INFO     freeze_iter12_protocol — OK — the Iteration 12 protocol freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments'])
+OK — the Stage-1c route-stratification freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['predictions_bound', 'measurement_contract'])
+  predictions bound: 19 match, 0 absent from this clone
+  measurement contracts: 1 distinct over 19 sidecar(s); 0 parquet(s) without one
+2026-09-14T10:32:19+08:00 pre: OK — three freezes match, 7 row(s) to train
+2026-09-14T10:32:19+08:00 ctrl: do the two loops compute the same function on the real model?
+2026-09-14T10:32:19+08:00       (A frozen, A2 frozen again as the measured noise floor, B new;
+2026-09-14T10:32:19+08:00        PYTHONHASHSEED=0, three runs in one process)
+2026-09-14T10:32:19+08:00       (this phase locks the freeze: no amendment is possible afterwards)
+Loading weights:   0%|          | 0/760 [00:00<?, ?it/s]Loading weights:   0%|          | 1/760 [00:00<03:10,  3.98it/s]Loading weights:   0%|          | 2/760 [00:00<03:18,  3.81it/s]Loading weights:   2%|▏         | 15/760 [00:00<00:22, 33.42it/s]Loading weights:   4%|▍         | 29/760 [00:00<00:12, 57.66it/s]Loading weights:   6%|▌         | 42/760 [00:00<00:09, 74.28it/s]Loading weights:   7%|▋         | 52/760 [00:01<00:09, 73.46it/s]Loading weights:   8%|▊         | 61/760 [00:01<00:09, 72.18it/s]Loading weights:   9%|▉         | 70/760 [00:01<00:09, 72.19it/s]Loading weights:  11%|█         | 80/760 [00:01<00:09, 74.34it/s]Loading weights:  12%|█▎        | 95/760 [00:01<00:07, 92.94it/s]Loading weights:  14%|█▍        | 105/760 [00:01<00:07, 89.93it/s]Loading weights:  16%|█▌        | 119/760 [00:01<00:06, 94.50it/s]Loading weights:  18%|█▊        | 134/760 [00:01<00:06, 103.90it/s]Loading weights:  19%|█▉        | 148/760 [00:01<00:05, 109.39it/s]Loading weights:  21%|██        | 160/760 [00:02<00:05, 102.60it/s]Loading weights:  23%|██▎       | 173/760 [00:02<00:05, 108.63it/s]Loading weights:  24%|██▍       | 185/760 [00:02<00:05, 111.12it/s]Loading weights:  26%|██▌       | 197/760 [00:02<00:04, 113.00it/s]Loading weights:  28%|██▊       | 209/760 [00:02<00:05, 96.14it/s] Loading weights:  30%|██▉       | 225/760 [00:02<00:04, 111.11it/s]Loading weights:  31%|███       | 237/760 [00:02<00:05, 91.47it/s] Loading weights:  33%|███▎      | 249/760 [00:02<00:05, 97.43it/s]Loading weights:  34%|███▍      | 260/760 [00:03<00:05, 83.55it/s]Loading weights:  37%|███▋      | 278/760 [00:03<00:04, 104.37it/s]Loading weights:  38%|███▊      | 292/760 [00:03<00:04, 109.31it/s]Loading weights:  40%|████      | 304/760 [00:03<00:04, 96.35it/s] Loading weights:  41%|████▏     | 315/760 [00:03<00:05, 88.98it/s]Loading weights:  44%|████▎     | 332/760 [00:03<00:04, 101.30it/s]Loading weights:  45%|████▌     | 345/760 [00:03<00:04, 102.57it/s]Loading weights:  47%|████▋     | 356/760 [00:04<00:04, 93.19it/s] Loading weights:  48%|████▊     | 366/760 [00:04<00:04, 80.31it/s]Loading weights:  50%|█████     | 383/760 [00:04<00:03, 99.11it/s]Loading weights:  52%|█████▏    | 397/760 [00:04<00:03, 107.30it/s]Loading weights:  54%|█████▍    | 409/760 [00:04<00:04, 86.38it/s] Loading weights:  55%|█████▌    | 419/760 [00:04<00:04, 73.34it/s]Loading weights:  63%|██████▎   | 476/760 [00:04<00:01, 174.79it/s]Loading weights:  72%|███████▏  | 548/760 [00:05<00:00, 297.83it/s]Loading weights:  83%|████████▎ | 628/760 [00:05<00:00, 419.40it/s]Loading weights:  95%|█████████▌| 723/760 [00:05<00:00, 553.19it/s]Loading weights: 100%|██████████| 760/760 [00:05<00:00, 141.87it/s]
+[2026-09-14 10:48:23] INFO     preservation_trainer — [B_new_loop_no_cap_no_anchor] continuing from MF adapter /scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MF/adapters
+trainable params: 29,097,984 || all params: 9,438,911,728 || trainable%: 0.3083
+[2026-09-14 10:52:10] INFO     preservation_trainer — [B_new_loop_no_cap_no_anchor] epoch 1/2 {'avg_loss_fine_target': 0.1203, 'avg_loss_target_level': 2.0612, 'avg_loss_retain': 0.0426, 'avg_objective': 0.5176}
+[2026-09-14 10:55:47] INFO     preservation_trainer — [B_new_loop_no_cap_no_anchor] epoch 2/2 {'avg_loss_fine_target': 0.909, 'avg_loss_target_level': 0.6036, 'avg_loss_retain': 0.1416, 'avg_objective': 0.1083}
+[2026-09-14 10:55:48] INFO     preservation_trainer — [B_new_loop_no_cap_no_anchor] saved adapters -> /scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_iter12_stage2/_control/control_loop_equivalence/B_new_loop_no_cap_no_anchor (92 steps, 444.2s)
+[2026-09-14 10:55:52] INFO     train_iter12_stage2 — CONTROL PASSED: the two loops agree bitwise (noise floor max 0.0005809729918837547)
+2026-09-14T10:55:54+08:00 GPU 0 released (success)
+2026-09-14T10:55:54+08:00 ctrl: OK — the two loops agree on real bytes, not just on the stub
+2026-09-14T10:55:54+08:00 train: planning 4 lane(s) over the Stage-2 grid
+2026-09-14T10:55:54+08:00 4 lane(s) to launch
+2026-09-14T10:55:55+08:00   # group sizes: {"fine_target": 90, "retain": 183, "target_level": 90}
+2026-09-14T10:55:55+08:00   # 13794 micro-batches over 7 row(s) in 4 lane(s)
+2026-09-14T10:55:55+08:00   launched a training lane (pid 2817173): B5_cap2.0_lam0.5_lr2e-05_ep8
+2026-09-14T10:55:55+08:00   launched a training lane (pid 2817179): B5_cap0.5_lam0.5_lr2e-05_ep5,B5_cap4.0_lam0.5_lr2e-05_ep5
+2026-09-14T10:55:55+08:00   launched a training lane (pid 2817187): B5_cap1.0_lam0.5_lr2e-05_ep5,B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5
+2026-09-14T10:55:55+08:00   launched a training lane (pid 2817196): B5_cap2.0_lam0.5_lr2e-05_ep5,B6_beta13.642_lam0.5_lr2e-05_ep5
+2026-09-14T10:55:55+08:00 train: waiting on 4 lane(s)
+2026-09-14T12:31:19+08:00 check: all seven adapters present
+2026-09-14T12:31:19+08:00 gen: one lane per candidate, under the inherited contract
+2026-09-14T12:31:19+08:00   launched a generation lane (pid 3103455): B5_cap0.5_lam0.5_lr2e-05_ep5
+2026-09-14T12:31:19+08:00   launched a generation lane (pid 3103461): B5_cap1.0_lam0.5_lr2e-05_ep5
+2026-09-14T12:31:19+08:00   launched a generation lane (pid 3103468): B5_cap2.0_lam0.5_lr2e-05_ep5
+2026-09-14T12:31:19+08:00   launched a generation lane (pid 3103477): B5_cap4.0_lam0.5_lr2e-05_ep5
+2026-09-14T12:31:19+08:00   launched a generation lane (pid 3103491): B5_cap2.0_lam0.5_lr2e-05_ep8
+2026-09-14T12:31:19+08:00   launched a generation lane (pid 3103506): B6_beta13.642_lam0.5_lr2e-05_ep5
+2026-09-14T12:31:19+08:00   launched a generation lane (pid 3103520): B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5
+2026-09-14T12:33:37+08:00 received SIGTERM — stopping 7 lane(s) before releasing the lock
+2026-09-14T12:33:41+08:00 SIGTERM: lanes stopped; releasing the lock and exiting 143
+2026-09-14T12:50:42+08:00 chain lock claimed (pid 3152471), 4 lane(s) requested on cuda:0, PYTHONHASHSEED=0
+2026-09-14T12:50:42+08:00 pre: verifying all three freezes and the bytes Stage 2 reuses
+OK — the Stage-2 freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['reused_predictions_bound', 'reference_cache_bound'])
+  reused_predictions_bound: 3 match, 0 absent from this clone
+  reference_cache_bound: 2 match, 0 absent from this clone
+[2026-09-14 12:50:48] INFO     freeze_iter12_protocol — OK — the Iteration 12 protocol freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments'])
+OK — the Stage-1c route-stratification freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['predictions_bound', 'measurement_contract'])
+  predictions bound: 19 match, 0 absent from this clone
+  measurement contracts: 1 distinct over 19 sidecar(s); 0 parquet(s) without one
+2026-09-14T12:50:48+08:00 pre: OK — three freezes match, 7 row(s) to train
+2026-09-14T12:50:48+08:00 ctrl: do the two loops compute the same function on the real model?
+2026-09-14T12:50:48+08:00       (A frozen, A2 frozen again as the measured noise floor, B new;
+2026-09-14T12:50:48+08:00        PYTHONHASHSEED=0, three runs in one process)
+2026-09-14T12:50:48+08:00       (this phase locks the freeze: no amendment is possible afterwards)
+2026-09-14T12:50:48+08:00 lane waiting for >=26000MiB free (poll 1s): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/train_iter12_stage2.py --control --device cuda:0
+2026-09-14T12:50:48+08:00 reclaiming a stale lock on GPU 0 (pid 3103468 is not running)
+2026-09-14T12:50:48+08:00 CLAIMED GPU 0 (35415MiB free, attempt 1/8): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/train_iter12_stage2.py --control --device cuda:0
+[2026-09-14 12:50:51] INFO     train_iter12_stage2 — control already passed (gap A->B max 0.0005031587788835168); pass --force to re-run
+2026-09-14T12:50:51+08:00 GPU 0 released (success)
+2026-09-14T12:50:51+08:00 ctrl: OK — the two loops agree on real bytes, not just on the stub
+2026-09-14T12:50:51+08:00 train: planning 4 lane(s) over the Stage-2 grid
+2026-09-14T12:50:51+08:00 0 lane(s) to launch
+2026-09-14T12:50:51+08:00   # group sizes: {"fine_target": 90, "retain": 183, "target_level": 90}
+2026-09-14T12:50:51+08:00   # 0 micro-batches over 0 row(s) in 0 lane(s)
+2026-09-14T12:50:51+08:00 train: waiting on 0 lane(s)
+2026-09-14T12:50:51+08:00 check: all seven adapters present
+2026-09-14T12:50:51+08:00 gen: one lane per candidate, under the inherited contract
+2026-09-14T12:50:52+08:00   launched a generation lane (pid 3153047): B5_cap0.5_lam0.5_lr2e-05_ep5
+2026-09-14T12:50:52+08:00   launched a generation lane (pid 3153053): B5_cap1.0_lam0.5_lr2e-05_ep5
+2026-09-14T12:50:52+08:00   launched a generation lane (pid 3153062): B5_cap2.0_lam0.5_lr2e-05_ep5
+2026-09-14T12:50:52+08:00   launched a generation lane (pid 3153076): B5_cap4.0_lam0.5_lr2e-05_ep5
+2026-09-14T12:50:52+08:00   launched a generation lane (pid 3153085): B5_cap2.0_lam0.5_lr2e-05_ep8
+2026-09-14T12:50:52+08:00   launched a generation lane (pid 3153096): B6_beta13.642_lam0.5_lr2e-05_ep5
+2026-09-14T12:50:52+08:00   launched a generation lane (pid 3153106): B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5
+2026-09-14T14:27:34+08:00 gen: all generation lanes finished
+2026-09-14T14:27:34+08:00 score: ONE unsharded run — gate the reused states, apply the MG-anchored
+2026-09-14T14:27:34+08:00        floor, report the B0-anchored one beside it, order the eligible by D_G
+2026-09-14T14:28:14+08:00 score: FAILED (exit 1)
+repair: proving the patch cannot reach the decision
+  8 decision-bearing call(s), none passed the patched field
+repair: reproducing the crash unpatched
+  TypeError: pooled_all_routes() missing 1 required positional argument: 'probe_entities'
+  the crashed run wrote or changed the report: False
+repair: running the frozen selector with probe_entities supplied (35 entities, read from data/reports/mllmu_iter12_retention_probe.json)
+[2026-09-14 14:27:52] INFO     select_iter12_stage2 — reused 3 state(s); 24 eight-number values reproduce Stage 1c exactly
+[2026-09-14 14:27:53] INFO     select_iter12_stage2 — MG train+val vector: {'filr': 0.142, 'tga': 0.4284, 'ancestor': 0.2519, 'retain_same': 0.531, 'retain_other': 0.5444, 'over': 0.0321, 'wrong': 0.2432}
+[2026-09-14 14:28:06] INFO     select_unlearning — [B5_cap0.5_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap0.5_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 14:28:06] INFO     select_iter12_stage2 — [B5_cap0.5_lam0.5_lr2e-05_ep5] fine_target NLL 0.7832 | frac_at_cap 0.8 | {"text.retain_same_entity.entity_macro": 0.4935, "text.retain_same_entity.row_micro": 0.5098, "text.retain_other_entity.entity_macro": 0.4638, "text.retain_other_entity.row_micro": 0.4211, "image.retain_same_entity_image.entity_macro": 0.4479, "image.retain_same_entity_image.row_micro": 0.451, "image.retain_other_entity_image.entity_macro": 0.4239, "image.retain_other_entity_image.row_micro": 0.3947}
+[2026-09-14 14:28:06] INFO     select_unlearning — [B5_cap1.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap1.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 14:28:07] INFO     select_iter12_stage2 — [B5_cap1.0_lam0.5_lr2e-05_ep5] fine_target NLL 1.1852 | frac_at_cap 0.6333 | {"text.retain_same_entity.entity_macro": 0.4816, "text.retain_same_entity.row_micro": 0.4975, "text.retain_other_entity.entity_macro": 0.4638, "text.retain_other_entity.row_micro": 0.4079, "image.retain_same_entity_image.entity_macro": 0.4108, "image.retain_same_entity_image.row_micro": 0.4216, "image.retain_other_entity_image.entity_macro": 0.3804, "image.retain_other_entity_image.row_micro": 0.3684}
+[2026-09-14 14:28:07] INFO     select_unlearning — [B5_cap2.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap2.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 14:28:08] INFO     select_iter12_stage2 — [B5_cap2.0_lam0.5_lr2e-05_ep5] fine_target NLL 1.8007 | frac_at_cap 0.4111 | {"text.retain_same_entity.entity_macro": 0.4891, "text.retain_same_entity.row_micro": 0.4926, "text.retain_other_entity.entity_macro": 0.4312, "text.retain_other_entity.row_micro": 0.3816, "image.retain_same_entity_image.entity_macro": 0.3436, "image.retain_same_entity_image.row_micro": 0.3505, "image.retain_other_entity_image.entity_macro": 0.337, "image.retain_other_entity_image.row_micro": 0.3289}
+[2026-09-14 14:28:08] INFO     select_unlearning — [B5_cap4.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap4.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 14:28:09] INFO     select_iter12_stage2 — [B5_cap4.0_lam0.5_lr2e-05_ep5] fine_target NLL 2.3548 | frac_at_cap 0.2667 | {"text.retain_same_entity.entity_macro": 0.468, "text.retain_same_entity.row_micro": 0.4853, "text.retain_other_entity.entity_macro": 0.4746, "text.retain_other_entity.row_micro": 0.4079, "image.retain_same_entity_image.entity_macro": 0.3653, "image.retain_same_entity_image.row_micro": 0.375, "image.retain_other_entity_image.entity_macro": 0.3696, "image.retain_other_entity_image.row_micro": 0.3684}
+[2026-09-14 14:28:09] INFO     select_unlearning — [B5_cap2.0_lam0.5_lr2e-05_ep8] reusing provenance-validated predictions predictions_tv_B5_cap2.0_lam0.5_lr2e-05_ep8.parquet (4518 rows)
+[2026-09-14 14:28:10] INFO     select_iter12_stage2 — [B5_cap2.0_lam0.5_lr2e-05_ep8] fine_target NLL 2.9924 | frac_at_cap 0.9111 | {"text.retain_same_entity.entity_macro": 0.4616, "text.retain_same_entity.row_micro": 0.4681, "text.retain_other_entity.entity_macro": 0.4638, "text.retain_other_entity.row_micro": 0.3816, "image.retain_same_entity_image.entity_macro": 0.3177, "image.retain_same_entity_image.row_micro": 0.326, "image.retain_other_entity_image.entity_macro": 0.2935, "image.retain_other_entity_image.row_micro": 0.3026}
+[2026-09-14 14:28:10] INFO     select_unlearning — [B6_beta13.642_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B6_beta13.642_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 14:28:11] INFO     select_iter12_stage2 — [B6_beta13.642_lam0.5_lr2e-05_ep5] fine_target NLL 0.6857 | frac_at_cap None | {"text.retain_same_entity.entity_macro": 0.543, "text.retain_same_entity.row_micro": 0.5466, "text.retain_other_entity.entity_macro": 0.5199, "text.retain_other_entity.row_micro": 0.5132, "image.retain_same_entity_image.entity_macro": 0.5043, "image.retain_same_entity_image.row_micro": 0.5098, "image.retain_other_entity_image.entity_macro": 0.4348, "image.retain_other_entity_image.row_micro": 0.4211}
+[2026-09-14 14:28:11] INFO     select_unlearning — [B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 14:28:11] INFO     select_iter12_stage2 — [B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5] fine_target NLL 0.6469 | frac_at_cap None | {"text.retain_same_entity.entity_macro": 0.5413, "text.retain_same_entity.row_micro": 0.5441, "text.retain_other_entity.entity_macro": 0.4982, "text.retain_other_entity.row_micro": 0.5, "image.retain_same_entity_image.entity_macro": 0.4985, "image.retain_same_entity_image.row_micro": 0.5049, "image.retain_other_entity_image.entity_macro": 0.4565, "image.retain_other_entity_image.row_micro": 0.4342}
+Traceback (most recent call last):
+  File "/scratch/wutiantong/GMUL/granularity-unlearning/scripts/repair_iter12_stage2_selection.py", line 656, in <module>
+    sys.exit(main())
+  File "/scratch/wutiantong/GMUL/granularity-unlearning/scripts/repair_iter12_stage2_selection.py", line 522, in main
+    sis2.main()
+  File "/scratch/wutiantong/GMUL/granularity-unlearning/scripts/select_iter12_stage2.py", line 630, in main
+    dst = ckpt_root / "selected" / report["candidates"][cid]["method"] \
+KeyError: 'MG'
+2026-09-14T19:37:08+08:00 chain lock claimed (pid 4038751), 4 lane(s) requested on cuda:0, PYTHONHASHSEED=0
+2026-09-14T19:37:08+08:00 pre: verifying all three freezes and the bytes Stage 2 reuses
+OK — the Stage-2 freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['reused_predictions_bound', 'reference_cache_bound'])
+  reused_predictions_bound: 3 match, 0 absent from this clone
+  reference_cache_bound: 2 match, 0 absent from this clone
+[2026-09-14 19:37:13] INFO     freeze_iter12_protocol — OK — the Iteration 12 protocol freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments'])
+OK — the Stage-1c route-stratification freeze still matches the repository (volatile fields excluded: ['frozen_at_utc', 'git_commit', 'git_dirty', 'amendments']; clone-dependent fields verified separately: ['predictions_bound', 'measurement_contract'])
+  predictions bound: 19 match, 0 absent from this clone
+  measurement contracts: 1 distinct over 19 sidecar(s); 0 parquet(s) without one
+2026-09-14T19:37:14+08:00 pre: OK — three freezes match, 7 row(s) to train
+2026-09-14T19:37:14+08:00 ctrl: do the two loops compute the same function on the real model?
+2026-09-14T19:37:14+08:00       (A frozen, A2 frozen again as the measured noise floor, B new;
+2026-09-14T19:37:14+08:00        PYTHONHASHSEED=0, three runs in one process)
+2026-09-14T19:37:14+08:00       (this phase locks the freeze: no amendment is possible afterwards)
+2026-09-14T19:37:14+08:00 lane waiting for >=26000MiB free (poll 1s): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/train_iter12_stage2.py --control --device cuda:0
+2026-09-14T19:37:15+08:00 CLAIMED GPU 0 (31332MiB free, attempt 1/8): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/train_iter12_stage2.py --control --device cuda:0
+[2026-09-14 19:37:17] INFO     train_iter12_stage2 — control already passed (gap A->B max 0.0005031587788835168); pass --force to re-run
+2026-09-14T19:37:17+08:00 GPU 0 released (success)
+2026-09-14T19:37:17+08:00 ctrl: OK — the two loops agree on real bytes, not just on the stub
+2026-09-14T19:37:17+08:00 train: planning 4 lane(s) over the Stage-2 grid
+2026-09-14T19:37:17+08:00 0 lane(s) to launch
+2026-09-14T19:37:17+08:00   # group sizes: {"fine_target": 90, "retain": 183, "target_level": 90}
+2026-09-14T19:37:17+08:00   # 0 micro-batches over 0 row(s) in 0 lane(s)
+2026-09-14T19:37:17+08:00 train: waiting on 0 lane(s)
+2026-09-14T19:37:18+08:00 check: all seven adapters present
+2026-09-14T19:37:18+08:00 gen: one lane per candidate, under the inherited contract
+2026-09-14T19:37:18+08:00   launched a generation lane (pid 4039173): B5_cap0.5_lam0.5_lr2e-05_ep5
+2026-09-14T19:37:18+08:00   launched a generation lane (pid 4039178): B5_cap1.0_lam0.5_lr2e-05_ep5
+2026-09-14T19:37:18+08:00   launched a generation lane (pid 4039187): B5_cap2.0_lam0.5_lr2e-05_ep5
+2026-09-14T19:37:18+08:00   launched a generation lane (pid 4039196): B5_cap4.0_lam0.5_lr2e-05_ep5
+2026-09-14T19:37:18+08:00   launched a generation lane (pid 4039213): B5_cap2.0_lam0.5_lr2e-05_ep8
+2026-09-14T19:37:18+08:00   launched a generation lane (pid 4039228): B6_beta13.642_lam0.5_lr2e-05_ep5
+2026-09-14T19:37:18+08:00   launched a generation lane (pid 4039236): B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5
+2026-09-14T19:39:50+08:00 gen: all generation lanes finished
+2026-09-14T19:39:50+08:00 score: ONE unsharded run — gate the reused states, apply the MG-anchored
+2026-09-14T19:39:50+08:00        floor, report the B0-anchored one beside it, order the eligible by D_G
+2026-09-14T19:40:26+08:00 score: FAILED (exit 1)
+repair: running the frozen selector with probe_entities supplied (35 entities, read from data/reports/mllmu_iter12_retention_probe.json) and MG kept out of the ranking
+[2026-09-14 19:40:08] INFO     select_iter12_stage2 — reused 3 state(s); 24 eight-number values reproduce Stage 1c exactly
+[2026-09-14 19:40:09] INFO     select_iter12_stage2 — MG train+val vector: {'filr': 0.142, 'tga': 0.4284, 'ancestor': 0.2519, 'retain_same': 0.531, 'retain_other': 0.5444, 'over': 0.0321, 'wrong': 0.2432}
+[2026-09-14 19:40:19] INFO     select_unlearning — [B5_cap0.5_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap0.5_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 19:40:19] INFO     select_iter12_stage2 — [B5_cap0.5_lam0.5_lr2e-05_ep5] fine_target NLL 0.7832 | frac_at_cap 0.8 | {"text.retain_same_entity.entity_macro": 0.4935, "text.retain_same_entity.row_micro": 0.5098, "text.retain_other_entity.entity_macro": 0.4638, "text.retain_other_entity.row_micro": 0.4211, "image.retain_same_entity_image.entity_macro": 0.4479, "image.retain_same_entity_image.row_micro": 0.451, "image.retain_other_entity_image.entity_macro": 0.4239, "image.retain_other_entity_image.row_micro": 0.3947}
+[2026-09-14 19:40:20] INFO     select_unlearning — [B5_cap1.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap1.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 19:40:20] INFO     select_iter12_stage2 — [B5_cap1.0_lam0.5_lr2e-05_ep5] fine_target NLL 1.1852 | frac_at_cap 0.6333 | {"text.retain_same_entity.entity_macro": 0.4816, "text.retain_same_entity.row_micro": 0.4975, "text.retain_other_entity.entity_macro": 0.4638, "text.retain_other_entity.row_micro": 0.4079, "image.retain_same_entity_image.entity_macro": 0.4108, "image.retain_same_entity_image.row_micro": 0.4216, "image.retain_other_entity_image.entity_macro": 0.3804, "image.retain_other_entity_image.row_micro": 0.3684}
+[2026-09-14 19:40:20] INFO     select_unlearning — [B5_cap2.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap2.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 19:40:21] INFO     select_iter12_stage2 — [B5_cap2.0_lam0.5_lr2e-05_ep5] fine_target NLL 1.8007 | frac_at_cap 0.4111 | {"text.retain_same_entity.entity_macro": 0.4891, "text.retain_same_entity.row_micro": 0.4926, "text.retain_other_entity.entity_macro": 0.4312, "text.retain_other_entity.row_micro": 0.3816, "image.retain_same_entity_image.entity_macro": 0.3436, "image.retain_same_entity_image.row_micro": 0.3505, "image.retain_other_entity_image.entity_macro": 0.337, "image.retain_other_entity_image.row_micro": 0.3289}
+[2026-09-14 19:40:21] INFO     select_unlearning — [B5_cap4.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap4.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 19:40:22] INFO     select_iter12_stage2 — [B5_cap4.0_lam0.5_lr2e-05_ep5] fine_target NLL 2.3548 | frac_at_cap 0.2667 | {"text.retain_same_entity.entity_macro": 0.468, "text.retain_same_entity.row_micro": 0.4853, "text.retain_other_entity.entity_macro": 0.4746, "text.retain_other_entity.row_micro": 0.4079, "image.retain_same_entity_image.entity_macro": 0.3653, "image.retain_same_entity_image.row_micro": 0.375, "image.retain_other_entity_image.entity_macro": 0.3696, "image.retain_other_entity_image.row_micro": 0.3684}
+[2026-09-14 19:40:22] INFO     select_unlearning — [B5_cap2.0_lam0.5_lr2e-05_ep8] reusing provenance-validated predictions predictions_tv_B5_cap2.0_lam0.5_lr2e-05_ep8.parquet (4518 rows)
+[2026-09-14 19:40:23] INFO     select_iter12_stage2 — [B5_cap2.0_lam0.5_lr2e-05_ep8] fine_target NLL 2.9924 | frac_at_cap 0.9111 | {"text.retain_same_entity.entity_macro": 0.4616, "text.retain_same_entity.row_micro": 0.4681, "text.retain_other_entity.entity_macro": 0.4638, "text.retain_other_entity.row_micro": 0.3816, "image.retain_same_entity_image.entity_macro": 0.3177, "image.retain_same_entity_image.row_micro": 0.326, "image.retain_other_entity_image.entity_macro": 0.2935, "image.retain_other_entity_image.row_micro": 0.3026}
+[2026-09-14 19:40:23] INFO     select_unlearning — [B6_beta13.642_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B6_beta13.642_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 19:40:23] INFO     select_iter12_stage2 — [B6_beta13.642_lam0.5_lr2e-05_ep5] fine_target NLL 0.6857 | frac_at_cap None | {"text.retain_same_entity.entity_macro": 0.543, "text.retain_same_entity.row_micro": 0.5466, "text.retain_other_entity.entity_macro": 0.5199, "text.retain_other_entity.row_micro": 0.5132, "image.retain_same_entity_image.entity_macro": 0.5043, "image.retain_same_entity_image.row_micro": 0.5098, "image.retain_other_entity_image.entity_macro": 0.4348, "image.retain_other_entity_image.row_micro": 0.4211}
+[2026-09-14 19:40:24] INFO     select_unlearning — [B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 19:40:24] INFO     select_iter12_stage2 — [B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5] fine_target NLL 0.6469 | frac_at_cap None | {"text.retain_same_entity.entity_macro": 0.5413, "text.retain_same_entity.row_micro": 0.5441, "text.retain_other_entity.entity_macro": 0.4982, "text.retain_other_entity.row_micro": 0.5, "image.retain_same_entity_image.entity_macro": 0.4985, "image.retain_same_entity_image.row_micro": 0.5049, "image.retain_other_entity_image.entity_macro": 0.4565, "image.retain_other_entity_image.row_micro": 0.4342}
+[2026-09-14 19:40:24] INFO     select_iter12_stage2 — eligible on the primary (MG-anchored) floor: 0/9
+[2026-09-14 19:40:24] INFO     select_iter12_stage2 — eligible on the reported B0-anchored floor: 1/9
+[2026-09-14 19:40:24] INFO     select_iter12_stage2 — selected None | tied_with [] | stage 3 opens: True (no candidate satisfied the primary retention floor)
+[2026-09-14 19:40:24] INFO     select_iter12_stage2 — Selection report -> /scratch/wutiantong/GMUL/granularity-unlearning/data/reports/mllmu_iter12_stage2_selection.json
+  10 call(s) served, all from scripts/select_iter12_stage2.py lines [550, 579]; 10 call(s) from the callee itself passed through untouched
+  build_report saw 10 row(s), scored 9, dropped ['MG']
+  selected: None; the anchor still anchors the floor: True
+Traceback (most recent call last):
+  File "/scratch/wutiantong/GMUL/granularity-unlearning/scripts/repair_iter12_stage2_selection.py", line 1116, in <module>
+    sys.exit(main())
+  File "/scratch/wutiantong/GMUL/granularity-unlearning/scripts/repair_iter12_stage2_selection.py", line 957, in main
+    "git_commit": fis2._git(REPO_ROOT).get("git_commit")
+AttributeError: 'NoneType' object has no attribute 'get'

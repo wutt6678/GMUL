@@ -60,6 +60,7 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
+import annotate_iter12_stage2_control as ann
 import freeze_iter12_stage2 as fis2
 import select_iter12_stage2 as sis2
 
@@ -1877,6 +1878,124 @@ def test_the_reading_refuses_to_silently_replace_a_filed_one():
     assert res.returncode != 0
     assert "REFUSING to overwrite" in (res.stdout + res.stderr)
     assert CONTROL_READING.read_bytes() == before
+
+
+# ── the hash-seed block, driven from a control that is not this one ──────
+#: Two orders that differ, and the three run labels the real control uses.  The
+#: labels are the real ones so a drift in ``runs`` is visible here too.
+_ORDER_A = ["q_proj", "o_proj", "gate_proj", "up_proj", "down_proj", "k_proj",
+            "v_proj"]
+_ORDER_B = ["o_proj", "q_proj", "gate_proj", "up_proj", "down_proj", "k_proj",
+            "v_proj"]
+_RUN_LABELS = ["A_frozen_loop", "A2_frozen_loop_again",
+               "B_new_loop_no_cap_no_anchor"]
+
+
+def _synthetic_control(tmp_path: Path, orders: dict, filed_order: list) -> Path:
+    """A control directory holding exactly what ``ann.build`` reads, no more.
+
+    Built from scratch rather than copied out of ``data/checkpoints/``, so these
+    tests run in a clone where that gitignored directory does not exist.  The
+    alternative -- skipping, like the tests above -- would leave the invariant
+    below unchecked in precisely the environment where the committed reading is
+    the only evidence anyone has.
+
+    ``filed_order`` is the Stage-1 adapter's order, which is what the second
+    field compares the shared order against.
+    """
+    root = sg.control_dir(tmp_path) / "control_loop_equivalence"
+    root.mkdir(parents=True)
+    for label, order in orders.items():
+        adapters = root / label / "adapters"
+        adapters.mkdir(parents=True)
+        (adapters / "adapter_config.json").write_text(
+            json.dumps({"target_modules": order}))
+    filed = (sg.stage1_ckpt_root(tmp_path) / "B0" / "adapters")
+    filed.mkdir(parents=True)
+    (filed / "adapter_config.json").write_text(
+        json.dumps({"target_modules": filed_order}))
+    (root / "CONTROL.json").write_text(json.dumps({
+        "control": "synthetic, for the tests that drive build() directly",
+        "gate_passed": True,
+        "python_hash_seed": "0",
+        "epochs": 1,
+        "runs": list(orders),
+        "detail": "synthetic",
+        "reproduces_the_objective_of": "B0",
+        "gate": {
+            "required": "synthetic",
+            "gap_frozen_vs_new": {"max_abs_gap": 1e-03, "mean_abs_gap": 1e-04,
+                                  "num_tensors": 7},
+        },
+        "noise_floor_frozen_loop_vs_itself": {"max_abs_gap": 2e-03,
+                                              "mean_abs_gap": 2e-04},
+        "filed_stage1_adapter_reported_not_gated": {"gap": {"max_abs_gap": 4e-02}},
+    }))
+    return tmp_path
+
+
+def _hash_seed_block(repo_root: Path) -> dict:
+    return ann.build(repo_root)["the_hash_seed_pinning_did_what_it_claimed"]
+
+
+def test_one_shared_order_is_false_when_the_runs_disagree(tmp_path):
+    """The field must go False on a control whose runs did NOT share an order.
+
+    The filed reading says ``all_runs_share_one_order: true``, and the test that
+    compares the rebuilt document against it cannot see a mutation of that
+    comparison, because ``len(distinct) >= 1`` and ``len(distinct) == 1`` agree
+    whenever there is exactly one distinct order -- which is what this control
+    has.  Only a control with two orders separates them, so without this test
+    the claim that makes the three runs comparable at all is unpinned, and a
+    mutation of it survives every other check in the suite.
+    """
+    repo = _synthetic_control(
+        tmp_path, dict(zip(_RUN_LABELS, [_ORDER_A, _ORDER_B, _ORDER_A])),
+        filed_order=_ORDER_A)
+    d = _hash_seed_block(repo)
+    assert d["all_runs_share_one_order"] is False
+    #: and the second field, which requires one shared order before it can ask
+    #: whether that order is the filed one
+    assert d["the_shared_order_is_also_the_filed_order"] is False
+    assert list(d["target_modules_order_by_run"].values()) == [
+        _ORDER_A, _ORDER_B, _ORDER_A]
+
+
+def test_one_shared_order_is_true_when_the_runs_agree(tmp_path):
+    """The other direction, so the field is pinned and not merely falsifiable.
+
+    A test that only checked the disagreeing control would also pass against an
+    annotator that reported ``False`` unconditionally.
+    """
+    repo = _synthetic_control(
+        tmp_path, {label: _ORDER_A for label in _RUN_LABELS},
+        filed_order=_ORDER_A)
+    d = _hash_seed_block(repo)
+    assert d["all_runs_share_one_order"] is True
+    assert d["the_shared_order_is_also_the_filed_order"] is True
+
+
+def test_a_shared_order_that_is_not_the_filed_one_is_reported_as_such(tmp_path):
+    """The shape the REAL control has, and the finding the retirement rests on.
+
+    One order across all three runs, and that order is not the filed adapter's.
+    Reported as two independent fields rather than one, because collapsing them
+    would make the retired byte-reproduction criterion look like a pinning
+    failure instead of what it was: an unsatisfiable target.
+    """
+    repo = _synthetic_control(
+        tmp_path, {label: _ORDER_A for label in _RUN_LABELS},
+        filed_order=_ORDER_B)
+    d = _hash_seed_block(repo)
+    assert d["all_runs_share_one_order"] is True
+    assert d["the_shared_order_is_also_the_filed_order"] is False
+    filed = control_reading()["the_hash_seed_pinning_did_what_it_claimed"]
+    assert (d["all_runs_share_one_order"],
+            d["the_shared_order_is_also_the_filed_order"]) == (
+        filed["all_runs_share_one_order"],
+        filed["the_shared_order_is_also_the_filed_order"]), (
+        "the synthetic control no longer has the shape of the filed one, so "
+        "this test is no longer pinning the case that actually occurred")
 
 
 def test_the_freeze_still_refuses_once_an_adapter_exists(tmp_path, monkeypatch):

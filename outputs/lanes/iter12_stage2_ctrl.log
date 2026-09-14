@@ -1,0 +1,4 @@
+2026-09-14T19:37:14+08:00 lane waiting for >=26000MiB free (poll 1s): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/train_iter12_stage2.py --control --device cuda:0
+2026-09-14T19:37:15+08:00 CLAIMED GPU 0 (31332MiB free, attempt 1/8): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/train_iter12_stage2.py --control --device cuda:0
+[2026-09-14 19:37:17] INFO     train_iter12_stage2 — control already passed (gap A->B max 0.0005031587788835168); pass --force to re-run
+2026-09-14T19:37:17+08:00 GPU 0 released (success)

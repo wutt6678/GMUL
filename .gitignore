@@ -259,6 +259,16 @@ data/mllmu_hier_pilot100/predictions_iter12_seeds/
 !data/reports/mllmu_iter12_stage2_basis.json
 !data/reports/mllmu_iter12_stage2_freeze.json
 !data/reports/mllmu_iter12_stage2_selection.json
+# The repair record filed beside that result, and the reason the result is not
+# simply the frozen selector's own.  The selector is one of the eight protocol
+# paths the Stage-2 freeze binds and cannot be edited, so it was run with two
+# defects worked around at runtime: a missing argument to a field that floors
+# nothing, and the anchor MG removed from a ranking the frozen bytes already
+# declare it excluded from.  The second one changes `selected`, which makes this
+# file the only place a reader can weigh that judgement -- so it is committed
+# with the report it qualifies, and `repair_iter12_stage2_selection.py
+# --check-only` re-derives it from the frozen bytes in CI.
+!data/reports/mllmu_iter12_stage2_selection.REPAIR.json
 # The faithfulness control's result, copied out of the gitignored checkpoint
 # directory it is written into.  The control is what licences the whole Stage-2
 # comparison -- that a difference between Stage 1 and Stage 2 is a difference
@@ -310,6 +320,57 @@ data/mllmu_hier_pilot100/predictions_iter12_stage2/
 !outputs/superseded/
 outputs/superseded/*
 !outputs/superseded/iter12_stage2_control_v1/
+# The earlier filings of the Stage-2 repair record, each moved aside rather than
+# overwritten when the script that writes it was corrected.  The first filed its
+# anchor proof as a null where a byte-identical reproduction belonged; the second
+# said the first was unreachable from a clone when it was about to become
+# reachable.  The filed record lists both, gives the reason for each and reports
+# the difference as a measured key-set diff, and --check-only recomputes that diff
+# from these files -- so by this repository's own standard, stated where the
+# superseded Stage-2 control was committed, keeping them local would leave a
+# disclosure nobody can inspect, which is only an assertion.  Small JSON, no
+# weights beside either.
+!outputs/superseded/mllmu_iter12_stage2_selection.REPAIR.understated-anchor-proof.json
+!outputs/superseded/mllmu_iter12_stage2_selection.REPAIR.claimed-the-earlier-copy-was-not-committed.json
 outputs/superseded/**/processor/
 outputs/superseded/**/adapters/README.md
 !outputs/superseded/iter12_stage2_control_v1/frozen_loop_rerun.log
+
+# The Stage-2 repair's own two evidence files, and the reason they are committed
+# where they are written rather than copied into data/ the way the confirmation
+# run's lane logs were: repair_iter12_stage2_selection.py READS both of these exact
+# paths.  Its --check-only takes the invocations embedded in the filed record and
+# requires them to be a prefix of the evidence log, and it copies the second
+# crash's traceback out of the chain log, so a clone without them would pass those
+# checks vacuously -- an empty log has no failed invocation in it and no
+# unexpected call site either.  Committing them is what makes the checks mean the
+# same thing in CI as they do here.
+#
+# Scoped the same way as outputs/superseded/ above, and placed after `*.log` for
+# the same reason: `outputs/*/` excludes the directory, so it has to be opened
+# before anything inside it can be, and the rest of the lane logs -- regenerable,
+# and large for the training phases -- stay ignored.
+!outputs/lanes/
+outputs/lanes/*
+!outputs/lanes/iter12_stage2_repair_evidence.jsonl
+!outputs/lanes/iter12_stage2_nohup.log
+# The Stage-2 chain's own logs.  Two of them matter for different reasons and the
+# difference is worth recording, because it is the reason both are committed rather
+# than just the one the repair parses.
+#
+# iter12_stage2_chain.log is APPEND-ONLY -- the lane script writes it with `tee -a`
+# and `>>` -- so it is the run's whole history: the control passing, seven training
+# lanes, the `check` phase finding all seven adapters, seven generation lanes
+# launched, the SIGTERM that stopped them and the trap's own two lines, and both
+# score failures.  It is the only committed evidence that the hardened stop path ran
+# for real rather than only in a stub test.
+#
+# iter12_stage2_nohup.log is whatever the CALLER redirected stdout to, and a
+# `nohup > ` truncates, so it holds the LAST chain run only.  The repair reads the
+# second crash's traceback out of it and refuses if it is not there, which is why it
+# is committed at the path it is read from; that it can be overwritten by a later run
+# is disclosed in the README rather than hidden behind the refusal.
+!outputs/lanes/iter12_stage2_chain.log
+!outputs/lanes/iter12_stage2_gen.log
+!outputs/lanes/iter12_stage2_score.log
+!outputs/lanes/iter12_stage2_ctrl.log

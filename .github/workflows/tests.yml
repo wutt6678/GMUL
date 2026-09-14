@@ -19,17 +19,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Full history, because three tests re-derive claims from the
-          # repository's past rather than trusting the report that states them:
-          # the 11C audit's verifier-binding gap (was the unpinned verifier
-          # recoverable at the scoring commit?) and the 11C-5R seal (does the
-          # sealed hash really bind the defective module's bytes?).  Under the
-          # default fetch-depth: 1 those commits are absent, and git reports a
-          # missing COMMIT as a missing PATH — "exists on disk, but not in
-          # <sha>" — so the checks failed on a clone artifact that reads like a
-          # repository fact.  Skipping them instead would leave the audit's
-          # central recoverability claim verified nowhere but on one laptop.
-          # 94 commits, 24 MB: history is cheap here.
+          # Full history, because some tests re-derive claims from the repository's
+          # past rather than trusting the report that states them: the 11C audit's
+          # verifier-binding gap (was the unpinned verifier recoverable at the
+          # scoring commit?), the 11C-5R seal (does the sealed hash really bind the
+          # defective module's bytes?), and the Stage-2 repair's disclosure that
+          # neither the Stage-1c nor the Stage-2 freeze records a git commit --
+          # which reconstructs HEAD at each freeze's own timestamp and tests that
+          # candidate against every sha256 the freeze bound.  Under the default
+          # fetch-depth: 1 those commits are absent, and git reports a missing
+          # COMMIT as a missing PATH — "exists on disk, but not in <sha>" — so the
+          # checks failed on a clone artifact that reads like a repository fact.
+          # Skipping them instead would leave the audit's central recoverability
+          # claim verified nowhere but on one laptop.  History is cheap here.
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
@@ -171,9 +173,19 @@ jobs:
               # hash-binds both together with the eight paths that implement
               # them.  All three are required because the freeze's own
               # --check-only reads them -- a clone missing one would fail the
-              # protocol check rather than skip it.  The Stage-2 selection
-              # report is added when Stage 2 actually runs, for the reason
-              # given above.
+              # protocol check rather than skip it.
+              #
+              # Stage 2 has now run, so the selection report is here too, beside
+              # the repair record that qualifies it.  The selector is one of the
+              # eight paths the Stage-2 freeze binds and could not be edited, so
+              # it was run with two defects worked around at runtime; the second
+              # of those changes `selected`, which makes the REPAIR record the
+              # only place a reader can weigh that judgement.  Both are required
+              # because `repair_iter12_stage2_selection.py --check-only`
+              # re-derives the record from the frozen bytes and refuses without
+              # it -- the same shape as Stage 1b's report and its REPAIR record.
+              "data/reports/mllmu_iter12_stage2_selection.json",
+              "data/reports/mllmu_iter12_stage2_selection.REPAIR.json",
               "data/reports/mllmu_iter12_anchor_calibration.json",
               "data/reports/mllmu_iter12_stage2_basis.json",
               "data/reports/mllmu_iter12_stage2_freeze.json",
@@ -206,6 +218,40 @@ jobs:
               # failing on an assertion about a file that is not there.
               "outputs/superseded/iter12_stage2_control_v1/control_incumbent_byte_reproduction/CONTROL.json",
               "outputs/superseded/iter12_stage2_control_v1/frozen_loop_rerun/RERUN_COMPARISON.json",
+              # The earlier filings of the Stage-2 repair record, each superseded
+              # when the script that writes it was corrected.  The first filed its
+              # anchor proof as a null where a byte-identical reproduction belonged
+              # -- the selection report carries no timestamp, so a scoring re-run
+              # reproduces it byte-identically and a gate on "the sha256 moved" read
+              # that as a no-op.  The second said the first was unreachable from a
+              # clone when it was about to become reachable.  The filed record lists
+              # both with a measured key-set diff, and `--check-only` recomputes that
+              # diff from these files, so a disclosure that could not be inspected
+              # would be caught here rather than trusted.  Each needs its own scoped
+              # negation in .gitignore, for the reason given above.
+              "outputs/superseded/mllmu_iter12_stage2_selection.REPAIR.understated-anchor-proof.json",
+              "outputs/superseded/mllmu_iter12_stage2_selection.REPAIR.claimed-the-earlier-copy-was-not-committed.json",
+              # The Stage-2 repair's two evidence files, required at the paths the
+              # repair reads rather than copied into data/, because --check-only
+              # requires the invocations embedded in the filed record to be a prefix
+              # of this log and lifts the second crash's traceback out of it.  A
+              # clone without them would pass those checks vacuously: an empty log
+              # holds no failed invocation and no unexpected call site either.  Not
+              # json.loads'd by the loop above -- neither ends in .json -- so they
+              # are checked for existence only.
+              "outputs/lanes/iter12_stage2_repair_evidence.jsonl",
+              "outputs/lanes/iter12_stage2_nohup.log",
+              # The Stage-2 chain's own logs.  iter12_stage2_chain.log is the one
+              # that keeps history -- the lane script appends to it with `tee -a`
+              # and `>>` -- so it is the only committed evidence that the hardened
+              # SIGTERM stop path ran for real rather than only against a stub, and
+              # it is where the generation phase's two timestamps come from.  The
+              # other three are the per-phase logs it tails from.  None is
+              # json.loads'd by the loop above.
+              "outputs/lanes/iter12_stage2_chain.log",
+              "outputs/lanes/iter12_stage2_gen.log",
+              "outputs/lanes/iter12_stage2_score.log",
+              "outputs/lanes/iter12_stage2_ctrl.log",
           ]
           missing = [p for p in required if not Path(p).exists()]
           if missing:

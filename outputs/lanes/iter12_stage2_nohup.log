@@ -1,0 +1,127 @@
+2026-09-14T07:10:15+08:00 chain lock claimed (pid 2313840), 2 lane(s) requested on cuda:0
+2026-09-14T07:10:15+08:00 pre: verifying all three freezes and the bytes Stage 2 reuses
+2026-09-14T07:10:21+08:00 pre: OK — three freezes match, 7 row(s) to train
+2026-09-14T07:10:21+08:00 ctrl: does the new loop reproduce the incumbent Stage-1 adapter byte for byte?
+2026-09-14T07:10:21+08:00       (this phase locks the freeze: no amendment is possible afterwards)
+Terminated
+2026-09-14T12:50:42+08:00 chain lock claimed (pid 3152471), 4 lane(s) requested on cuda:0, PYTHONHASHSEED=0
+2026-09-14T12:50:42+08:00 pre: verifying all three freezes and the bytes Stage 2 reuses
+2026-09-14T12:50:48+08:00 pre: OK — three freezes match, 7 row(s) to train
+2026-09-14T12:50:48+08:00 ctrl: do the two loops compute the same function on the real model?
+2026-09-14T12:50:48+08:00       (A frozen, A2 frozen again as the measured noise floor, B new;
+2026-09-14T12:50:48+08:00        PYTHONHASHSEED=0, three runs in one process)
+2026-09-14T12:50:48+08:00       (this phase locks the freeze: no amendment is possible afterwards)
+2026-09-14T12:50:48+08:00 lane waiting for >=26000MiB free (poll 1s): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/train_iter12_stage2.py --control --device cuda:0
+2026-09-14T12:50:48+08:00 reclaiming a stale lock on GPU 0 (pid 3103468 is not running)
+2026-09-14T12:50:48+08:00 CLAIMED GPU 0 (35415MiB free, attempt 1/8): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/train_iter12_stage2.py --control --device cuda:0
+[2026-09-14 12:50:51] INFO     train_iter12_stage2 — control already passed (gap A->B max 0.0005031587788835168); pass --force to re-run
+2026-09-14T12:50:51+08:00 GPU 0 released (success)
+2026-09-14T12:50:51+08:00 ctrl: OK — the two loops agree on real bytes, not just on the stub
+2026-09-14T12:50:51+08:00 train: planning 4 lane(s) over the Stage-2 grid
+2026-09-14T12:50:51+08:00 0 lane(s) to launch
+2026-09-14T12:50:51+08:00   # group sizes: {"fine_target": 90, "retain": 183, "target_level": 90}
+2026-09-14T12:50:51+08:00   # 0 micro-batches over 0 row(s) in 0 lane(s)
+2026-09-14T12:50:51+08:00 train: waiting on 0 lane(s)
+2026-09-14T12:50:51+08:00 check: all seven adapters present
+2026-09-14T12:50:51+08:00 gen: one lane per candidate, under the inherited contract
+2026-09-14T12:50:52+08:00   launched a generation lane (pid 3153047): B5_cap0.5_lam0.5_lr2e-05_ep5
+2026-09-14T12:50:52+08:00   launched a generation lane (pid 3153053): B5_cap1.0_lam0.5_lr2e-05_ep5
+2026-09-14T12:50:52+08:00   launched a generation lane (pid 3153062): B5_cap2.0_lam0.5_lr2e-05_ep5
+2026-09-14T12:50:52+08:00   launched a generation lane (pid 3153076): B5_cap4.0_lam0.5_lr2e-05_ep5
+2026-09-14T12:50:52+08:00   launched a generation lane (pid 3153085): B5_cap2.0_lam0.5_lr2e-05_ep8
+2026-09-14T12:50:52+08:00   launched a generation lane (pid 3153096): B6_beta13.642_lam0.5_lr2e-05_ep5
+2026-09-14T12:50:52+08:00   launched a generation lane (pid 3153106): B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5
+2026-09-14T14:27:34+08:00 gen: all generation lanes finished
+2026-09-14T14:27:34+08:00 score: ONE unsharded run — gate the reused states, apply the MG-anchored
+2026-09-14T14:27:34+08:00        floor, report the B0-anchored one beside it, order the eligible by D_G
+2026-09-14T14:28:14+08:00 score: FAILED (exit 1)
+repair: proving the patch cannot reach the decision
+  8 decision-bearing call(s), none passed the patched field
+repair: reproducing the crash unpatched
+  TypeError: pooled_all_routes() missing 1 required positional argument: 'probe_entities'
+  the crashed run wrote or changed the report: False
+repair: running the frozen selector with probe_entities supplied (35 entities, read from data/reports/mllmu_iter12_retention_probe.json)
+[2026-09-14 14:27:52] INFO     select_iter12_stage2 — reused 3 state(s); 24 eight-number values reproduce Stage 1c exactly
+[2026-09-14 14:27:53] INFO     select_iter12_stage2 — MG train+val vector: {'filr': 0.142, 'tga': 0.4284, 'ancestor': 0.2519, 'retain_same': 0.531, 'retain_other': 0.5444, 'over': 0.0321, 'wrong': 0.2432}
+[2026-09-14 14:28:06] INFO     select_unlearning — [B5_cap0.5_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap0.5_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 14:28:06] INFO     select_iter12_stage2 — [B5_cap0.5_lam0.5_lr2e-05_ep5] fine_target NLL 0.7832 | frac_at_cap 0.8 | {"text.retain_same_entity.entity_macro": 0.4935, "text.retain_same_entity.row_micro": 0.5098, "text.retain_other_entity.entity_macro": 0.4638, "text.retain_other_entity.row_micro": 0.4211, "image.retain_same_entity_image.entity_macro": 0.4479, "image.retain_same_entity_image.row_micro": 0.451, "image.retain_other_entity_image.entity_macro": 0.4239, "image.retain_other_entity_image.row_micro": 0.3947}
+[2026-09-14 14:28:06] INFO     select_unlearning — [B5_cap1.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap1.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 14:28:07] INFO     select_iter12_stage2 — [B5_cap1.0_lam0.5_lr2e-05_ep5] fine_target NLL 1.1852 | frac_at_cap 0.6333 | {"text.retain_same_entity.entity_macro": 0.4816, "text.retain_same_entity.row_micro": 0.4975, "text.retain_other_entity.entity_macro": 0.4638, "text.retain_other_entity.row_micro": 0.4079, "image.retain_same_entity_image.entity_macro": 0.4108, "image.retain_same_entity_image.row_micro": 0.4216, "image.retain_other_entity_image.entity_macro": 0.3804, "image.retain_other_entity_image.row_micro": 0.3684}
+[2026-09-14 14:28:07] INFO     select_unlearning — [B5_cap2.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap2.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 14:28:08] INFO     select_iter12_stage2 — [B5_cap2.0_lam0.5_lr2e-05_ep5] fine_target NLL 1.8007 | frac_at_cap 0.4111 | {"text.retain_same_entity.entity_macro": 0.4891, "text.retain_same_entity.row_micro": 0.4926, "text.retain_other_entity.entity_macro": 0.4312, "text.retain_other_entity.row_micro": 0.3816, "image.retain_same_entity_image.entity_macro": 0.3436, "image.retain_same_entity_image.row_micro": 0.3505, "image.retain_other_entity_image.entity_macro": 0.337, "image.retain_other_entity_image.row_micro": 0.3289}
+[2026-09-14 14:28:08] INFO     select_unlearning — [B5_cap4.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap4.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 14:28:09] INFO     select_iter12_stage2 — [B5_cap4.0_lam0.5_lr2e-05_ep5] fine_target NLL 2.3548 | frac_at_cap 0.2667 | {"text.retain_same_entity.entity_macro": 0.468, "text.retain_same_entity.row_micro": 0.4853, "text.retain_other_entity.entity_macro": 0.4746, "text.retain_other_entity.row_micro": 0.4079, "image.retain_same_entity_image.entity_macro": 0.3653, "image.retain_same_entity_image.row_micro": 0.375, "image.retain_other_entity_image.entity_macro": 0.3696, "image.retain_other_entity_image.row_micro": 0.3684}
+[2026-09-14 14:28:09] INFO     select_unlearning — [B5_cap2.0_lam0.5_lr2e-05_ep8] reusing provenance-validated predictions predictions_tv_B5_cap2.0_lam0.5_lr2e-05_ep8.parquet (4518 rows)
+[2026-09-14 14:28:10] INFO     select_iter12_stage2 — [B5_cap2.0_lam0.5_lr2e-05_ep8] fine_target NLL 2.9924 | frac_at_cap 0.9111 | {"text.retain_same_entity.entity_macro": 0.4616, "text.retain_same_entity.row_micro": 0.4681, "text.retain_other_entity.entity_macro": 0.4638, "text.retain_other_entity.row_micro": 0.3816, "image.retain_same_entity_image.entity_macro": 0.3177, "image.retain_same_entity_image.row_micro": 0.326, "image.retain_other_entity_image.entity_macro": 0.2935, "image.retain_other_entity_image.row_micro": 0.3026}
+[2026-09-14 14:28:10] INFO     select_unlearning — [B6_beta13.642_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B6_beta13.642_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 14:28:11] INFO     select_iter12_stage2 — [B6_beta13.642_lam0.5_lr2e-05_ep5] fine_target NLL 0.6857 | frac_at_cap None | {"text.retain_same_entity.entity_macro": 0.543, "text.retain_same_entity.row_micro": 0.5466, "text.retain_other_entity.entity_macro": 0.5199, "text.retain_other_entity.row_micro": 0.5132, "image.retain_same_entity_image.entity_macro": 0.5043, "image.retain_same_entity_image.row_micro": 0.5098, "image.retain_other_entity_image.entity_macro": 0.4348, "image.retain_other_entity_image.row_micro": 0.4211}
+[2026-09-14 14:28:11] INFO     select_unlearning — [B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 14:28:11] INFO     select_iter12_stage2 — [B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5] fine_target NLL 0.6469 | frac_at_cap None | {"text.retain_same_entity.entity_macro": 0.5413, "text.retain_same_entity.row_micro": 0.5441, "text.retain_other_entity.entity_macro": 0.4982, "text.retain_other_entity.row_micro": 0.5, "image.retain_same_entity_image.entity_macro": 0.4985, "image.retain_same_entity_image.row_micro": 0.5049, "image.retain_other_entity_image.entity_macro": 0.4565, "image.retain_other_entity_image.row_micro": 0.4342}
+Traceback (most recent call last):
+  File "/scratch/wutiantong/GMUL/granularity-unlearning/scripts/repair_iter12_stage2_selection.py", line 656, in <module>
+    sys.exit(main())
+  File "/scratch/wutiantong/GMUL/granularity-unlearning/scripts/repair_iter12_stage2_selection.py", line 522, in main
+    sis2.main()
+  File "/scratch/wutiantong/GMUL/granularity-unlearning/scripts/select_iter12_stage2.py", line 630, in main
+    dst = ckpt_root / "selected" / report["candidates"][cid]["method"] \
+KeyError: 'MG'
+2026-09-14T19:37:08+08:00 chain lock claimed (pid 4038751), 4 lane(s) requested on cuda:0, PYTHONHASHSEED=0
+2026-09-14T19:37:08+08:00 pre: verifying all three freezes and the bytes Stage 2 reuses
+2026-09-14T19:37:14+08:00 pre: OK — three freezes match, 7 row(s) to train
+2026-09-14T19:37:14+08:00 ctrl: do the two loops compute the same function on the real model?
+2026-09-14T19:37:14+08:00       (A frozen, A2 frozen again as the measured noise floor, B new;
+2026-09-14T19:37:14+08:00        PYTHONHASHSEED=0, three runs in one process)
+2026-09-14T19:37:14+08:00       (this phase locks the freeze: no amendment is possible afterwards)
+2026-09-14T19:37:14+08:00 lane waiting for >=26000MiB free (poll 1s): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/train_iter12_stage2.py --control --device cuda:0
+2026-09-14T19:37:15+08:00 CLAIMED GPU 0 (31332MiB free, attempt 1/8): /scratch/wutiantong/miniconda3/envs/gmul/bin/python scripts/train_iter12_stage2.py --control --device cuda:0
+[2026-09-14 19:37:17] INFO     train_iter12_stage2 — control already passed (gap A->B max 0.0005031587788835168); pass --force to re-run
+2026-09-14T19:37:17+08:00 GPU 0 released (success)
+2026-09-14T19:37:17+08:00 ctrl: OK — the two loops agree on real bytes, not just on the stub
+2026-09-14T19:37:17+08:00 train: planning 4 lane(s) over the Stage-2 grid
+2026-09-14T19:37:17+08:00 0 lane(s) to launch
+2026-09-14T19:37:17+08:00   # group sizes: {"fine_target": 90, "retain": 183, "target_level": 90}
+2026-09-14T19:37:17+08:00   # 0 micro-batches over 0 row(s) in 0 lane(s)
+2026-09-14T19:37:17+08:00 train: waiting on 0 lane(s)
+2026-09-14T19:37:18+08:00 check: all seven adapters present
+2026-09-14T19:37:18+08:00 gen: one lane per candidate, under the inherited contract
+2026-09-14T19:37:18+08:00   launched a generation lane (pid 4039173): B5_cap0.5_lam0.5_lr2e-05_ep5
+2026-09-14T19:37:18+08:00   launched a generation lane (pid 4039178): B5_cap1.0_lam0.5_lr2e-05_ep5
+2026-09-14T19:37:18+08:00   launched a generation lane (pid 4039187): B5_cap2.0_lam0.5_lr2e-05_ep5
+2026-09-14T19:37:18+08:00   launched a generation lane (pid 4039196): B5_cap4.0_lam0.5_lr2e-05_ep5
+2026-09-14T19:37:18+08:00   launched a generation lane (pid 4039213): B5_cap2.0_lam0.5_lr2e-05_ep8
+2026-09-14T19:37:18+08:00   launched a generation lane (pid 4039228): B6_beta13.642_lam0.5_lr2e-05_ep5
+2026-09-14T19:37:18+08:00   launched a generation lane (pid 4039236): B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5
+2026-09-14T19:39:50+08:00 gen: all generation lanes finished
+2026-09-14T19:39:50+08:00 score: ONE unsharded run — gate the reused states, apply the MG-anchored
+2026-09-14T19:39:50+08:00        floor, report the B0-anchored one beside it, order the eligible by D_G
+2026-09-14T19:40:26+08:00 score: FAILED (exit 1)
+repair: running the frozen selector with probe_entities supplied (35 entities, read from data/reports/mllmu_iter12_retention_probe.json) and MG kept out of the ranking
+[2026-09-14 19:40:08] INFO     select_iter12_stage2 — reused 3 state(s); 24 eight-number values reproduce Stage 1c exactly
+[2026-09-14 19:40:09] INFO     select_iter12_stage2 — MG train+val vector: {'filr': 0.142, 'tga': 0.4284, 'ancestor': 0.2519, 'retain_same': 0.531, 'retain_other': 0.5444, 'over': 0.0321, 'wrong': 0.2432}
+[2026-09-14 19:40:19] INFO     select_unlearning — [B5_cap0.5_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap0.5_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 19:40:19] INFO     select_iter12_stage2 — [B5_cap0.5_lam0.5_lr2e-05_ep5] fine_target NLL 0.7832 | frac_at_cap 0.8 | {"text.retain_same_entity.entity_macro": 0.4935, "text.retain_same_entity.row_micro": 0.5098, "text.retain_other_entity.entity_macro": 0.4638, "text.retain_other_entity.row_micro": 0.4211, "image.retain_same_entity_image.entity_macro": 0.4479, "image.retain_same_entity_image.row_micro": 0.451, "image.retain_other_entity_image.entity_macro": 0.4239, "image.retain_other_entity_image.row_micro": 0.3947}
+[2026-09-14 19:40:20] INFO     select_unlearning — [B5_cap1.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap1.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 19:40:20] INFO     select_iter12_stage2 — [B5_cap1.0_lam0.5_lr2e-05_ep5] fine_target NLL 1.1852 | frac_at_cap 0.6333 | {"text.retain_same_entity.entity_macro": 0.4816, "text.retain_same_entity.row_micro": 0.4975, "text.retain_other_entity.entity_macro": 0.4638, "text.retain_other_entity.row_micro": 0.4079, "image.retain_same_entity_image.entity_macro": 0.4108, "image.retain_same_entity_image.row_micro": 0.4216, "image.retain_other_entity_image.entity_macro": 0.3804, "image.retain_other_entity_image.row_micro": 0.3684}
+[2026-09-14 19:40:20] INFO     select_unlearning — [B5_cap2.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap2.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 19:40:21] INFO     select_iter12_stage2 — [B5_cap2.0_lam0.5_lr2e-05_ep5] fine_target NLL 1.8007 | frac_at_cap 0.4111 | {"text.retain_same_entity.entity_macro": 0.4891, "text.retain_same_entity.row_micro": 0.4926, "text.retain_other_entity.entity_macro": 0.4312, "text.retain_other_entity.row_micro": 0.3816, "image.retain_same_entity_image.entity_macro": 0.3436, "image.retain_same_entity_image.row_micro": 0.3505, "image.retain_other_entity_image.entity_macro": 0.337, "image.retain_other_entity_image.row_micro": 0.3289}
+[2026-09-14 19:40:21] INFO     select_unlearning — [B5_cap4.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B5_cap4.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 19:40:22] INFO     select_iter12_stage2 — [B5_cap4.0_lam0.5_lr2e-05_ep5] fine_target NLL 2.3548 | frac_at_cap 0.2667 | {"text.retain_same_entity.entity_macro": 0.468, "text.retain_same_entity.row_micro": 0.4853, "text.retain_other_entity.entity_macro": 0.4746, "text.retain_other_entity.row_micro": 0.4079, "image.retain_same_entity_image.entity_macro": 0.3653, "image.retain_same_entity_image.row_micro": 0.375, "image.retain_other_entity_image.entity_macro": 0.3696, "image.retain_other_entity_image.row_micro": 0.3684}
+[2026-09-14 19:40:22] INFO     select_unlearning — [B5_cap2.0_lam0.5_lr2e-05_ep8] reusing provenance-validated predictions predictions_tv_B5_cap2.0_lam0.5_lr2e-05_ep8.parquet (4518 rows)
+[2026-09-14 19:40:23] INFO     select_iter12_stage2 — [B5_cap2.0_lam0.5_lr2e-05_ep8] fine_target NLL 2.9924 | frac_at_cap 0.9111 | {"text.retain_same_entity.entity_macro": 0.4616, "text.retain_same_entity.row_micro": 0.4681, "text.retain_other_entity.entity_macro": 0.4638, "text.retain_other_entity.row_micro": 0.3816, "image.retain_same_entity_image.entity_macro": 0.3177, "image.retain_same_entity_image.row_micro": 0.326, "image.retain_other_entity_image.entity_macro": 0.2935, "image.retain_other_entity_image.row_micro": 0.3026}
+[2026-09-14 19:40:23] INFO     select_unlearning — [B6_beta13.642_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B6_beta13.642_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 19:40:23] INFO     select_iter12_stage2 — [B6_beta13.642_lam0.5_lr2e-05_ep5] fine_target NLL 0.6857 | frac_at_cap None | {"text.retain_same_entity.entity_macro": 0.543, "text.retain_same_entity.row_micro": 0.5466, "text.retain_other_entity.entity_macro": 0.5199, "text.retain_other_entity.row_micro": 0.5132, "image.retain_same_entity_image.entity_macro": 0.5043, "image.retain_same_entity_image.row_micro": 0.5098, "image.retain_other_entity_image.entity_macro": 0.4348, "image.retain_other_entity_image.row_micro": 0.4211}
+[2026-09-14 19:40:24] INFO     select_unlearning — [B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5] reusing provenance-validated predictions predictions_tv_B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5.parquet (4518 rows)
+[2026-09-14 19:40:24] INFO     select_iter12_stage2 — [B6R_beta13.642_w1.0_lam0.5_lr2e-05_ep5] fine_target NLL 0.6469 | frac_at_cap None | {"text.retain_same_entity.entity_macro": 0.5413, "text.retain_same_entity.row_micro": 0.5441, "text.retain_other_entity.entity_macro": 0.4982, "text.retain_other_entity.row_micro": 0.5, "image.retain_same_entity_image.entity_macro": 0.4985, "image.retain_same_entity_image.row_micro": 0.5049, "image.retain_other_entity_image.entity_macro": 0.4565, "image.retain_other_entity_image.row_micro": 0.4342}
+[2026-09-14 19:40:24] INFO     select_iter12_stage2 — eligible on the primary (MG-anchored) floor: 0/9
+[2026-09-14 19:40:24] INFO     select_iter12_stage2 — eligible on the reported B0-anchored floor: 1/9
+[2026-09-14 19:40:24] INFO     select_iter12_stage2 — selected None | tied_with [] | stage 3 opens: True (no candidate satisfied the primary retention floor)
+[2026-09-14 19:40:24] INFO     select_iter12_stage2 — Selection report -> /scratch/wutiantong/GMUL/granularity-unlearning/data/reports/mllmu_iter12_stage2_selection.json
+  10 call(s) served, all from scripts/select_iter12_stage2.py lines [550, 579]; 10 call(s) from the callee itself passed through untouched
+  build_report saw 10 row(s), scored 9, dropped ['MG']
+  selected: None; the anchor still anchors the floor: True
+Traceback (most recent call last):
+  File "/scratch/wutiantong/GMUL/granularity-unlearning/scripts/repair_iter12_stage2_selection.py", line 1116, in <module>
+    sys.exit(main())
+  File "/scratch/wutiantong/GMUL/granularity-unlearning/scripts/repair_iter12_stage2_selection.py", line 957, in main
+    "git_commit": fis2._git(REPO_ROOT).get("git_commit")
+AttributeError: 'NoneType' object has no attribute 'get'

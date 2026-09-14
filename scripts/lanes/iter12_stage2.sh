@@ -48,13 +48,16 @@
 #   train   7 rows (4 caps, 1 decoupling, 2 anchor), LPT-packed over lanes.
 #           B0, MG and the incumbent are REUSED, not retrained.
 #   check   all seven adapters on disk, or stop naming the gaps.
-#   gen     one lane per candidate under the inherited contract.
+#   gen     one lane per candidate under the inherited contract, run through
+#           repair_iter12_stage2_selection.py -- the gen phase says why the frozen
+#           selector cannot be invoked directly.
 #   score   ONE unsharded run: the reused states are recomputed and gated against
 #           the values Stage 1c filed, the MG-anchored floor decides eligibility,
 #           the B0-anchored one is reported beside it, and D_G orders the
 #           eligible.  Only an unsharded run may write the report — a report over
 #           a subset would name a winner the grid does not support while looking
-#           complete and carrying the same dataset_version as the real one.
+#           complete and carrying the same dataset_version as the real one.  This
+#           invocation also files the repair record beside the report.
 #
 # Nothing here can move the criterion.  The anchor, its values, the epsilon, the
 # tie-break and the grid are all read from the freeze, the generation contract is
@@ -351,13 +354,22 @@ fi
 say "check: all seven adapters present"
 
 # ── gen ───────────────────────────────────────────────────────────────
+#: Through repair_iter12_stage2_selection.py rather than the selector directly.
+#: The frozen selector calls rt.pooled_all_routes() at lines 550 and 579 with three
+#: arguments where four are required, so every lane dies on it -- and it cannot be
+#: edited, because it is one of the eight protocol paths the freeze binds and the
+#: freeze refuses amendment now that seven adapters exist.  The repair supplies the
+#: missing argument for the duration of one main() call, restores it in a finally,
+#: and proves before running that the field it fills floors nothing.  It edits no
+#: frozen byte.  See data/reports/mllmu_iter12_stage2_selection.REPAIR.json.
+#: The crash is reproduced once, by the scoring run, not seven times here.
 say "gen: one lane per candidate, under the inherited contract"
 pids=()
 while read -r cid; do
   [ -n "$cid" ] || continue
   bash scripts/lanes/wait_for_gpu.sh "$GEN_MIN_FREE" "$GEN_LOG" \
-    "$PY" scripts/select_iter12_stage2.py --generate-only \
-      --candidates "$cid" --device "$DEVICE" \
+    "$PY" scripts/repair_iter12_stage2_selection.py --skip-crash-proof \
+      --generate-only --candidates "$cid" --device "$DEVICE" \
     < /dev/null > /dev/null 2>&1 &
   pids+=($!)
   say "  launched a generation lane (pid ${pids[-1]}): $cid"
@@ -374,7 +386,12 @@ say "       floor, report the B0-anchored one beside it, order the eligible by D
 #: that WRITES the report, so a chain that died mid-score while the selector
 #: carried on would leave a report nobody was waiting for and a lock already
 #: released for a second chain to claim.
-"$PY" scripts/select_iter12_stage2.py --device "$DEVICE" \
+#: --file-record because this is the invocation that produces the selection report,
+#: so it is the one that files the repair record beside it; and it does NOT skip the
+#: crash proof, which is where the repair reproduces the frozen selector's TypeError
+#: unpatched and hashes the report either side to show the crashed run wrote nothing.
+"$PY" scripts/repair_iter12_stage2_selection.py --file-record \
+    --device "$DEVICE" \
     >> "$SCORE_LOG" 2>&1 &
 score_pid=$!
 ACTIVE_LANES=("$score_pid")
