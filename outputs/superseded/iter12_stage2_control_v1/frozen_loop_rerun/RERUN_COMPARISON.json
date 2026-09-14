@@ -1,0 +1,109 @@
+{
+  "question": "does the FROZEN loop, re-run today, reproduce the adapter Stage 1 filed byte for byte?",
+  "loop": "unlearning_trainer.train_unlearning (hash-bound, unedited)",
+  "spec_source": "the frozen Stage-1 grid",
+  "digest_rerun": "a3de864aadc1618e2c89996cf1c5eaf40af099f06a834f8b45037842f66515c5",
+  "digest_filed_stage1": "846f585a8e909d0b583ebbdc2d198d91d18335cc8ef6e0cd80c2e42076230e2b",
+  "digest_stage2_control": "d6b968164c0222dd0a62a26d714a10b1903b15c2c86566d4abf51319cdbdc3ad",
+  "rerun_reproduces_filed": false,
+  "control_reproduces_filed": false,
+  "rerun_equals_control": false,
+  "num_optimizer_steps": {
+    "rerun": 230,
+    "filed": 230
+  },
+  "weight_gap_rerun_vs_filed": {
+    "num_tensors": 256,
+    "max_abs_gap": 0.0017257087165489793,
+    "worst_tensor": "base_model.model.model.language_model.layers.18.mlp.up_proj.lora_B.weight",
+    "mean_abs_gap": 0.0011899713820184843
+  },
+  "weight_gap_control_vs_filed": {
+    "num_tensors": 256,
+    "max_abs_gap": 0.001812371308915317,
+    "worst_tensor": "base_model.model.model.language_model.layers.14.mlp.gate_proj.lora_B.weight",
+    "mean_abs_gap": 0.001297691041145299
+  },
+  "weight_gap_rerun_vs_control": {
+    "num_tensors": 256,
+    "max_abs_gap": 0.0018004924058914185,
+    "worst_tensor": "base_model.model.model.language_model.layers.16.mlp.down_proj.lora_A.weight",
+    "mean_abs_gap": 0.0012876999469426664
+  },
+  "epochs": {
+    "rerun": [
+      {
+        "epoch": 1,
+        "avg_loss_fine_target": 0.1213,
+        "avg_loss_target_level": 2.0598,
+        "avg_loss_retain": 0.0424,
+        "avg_objective": 0.517
+      },
+      {
+        "epoch": 2,
+        "avg_loss_fine_target": 0.908,
+        "avg_loss_target_level": 0.6027,
+        "avg_loss_retain": 0.1409,
+        "avg_objective": 0.1079
+      },
+      {
+        "epoch": 3,
+        "avg_loss_fine_target": 2.1214,
+        "avg_loss_target_level": 0.2873,
+        "avg_loss_retain": 0.1821,
+        "avg_objective": -0.0999
+      },
+      {
+        "epoch": 4,
+        "avg_loss_fine_target": 4.3633,
+        "avg_loss_target_level": 0.1949,
+        "avg_loss_retain": 0.3898,
+        "avg_objective": -0.2961
+      },
+      {
+        "epoch": 5,
+        "avg_loss_fine_target": 6.7665,
+        "avg_loss_target_level": 0.0897,
+        "avg_loss_retain": 0.5073,
+        "avg_objective": -0.5609
+      }
+    ],
+    "filed": [
+      {
+        "epoch": 1,
+        "avg_loss_fine_target": 0.1202,
+        "avg_loss_target_level": 2.0594,
+        "avg_loss_retain": 0.0425,
+        "avg_objective": 0.5171
+      },
+      {
+        "epoch": 2,
+        "avg_loss_fine_target": 0.9027,
+        "avg_loss_target_level": 0.6037,
+        "avg_loss_retain": 0.1402,
+        "avg_objective": 0.1084
+      },
+      {
+        "epoch": 3,
+        "avg_loss_fine_target": 2.0986,
+        "avg_loss_target_level": 0.2871,
+        "avg_loss_retain": 0.1816,
+        "avg_objective": -0.0974
+      },
+      {
+        "epoch": 4,
+        "avg_loss_fine_target": 4.2984,
+        "avg_loss_target_level": 0.1509,
+        "avg_loss_retain": 0.4193,
+        "avg_objective": -0.2841
+      },
+      {
+        "epoch": 5,
+        "avg_loss_fine_target": 6.6061,
+        "avg_loss_target_level": 0.0697,
+        "avg_loss_retain": 0.4943,
+        "avg_objective": -0.5524
+      }
+    ]
+  }
+}

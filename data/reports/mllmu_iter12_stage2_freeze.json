@@ -1,7 +1,7 @@
 {
   "iteration": "12",
   "stage": 2,
-  "frozen_at_utc": "2026-09-13T22:34:16+00:00",
+  "frozen_at_utc": "2026-09-14T01:36:50+00:00",
   "git_commit": null,
   "git_dirty": false,
   "amendments": [
@@ -24,6 +24,46 @@
         "hashes.protocol_paths.src/granunlearn/training/preservation_anchor.py"
       ],
       "num_fields_changed": 1,
+      "no_adapter_existed_at_amendment_time": true
+    },
+    {
+      "amended_at_utc": "2026-09-14T00:03:51+00:00",
+      "reason": "Replaced the faithfulness control's comparison basis after it ran and refused, and disclosed why. THE CONTROL AS FIRST FROZEN gated on reproducing the adapter Stage 1 FILED, byte for byte, by sha256 over the directory. It ran for 1187.8 s over 230 optimizer steps and refused: digest d6b968164c0222dd against filed 846f585a8e909d0b, with an identical recipe in all fifteen fields, an identical init adapter, and epoch means differing from epoch 1 at about 1e-3. Per-file comparison narrowed it to adapter_config.json differing ONLY in the ORDER of the same seven target modules. THAT ORDER IS NOT REPRODUCIBLE: PeftConfig.target_modules is a Python set, and Python randomises the string hash seed per process unless PYTHONHASHSEED is exported, so the order PEFT serialises it in -- and the LoRA injection order behind it, which decides which module draws which dropout mask -- varies run to run. Four seeds were measured to give four different orders over the same seven modules, a pinned seed gives one order every time, and the filed order matched none of the seven seeds tried, so the process that wrote it is not recoverable. TO ESTABLISH THAT THIS INDICTS THE CRITERION AND NOT THE NEW LOOP, unlearning_trainer.train_unlearning -- hash-bound, unedited -- was re-run on the same spec from the same init adapter. It did not reproduce the filed adapter either, and landed the same distance from it: max per-tensor weight gap 1.726e-03 for the frozen re-run against filed, 1.812e-03 for the new loop against filed, 1.800e-03 between the two re-runs, over 256 tensors. Three gaps of one order, so the new loop is no further from the filed adapter than the frozen loop is from a file the frozen loop itself wrote. The three adapters hold the same seven target modules in three different orders. WHAT REPLACES IT: --control now trains the incumbent objective three times in ONE process under ONE pinned PYTHONHASHSEED -- A through the frozen loop, A2 through the frozen loop again to MEASURE the noise floor rather than assume it, B through train_with_preservation with every group plain sft/gd and neither cap nor anchor. The gate is that gap(A, B) does not exceed gap(A, A2), with bitwise equality demanded outright when the floor is exactly zero, compared per tensor rather than by digest because a digest says \"different\" and cannot distinguish float noise from a different objective. The filed adapter is still loaded, compared and REPORTED beside the gate; it is simply not what the gate reads. scripts/lanes/iter12_stage2.sh exports PYTHONHASHSEED and train_iter12_stage2.py refuses to run the control without it. WHY THIS IS NOT A RULE MOVED TO FIT A RESULT: the retired criterion was unsatisfiable by construction, so it tested the interpreter's hash seed rather than the two loops, and a gate that cannot pass says nothing when it fails. The control produced no candidate, no prediction, no retention number and no score, so there was no result for the anchor, its values, the eight numbers, the epsilon, the tie-break, the grid or the mechanisms to have been fitted to -- and this amendment touches none of them, only faithfulness_control.* and the three protocol hashes. The failed control and the frozen-loop re-run were MOVED to outputs/superseded/iter12_stage2_control_v1/ rather than deleted, with a README recording the digests, the three gaps and the three target_modules orders, and the small files committed so the disclosure is inspectable from a clone rather than asserted. Seven tests now pin the amended control STRUCTURALLY by parsing scripts/train_iter12_stage2.py, because widening what an amendment may touch needs something holding the other side: the hash seed is checked before anything trains, three runs happen with the frozen loop twice, the gate has exactly three branches and never assigns passed a bare True, the filed adapter never reaches passed, and main refuses to train when the gate did not pass.",
+      "supersedes_sha256": "18fa39945ccda72462d9c1708bc64fd5d9df7736118af0bb75f17b83d51a3285",
+      "fields_changed": [
+        "faithfulness_control.a_criterion_this_replaced",
+        "faithfulness_control.control_dir_is_inside_the_refusal",
+        "faithfulness_control.reproduces",
+        "faithfulness_control.reproduces_the_objective_of",
+        "faithfulness_control.the_evidence_that_it_was_the_stack_not_the_new_loop",
+        "faithfulness_control.the_gate",
+        "faithfulness_control.the_hash_seed_is_pinned_by_the_lane_script",
+        "faithfulness_control.what_it_is",
+        "faithfulness_control.why_replacing_it_is_not_moving_the_goalposts",
+        "hashes.protocol_paths.scripts/freeze_iter12_stage2.py",
+        "hashes.protocol_paths.scripts/train_iter12_stage2.py",
+        "hashes.protocol_paths.src/granunlearn/training/stage2_grid.py"
+      ],
+      "num_fields_changed": 12,
+      "no_adapter_existed_at_amendment_time": true
+    },
+    {
+      "amended_at_utc": "2026-09-14T01:36:50+00:00",
+      "reason": "Added faithfulness_control.what_pins_this_in_the_suite and why_those_tests_are_listed_here, and CORRECTED A COUNT THE PREVIOUS AMENDMENT'S REASON GOT WRONG. That reason said \"Seven tests now pin the amended control STRUCTURALLY\". There are eight: test_the_gate_compares_the_right_pair_of_runs_on_each_side was written after the reason was drafted, to close a hole the other seven left -- the gate could be fed the wrong PAIR of runs through the across/floor bindings and still branch three ways, still never assign passed a bare True, and still never read the filed adapter by name, so nothing else would have caught a control whose noise floor was measured as A against B and whose across-gap was measured as A against A2, i.e. one that compares each quantity with itself and passes always. WHY THE LIST IS IN THE FREEZE: replacing this control's criterion widened what a later amendment may touch to include faithfulness_control.*, so the seal needs something holding the other side. Naming the eight tests that hold it, in the frozen document rather than in prose, makes the disclosure checkable from a clone -- a test reads the list back against tests/unit/test_iteration12_stage2.py and fails if the two differ, and fails if the list names a test that does not exist -- and makes a later amendment that quietly drops one visible as a change to this field rather than as a silence. WHY THE CORRECTION IS HERE AND NOT IN THE PREVIOUS ENTRY: that entry is a historical record of why the third amendment was made, and rewriting it to say eight would make the record agree with the code at the cost of no longer being a record. Correcting forward leaves both facts visible. NO CRITERION MOVED: this amendment touches only faithfulness_control.* and the hash of scripts/freeze_iter12_stage2.py; the anchor, its values, the eight numbers, the epsilon, the tie-break, the grid, the mechanisms and the inherited generation contract are all unchanged.",
+      "supersedes_sha256": "aee570456cdd1f55a8661ee9213917cf83f2f89bef393dc9a2581090c42bbfd3",
+      "fields_changed": [
+        "faithfulness_control.what_pins_this_in_the_suite.0",
+        "faithfulness_control.what_pins_this_in_the_suite.1",
+        "faithfulness_control.what_pins_this_in_the_suite.2",
+        "faithfulness_control.what_pins_this_in_the_suite.3",
+        "faithfulness_control.what_pins_this_in_the_suite.4",
+        "faithfulness_control.what_pins_this_in_the_suite.5",
+        "faithfulness_control.what_pins_this_in_the_suite.6",
+        "faithfulness_control.what_pins_this_in_the_suite.7",
+        "faithfulness_control.why_those_tests_are_listed_here",
+        "hashes.protocol_paths.scripts/freeze_iter12_stage2.py"
+      ],
+      "num_fields_changed": 10,
       "no_adapter_existed_at_amendment_time": true
     }
   ],
@@ -508,12 +548,28 @@
     }
   },
   "faithfulness_control": {
-    "what_it_is": "train_with_preservation is a second copy of a training loop, because unlearning_trainer.train_unlearning is hash-bound and cannot grow a mode. --control trains the incumbent Stage-1 row through the new loop with every group in a plain sft/gd mode and compares the adapters by sha256.",
-    "reproduces": "B4_w1.0_lam0.5_lr2e-05_ep5",
+    "what_it_is": "train_with_preservation is a second copy of a training loop, because unlearning_trainer.train_unlearning is hash-bound and cannot grow a mode. --control trains the incumbent Stage-1 objective THREE times in ONE process under ONE pinned PYTHONHASHSEED: A through the frozen loop, A2 through the frozen loop again, B through the new loop with every group in a plain sft/gd mode and neither a cap nor an anchor.",
+    "reproduces_the_objective_of": "B4_w1.0_lam0.5_lr2e-05_ep5",
     "spec_read_from": "the frozen Stage-1 grid, not retyped",
+    "the_gate": "A2 exists to MEASURE the noise floor rather than assume it: gap(A, A2) is how far two runs of the same code land apart on this stack. The gate is that gap(A, B) does not exceed it -- and bitwise equality is demanded outright when the floor is exactly zero, which is what one process and a pinned seed are supposed to buy. A sha256 alone cannot express this: it says 'different' and stops, so it cannot distinguish float noise from a different objective, which is the whole question. The control therefore compares per-tensor gaps and reports the worst tensor.",
     "it_is_a_gate_not_a_report": "scripts/train_iter12_stage2.py refuses to train a single candidate unless the control passed, so a drift between the two loops stops the study instead of being interpreted as a difference between mechanisms.",
     "cpu_half_already_verified": "tests/unit/test_iteration12_stage2.py drives both loops against one stub model and asserts bit-identical parameters, forward-call counts, optimizer steps and epoch summaries, so a divergence is caught without a GPU as well.",
-    "control_dir_is_inside_the_refusal": "The control's adapter lives under the Stage-2 checkpoint root, so running it locks this freeze against amendment. That is deliberate: a control run under an unfrozen loop proves nothing about the frozen one."
+    "control_dir_is_inside_the_refusal": "The control's adapters live under the Stage-2 checkpoint root, so running it locks this freeze against amendment. That is deliberate: a control run under an unfrozen loop proves nothing about the frozen one.",
+    "a_criterion_this_replaced": "The control as first frozen compared ONE run of the new loop against the adapter Stage 1 FILED, by sha256 over the whole directory. It ran, and refused: identical recipe in all fifteen fields, identical init adapter, identical 230 optimizer steps, and adapter_config.json differing only in the ORDER of the same seven target modules. That order is not reproducible. PeftConfig.target_modules is a Python set, and Python randomises the string hash seed per process unless PYTHONHASHSEED is exported, so the serialised order -- and the LoRA injection order behind it, which decides which module draws which dropout mask -- varies run to run. Four seeds were measured to give four different orders, a pinned seed gives one order every time, and the filed order matched none of the seven seeds tried, so the process that wrote it is not recoverable.",
+    "the_evidence_that_it_was_the_stack_not_the_new_loop": "The FROZEN loop, unedited and hash-bound, was re-run on the same spec from the same init adapter. It did not reproduce the filed adapter either, and landed the same distance from it: max per-tensor weight gap 1.726e-03 for the frozen re-run against filed, 1.812e-03 for the new loop against filed, 1.800e-03 between the two re-runs -- three gaps of one order, so the new loop is no further from the filed adapter than the frozen loop is from itself. All three adapters hold the same seven target modules in three different orders. Both runs are kept under outputs/superseded/iter12_stage2_control_v1/, whose README.md records the orders and the gaps.",
+    "why_replacing_it_is_not_moving_the_goalposts": "The retired criterion was unsatisfiable by construction, so it tested the interpreter's hash seed rather than the two loops, and a gate that cannot pass says nothing when it fails. The replacement asks the question the original was written to ask -- do the two copies compute the same function? -- and asks it in the only way that has an answer, with the environment held still and the noise floor measured instead of assumed. The filed adapter is still loaded, compared and REPORTED beside the gate, so its gap stays visible; it is simply not what the gate reads. Nothing about the anchor, the eight numbers, the epsilon, the tie-break, the grid or the mechanisms moved: the control produced no candidate, no prediction, no retention number and no score, so there was no result for any of them to be fitted to. What changed is a fact about the apparatus. The failed control's directory was MOVED to outputs/superseded rather than deleted, so the adapter that demonstrated the defect is still on disk and inspectable.",
+    "the_hash_seed_is_pinned_by_the_lane_script": "scripts/lanes/iter12_stage2.sh exports PYTHONHASHSEED, and train_iter12_stage2.py refuses to run the control at all without it, because a control under a randomised seed measures the seed.",
+    "what_pins_this_in_the_suite": [
+      "test_the_control_pins_the_hash_seed_before_it_trains_anything",
+      "test_an_unpinned_hash_seed_refuses_rather_than_measuring_the_interpreter",
+      "test_the_control_runs_the_frozen_loop_twice_and_the_new_loop_once",
+      "test_the_gate_never_passes_unconditionally",
+      "test_the_gate_compares_the_right_pair_of_runs_on_each_side",
+      "test_the_filed_adapter_is_reported_and_never_gates",
+      "test_main_refuses_to_train_when_the_control_did_not_pass",
+      "test_the_freeze_discloses_the_criterion_the_control_replaced"
+    ],
+    "why_those_tests_are_listed_here": "Replacing this control's criterion widened what a later amendment may touch to include faithfulness_control.*, so the seal needs something holding the other side. These eight tests are that. They are STRUCTURAL rather than behavioural because the script imports the trainers at module level and CI installs a closure without torch: each parses scripts/train_iter12_stage2.py and asserts which branch does what -- that the hash seed is checked first, that three runs happen with the frozen loop twice, that each side of the gate is built from the right pair of them, that the gate has exactly three branches and never assigns a bare True, that the filed adapter never reaches it, and that main refuses to train both when the gate failed and when the control was never run. Naming them here rather than describing them in prose makes the list checkable against the test file, and makes a later amendment that quietly drops one visible as a change to this field. One of them is not purely structural: test_an_unpinned_hash_seed_refuses_rather_than_measuring_the_interpreter lifts that single function out by ast.get_source_segment and EXECUTES it, because 'there is a raise statement somewhere in here' passes just as happily for 'if False: raise'."
   },
   "evidence_base": {
     "used": [
@@ -587,12 +643,12 @@
   },
   "hashes": {
     "protocol_paths": {
-      "scripts/freeze_iter12_stage2.py": "b9e992fd4f7045396c91d7d33bc27d16dba9b6e1070102f22bf4c34f7129b795",
+      "scripts/freeze_iter12_stage2.py": "f28f97d38338fb0fff12289dfbdf91d8c4b36ed1c782dd6942212e35494627d0",
       "scripts/build_iter12_stage2_basis.py": "23f00c6972b46525b42a1eb85163a5a7af7508d4293c8cff4b6748c4f54ac7fa",
       "scripts/build_mf_reference_logprobs.py": "6dad16e44b580221b9211d4cecdae8ba2a834b36929277bd8824a2a1a4adb36d",
-      "scripts/train_iter12_stage2.py": "67ca3cc083ec9b053effb8625c255a15e0ab042fcfe1f1cdb928f995a3955358",
+      "scripts/train_iter12_stage2.py": "dd848ad469ef16467d3f8d91fae67f62bbfe4f716ced335378b511e14606e660",
       "scripts/select_iter12_stage2.py": "4fc78324f22198c08527764a2bfbce63b325ff228cab2e3611bd9b12fc507020",
-      "src/granunlearn/training/stage2_grid.py": "cb929993d04ccb9a24accca21a3f7023a22de76ee09ed1ec255089753bc49e3f",
+      "src/granunlearn/training/stage2_grid.py": "d80275e4bbf7b4599f6fce07a5506898b9df41693d59611651d6739d5581cf98",
       "src/granunlearn/training/preservation_anchor.py": "f78df4cfc11038477ec769e1d150f9ceffd1b028d9aeb5ab63e9e294c9565f85",
       "src/granunlearn/training/preservation_trainer.py": "5184677de072d74868c8ef2cc8ed48ca6606626efefd43ab19fe5a580b8757e2"
     },

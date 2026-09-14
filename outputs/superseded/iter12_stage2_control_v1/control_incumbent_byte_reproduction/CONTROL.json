@@ -1,0 +1,41 @@
+{
+  "control": "control_incumbent_byte_reproduction",
+  "reproduces": "B4_w1.0_lam0.5_lr2e-05_ep5",
+  "spec_read_from": "the frozen Stage-1 grid, not retyped here",
+  "groups": [
+    {
+      "name": "fine_target",
+      "mode": "gd",
+      "weight": 0.5,
+      "cap": null,
+      "anchor_weight": null
+    },
+    {
+      "name": "target_level",
+      "mode": "sft",
+      "weight": 1.0,
+      "cap": null,
+      "anchor_weight": null
+    },
+    {
+      "name": "retain",
+      "mode": "sft",
+      "weight": 1.0,
+      "cap": null,
+      "anchor_weight": null
+    }
+  ],
+  "recipe_overrides": {
+    "learning_rate": 2e-05,
+    "num_epochs": 5
+  },
+  "num_optimizer_steps": 230,
+  "train_seconds": 1187.8,
+  "produced_adapter_dir": "data/checkpoints/mllmu_iter12_stage2/_control/control_incumbent_byte_reproduction/adapters",
+  "filed_adapter_dir": "data/checkpoints/mllmu_iter12_unlearn/B4_w1.0_lam0.5_lr2e-05_ep5/adapters",
+  "digest": "d6b968164c0222dd0a62a26d714a10b1903b15c2c86566d4abf51319cdbdc3ad",
+  "filed_digest": "846f585a8e909d0b583ebbdc2d198d91d18335cc8ef6e0cd80c2e42076230e2b",
+  "reproduced_byte_for_byte": false,
+  "epochs_match": false,
+  "detail": "the new loop produced d6b968164c0222dd where Stage 1 filed 846f585a8e909d0b; every Stage-2 row would be measured against a baseline produced by different code, so no candidate may be trained until this is explained"
+}

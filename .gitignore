@@ -272,3 +272,36 @@ data/mllmu_hier_pilot100/predictions_iter12_stage2/
 # could not verify the anchor's provenance at all.
 !data/mllmu_hier_pilot100/mf_reference_logprobs/
 !data/mllmu_hier_pilot100/mf_reference_logprobs/sidecar.json
+
+# ── Superseded apparatus: kept on disk, and the small evidence committed ──
+# PLACED AT THE END ON PURPOSE, after both `outputs/*/` and `*.log`: in a
+# .gitignore the last matching pattern wins, so a negation written above either
+# of those would lose to it and the files would stay silently ignored -- the
+# failure the execution_logs block above already documents.
+#
+# Stage 2's faithfulness control was first frozen with a criterion that turned
+# out to be unsatisfiable -- reproduce the adapter Stage 1 FILED, byte for byte
+# -- and it refused.  The run that refused, and the re-run of the FROZEN loop
+# that showed the refusal was about the stack rather than about the new loop,
+# are moved under outputs/superseded/ instead of deleted: they are the evidence
+# for the finding the freeze records in
+# faithfulness_control.the_evidence_that_it_was_the_stack_not_the_new_loop, and
+# a disclosure nobody can inspect is only an assertion.  The two directories
+# hold 131 MB of weights each, so the tensors stay ignored by *.safetensors and
+# what is committed is the handful of small files a reader needs to check the
+# claim -- above all the two adapter_config.json files, because the
+# target_modules ORDER recorded in them is where the defect actually lives.
+#
+# The negation is SCOPED, and the middle line is what scopes it.  Un-ignoring
+# `outputs/superseded/` on its own re-includes everything already parked there,
+# which is 30 superseded pilot-100 prediction parquets and a superseded
+# evaluation JSON that were ignored deliberately; a plain `git add -A` would
+# then have committed all of them.  Git cannot re-include a file whose parent
+# directory is excluded, so the directory has to be opened first and the rest
+# of its contents closed again immediately.
+!outputs/superseded/
+outputs/superseded/*
+!outputs/superseded/iter12_stage2_control_v1/
+outputs/superseded/**/processor/
+outputs/superseded/**/adapters/README.md
+!outputs/superseded/iter12_stage2_control_v1/frozen_loop_rerun.log

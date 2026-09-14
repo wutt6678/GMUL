@@ -23,7 +23,16 @@ What is checked:
 * both training loops are the SAME loop: driven against one stub model on CPU
   with only ``sft``/``gd`` groups they produce bit-identical parameters and
   bit-identical epoch summaries, which is what ``--control`` then confirms on
-  real bytes;
+  the real model -- against a noise floor it MEASURES, by running the frozen
+  loop twice, rather than against the filed Stage-1 adapter, whose bytes no
+  later process can reproduce;
+* the control's gate is pinned STRUCTURALLY, by parsing the script that holds
+  it: the hash seed is checked before anything trains, bitwise equality is
+  demanded when the measured floor is zero, ``passed`` is never assigned a bare
+  ``True``, the filed adapter never feeds it, and ``main`` refuses to train when
+  it did not pass.  These exist because an amendment widened what the freeze
+  may change to include ``faithfulness_control.*``, and a seal that can be
+  widened needs something holding the other side;
 * the cap binds exactly and only when it should -- zero gradient below the
   bound, and bit-identical parameters to plain ascent above it;
 * the anchor is zero at theta = MF, its gradient there is numerically zero, and
@@ -1295,15 +1304,26 @@ def test_adapters_exist_sees_the_control_one_level_deeper(tmp_path):
     assert fis2.trained_yet(tmp_path) is True
 
 
-def test_an_amendment_without_a_reason_is_refused_and_writes_nothing():
+def test_an_amendment_without_a_reason_is_refused_and_writes_nothing(monkeypatch):
     """An amendment whose reason is not recorded cannot be distinguished from a
     rule changed to fit its own result -- and the refusal has to happen before
-    the write, not after it."""
+    the write, not after it.
+
+    ``adapters_exist`` is patched to empty rather than left alone, and that is
+    deliberate rather than a convenience.  The adapter refusal is evaluated
+    FIRST and unconditionally, so once the control has written an adapter this
+    test would be exercising that refusal instead of the one it is about, and
+    its assertion on the message would fail -- a transient-precondition test
+    that breaks because the study made progress.  The adapter refusal has its
+    own test below; this one holds the reason check.
+    """
     before = FREEZE.read_bytes()
+    monkeypatch.setattr(fis2, "adapters_exist", lambda root: [])
+    monkeypatch.setattr(sys, "argv", ["freeze", "--refreeze",
+                                      "--repo-root", str(REPO_ROOT)])
     try:
-        res = run("freeze_iter12_stage2.py", "--refreeze")
-        assert res.returncode != 0
-        assert "--reason" in (res.stdout + res.stderr)
+        with pytest.raises(SystemExit, match="--reason"):
+            fis2.main()
     finally:
         #: Restored rather than merely asserted, so a regression here cannot
         #: leave the repository holding an unreasoned amendment.
@@ -1331,19 +1351,394 @@ def test_no_amendment_has_ever_touched_the_criterion():
     tie-break or the grid -- because that is precisely the change a
     preregistration exists to make impossible after the fact.
 
+    ``faithfulness_control.*`` is amendable and was amended, and that is a
+    concession worth stating plainly: the control's comparison basis was
+    replaced after it ran and refused.  It is APPARATUS, not criterion -- it
+    decides nothing about which candidate wins, and the run it retired produced
+    no candidate, no prediction, no retention number and no score, so there was
+    no result for the anchor, the epsilon, the tie-break or the grid to have
+    been fitted to.  What the criterion is stays sealed.  Because a seal that
+    can be widened is only as good as what replaces it, the tests below pin
+    what the amended control must still DO, structurally, in the script.
+
     Written as an exclusion rather than as a list of the fields changed so far,
-    so the test still means something after a third amendment.
+    so the test still means something after a fourth amendment.
     """
     sealed_prefixes = ("what_is_frozen.", "grid.", "anchor_change.anchor_values",
                        "anchor_change.reported_baseline",
                        "reused_predictions_bound.", "reference_cache_bound.",
                        "generation_contract_inherited.contract.")
+    #: The only prefixes an amendment may touch, besides the hashes it must.
+    amendable = ("hashes.", "faithfulness_control.",
+                 "anchor_change.enforced_by")
     changed = [k for a in freeze()["amendments"] for k in a["fields_changed"]]
     assert changed, "an amendment that changed nothing would be a strange one"
     for key in changed:
         assert not key.startswith(sealed_prefixes), key
-        assert key == "anchor_change.enforced_by" or \
-            key.startswith("hashes."), key
+        assert key == "anchor_change.enforced_by" or key.startswith(
+            tuple(p for p in amendable if p != "anchor_change.enforced_by")), key
+
+
+TRAIN_SCRIPT = REPO_ROOT / "scripts" / "train_iter12_stage2.py"
+
+
+def _script_tree():
+    """The training script as a syntax tree.
+
+    Parsed rather than imported.  The script pulls torch in through the
+    trainers, and CI installs a closure without it -- but that is a convenient
+    reason, not the real one.  What these tests assert is WHICH BRANCH assigns
+    the control's gate, and that is a property of the script's structure, so a
+    parse is the instrument that actually answers the question.  Importing it
+    and running it would need a GPU and half an hour.
+    """
+    import ast
+    return ast.parse(TRAIN_SCRIPT.read_text())
+
+
+def _function(tree, name):
+    import ast
+    for node in tree.body:
+        if isinstance(node, ast.FunctionDef) and node.name == name:
+            return node
+    raise AssertionError(f"{name} is no longer a top-level function of "
+                         f"scripts/train_iter12_stage2.py")
+
+
+def _statements(fn) -> list:
+    """A function's body with its docstring dropped."""
+    import ast
+    body = list(fn.body)
+    if body and isinstance(body[0], ast.Expr) \
+            and isinstance(body[0].value, ast.Constant) \
+            and isinstance(body[0].value.value, str):
+        body = body[1:]
+    return body
+
+
+def _gate_assignments(fn) -> list:
+    """Every ``passed = ...`` in ``fn``, in source order.
+
+    Collected rather than assumed, so a test that counts them fails loudly if
+    the gate grows a fourth branch instead of failing silently because it was
+    looking at the wrong one.
+    """
+    import ast
+    out = []
+    for node in ast.walk(fn):
+        if not isinstance(node, ast.Assign):
+            continue
+        for target in node.targets:
+            if isinstance(target, ast.Name) and target.id == "passed":
+                out.append(node)
+    return sorted(out, key=lambda n: n.lineno)
+
+
+def test_the_control_pins_the_hash_seed_before_it_trains_anything():
+    """The environment is held still BEFORE a GPU-minute is spent, not after.
+
+    Checked as the first statement of ``run_control`` rather than merely as a
+    call somewhere inside it: a check that ran after the three trainings would
+    report a refusal nobody could act on, having already produced adapters
+    whose ``target_modules`` order no later run could match.
+    """
+    import ast
+    first = _statements(_function(_script_tree(), "run_control"))[0]
+    assert isinstance(first, ast.Assign), (
+        "run_control's first statement is no longer the hash-seed check")
+    assert isinstance(first.value, ast.Call)
+    assert first.value.func.id == "assert_hash_seed_pinned", (
+        "run_control's first statement no longer pins PYTHONHASHSEED")
+
+
+def test_an_unpinned_hash_seed_refuses_rather_than_measuring_the_interpreter(monkeypatch):
+    """Executed, not merely present.
+
+    The function is lifted out of the script by ``ast.get_source_segment`` and
+    run, because the behaviour that matters is that it RAISES when the variable
+    is absent -- and a structural check for "there is a Raise node somewhere in
+    here" passes just as happily for ``if False: raise``, which is the mistake
+    worth catching.  Lifting one function out keeps this torch-free: the script
+    imports the trainers at module level and CI installs a closure without it,
+    but this function needs only ``os``.
+    """
+    import ast
+    src = ast.get_source_segment(
+        TRAIN_SCRIPT.read_text(),
+        _function(_script_tree(), "assert_hash_seed_pinned"))
+    ns: dict = {}
+    exec(compile(src, "<assert_hash_seed_pinned>", "exec"), ns)
+
+    monkeypatch.delenv("PYTHONHASHSEED", raising=False)
+    with pytest.raises(SystemExit, match="PYTHONHASHSEED"):
+        ns["assert_hash_seed_pinned"]()
+
+    #: And it returns the value when it is set, so the control can record which
+    #: seed it ran under rather than merely that one was present.
+    monkeypatch.setenv("PYTHONHASHSEED", "7")
+    assert ns["assert_hash_seed_pinned"]() == "7"
+
+
+def test_the_control_runs_the_frozen_loop_twice_and_the_new_loop_once():
+    """The noise floor is measured, not assumed.
+
+    ``A2`` is the whole point of the redesign: without a second run of the SAME
+    loop there is no number to compare the across-loop gap to, and any
+    threshold would be a guess.  Two of the three runs must therefore be the
+    frozen loop, and the third the new one with no cap and no anchor.
+    """
+    import ast
+    fn = _function(_script_tree(), "run_control")
+    loops = [n for n in ast.walk(fn) if isinstance(n, ast.For)
+             and isinstance(n.iter, ast.Tuple)]
+    assert loops, "run_control no longer drives its runs from one tuple"
+    entries = loops[0].iter.elts
+    assert len(entries) == 3, (
+        f"the control runs {len(entries)} trainings; the design needs exactly "
+        f"three -- frozen, frozen again, new")
+    called = [e.elts[1] for e in entries]
+
+    def name_of(node):
+        return node.attr if isinstance(node, ast.Attribute) else node.id
+
+    assert [name_of(c) for c in called] == [
+        "train_unlearning", "train_unlearning", "train_with_preservation"], (
+        "the control no longer runs the frozen loop twice before the new one")
+    assert entries[2].elts[0].value == "B_new_loop_no_cap_no_anchor", (
+        "the third run is the one that must carry no cap and no anchor")
+
+
+def test_the_gate_never_passes_unconditionally():
+    """The gate must be able to fail.
+
+    An amendment may widen what ``faithfulness_control`` says, so the script
+    itself is what has to hold: if ``passed`` could be assigned a bare ``True``,
+    or if the across-loop gap were never compared against the floor, the control
+    would be a formality that reported success whatever the two loops did.
+    """
+    import ast
+    fn = _function(_script_tree(), "run_control")
+    gates = _gate_assignments(fn)
+    assert len(gates) == 3, (
+        f"the gate has {len(gates)} branches; the design has three -- not "
+        f"comparable, floor is zero, floor is not zero")
+    for node in gates:
+        v = node.value
+        assert not (isinstance(v, ast.Constant) and v.value is True), (
+            "the gate assigns passed = True unconditionally, so it can no "
+            "longer fail")
+    dumped = [ast.dump(n.value) for n in gates]
+    assert any("bitwise_identical" in d for d in dumped), (
+        "no branch demands bitwise equality, so the strongest form of the "
+        "claim -- the two loops are one loop -- is no longer reachable")
+    assert any(d.startswith("Compare") for d in dumped), (
+        "no branch compares the across-loop gap against the measured floor, so "
+        "the gate would have no magnitude to read")
+    assert any("max_abs_gap" in d for d in dumped), (
+        "the gate no longer reads the per-tensor gap; a digest alone cannot say "
+        "whether two adapters differ by float noise or by a different objective")
+
+    #: The bitwise demand has to be CONDITIONED ON THE FLOOR being zero.  A
+    #: branch that demanded bitwise equality unconditionally would fail on any
+    #: non-deterministic stack, and one that demanded it under some other
+    #: condition would be demanding it for a reason the report does not state.
+    #: Checking the assignment alone cannot see the condition, so the If chain
+    #: is walked instead.
+    conditional = [n for n in ast.walk(fn) if isinstance(n, ast.If)
+                   and "floor" in ast.dump(n.test)
+                   and "bitwise_identical" in ast.dump(n.test)]
+    assert conditional, (
+        "no branch conditions on the noise floor being bitwise identical, so "
+        "the gate cannot be telling 'the floor is zero, demand exact equality' "
+        "apart from 'the floor is not zero, compare magnitudes'")
+
+
+def test_the_gate_compares_the_right_pair_of_runs_on_each_side():
+    """Which two runs each side of the gate is built from.
+
+    ``floor`` must be A against A2 -- one loop versus itself -- and ``across``
+    must be A against B -- the two loops versus each other.  Naming the wrong
+    pair is the subtlest way to break this control, and the test above cannot
+    see it: the gate would still read ``across`` and ``floor``, still branch
+    three ways, still never assign a bare ``True``, and the report would still
+    be complete.  But if ``across`` were built from the FILED adapter the gate
+    would be the unsatisfiable criterion this design replaced, and if ``floor``
+    were built from A against B the gate would compare a quantity against
+    itself and pass always.
+
+    Indirection is why this reads the two bindings rather than the gate.
+    """
+    import ast
+    fn = _function(_script_tree(), "run_control")
+
+    def keys_of(value):
+        return sorted(n.value for n in ast.walk(value)
+                      if isinstance(n, ast.Constant) and isinstance(n.value, str))
+
+    bound = {}
+    for node in ast.walk(fn):
+        if isinstance(node, ast.Assign) and len(node.targets) == 1 \
+                and isinstance(node.targets[0], ast.Name):
+            bound[node.targets[0].id] = node.value
+    for name in ("floor", "across"):
+        assert name in bound, f"run_control no longer binds {name}"
+        assert isinstance(bound[name], ast.Call) \
+            and bound[name].func.id == "compare_adapters", (
+            f"{name} is no longer a compare_adapters call")
+    assert keys_of(bound["floor"]) == ["A2_frozen_loop_again", "A_frozen_loop"], (
+        "the noise floor is not the frozen loop against itself, so the gate "
+        "would have no run-to-run spread to compare against")
+    assert keys_of(bound["across"]) == [
+        "A_frozen_loop", "B_new_loop_no_cap_no_anchor"], (
+        "the across-loop gap is not the frozen loop against the new one, so the "
+        "gate is not measuring the thing the control exists to measure")
+
+
+def test_the_filed_adapter_is_reported_and_never_gates():
+    """The bytes that cannot be reproduced must not decide anything.
+
+    The incumbent's adapter is still loaded and its gap still written into the
+    report, so a reader can see how far today's frozen loop lands from the one
+    Stage 1 filed.  It must not reach ``passed``: gating on it is the defect
+    this control was redesigned to remove.
+    """
+    import ast
+    fn = _function(_script_tree(), "run_control")
+    assert any(isinstance(n, ast.Assign)
+               and any(isinstance(t, ast.Name) and t.id == "vs_filed"
+                       for t in n.targets) for n in ast.walk(fn)), (
+        "the filed adapter is no longer compared at all, so its gap is no "
+        "longer visible in the report")
+    #: Compared by NAME rather than by substring, because the gate could reach
+    #: the filed adapter through either binding: ``vs_filed``, the comparison,
+    #: or ``filed``, the path it was loaded from.
+    forbidden = {"vs_filed", "filed"}
+    for node in _gate_assignments(fn):
+        reached = {n.id for n in ast.walk(node.value)
+                   if isinstance(n, ast.Name)} & forbidden
+        assert not reached, (
+            f"the gate reads {sorted(reached)}, the filed Stage-1 adapter, "
+            f"whose target_modules order was written under a randomised "
+            f"PYTHONHASHSEED and cannot be reproduced by any later run")
+    assert "filed_stage1_adapter_reported_not_gated" in ast.dump(fn), (
+        "the report no longer says the filed comparison is not a gate, so a "
+        "reader cannot tell what the gate read")
+
+
+def test_main_refuses_to_train_when_the_control_did_not_pass():
+    """The gate has to be a gate.
+
+    ``--control`` writes a marker; ``main`` reads it and refuses.  If that
+    refusal disappeared, a failed control would become a warning and seven
+    candidates would be trained against a baseline produced by code nobody had
+    shown to be the same code.
+    """
+    import ast
+    fn = _function(_script_tree(), "main")
+    guarding = [n for n in ast.walk(fn) if isinstance(n, ast.If)
+                and "gate_passed" in ast.dump(n.test)
+                and any(isinstance(b, ast.Raise) for b in ast.walk(n))]
+    assert guarding, (
+        "main no longer raises when the control's gate_passed is false")
+    #: ``ast.dump`` renders ``marker.exists()`` as an Attribute node, so the
+    #: source text "marker.exists" never appears in it; match on the two names.
+    assert any(isinstance(n, ast.If) and "id='marker'" in ast.dump(n.test)
+               and "attr='exists'" in ast.dump(n.test)
+               and any(isinstance(b, ast.Raise) for b in ast.walk(n))
+               for n in ast.walk(fn)), (
+        "main no longer refuses when the control has not been run at all")
+
+
+def test_the_freeze_discloses_the_criterion_the_control_replaced():
+    """A criterion changed after it ran is only auditable if the record says so.
+
+    The amendment log names the fields; this is what a reader needs beyond it --
+    that the control still names the incumbent row, still claims to be a gate,
+    and carries the retired criterion, the evidence against it and the reason
+    replacing it was legitimate, in its own words rather than leaving the change
+    to be reconstructed from a diff.
+
+    Each field is held to what it is FOR rather than to the same list of
+    strings: the mechanism has to be named precisely once, where the mechanism
+    is stated, and the justification has to say the criterion could not be met
+    and point at evidence a reader can actually open.
+    """
+    fc = freeze()["faithfulness_control"]
+    assert fc["reproduces_the_objective_of"] == sg.incumbent_row()
+    assert fc["it_is_a_gate_not_a_report"].strip()
+    assert fc["the_gate"].strip()
+    for key in ("a_criterion_this_replaced",
+                "the_evidence_that_it_was_the_stack_not_the_new_loop",
+                "why_replacing_it_is_not_moving_the_goalposts"):
+        assert key in fc, f"the freeze no longer discloses {key}"
+        assert fc[key].strip(), f"{key} is present but empty"
+
+    #: The mechanism, named precisely and where the mechanism is stated.  Both
+    #: spellings are required: the environment variable is what an operator
+    #: would set, the PEFT attribute is what makes it matter.
+    mechanism = fc["a_criterion_this_replaced"]
+    assert "PYTHONHASHSEED" in mechanism and "target_modules" in mechanism, (
+        "the disclosure does not name the mechanism precisely, so a reader "
+        "cannot reproduce the finding or check it")
+
+    #: The justification has to say the criterion COULD NOT be met -- that is
+    #: what separates replacing a broken gate from moving one that was working.
+    justification = fc["why_replacing_it_is_not_moving_the_goalposts"]
+    assert "unsatisfiable" in justification, (
+        "the disclosure does not claim the retired criterion was unsatisfiable, "
+        "which is the only thing that would make replacing it legitimate")
+    assert "hash seed" in justification, (
+        "the justification does not say what the retired criterion actually "
+        "tested instead of the loops")
+
+    #: And a disclosure that names no inspectable artifact is an assertion.
+    #: Both fields must point at the kept runs and quote a measured magnitude,
+    #: so the claim can be checked against the files rather than believed.
+    evidence = fc["the_evidence_that_it_was_the_stack_not_the_new_loop"]
+    assert "outputs/superseded/iter12_stage2_control_v1" in evidence, (
+        "the disclosure no longer says where the two runs are kept")
+    assert (REPO_ROOT / "outputs/superseded/iter12_stage2_control_v1"
+            / "README.md").exists(), (
+        "the freeze points at a superseded-evidence README that is not there")
+    assert "e-03" in evidence, (
+        "the evidence field quotes no measured magnitude, so 'the same order' "
+        "would be unverifiable")
+    #: The whole point of the re-run: the FROZEN loop missed the filed bytes
+    #: too.  Without that, the disclosure would be an argument, not evidence.
+    assert "FROZEN loop" in evidence
+
+
+def test_the_freeze_names_the_tests_that_hold_the_widened_seal():
+    """The freeze lists those tests by name, so the list has to be true.
+
+    Naming them is what makes a later amendment that drops one visible as a
+    change to that field -- but only if something checks the names against this
+    file.  A list of tests that do not exist would be a worse disclosure than no
+    list at all, because it would look like a guarantee.
+
+    The keyword set below is the definition of "a structural test of the
+    control", and it is enforced here rather than left in a throwaway checking
+    script so the count the README and the freeze quote is verifiable from the
+    committed repository alone.
+    """
+    import ast
+    named = freeze()["faithfulness_control"]["what_pins_this_in_the_suite"]
+    tree = ast.parse(Path(__file__).read_text())
+    present = {n.name for n in tree.body
+               if isinstance(n, ast.FunctionDef) and n.name.startswith("test_")}
+    missing = [n for n in named if n not in present]
+    assert not missing, (
+        f"the freeze names tests this file does not define: {missing}")
+    assert len(named) == len(set(named)), "the freeze lists a test twice"
+
+    keywords = ("hash_seed", "frozen_loop_twice", "never_passes",
+                "right_pair_of_runs", "never_gates", "main_refuses",
+                "discloses_the_criterion")
+    structural = {n for n in present if any(k in n for k in keywords)}
+    assert structural == set(named), (
+        "the freeze's list and this file's structural control tests differ: "
+        f"unlisted {sorted(structural - set(named))}, "
+        f"named-but-absent {sorted(set(named) - structural)}")
 
 
 def test_the_freeze_still_refuses_once_an_adapter_exists(tmp_path, monkeypatch):

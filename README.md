@@ -888,20 +888,72 @@ Stage 1 for the price of a sha256.
 hash-bound and cannot grow a mode, so `train_with_preservation` is a second copy of
 it — and a second copy can drift, which would appear as a difference between Stage
 1 and Stage 2 having nothing to do with either mechanism. Two independent checks
-bound that: `--control` trains the incumbent row through the new loop with every
-group in a plain `sft`/`gd` mode and compares the adapter to the one Stage 1 filed
-by sha256 over the whole directory, **refusing to train a single candidate** if the
-digests differ; and 83 tests drive both loops against one stub model on CPU and
-assert bit-identical parameters *and* identical epoch summaries, so a divergence is
-caught without a GPU. The anchor's correctness rests on three guards that run at
-every step: the NLL recomputed from the extracted log-probabilities must equal the
-loss the model returned (a causal LM predicts `labels[i]` from `logits[i-1]`, and an
-off-by-one there is invisible in the numbers — it just anchors every position
-against its neighbour's reference distribution; measured agreement 7.5e-09), the
-cached supervised tokens must equal the current ones, and the cache's recorded MF
-digest must match the adapter the run starts from. The reference is cached exact
-rather than top-k truncated — 1,489 positions × 248,320 vocabulary = 1.479 GB in
-fp32 — so no second model is resident beside a co-tenant.
+bound that: `--control` trains the incumbent objective three times in one process
+under one pinned `PYTHONHASHSEED` — A through the frozen loop, A2 through the
+frozen loop again, B through the new loop with every group in a plain `sft`/`gd`
+mode and neither cap nor anchor — and **refuses to train a single candidate**
+unless the gap between A and B is no wider than the gap between A and A2, with
+bitwise equality demanded outright when that floor is exactly zero, compared per
+tensor rather than by digest because a digest says "different" and cannot
+distinguish float noise from a different objective; and 92 tests drive both loops
+against one stub model on CPU and assert bit-identical parameters *and* identical
+epoch summaries, so a divergence is caught without a GPU.
+
+**The control was first frozen with a different criterion, and it refused.** That
+version compared one run of the new loop against the adapter Stage 1 *filed*, by
+sha256 over the whole directory. It ran 1187.8 s over 230 optimizer steps and
+reported different digests — with an identical recipe in all fifteen fields, an
+identical init adapter, and `adapter_config.json` differing only in the *order* of
+the same seven target modules. That order is not reproducible:
+`PeftConfig.target_modules` is a Python `set`, and Python randomises the string
+hash seed per process unless `PYTHONHASHSEED` is exported, so the order PEFT
+serialises it in — and the LoRA injection order behind it, which decides which
+module draws which dropout mask — varies run to run. Four seeds were measured to
+give four different orders over the same seven modules, a pinned seed gives one
+order every time, and the filed order matched none of the seven seeds tried, so
+the process that wrote it is not recoverable and no later run can match its bytes.
+
+To establish that this indicted the criterion rather than the new loop, the
+**frozen** loop was re-run unedited on the same spec from the same init adapter. It
+did not reproduce the filed adapter either, and missed it by about as much as the
+new loop had: max per-tensor weight gap 1.726e-03 for the frozen re-run against
+filed, 1.812e-03 for the new loop against filed, 1.800e-03 between the two re-runs,
+over 256 tensors. Three gaps of one order, so the new loop is no further from the
+filed adapter than the frozen loop is from a file the frozen loop itself wrote.
+Both runs are kept under `outputs/superseded/iter12_stage2_control_v1/`, whose
+README records the digests, the three gaps and the three `target_modules` orders,
+and whose small files are committed so the disclosure can be checked rather than
+believed. The filed adapter is still loaded and its gap still reported beside the
+gate; it is simply not what the gate reads, and `train_iter12_stage2.py` refuses to
+run the control at all without a pinned seed because a control under a randomised
+one measures the interpreter.
+
+The freeze was amended to record all of this, and the amendment touches no
+criterion: the anchor, its values, the eight numbers, the epsilon, the tie-break
+and the grid are byte-identical to what was frozen, which is checkable because the
+run that refused produced no candidate, no prediction, no retention number and no
+score — there was no result for any of them to have been fitted to. The retired
+criterion was unsatisfiable by construction, so it tested the hash seed rather than
+the two loops, and a gate that cannot pass says nothing when it fails. Because
+widening what an amendment may touch needs something holding the other side, eight
+tests now pin the control *structurally*, by parsing the script that holds it: the
+hash seed is checked before anything trains and an unpinned one is refused by code
+that is executed rather than merely inspected, three runs happen with the frozen
+loop twice, each side of the gate is built from the right pair of them, the gate
+has exactly three branches and never assigns a bare `True`, the filed adapter never
+reaches it, and `main` refuses to train both when the gate did not pass and when
+the control was never run. The freeze lists all eight by name under
+`faithfulness_control.what_pins_this_in_the_suite`, and a test reads that list back
+against the test file, so the disclosure is checkable rather than descriptive. The
+anchor's correctness rests on three guards that run
+at every step: the NLL recomputed from the extracted log-probabilities must equal
+the loss the model returned (a causal LM predicts `labels[i]` from `logits[i-1]`,
+and an off-by-one there is invisible in the numbers — it just anchors every
+position against its neighbour's reference distribution; measured agreement
+7.5e-09), the cached supervised tokens must equal the current ones, and the cache's
+recorded MF digest must match the adapter the run starts from. The reference is
+cached exact rather than top-k truncated — 1,489 positions × 248,320 vocabulary =
+1.479 GB in fp32 — so no second model is resident beside a co-tenant.
 
 The freeze binds eight protocol paths, seventeen modules Stage 2 imports and must
 not edit, and eighteen committed data paths, plus — separately, because they are
@@ -915,22 +967,35 @@ recomputes all eight numbers for each reused state and refuses unless they equal
 the values Stage 1c filed, and refuses any path resolving inside the sealed 11C
 confirmation. Its refusal is keyed on adapters and evaluated before any flag, so
 `--refreeze` cannot reach past it — the control's adapter included, since a control
-run under an unfrozen loop proves nothing about the frozen one. It was amended
-twice before any adapter existed, both recorded with reasons and neither moving the
-criterion: once for a self-describing field, once to correct four cache figures in
-a docstring that had been estimated before the cache was built and was wrong on
-every one of them (1,434 rows of 248,077 at 1.42 GB, against the 1,489 rows of
-248,320 at 1.479 GB the sidecar records). A test now reads those figures back from
-the committed sidecar, because an estimate in a docstring is otherwise compared
-against nothing. 17 mutations — the clamp removed, capped rows made to descend,
-the capped value booked as the group's NLL, the accumulation tail normalised by the
-full window, supervised positions read one place late, the alignment and NLL guards
+run under an unfrozen loop proves nothing about the frozen one. It was amended four
+times, all four recorded with reasons, all four recording that no adapter existed
+under the root it governs, and none moving the criterion: once for a self-describing
+field; once to correct four cache figures in a docstring that had been estimated
+before the cache was built and was wrong on every one of them (1,434 rows of
+248,077 at 1.42 GB, against the 1,489 rows of 248,320 at 1.479 GB the sidecar
+records), which a test now reads back from the committed sidecar because an estimate
+in a docstring is otherwise compared against nothing; once to replace the
+faithfulness control's comparison basis; and once to name in the freeze itself the
+eight tests that hold that replacement, and to correct a count the previous entry
+got wrong. The third was made only after the failed control's adapter had been
+*moved* out of the root the freeze governs, so its precondition was genuinely
+satisfied rather than bypassed, and the moved run is committed so the reason is
+inspectable. 28 mutations — the clamp removed, capped rows made to descend, the
+capped value booked as the group's NLL, the accumulation tail normalised by the full
+window, supervised positions read one place late, the alignment and NLL guards
 disabled, an unknown cache row served from a neighbour, the anchor permitted on a
 target group, the seal compared as a string so `..` walks past it, the floor gate
 made to pass whatever it is given, the control's adapter made invisible to the
-freeze, and four grid edits — were each caught, with the freeze's own hash check
-deselected so that every mutation had to be caught by a test exercising the
-behaviour rather than by the file having changed.
+freeze, four grid edits, and eleven aimed at the redesigned control (the gate made
+to pass whatever the two loops did, the bitwise demand conditioned away, the gate
+fed the filed adapter so the unsatisfiable criterion returns, the noise floor
+measured against the wrong run, A2 dropped so the floor is assumed rather than
+measured, the hash seed not pinned before training and then accepted rather than
+refused, a failed control and an unrun control each no longer stopping the
+candidates, and the freeze's disclosure and its named test list each quietly
+removed) — were each caught, with the freeze's own hash check deselected so that
+every mutation had to be caught by a test exercising the behaviour rather than by
+the file having changed.
 
 ## Iteration history
 
@@ -993,8 +1058,26 @@ decides: seven rows — four ascent caps, the 2.0-nat cap repeated at eight epoc
 test the decoupling of suppression from budget, and the MF anchor alone and beside
 replay at `beta = 13.642` derived from committed training summaries. Because
 `train_unlearning` is hash-bound and cannot grow a mode, the new loop is a second
-copy of it, policed twice: a byte-reproduction control on the incumbent adapter
-that refuses to train anything if the digests differ, and 83 tests that drive both
-loops against one stub model and require bit-identical parameters. 17 mutations
-caught; the freeze was amended twice before any adapter existed and now cannot be
-amended at all.
+copy of it, policed twice: a GPU control that refuses to train anything unless the
+two loops agree, and 92 tests that drive both loops against one stub model and
+require bit-identical parameters. **The control was first frozen as
+byte-reproduction against the incumbent's filed adapter, ran, and refused** — and
+the refusal turned out to be about the criterion, not the loop: `PeftConfig
+.target_modules` is a Python `set`, so the order PEFT serialises it in, and the
+LoRA injection order behind it, vary with the per-process hash seed, and the filed
+order is not recoverable. Re-running the *frozen* loop unedited missed those bytes
+by about as much as the new loop had (1.726e-03 against 1.812e-03 max per-tensor
+gap), so the control now trains the incumbent objective three times in one process
+under a pinned `PYTHONHASHSEED` and gates the across-loop gap against the
+same-loop gap it *measures*, with the filed adapter still reported beside the gate.
+Both runs are kept under `outputs/superseded/iter12_stage2_control_v1/`. 28
+mutations caught, 0 survived. The freeze was amended four times; the third only
+after the failed control's adapter was moved out of the root the freeze governs, so
+its precondition was genuinely satisfied rather than bypassed, and the fourth
+corrects a count the third got wrong — it said seven structural tests hold the
+widened seal, and there are eight, because the test pinning which pair of runs each
+side of the gate is built from was written after that reason was drafted. The
+criterion did not move: the anchor, its values, the eight numbers, the epsilon, the
+tie-break and the grid are byte-identical to what was frozen, which the run that
+refused could not have influenced because it produced no candidate, no prediction,
+no retention number and no score.

@@ -430,11 +430,24 @@ def build_freeze(repo_root: Path) -> dict[str, Any]:
             "what_it_is": (
                 "train_with_preservation is a second copy of a training loop, "
                 "because unlearning_trainer.train_unlearning is hash-bound and "
-                "cannot grow a mode. --control trains the incumbent Stage-1 row "
-                "through the new loop with every group in a plain sft/gd mode "
-                "and compares the adapters by sha256."),
-            "reproduces": sg.incumbent_row(),
+                "cannot grow a mode. --control trains the incumbent Stage-1 "
+                "objective THREE times in ONE process under ONE pinned "
+                "PYTHONHASHSEED: A through the frozen loop, A2 through the "
+                "frozen loop again, B through the new loop with every group in "
+                "a plain sft/gd mode and neither a cap nor an anchor."),
+            "reproduces_the_objective_of": sg.incumbent_row(),
             "spec_read_from": "the frozen Stage-1 grid, not retyped",
+            "the_gate": (
+                "A2 exists to MEASURE the noise floor rather than assume it: "
+                "gap(A, A2) is how far two runs of the same code land apart on "
+                "this stack. The gate is that gap(A, B) does not exceed it -- "
+                "and bitwise equality is demanded outright when the floor is "
+                "exactly zero, which is what one process and a pinned seed are "
+                "supposed to buy. A sha256 alone cannot express this: it says "
+                "'different' and stops, so it cannot distinguish float noise "
+                "from a different objective, which is the whole question. The "
+                "control therefore compares per-tensor gaps and reports the "
+                "worst tensor."),
             "it_is_a_gate_not_a_report": (
                 "scripts/train_iter12_stage2.py refuses to train a single "
                 "candidate unless the control passed, so a drift between the "
@@ -446,10 +459,96 @@ def build_freeze(repo_root: Path) -> dict[str, Any]:
                 "forward-call counts, optimizer steps and epoch summaries, so "
                 "a divergence is caught without a GPU as well."),
             "control_dir_is_inside_the_refusal": (
-                "The control's adapter lives under the Stage-2 checkpoint root, "
+                "The control's adapters live under the Stage-2 checkpoint root, "
                 "so running it locks this freeze against amendment. That is "
                 "deliberate: a control run under an unfrozen loop proves "
                 "nothing about the frozen one."),
+            "a_criterion_this_replaced": (
+                "The control as first frozen compared ONE run of the new loop "
+                "against the adapter Stage 1 FILED, by sha256 over the whole "
+                "directory. It ran, and refused: identical recipe in all "
+                "fifteen fields, identical init adapter, identical 230 "
+                "optimizer steps, and adapter_config.json differing only in the "
+                "ORDER of the same seven target modules. That order is not "
+                "reproducible. PeftConfig.target_modules is a Python set, and "
+                "Python randomises the string hash seed per process unless "
+                "PYTHONHASHSEED is exported, so the serialised order -- and the "
+                "LoRA injection order behind it, which decides which module "
+                "draws which dropout mask -- varies run to run. Four seeds were "
+                "measured to give four different orders, a pinned seed gives "
+                "one order every time, and the filed order matched none of the "
+                "seven seeds tried, so the process that wrote it is not "
+                "recoverable."),
+            "the_evidence_that_it_was_the_stack_not_the_new_loop": (
+                "The FROZEN loop, unedited and hash-bound, was re-run on the "
+                "same spec from the same init adapter. It did not reproduce the "
+                "filed adapter either, and landed the same distance from it: "
+                "max per-tensor weight gap 1.726e-03 for the frozen re-run "
+                "against filed, 1.812e-03 for the new loop against filed, "
+                "1.800e-03 between the two re-runs -- three gaps of one order, "
+                "so the new loop is no further from the filed adapter than the "
+                "frozen loop is from itself. All three adapters hold the same "
+                "seven target modules in three different orders. Both runs are "
+                "kept under outputs/superseded/iter12_stage2_control_v1/, whose "
+                "README.md records the orders and the gaps."),
+            "why_replacing_it_is_not_moving_the_goalposts": (
+                "The retired criterion was unsatisfiable by construction, so it "
+                "tested the interpreter's hash seed rather than the two loops, "
+                "and a gate that cannot pass says nothing when it fails. The "
+                "replacement asks the question the original was written to ask "
+                "-- do the two copies compute the same function? -- and asks it "
+                "in the only way that has an answer, with the environment held "
+                "still and the noise floor measured instead of assumed. The "
+                "filed adapter is still loaded, compared and REPORTED beside "
+                "the gate, so its gap stays visible; it is simply not what the "
+                "gate reads. Nothing about the anchor, the eight numbers, the "
+                "epsilon, the tie-break, the grid or the mechanisms moved: the "
+                "control produced no candidate, no prediction, no retention "
+                "number and no score, so there was no result for any of them to "
+                "be fitted to. What changed is a fact about the apparatus. The "
+                "failed control's directory was MOVED to outputs/superseded "
+                "rather than deleted, so the adapter that demonstrated the "
+                "defect is still on disk and inspectable."),
+            "the_hash_seed_is_pinned_by_the_lane_script": (
+                "scripts/lanes/iter12_stage2.sh exports PYTHONHASHSEED, and "
+                "train_iter12_stage2.py refuses to run the control at all "
+                "without it, because a control under a randomised seed measures "
+                "the seed."),
+            "what_pins_this_in_the_suite": [
+                "test_the_control_pins_the_hash_seed_before_it_trains_anything",
+                "test_an_unpinned_hash_seed_refuses_rather_than_measuring_the_"
+                "interpreter",
+                "test_the_control_runs_the_frozen_loop_twice_and_the_new_loop_"
+                "once",
+                "test_the_gate_never_passes_unconditionally",
+                "test_the_gate_compares_the_right_pair_of_runs_on_each_side",
+                "test_the_filed_adapter_is_reported_and_never_gates",
+                "test_main_refuses_to_train_when_the_control_did_not_pass",
+                "test_the_freeze_discloses_the_criterion_the_control_replaced",
+            ],
+            "why_those_tests_are_listed_here": (
+                "Replacing this control's criterion widened what a later "
+                "amendment may touch to include faithfulness_control.*, so the "
+                "seal needs something holding the other side. These eight tests "
+                "are that. They are STRUCTURAL rather than behavioural because "
+                "the script imports the trainers at module level and CI "
+                "installs a closure without torch: each parses "
+                "scripts/train_iter12_stage2.py and asserts which branch does "
+                "what -- that the hash seed is checked first, that three runs "
+                "happen with the frozen loop twice, that each side of the gate "
+                "is built from the right pair of them, that the gate has exactly "
+                "three branches and never assigns a bare True, that the filed "
+                "adapter never reaches it, and that main refuses to train both "
+                "when the gate failed and when the control was never run. "
+                "Naming them here rather than describing them in prose makes "
+                "the list checkable against the test file, and makes a later "
+                "amendment that quietly drops one visible as a change to this "
+                "field. One of them is not purely structural: "
+                "test_an_unpinned_hash_seed_refuses_rather_than_measuring_the_"
+                "interpreter lifts that single function out by "
+                "ast.get_source_segment and EXECUTES it, because 'there is a "
+                "raise statement somewhere in here' passes just as happily for "
+                "'if False: raise'."),
         },
 
         # ── 6. what is never read ──

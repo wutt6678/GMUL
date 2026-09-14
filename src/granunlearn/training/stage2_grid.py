@@ -346,8 +346,12 @@ def stage2_ckpt_root(repo_root: Path) -> Path:
 def stage1_ckpt_root(repo_root: Path) -> Path:
     """Where Stage 1's adapters are.  READ ONLY: Stage 2 writes none of them.
 
-    The incumbent row lives here, and so does the adapter the faithfulness
-    control must reproduce byte for byte.
+    The incumbent row lives here.  The faithfulness control reads its adapter
+    and reports the gap beside its own gate; it does not gate on reproducing
+    those bytes, because they are not reproducible -- the process that wrote
+    them had a randomised PYTHONHASHSEED, which fixes the order PEFT serialises
+    ``target_modules`` in and, through the LoRA injection order, the weights.
+    See ``freeze_iter12_stage2.py``'s ``faithfulness_control``.
     """
     return repo_root / _guard(STAGE1_CKPT_ROOT)
 

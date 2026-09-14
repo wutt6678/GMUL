@@ -1,0 +1,95 @@
+{
+  "method_id": "control_incumbent_byte_reproduction",
+  "recipe": {
+    "model_id": "Qwen/Qwen3.5-9B",
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "lora_target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "learning_rate": 2e-05,
+    "weight_decay": 0.0,
+    "num_epochs": 5,
+    "per_device_batch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "max_length": 1536,
+    "max_image_pixels": 147456,
+    "seed": 42,
+    "bf16": true,
+    "gradient_checkpointing": true
+  },
+  "init_adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MF/adapters",
+  "groups": [
+    {
+      "name": "fine_target",
+      "mode": "gd",
+      "weight": 0.5,
+      "cap": null,
+      "anchor_weight": null,
+      "num_examples": 90
+    },
+    {
+      "name": "target_level",
+      "mode": "sft",
+      "weight": 1.0,
+      "cap": null,
+      "anchor_weight": null,
+      "num_examples": 90
+    },
+    {
+      "name": "retain",
+      "mode": "sft",
+      "weight": 1.0,
+      "cap": null,
+      "anchor_weight": null,
+      "num_examples": 183
+    }
+  ],
+  "epochs": [
+    {
+      "epoch": 1,
+      "avg_loss_fine_target": 0.1212,
+      "avg_loss_target_level": 2.0588,
+      "avg_loss_retain": 0.0429,
+      "avg_objective": 0.517
+    },
+    {
+      "epoch": 2,
+      "avg_loss_fine_target": 0.9034,
+      "avg_loss_target_level": 0.6058,
+      "avg_loss_retain": 0.1401,
+      "avg_objective": 0.1088
+    },
+    {
+      "epoch": 3,
+      "avg_loss_fine_target": 2.1055,
+      "avg_loss_target_level": 0.288,
+      "avg_loss_retain": 0.1809,
+      "avg_objective": -0.0984
+    },
+    {
+      "epoch": 4,
+      "avg_loss_fine_target": 4.4271,
+      "avg_loss_target_level": 0.2455,
+      "avg_loss_retain": 0.3795,
+      "avg_objective": -0.2966
+    },
+    {
+      "epoch": 5,
+      "avg_loss_fine_target": 5.8722,
+      "avg_loss_target_level": 0.0801,
+      "avg_loss_retain": 0.4075,
+      "avg_objective": -0.5027
+    }
+  ],
+  "num_optimizer_steps": 230,
+  "device": "cuda:0",
+  "train_seconds": 1187.8
+}

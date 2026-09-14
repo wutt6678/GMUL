@@ -183,6 +183,21 @@ jobs:
               # sha256 of the MF adapter, the base-model revision and the
               # encoding contract.  Rebuilding it needs a GPU.
               "data/mllmu_hier_pilot100/mf_reference_logprobs/sidecar.json",
+              # The superseded Stage-2 control and the frozen-loop re-run that
+              # explained it.  The freeze's faithfulness_control section asserts
+              # a finding about these two runs, and a disclosure nobody can
+              # inspect is only an assertion, so the small files are committed
+              # while the 131 MB of weights each stay ignored.  They are
+              # required here because reaching them needs a SCOPED gitignore
+              # negation -- `!outputs/superseded/` on its own would have
+              # re-included 30 superseded pilot-100 parquets parked beside
+              # them, so the rule opens the directory, closes everything else
+              # in it, then opens one subdirectory.  A regression in that is
+              # easy to introduce and invisible until a clone is made, and this
+              # turns it into "Missing committed reports" instead of a test
+              # failing on an assertion about a file that is not there.
+              "outputs/superseded/iter12_stage2_control_v1/control_incumbent_byte_reproduction/CONTROL.json",
+              "outputs/superseded/iter12_stage2_control_v1/frozen_loop_rerun/RERUN_COMPARISON.json",
           ]
           missing = [p for p in required if not Path(p).exists()]
           if missing:

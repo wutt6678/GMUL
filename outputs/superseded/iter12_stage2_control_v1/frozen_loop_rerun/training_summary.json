@@ -1,0 +1,89 @@
+{
+  "method_id": "frozen_loop_rerun",
+  "recipe": {
+    "model_id": "Qwen/Qwen3.5-9B",
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "lora_target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "learning_rate": 2e-05,
+    "weight_decay": 0.0,
+    "num_epochs": 5,
+    "per_device_batch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "max_length": 1536,
+    "max_image_pixels": 147456,
+    "seed": 42,
+    "bf16": true,
+    "gradient_checkpointing": true
+  },
+  "init_adapter_dir": "/scratch/wutiantong/GMUL/granularity-unlearning/data/checkpoints/mllmu_pilot100/MF/adapters",
+  "groups": [
+    {
+      "name": "fine_target",
+      "mode": "gd",
+      "weight": 0.5,
+      "num_examples": 90
+    },
+    {
+      "name": "target_level",
+      "mode": "sft",
+      "weight": 1.0,
+      "num_examples": 90
+    },
+    {
+      "name": "retain",
+      "mode": "sft",
+      "weight": 1.0,
+      "num_examples": 183
+    }
+  ],
+  "epochs": [
+    {
+      "epoch": 1,
+      "avg_loss_fine_target": 0.1213,
+      "avg_loss_target_level": 2.0598,
+      "avg_loss_retain": 0.0424,
+      "avg_objective": 0.517
+    },
+    {
+      "epoch": 2,
+      "avg_loss_fine_target": 0.908,
+      "avg_loss_target_level": 0.6027,
+      "avg_loss_retain": 0.1409,
+      "avg_objective": 0.1079
+    },
+    {
+      "epoch": 3,
+      "avg_loss_fine_target": 2.1214,
+      "avg_loss_target_level": 0.2873,
+      "avg_loss_retain": 0.1821,
+      "avg_objective": -0.0999
+    },
+    {
+      "epoch": 4,
+      "avg_loss_fine_target": 4.3633,
+      "avg_loss_target_level": 0.1949,
+      "avg_loss_retain": 0.3898,
+      "avg_objective": -0.2961
+    },
+    {
+      "epoch": 5,
+      "avg_loss_fine_target": 6.7665,
+      "avg_loss_target_level": 0.0897,
+      "avg_loss_retain": 0.5073,
+      "avg_objective": -0.5609
+    }
+  ],
+  "num_optimizer_steps": 230,
+  "device": "cuda:0",
+  "train_seconds": 1091.4
+}
