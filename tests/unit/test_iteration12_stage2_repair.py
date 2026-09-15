@@ -77,18 +77,27 @@ def freeze_doc() -> dict:
     return json.loads(FREEZE.read_text())
 
 
-def _history_is_shallow() -> bool:
-    """Whether this checkout can answer "what was HEAD at time T" at all.
+def _history_can_reconstruct(frozen_at_utc: str) -> bool:
+    """Whether THIS checkout can turn that one timestamp into a commit.
 
-    Asked of git rather than inferred from what the function under test returned,
-    because a test that branched on the result would pass against a script that
-    disclosed unconditionally and never measured anything.  The workflow clones
-    with ``fetch-depth: 0``, so CI takes the other branch -- which is why the
-    disclosure is also driven deterministically in its own test below.
+    The same query the script runs, asked of git directly rather than inferred
+    from what the script returned -- a test that branched on the returned value
+    would also pass against a script that disclosed unconditionally and measured
+    nothing.
+
+    Asked PER FREEZE, because the answer is a property of one timestamp against
+    one checkout and not of the checkout alone.  ``git rev-parse
+    --is-shallow-repository`` is not that question and must not be used as a
+    proxy for it: a depth-8 clone reports ``true`` and still contains both
+    commits these two freezes need, so branching on it demands a disclosure from
+    a checkout that could have measured, and fails on the measurement it should
+    have required instead.  Shallow says history was TRUNCATED; it does not say
+    how much, or whether what is needed survived the truncation.
     """
-    return subprocess.run(
-        ("git", "rev-parse", "--is-shallow-repository"), cwd=REPO_ROOT,
-        capture_output=True, text=True, check=False).stdout.strip() == "true"
+    return bool(subprocess.run(
+        ("git", "rev-list", "-1", f"--before={frozen_at_utc}", "HEAD"),
+        cwd=REPO_ROOT, capture_output=True, text=True,
+        check=False).stdout.strip())
 
 
 def selector_lines() -> list[str]:
@@ -645,9 +654,13 @@ class TestTheThirdDefectIsDisclosedRatherThanPatched:
         for rel, entry in out["per_freeze"].items():
             if entry["git_commit"] is not None:
                 continue
-            if _history_is_shallow():
-                #: A depth-1 checkout does not contain the commit that preceded
-                #: the freeze, so there is nothing to reconstruct FROM.  Asserted
+            #: Read out of the FILED freeze, not out of the proof's copy of it, so
+            #: the branch is chosen by git and the artifact rather than by anything
+            #: the function under test produced.
+            frozen_at = json.loads((REPO_ROOT / rel).read_text())["frozen_at_utc"]
+            if not _history_can_reconstruct(frozen_at):
+                #: This checkout does not contain the commit that preceded the
+                #: freeze, so there is nothing to reconstruct FROM.  Asserted
                 #: rather than skipped, and the assertion is about the shape: the
                 #: disclosure must carry no field a reader could mistake for a
                 #: measurement, which is what makes it a disclosure.

@@ -1206,6 +1206,23 @@ reconstructing branch, and the disclosure is driven deterministically anyway by 
 timestamp before the first commit — a branch no test reaches is a branch a mutation
 can rewrite unnoticed.
 
+Which branch a test takes is decided by asking git the same question the script
+asks — `rev-list -1 --before=<that freeze's own frozen_at_utc> HEAD`, per freeze —
+and not by `git rev-parse --is-shallow-repository`. A first version of the test
+branched on the latter and was wrong. A depth-8 clone reports `true`, and what it
+contains depends on where HEAD is: at the commit the defect was reported against the
+window reached back through both commits these two freezes need (`a19fe9d5` and
+`dae584a`), so the test demanded a disclosure from a checkout that could have
+measured and failed on the measurement it should have required. One commit later the
+same depth-8 window had moved past `a19fe9d`, so the two freezes **straddled the
+boundary** and a single run needed both branches. "Shallow" says history was
+truncated; it does not say how much, nor whether what is needed survived, nor which
+of several timestamps survived — and no per-repository answer can express a
+per-freeze condition. Fresh clones at full depth, 8 and 1 now pass together while
+taking the measured branch, both branches, and the disclosure branch respectively,
+which is the arrangement that shows the condition being tested is the real one
+rather than a proxy for it.
+
 72 tests in `tests/unit/test_iteration12_stage2_repair.py` hold all of this, torch-free
 and GPU-free; the arity audit that would have caught the first defect before the grid's
 generation ran — 96.72 minutes for the seven lanes, from the chain log's own two
