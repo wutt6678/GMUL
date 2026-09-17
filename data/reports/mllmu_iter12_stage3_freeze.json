@@ -1,0 +1,737 @@
+{
+  "iteration": "12",
+  "stage": 3,
+  "protocol": "route-aware B6 successor (method B7), exploratory",
+  "frozen_at_utc": "2026-09-17T11:25:45+00:00",
+  "git_commit": "8cff210faec260be9caaea214718c198064babc9",
+  "git_dirty": "M tests/unit/test_iteration12_stage2_repair.py\n?? scripts/build_iter12_stage3_basis.py\n?? scripts/freeze_iter12_stage3.py\n?? scripts/select_iter12_stage3.py\n?? scripts/train_iter12_stage3.py\n?? src/granunlearn/training/stage3_grid.py",
+  "amendments": [],
+  "status": {
+    "exploratory": true,
+    "preregistered_before_training": true,
+    "carries_no_confirmatory_claim": true,
+    "probe_entities_remain_evaluation_only": true
+  },
+  "what_is_frozen": {
+    "floor_numbers": [
+      "text.retain_same_entity.entity_macro",
+      "text.retain_same_entity.row_micro",
+      "text.retain_other_entity.entity_macro",
+      "text.retain_other_entity.row_micro",
+      "image.retain_same_entity_image.entity_macro",
+      "image.retain_same_entity_image.row_micro",
+      "image.retain_other_entity_image.entity_macro",
+      "image.retain_other_entity_image.row_micro"
+    ],
+    "num_numbers": 8,
+    "primary_anchor": "MG",
+    "primary_rule": "candidate >= MG - epsilon on all eight numbers; a number missing on either side disqualifies",
+    "epsilon": 1e-09,
+    "margin": 0.0,
+    "no_margin_is_used": true,
+    "anchor_values": {
+      "text.retain_same_entity.entity_macro": 0.4874,
+      "text.retain_same_entity.row_micro": 0.5025,
+      "text.retain_other_entity.entity_macro": 0.4257,
+      "text.retain_other_entity.row_micro": 0.4605,
+      "image.retain_same_entity_image.entity_macro": 0.5382,
+      "image.retain_same_entity_image.row_micro": 0.5221,
+      "image.retain_other_entity_image.entity_macro": 0.413,
+      "image.retain_other_entity_image.row_micro": 0.4474
+    },
+    "reported_baseline": "B0",
+    "reported_baseline_values": {
+      "text.retain_same_entity.entity_macro": 0.5256,
+      "text.retain_same_entity.row_micro": 0.5294,
+      "text.retain_other_entity.entity_macro": 0.5072,
+      "text.retain_other_entity.row_micro": 0.4737,
+      "image.retain_same_entity_image.entity_macro": 0.5053,
+      "image.retain_same_entity_image.row_micro": 0.5147,
+      "image.retain_other_entity_image.entity_macro": 0.5,
+      "image.retain_other_entity_image.row_micro": 0.4737
+    },
+    "denominators": {
+      "text.retain_same_entity.entity_macro": 408,
+      "text.retain_same_entity.row_micro": 408,
+      "text.retain_other_entity.entity_macro": 76,
+      "text.retain_other_entity.row_micro": 76,
+      "image.retain_same_entity_image.entity_macro": 408,
+      "image.retain_same_entity_image.row_micro": 408,
+      "image.retain_other_entity_image.entity_macro": 76,
+      "image.retain_other_entity_image.row_micro": 76
+    },
+    "among_eligible": "minimise D_G with the frozen tie-break, exactly as Stage 1 did. The floor decides eligibility; D_G only orders the eligible.",
+    "computed_by": "route_stratified_retention.floor_check_stratified -- the same frozen function Stage 1c used, with MG's vector passed as the baseline. That function is generic in its baseline, so no new metric code was written and none was edited.",
+    "distance_to_mg": {
+      "direction": "minimize",
+      "rounding": "6 decimals, as distance_to_reference rounds",
+      "tie_break": "(distance_to_mg, candidate_id) ascending",
+      "mg_is_excluded_from_the_ranking": true
+    },
+    "unchanged_from_the_stage2_freeze": true
+  },
+  "b6_result": {
+    "candidate_id": "B6_beta13.642_lam0.5_lr2e-05_ep5",
+    "method": "B6",
+    "selected_stage2": null,
+    "stage3_gate": {
+      "stage3_opens": true,
+      "reason": "no candidate satisfied the primary retention floor",
+      "best_eligible": null,
+      "best_eligible_distance_to_mg": null,
+      "reference_row": "B4_w1.0_lam0.5_lr2e-05_ep5",
+      "reference_distance_to_mg": 0.046729,
+      "margin_required": 0.0,
+      "no_margin_is_used": true
+    },
+    "distance_to_mg": 0.060314,
+    "fine_target_nll": 0.6857,
+    "bounded_ascent_fine_target_nll_range": [
+      0.7832,
+      2.9924
+    ],
+    "preserves_the_target_transformation_better_than_bounded_ascent": true,
+    "values": {
+      "text.retain_same_entity.entity_macro": 0.543,
+      "text.retain_same_entity.row_micro": 0.5466,
+      "text.retain_other_entity.entity_macro": 0.5199,
+      "text.retain_other_entity.row_micro": 0.5132,
+      "image.retain_same_entity_image.entity_macro": 0.5043,
+      "image.retain_same_entity_image.row_micro": 0.5098,
+      "image.retain_other_entity_image.entity_macro": 0.4348,
+      "image.retain_other_entity_image.row_micro": 0.4211
+    },
+    "difference_vs_mg_anchor": {
+      "text.retain_same_entity.entity_macro": 0.0556,
+      "text.retain_same_entity.row_micro": 0.0441,
+      "text.retain_other_entity.entity_macro": 0.0942,
+      "text.retain_other_entity.row_micro": 0.0527,
+      "image.retain_same_entity_image.entity_macro": -0.0339,
+      "image.retain_same_entity_image.row_micro": -0.0123,
+      "image.retain_other_entity_image.entity_macro": 0.0218,
+      "image.retain_other_entity_image.row_micro": -0.0263
+    },
+    "text_route": {
+      "keys": [
+        "text.retain_same_entity.entity_macro",
+        "text.retain_same_entity.row_micro",
+        "text.retain_other_entity.entity_macro",
+        "text.retain_other_entity.row_micro"
+      ],
+      "passes": {
+        "text.retain_same_entity.entity_macro": true,
+        "text.retain_same_entity.row_micro": true,
+        "text.retain_other_entity.entity_macro": true,
+        "text.retain_other_entity.row_micro": true
+      },
+      "all_four_pass": true
+    },
+    "image_route": {
+      "keys": [
+        "image.retain_same_entity_image.entity_macro",
+        "image.retain_same_entity_image.row_micro",
+        "image.retain_other_entity_image.entity_macro",
+        "image.retain_other_entity_image.row_micro"
+      ],
+      "passes": {
+        "image.retain_same_entity_image.entity_macro": false,
+        "image.retain_same_entity_image.row_micro": false,
+        "image.retain_other_entity_image.entity_macro": true,
+        "image.retain_other_entity_image.row_micro": false
+      },
+      "failed": [
+        "image.retain_same_entity_image.entity_macro",
+        "image.retain_same_entity_image.row_micro",
+        "image.retain_other_entity_image.row_micro"
+      ],
+      "exactly_three_fail": true
+    },
+    "the_fourteen_query_shortfall": {
+      "same_image_rows": 5,
+      "same_image_denominator": 408,
+      "other_image_rows": 2,
+      "other_image_denominator": 76,
+      "expressed_over_trainval_both_route_denominators": {
+        "same": "10/816",
+        "other": "4/152",
+        "total": 14
+      },
+      "why_the_entity_macro_failure_adds_no_rows": "entity_macro and row_micro are two estimands over the same 408 image retain-same rows. Counting both as new queries would double-count the same outcomes; the distinct row shortfall is five of 408 retain-same plus two of 76 retain-other, written as ten of 816 and four of 152 when the two routes' train+val denominators are used."
+    },
+    "why_this_is_the_parent": "B6 is the only row that holds all four text floors while keeping the fine-target NLL below every bounded-ascent row. Its remaining failure is confined to the image route, so Stage 3 varies the image-conditioned anchor strength and leaves the rest of B6 unchanged."
+  },
+  "image_anchor_examples": {
+    "source_group": "data/mllmu_hier_pilot100/unlearning_iter12/retain.jsonl",
+    "source_group_sha256": "1221a45f08958a0542c0c40b8f219181d248ee0318e0c41cf403a90634276e3c",
+    "predicate": "modality == 'image_text' and image_path is non-empty",
+    "fit_half_examples": 183,
+    "image_conditioned_examples": 183,
+    "not_image_conditioned": 0,
+    "all_fit_half_examples_are_image_conditioned": true,
+    "entities": 35,
+    "associations": 183,
+    "probe_half_overlap": {
+      "associations": 0,
+      "entities": 0,
+      "must_be_zero": true
+    },
+    "the_important_disclosure": "Every fit-half retention example is image-conditioned, so the route-aware term is additional weight on the existing 183-example stream, not a restriction to a smaller subset. Any prose that calls it a subset without this sentence would overstate the mechanism.",
+    "mf_cache": {
+      "directory": "data/mllmu_hier_pilot100/mf_reference_logprobs",
+      "sidecar": "data/mllmu_hier_pilot100/mf_reference_logprobs/sidecar.json",
+      "sidecar_sha256": "b1e33ada946a1b49624e812f3659ec90e66d453e81e83aa3471cdf04a3467e35",
+      "tensor_sha256": "dbf8b475e01bf3e13c731f04b94109e8dc37b14d6252598d7e9b6811999e5f6a",
+      "mf_adapter_sha256": "4c5d158895480a762f7319ebb2ff04aa87d4818a37877e9236553bdb97dc2f76",
+      "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "cache_version": 1,
+      "num_examples": 183,
+      "num_positions": 1489,
+      "cache_rows_match_the_image_conditioned_group": true,
+      "cache_is_the_image_conditioned_mf_cache": true,
+      "probe_half_excluded": true,
+      "target_groups_excluded": [
+        "fine_target",
+        "target_level"
+      ],
+      "kl_direction": "KL(p_MF || p_theta), exact over the full vocabulary",
+      "encoding": {
+        "max_length": 1536,
+        "max_image_pixels": 147456,
+        "vocab_size": 248320
+      },
+      "no_new_cache_is_needed": true,
+      "why": "The Stage-2 cache already covers exactly these 183 image-conditioned examples at every supervised position, with MF-adapter and encoding provenance. Rebuilding the same 1.48 GB tensor under a Stage-3 name would add bytes, not information."
+    }
+  },
+  "mechanism": {
+    "method": "B7",
+    "parent": "B6_beta13.642_lam0.5_lr2e-05_ep5",
+    "what_moves": "only the coefficient on the image-conditioned MF anchor stream: effective weight = B6 beta + additional image weight",
+    "what_does_not_move": [
+      "fine_target gd at lambda 0.5",
+      "target_level sft at weight 1.0",
+      "the fit-half retain examples",
+      "the MF reference cache",
+      "learning rate 2e-05",
+      "five epochs",
+      "training seed 42",
+      "PYTHONHASHSEED 0",
+      "the frozen trainer and its starting MF adapter"
+    ],
+    "additional_image_weight_multipliers": [
+      0.125,
+      0.25,
+      0.5,
+      1.0
+    ],
+    "additional_image_weights": [
+      1.7052,
+      3.4105,
+      6.821,
+      13.642
+    ],
+    "effective_anchor_weights": [
+      15.3472,
+      17.0525,
+      20.463,
+      27.284
+    ],
+    "why_these_weights": "B6 is the local optimum to improve on, so the sweep stays local: one eighth, one quarter, one half and one times its calibrated beta as ADDITIONAL image-conditioned weight. The zero row is B6 itself, not a fifth training run."
+  },
+  "grid": {
+    "num_rows": 6,
+    "num_trained": 4,
+    "rows": [
+      {
+        "candidate_id": "B0",
+        "method": "B0",
+        "noop": true,
+        "groups": [],
+        "overrides": {},
+        "image_anchor_weight": null,
+        "effective_anchor_weight": null,
+        "reused_from": "stage1"
+      },
+      {
+        "candidate_id": "B6_beta13.642_lam0.5_lr2e-05_ep5",
+        "method": "B6",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "anchor",
+            "weight": 13.642,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        },
+        "image_anchor_weight": 0.0,
+        "effective_anchor_weight": 13.642,
+        "reused_from": "stage2"
+      },
+      {
+        "candidate_id": "B7_imgw1.7052_beta13.642_lam0.5_lr2e-05_ep5",
+        "method": "B7",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "anchor",
+            "weight": 15.3472,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        },
+        "image_anchor_weight": 1.7052,
+        "effective_anchor_weight": 15.3472,
+        "reused_from": null
+      },
+      {
+        "candidate_id": "B7_imgw3.4105_beta13.642_lam0.5_lr2e-05_ep5",
+        "method": "B7",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "anchor",
+            "weight": 17.0525,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        },
+        "image_anchor_weight": 3.4105,
+        "effective_anchor_weight": 17.0525,
+        "reused_from": null
+      },
+      {
+        "candidate_id": "B7_imgw6.821_beta13.642_lam0.5_lr2e-05_ep5",
+        "method": "B7",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "anchor",
+            "weight": 20.463,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        },
+        "image_anchor_weight": 6.821,
+        "effective_anchor_weight": 20.463,
+        "reused_from": null
+      },
+      {
+        "candidate_id": "B7_imgw13.642_beta13.642_lam0.5_lr2e-05_ep5",
+        "method": "B7",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "anchor",
+            "weight": 27.284,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        },
+        "image_anchor_weight": 13.642,
+        "effective_anchor_weight": 27.284,
+        "reused_from": null
+      }
+    ],
+    "the_frozen_validator_was_run": {
+      "residual_errors": [],
+      "filtered_messages": [
+        "B6_beta13.642_lam0.5_lr2e-05_ep5: unknown method B6",
+        "B6_beta13.642_lam0.5_lr2e-05_ep5: bad mode anchor",
+        "B7_imgw1.7052_beta13.642_lam0.5_lr2e-05_ep5: unknown method B7",
+        "B7_imgw1.7052_beta13.642_lam0.5_lr2e-05_ep5: bad mode anchor",
+        "B7_imgw3.4105_beta13.642_lam0.5_lr2e-05_ep5: unknown method B7",
+        "B7_imgw3.4105_beta13.642_lam0.5_lr2e-05_ep5: bad mode anchor",
+        "B7_imgw6.821_beta13.642_lam0.5_lr2e-05_ep5: unknown method B7",
+        "B7_imgw6.821_beta13.642_lam0.5_lr2e-05_ep5: bad mode anchor",
+        "B7_imgw13.642_beta13.642_lam0.5_lr2e-05_ep5: unknown method B7",
+        "B7_imgw13.642_beta13.642_lam0.5_lr2e-05_ep5: bad mode anchor"
+      ],
+      "filtered_gap_substrings": [
+        "unknown method",
+        "bad mode"
+      ],
+      "filtered_because": "candidate_grid.py is hash-bound and its METHODS/mode vocabulary predates B6/B7 and anchor. Only 'unknown method' and 'bad mode' are filtered; every structural check it can still make applies unchanged."
+    }
+  },
+  "seeds_and_layout": {
+    "training_seed": 42,
+    "python_hash_seed": "0",
+    "why_the_seed_is_held": "Every B7 row is B6 with one coefficient moved, so the recipe seed, LoRA shape, optimizer, learning rate, epochs, per-device batch, accumulation, max length and image-pixel budget are held at B6's values.",
+    "training": {
+      "learning_rate": 2e-05,
+      "num_epochs": 5,
+      "per_device_batch_size": 1,
+      "gradient_accumulation_steps": 8,
+      "max_length": 1536,
+      "max_image_pixels": 147456
+    },
+    "generation_contract_inherited_from": "data/reports/mllmu_iter12_selection_protocol_freeze.json"
+  },
+  "zero_weight_control": {
+    "report": "data/reports/mllmu_iter12_stage3_control.json",
+    "sha256": "15163a763c632da07f60c89c200ec22ffd6e33a9d377ba9093f49ab20bbdce17",
+    "control": "control_zero_image_anchor_weight_reproduces_b6",
+    "rule": "additional image-anchor weight 0 is B6: same groups, modes, weights, paths, overrides, seed, batch layout, cache and starting adapter, and the bound B6 bytes reproduce the filed eight values and D_G within tolerance",
+    "tolerances": {
+      "floor_values": 1e-09,
+      "d_g": 1e-06,
+      "why": "the floor values are filed at four decimals and must reproduce to float precision; D_G is filed at six decimals, so one unit in its last place is allowed"
+    },
+    "holds_at_freeze_time": true,
+    "bound_bytes": {
+      "b6_predictions": "data/mllmu_hier_pilot100/predictions_iter12_stage2/predictions_tv_B6_beta13.642_lam0.5_lr2e-05_ep5.parquet",
+      "b6_predictions_sha256": "94b630b0202b83825f9d810fe5eb529d152f0beb0205701da7a6f9f35582f857",
+      "mg_predictions": "data/mllmu_hier_pilot100/predictions_iter12/predictions_tv_MG.parquet",
+      "mg_predictions_sha256": "3fdc212d0d839a03f4c01be5baad94181d5c020c4a28251f0ed61f7fd6383434",
+      "retain_group": "data/mllmu_hier_pilot100/unlearning_iter12/retain.jsonl",
+      "retain_group_sha256": "1221a45f08958a0542c0c40b8f219181d248ee0318e0c41cf403a90634276e3c",
+      "cache_sidecar": "data/mllmu_hier_pilot100/mf_reference_logprobs/sidecar.json",
+      "cache_sidecar_sha256": "b1e33ada946a1b49624e812f3659ec90e66d453e81e83aa3471cdf04a3467e35",
+      "cache_tensor_sha256": "dbf8b475e01bf3e13c731f04b94109e8dc37b14d6252598d7e9b6811999e5f6a"
+    },
+    "it_is_a_gate_not_a_report": "train_iter12_stage3.py recomputes this control and refuses to train any B7 row if it no longer holds; select_iter12_stage3.py applies the same gate before generation."
+  },
+  "evidence_base": {
+    "used": [
+      "data/reports/mllmu_iter12_stage2_selection.json",
+      "data/reports/mllmu_iter12_stage2_freeze.json",
+      "data/reports/mllmu_iter12_anchor_calibration.json",
+      "data/reports/mllmu_iter12_retention_probe.json",
+      "data/reports/mllmu_iter12_route_probe.json",
+      "data/mllmu_hier_pilot100/unlearning_iter12/retain.jsonl",
+      "data/mllmu_hier_pilot100/mf_reference_logprobs/sidecar.json"
+    ],
+    "never_read": [
+      "data/mllmu_hier_confirm100",
+      "data/reports/mllmu_confirm100_final_analysis.json"
+    ],
+    "never_read_enforced_by": "train_iter12_stage3.py and select_iter12_stage3.py refuse any argument that resolves inside those paths, on RESOLVED paths rather than strings.",
+    "probe_half_never_rehearsed": "The image-conditioned anchor stream covers 0 of the 204 probe-half associations, measured in the basis."
+  },
+  "basis": {
+    "report": "data/reports/mllmu_iter12_stage3_basis.json",
+    "sha256": "5a20bd70ae8f1150b1be79f633b7c0e7386f4ae17499ea53170b67ae8549e5bc",
+    "reads_no_prediction_parquet": true
+  },
+  "measurement_limits": {
+    "probe_denominators": "408 retain-same and 76 retain-other, per route",
+    "resolution": {
+      "scope": "train+val, both routes (what Stage 1c reads)",
+      "row_micro_resolution_retain_same": 0.0012254902,
+      "row_micro_resolution_retain_other": 0.0065789474,
+      "retain_same_total": 816,
+      "retain_other_total": 152,
+      "binding_number": "retain_other",
+      "absolute_ceiling": {
+        "per_number": {
+          "text.retain_same_entity": 612,
+          "text.retain_other_entity": 114,
+          "image.retain_same_entity_image": 612,
+          "image.retain_other_entity_image": 114
+        },
+        "retain_same_total": 1224,
+        "retain_other_total": 228,
+        "row_micro_resolution_same": 0.0008169935,
+        "row_micro_resolution_other": 0.0043859649
+      },
+      "what_the_ceiling_means": {
+        "retain_other_is_the_binding_number": true,
+        "why": "retain_other reaches only 23 probe donor entities, so its largest possible denominator in this dataset is 228 queries and its best possible row-micro resolution is 0.0043859649. The pool is exhausted: 90 target plus 387 retained associations account for all 477, so there is no reserve to draw a larger probe from.",
+        "consequence": "Stage 1c roughly doubles the frozen basis and makes both parents' shortfalls exceed their between-seed spread, but it does not make retain-other well powered. A mechanism whose retention effect is smaller than about 0.0043859649 cannot be resolved on this dataset at all, at any number of seeds."
+      }
+    },
+    "retain_other_stays_weakly_powered": "23 probe donors and 38 queries per split, 228 at the absolute ceiling, so one flipped outcome is 0.0132 and no number of seeds changes that.",
+    "the_ceiling_is_the_dataset": "The association pool is exhausted -- 90 target plus 387 retained is all 477 -- and query_generation.py is one of the eighteen paths the confirmation freeze sealed.",
+    "one_seed_is_not_enough": "Stage 1b measured a between-seed sd of 0.0120 to 0.0515 on these numbers, which exceeds the retain-other resolution. Stage 2 trains one seed per row, so a row that clears the primary gate by less than that spread is a candidate for replication rather than a result, and the report must say so instead of ranking on it."
+  },
+  "extends": {
+    "stage2_freeze": "data/reports/mllmu_iter12_stage2_freeze.json",
+    "stage2_selection": "data/reports/mllmu_iter12_stage2_selection.json",
+    "stage1c_freeze": "data/reports/mllmu_iter12_route_stratification_freeze.json",
+    "stage1_freeze": "data/reports/mllmu_iter12_selection_protocol_freeze.json",
+    "note": "Stage 3 preserves Stage 2's criterion exactly and reuses its B6 row as the zero-weight control. It re-decides no filed Stage-1 or Stage-2 verdict."
+  },
+  "refusal_policy": {
+    "refuses_to_freeze_when": "any Stage-3 adapter exists",
+    "unconditional": true,
+    "no_flag_reaches_past_it": true,
+    "reason": "the parent and its shortfall are already known, so a grid or control amended after training could be fitted to the outcome it is supposed to govern"
+  },
+  "hashes": {
+    "protocol_paths": {
+      "scripts/freeze_iter12_stage3.py": "5f8bae4e24a47b96595d3c867027349d2de46eb87196f33b4809a0d3d62bee83",
+      "scripts/build_iter12_stage3_basis.py": "0fcd4af5b49000650461a3c8a904b54f662130514cb01ff508b784a6e21a43b2",
+      "scripts/train_iter12_stage3.py": "9e008175b226f1c1ffdb7d1440804cc7c8d3318d57c65bac914755c8ad8eff54",
+      "scripts/select_iter12_stage3.py": "70727575054bef60ef6e922b7e3802c3381d0a1330124bb0fce65ca3ee7d676b",
+      "src/granunlearn/training/stage3_grid.py": "9daa9e7345bc51b33dd5e78656daeec3f6c27e79fdbe9fb36d3cb4864c8a381b"
+    },
+    "depends_on_unchanged": {
+      "src/granunlearn/evaluation/retention_selection.py": "ff0ae167a9df495753b6a52d30fd0af0e16df81e910b039d1aaeb3ac190cdb79",
+      "src/granunlearn/evaluation/route_stratified_retention.py": "3cbb9c136a328da37323c196fa5eb7e86000c43025c210afd3bbbaa10424e200",
+      "src/granunlearn/evaluation/hierarchy_metrics.py": "67e75fd4b12c3f22bfe86f7c77678df945d5a1152a43447d0a088da10b46966c",
+      "src/granunlearn/evaluation/reference_eval.py": "645440c1fd36c07f94d6771e099be7db1bfa6fb8915fcdb0df81ab373da115dd",
+      "src/granunlearn/evaluation/prediction_provenance.py": "f7e1f6278691161275c03cbf7e97cef48fae76e2c65619eaeb758325064155ba",
+      "src/granunlearn/evaluation/scoring.py": "4f37289b66a9389e94830b9b65bb51a6d198b4272926e9d38be7522edd73f891",
+      "src/granunlearn/training/candidate_grid.py": "bf9df2a61dbc3308875a0bed77787d146b5aebfdc7382699768c179b7b7a5f54",
+      "src/granunlearn/training/stage2_grid.py": "d80275e4bbf7b4599f6fce07a5506898b9df41693d59611651d6739d5581cf98",
+      "src/granunlearn/training/preservation_anchor.py": "f78df4cfc11038477ec769e1d150f9ceffd1b028d9aeb5ab63e9e294c9565f85",
+      "src/granunlearn/training/preservation_trainer.py": "5184677de072d74868c8ef2cc8ed48ca6606626efefd43ab19fe5a580b8757e2",
+      "src/granunlearn/training/unlearning_trainer.py": "7aba41087368563ed99934c0371562f0c15abee024931b0b87698104b391e541",
+      "src/granunlearn/training/unlearning_datasets.py": "260b6c5e047f2361b02db8ec65574ce81b5bab207d122bbc0961c55903e1e062",
+      "src/granunlearn/training/state_datasets.py": "6512313b205b01dfdc39a7ff795c2371e61f155ff1a11db1c84d527f99924bb9",
+      "src/granunlearn/training/reference_trainer.py": "9bfce242d3763daf129af6d19e9ba1cc357334c7ffc03f629c2d318a239c0840",
+      "src/granunlearn/training/seed_replication.py": "c55894ebed37132a3dcf003c7a48a90c67929c17289bb4f9ce66ae19aff05b2a",
+      "scripts/select_unlearning_checkpoints.py": "ecacee99a9dd52cba7c419081e11a628f931fc40e8300b45b489946e6da25f2d",
+      "scripts/select_iter12_retention_checkpoints.py": "28d8edabe88e53f174ae62708eae7c09c10d3f39c5548087de379efb837ec3f9",
+      "scripts/freeze_iter12_selection_protocol.py": "dd9007a5e78179fa8594f8d2354ff8ba9b667235774834a57a58009b62147f29",
+      "scripts/freeze_iter12_seed_replication.py": "d063162a753e222ab857959dcd87e22fa43a63783abec9dc074dc5fa8a7bf9c5",
+      "scripts/freeze_iter12_route_stratification.py": "7cf6c6ad2d48d9641fef7f51001c58501361cfdb6ae5af3c2c9e49f6f062b554",
+      "scripts/freeze_iter12_stage2.py": "f28f97d38338fb0fff12289dfbdf91d8c4b36ed1c782dd6942212e35494627d0",
+      "scripts/build_iter12_stage2_basis.py": "23f00c6972b46525b42a1eb85163a5a7af7508d4293c8cff4b6748c4f54ac7fa",
+      "scripts/build_mf_reference_logprobs.py": "6dad16e44b580221b9211d4cecdae8ba2a834b36929277bd8824a2a1a4adb36d"
+    },
+    "data_paths": {
+      "data/reports/mllmu_iter12_stage3_basis.json": "5a20bd70ae8f1150b1be79f633b7c0e7386f4ae17499ea53170b67ae8549e5bc",
+      "data/reports/mllmu_iter12_stage3_control.json": "15163a763c632da07f60c89c200ec22ffd6e33a9d377ba9093f49ab20bbdce17",
+      "data/reports/mllmu_iter12_stage2_selection.json": "7578d1317d579b4115658748c3651c0283d320eec916e359372306700b3d16f1",
+      "data/reports/mllmu_iter12_stage2_freeze.json": "2c485ffba5e5e29191e058b2f6d9cba239a8f65aa21c2979dd1e1204df7f9061",
+      "data/reports/mllmu_iter12_stage2_basis.json": "ba15115a9f3899d2c2acad526f718cdf9107de8506e18e67e8baa843ff92ae71",
+      "data/reports/mllmu_iter12_anchor_calibration.json": "7e1390855f37250682e1c588ffda2a88f1f868e0fc5c123e1d781a8b3c896cab",
+      "data/reports/mllmu_iter12_stage2_control_reading.json": "d1ef44b5d70af1cc71a14f426596eac5e366400f680248c1dc8a571f33e37c97",
+      "data/reports/mllmu_iter12_route_stratified.json": "0d51cce7ca37488bc14ed7905905d2c1a659ae50afd2236b44a1ee34946f285c",
+      "data/reports/mllmu_iter12_route_stratification_freeze.json": "e9fc7269b2b1f171490705b29395639629998524310a900dad8db8f107e2ff04",
+      "data/reports/mllmu_iter12_route_probe.json": "d5bbe8febe95e06dc66adf23ef05242631401af480e408215f2557160a6fcb61",
+      "data/reports/mllmu_iter12_selection_protocol_freeze.json": "aa5d486a474eefee541bb871db383d0fed486a6ae536f31bc63ddd4418caeefe",
+      "data/reports/mllmu_iter12_retention_selection.json": "0dde0cc74bd0c8caf45dc030ef0df55f256810abe49e5a1ad654ead6a1f52816",
+      "data/reports/mllmu_iter12_seed_replication_freeze.json": "7be2b9921577e388f730ef5e5c72facccde9043901f5db3c91488efbe690063b",
+      "data/reports/mllmu_iter12_seed_replication.json": "b92119a72b7028d7e93251f261224699fefb1cf74437188a15bdb01875cb1a57",
+      "data/reports/mllmu_iter12_seed_replication.REPAIR.json": "d7aec980ed440f46bfc1df9467628ae1ec8eed7056afbb11a0e09e4e5d61771d",
+      "data/reports/mllmu_iter12_retention_probe.json": "3c45905ec8369687875d90d945480be43c9478e1247dee9ac2a57c5dc95f15bb",
+      "data/mllmu_hier_pilot100/queries.parquet": "f66637323754039a28d45ea44a5e05bcb5b51f07b4272329d3f4a6b3b5482d5e",
+      "data/mllmu_hier_pilot100/associations.parquet": "b4427b201868ff4d08a5f791d55cdcd78561d2f4abc42af97378bba63b1026c1",
+      "data/mllmu_hier_pilot100/unlearning_iter12/fine_target.jsonl": "60ef46ac72d601deb64b55b5a5ddfb31c168983dd2adf5a594bd8ce73e8f6765",
+      "data/mllmu_hier_pilot100/unlearning_iter12/target_level.jsonl": "0c56833660ea701b61de426f2dc2bc4b7823cc5fe59c93840a364bdbd9a0fcbf",
+      "data/mllmu_hier_pilot100/unlearning_iter12/retain.jsonl": "1221a45f08958a0542c0c40b8f219181d248ee0318e0c41cf403a90634276e3c",
+      "data/mllmu_hier_pilot100/training/MF.jsonl": "2238a3ba5ceff0a9ea3b0d85e6382ac3f281bf57a2a96737a21ad69aa77f5315",
+      "data/mllmu_hier_pilot100/training/MG.jsonl": "60ba21692c1be738f34e713f73d55e55e784da7bd4b5032a7b69b9f443de15d6"
+    }
+  },
+  "reused_predictions_bound": {
+    "count_expected": 3,
+    "count_present_at_freeze_time": 3,
+    "absent_at_freeze_time": [],
+    "sha256": {
+      "stage1.B0": "f546cbbb654111db5b24029a4b5e3c475d72bd674b60413fd0aa629f151d16b4",
+      "stage1.MG": "3fdc212d0d839a03f4c01be5baad94181d5c020c4a28251f0ed61f7fd6383434",
+      "stage2.B6": "94b630b0202b83825f9d810fe5eb529d152f0beb0205701da7a6f9f35582f857"
+    },
+    "sidecar_contract": {
+      "stage1.B0": {
+        "batch_size": 8,
+        "image_batch_size": 1,
+        "max_new_tokens": 96,
+        "max_length": 1536,
+        "max_image_pixels": 147456,
+        "do_sample": false,
+        "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+        "contract_version": 2,
+        "dataset.version": "pilot100_v2"
+      },
+      "stage1.MG": {
+        "batch_size": 8,
+        "image_batch_size": 1,
+        "max_new_tokens": 96,
+        "max_length": 1536,
+        "max_image_pixels": 147456,
+        "do_sample": false,
+        "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+        "contract_version": 2,
+        "dataset.version": "pilot100_v2"
+      },
+      "stage2.B6": {
+        "batch_size": 8,
+        "image_batch_size": 1,
+        "max_new_tokens": 96,
+        "max_length": 1536,
+        "max_image_pixels": 147456,
+        "do_sample": false,
+        "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+        "contract_version": 2,
+        "dataset.version": "pilot100_v2"
+      }
+    },
+    "paths": {
+      "stage1.B0": "data/mllmu_hier_pilot100/predictions_iter12/predictions_tv_B0.parquet",
+      "stage1.MG": "data/mllmu_hier_pilot100/predictions_iter12/predictions_tv_MG.parquet",
+      "stage2.B6": "data/mllmu_hier_pilot100/predictions_iter12_stage2/predictions_tv_B6_beta13.642_lam0.5_lr2e-05_ep5.parquet"
+    },
+    "reused_not_regenerated": true,
+    "why_reused": "B0 and MG are the bound floor references and B6 is the zero-weight control. Regenerating them would produce a second draw where hashed evidence already sits.",
+    "note": "Gitignored and therefore absent from a clone. Verified apart from the rest of the freeze, reporting match, mismatch or absent per path."
+  },
+  "image_conditioned_cache_bound": {
+    "count_expected": 2,
+    "count_present_at_freeze_time": 2,
+    "absent_at_freeze_time": [],
+    "sha256": {
+      "sidecar.json": "b1e33ada946a1b49624e812f3659ec90e66d453e81e83aa3471cdf04a3467e35",
+      "logprobs.pt": "dbf8b475e01bf3e13c731f04b94109e8dc37b14d6252598d7e9b6811999e5f6a"
+    },
+    "paths": {
+      "sidecar.json": "data/mllmu_hier_pilot100/mf_reference_logprobs/sidecar.json",
+      "logprobs.pt": "data/mllmu_hier_pilot100/mf_reference_logprobs/logprobs.pt"
+    },
+    "sidecar": {
+      "cache_version": 1,
+      "model_id": "Qwen/Qwen3.5-9B",
+      "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "mf_adapter_sha256": "4c5d158895480a762f7319ebb2ff04aa87d4818a37877e9236553bdb97dc2f76",
+      "preserve_group_sha256": "1221a45f08958a0542c0c40b8f219181d248ee0318e0c41cf403a90634276e3c",
+      "max_length": 1536,
+      "max_image_pixels": 147456,
+      "vocab_size": 248320,
+      "num_examples": 183,
+      "num_positions": 1489,
+      "nll_agreement_max": 7.450580596923828e-09,
+      "kl_direction": "KL(p_MF || p_theta), exact over the full vocabulary",
+      "probe_half_excluded": true,
+      "target_groups_excluded": [
+        "fine_target",
+        "target_level"
+      ]
+    },
+    "cache_version": 1,
+    "why_bound": "Every B7 row trains against these bytes. A cache rebuilt from a different MF adapter or encoding contract would preserve a different function while looking ordinary."
+  },
+  "generation_contract_inherited": {
+    "contract": {
+      "batch_size": 8,
+      "image_batch_size": 1,
+      "max_new_tokens": 96,
+      "max_length": 1536,
+      "max_image_pixels": 147456,
+      "do_sample": false,
+      "model_id": "Qwen/Qwen3.5-9B",
+      "predictions_dir": "data/mllmu_hier_pilot100/predictions_iter12",
+      "experiment_id": "mllmu_iter12_stage1",
+      "why_not_the_pilot_predictions_dir": "Both grids contain a candidate called B0. In one directory the two studies would share the filename predictions_tv_B0.parquet, and a differing experiment_id would make the sidecar refuse reuse and REGENERATE over committed pilot-100 evidence. A separate directory makes that impossible rather than unlikely."
+    },
+    "keys_compared": [
+      "batch_size",
+      "do_sample",
+      "experiment_id",
+      "image_batch_size",
+      "max_image_pixels",
+      "max_length",
+      "max_new_tokens",
+      "model_id",
+      "predictions_dir",
+      "why_not_the_pilot_predictions_dir"
+    ],
+    "read_from": "data/reports/mllmu_iter12_selection_protocol_freeze.json",
+    "stage1c_verified_one_instrument": true,
+    "stage1c_distinct_contracts": 1,
+    "agrees_with_the_stage1c_verified_contract": true,
+    "this_study_uses": {
+      "experiment_id": "mllmu_iter12_stage3",
+      "predictions_dir": "data/mllmu_hier_pilot100/predictions_iter12_stage3"
+    },
+    "why_it_is_load_bearing": "Stage 3 compares newly generated B7 predictions with reused B0, MG and B6 parquets. Batch layout is inside D_G and inside the image route's correctness, so all of them must be one instrument."
+  }
+}

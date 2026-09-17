@@ -186,6 +186,14 @@ jobs:
               # it -- the same shape as Stage 1b's report and its REPAIR record.
               "data/reports/mllmu_iter12_stage2_selection.json",
               "data/reports/mllmu_iter12_stage2_selection.REPAIR.json",
+              # Stage 3: the route-aware B6 successor, frozen before any B7
+              # adapter exists.  The basis and zero-weight control are required
+              # beside the freeze because the freeze's own --check-only hashes
+              # all three; the selection report is added only after Stage 3
+              # runs, so it is deliberately NOT required here yet.
+              "data/reports/mllmu_iter12_stage3_basis.json",
+              "data/reports/mllmu_iter12_stage3_control.json",
+              "data/reports/mllmu_iter12_stage3_freeze.json",
               "data/reports/mllmu_iter12_anchor_calibration.json",
               "data/reports/mllmu_iter12_stage2_basis.json",
               "data/reports/mllmu_iter12_stage2_freeze.json",

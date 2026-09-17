@@ -269,6 +269,16 @@ data/mllmu_hier_pilot100/predictions_iter12_seeds/
 # with the report it qualifies, and `repair_iter12_stage2_selection.py
 # --check-only` re-derives it from the frozen bytes in CI.
 !data/reports/mllmu_iter12_stage2_selection.REPAIR.json
+# Stage 3: the route-aware B6 successor.  The basis records why B6 is the
+# parent and why the image-conditioned stream is the whole 183-example fit
+# half; the control proves additional image-anchor weight 0 reproduces B6;
+# the freeze binds both before any B7 adapter exists.  The selection report's
+# negation is inert until Stage 3 runs, exactly as Stage 1b's was.
+!data/reports/mllmu_iter12_stage3_basis.json
+!data/reports/mllmu_iter12_stage3_control.json
+!data/reports/mllmu_iter12_stage3_freeze.json
+!data/reports/mllmu_iter12_stage3_selection.json
+data/mllmu_hier_pilot100/predictions_iter12_stage3/
 # The faithfulness control's result, copied out of the gitignored checkpoint
 # directory it is written into.  The control is what licences the whole Stage-2
 # comparison -- that a difference between Stage 1 and Stage 2 is a difference

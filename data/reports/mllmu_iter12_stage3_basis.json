@@ -1,0 +1,528 @@
+{
+  "iteration": "12",
+  "stage": 3,
+  "purpose": "Develop a route-aware successor to B6 by increasing only the image-conditioned MF-anchor weight, while preserving B6's fine-target ascent, target-level objective, the eight MG-anchored floors and D_G.",
+  "reads_no_prediction_parquet": true,
+  "b6_result": {
+    "candidate_id": "B6_beta13.642_lam0.5_lr2e-05_ep5",
+    "method": "B6",
+    "selected_stage2": null,
+    "stage3_gate": {
+      "stage3_opens": true,
+      "reason": "no candidate satisfied the primary retention floor",
+      "best_eligible": null,
+      "best_eligible_distance_to_mg": null,
+      "reference_row": "B4_w1.0_lam0.5_lr2e-05_ep5",
+      "reference_distance_to_mg": 0.046729,
+      "margin_required": 0.0,
+      "no_margin_is_used": true
+    },
+    "distance_to_mg": 0.060314,
+    "fine_target_nll": 0.6857,
+    "bounded_ascent_fine_target_nll_range": [
+      0.7832,
+      2.9924
+    ],
+    "preserves_the_target_transformation_better_than_bounded_ascent": true,
+    "values": {
+      "text.retain_same_entity.entity_macro": 0.543,
+      "text.retain_same_entity.row_micro": 0.5466,
+      "text.retain_other_entity.entity_macro": 0.5199,
+      "text.retain_other_entity.row_micro": 0.5132,
+      "image.retain_same_entity_image.entity_macro": 0.5043,
+      "image.retain_same_entity_image.row_micro": 0.5098,
+      "image.retain_other_entity_image.entity_macro": 0.4348,
+      "image.retain_other_entity_image.row_micro": 0.4211
+    },
+    "difference_vs_mg_anchor": {
+      "text.retain_same_entity.entity_macro": 0.0556,
+      "text.retain_same_entity.row_micro": 0.0441,
+      "text.retain_other_entity.entity_macro": 0.0942,
+      "text.retain_other_entity.row_micro": 0.0527,
+      "image.retain_same_entity_image.entity_macro": -0.0339,
+      "image.retain_same_entity_image.row_micro": -0.0123,
+      "image.retain_other_entity_image.entity_macro": 0.0218,
+      "image.retain_other_entity_image.row_micro": -0.0263
+    },
+    "text_route": {
+      "keys": [
+        "text.retain_same_entity.entity_macro",
+        "text.retain_same_entity.row_micro",
+        "text.retain_other_entity.entity_macro",
+        "text.retain_other_entity.row_micro"
+      ],
+      "passes": {
+        "text.retain_same_entity.entity_macro": true,
+        "text.retain_same_entity.row_micro": true,
+        "text.retain_other_entity.entity_macro": true,
+        "text.retain_other_entity.row_micro": true
+      },
+      "all_four_pass": true
+    },
+    "image_route": {
+      "keys": [
+        "image.retain_same_entity_image.entity_macro",
+        "image.retain_same_entity_image.row_micro",
+        "image.retain_other_entity_image.entity_macro",
+        "image.retain_other_entity_image.row_micro"
+      ],
+      "passes": {
+        "image.retain_same_entity_image.entity_macro": false,
+        "image.retain_same_entity_image.row_micro": false,
+        "image.retain_other_entity_image.entity_macro": true,
+        "image.retain_other_entity_image.row_micro": false
+      },
+      "failed": [
+        "image.retain_same_entity_image.entity_macro",
+        "image.retain_same_entity_image.row_micro",
+        "image.retain_other_entity_image.row_micro"
+      ],
+      "exactly_three_fail": true
+    },
+    "the_fourteen_query_shortfall": {
+      "same_image_rows": 5,
+      "same_image_denominator": 408,
+      "other_image_rows": 2,
+      "other_image_denominator": 76,
+      "expressed_over_trainval_both_route_denominators": {
+        "same": "10/816",
+        "other": "4/152",
+        "total": 14
+      },
+      "why_the_entity_macro_failure_adds_no_rows": "entity_macro and row_micro are two estimands over the same 408 image retain-same rows. Counting both as new queries would double-count the same outcomes; the distinct row shortfall is five of 408 retain-same plus two of 76 retain-other, written as ten of 816 and four of 152 when the two routes' train+val denominators are used."
+    },
+    "why_this_is_the_parent": "B6 is the only row that holds all four text floors while keeping the fine-target NLL below every bounded-ascent row. Its remaining failure is confined to the image route, so Stage 3 varies the image-conditioned anchor strength and leaves the rest of B6 unchanged."
+  },
+  "image_anchor_examples": {
+    "source_group": "data/mllmu_hier_pilot100/unlearning_iter12/retain.jsonl",
+    "source_group_sha256": "1221a45f08958a0542c0c40b8f219181d248ee0318e0c41cf403a90634276e3c",
+    "predicate": "modality == 'image_text' and image_path is non-empty",
+    "fit_half_examples": 183,
+    "image_conditioned_examples": 183,
+    "not_image_conditioned": 0,
+    "all_fit_half_examples_are_image_conditioned": true,
+    "entities": 35,
+    "associations": 183,
+    "probe_half_overlap": {
+      "associations": 0,
+      "entities": 0,
+      "must_be_zero": true
+    },
+    "the_important_disclosure": "Every fit-half retention example is image-conditioned, so the route-aware term is additional weight on the existing 183-example stream, not a restriction to a smaller subset. Any prose that calls it a subset without this sentence would overstate the mechanism.",
+    "mf_cache": {
+      "directory": "data/mllmu_hier_pilot100/mf_reference_logprobs",
+      "sidecar": "data/mllmu_hier_pilot100/mf_reference_logprobs/sidecar.json",
+      "sidecar_sha256": "b1e33ada946a1b49624e812f3659ec90e66d453e81e83aa3471cdf04a3467e35",
+      "tensor_sha256": "dbf8b475e01bf3e13c731f04b94109e8dc37b14d6252598d7e9b6811999e5f6a",
+      "mf_adapter_sha256": "4c5d158895480a762f7319ebb2ff04aa87d4818a37877e9236553bdb97dc2f76",
+      "base_model_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "cache_version": 1,
+      "num_examples": 183,
+      "num_positions": 1489,
+      "cache_rows_match_the_image_conditioned_group": true,
+      "cache_is_the_image_conditioned_mf_cache": true,
+      "probe_half_excluded": true,
+      "target_groups_excluded": [
+        "fine_target",
+        "target_level"
+      ],
+      "kl_direction": "KL(p_MF || p_theta), exact over the full vocabulary",
+      "encoding": {
+        "max_length": 1536,
+        "max_image_pixels": 147456,
+        "vocab_size": 248320
+      },
+      "no_new_cache_is_needed": true,
+      "why": "The Stage-2 cache already covers exactly these 183 image-conditioned examples at every supervised position, with MF-adapter and encoding provenance. Rebuilding the same 1.48 GB tensor under a Stage-3 name would add bytes, not information."
+    }
+  },
+  "grid": {
+    "beta_star": 13.641977,
+    "beta_used_by_b6": 13.642,
+    "additional_image_weight_multipliers": [
+      0.125,
+      0.25,
+      0.5,
+      1.0
+    ],
+    "additional_image_weights": [
+      1.7052,
+      3.4105,
+      6.821,
+      13.642
+    ],
+    "effective_anchor_weights": [
+      15.3472,
+      17.0525,
+      20.463,
+      27.284
+    ],
+    "why_these_weights": "B6 is the local optimum to improve on, so the sweep stays local: one eighth, one quarter, one half and one times its calibrated beta as ADDITIONAL image-conditioned weight. The zero row is B6 itself, not a fifth training run.",
+    "num_rows": 6,
+    "num_trained": 4,
+    "rows": [
+      {
+        "candidate_id": "B0",
+        "method": "B0",
+        "noop": true,
+        "groups": [],
+        "overrides": {},
+        "image_anchor_weight": null,
+        "effective_anchor_weight": null,
+        "reused_from": "stage1"
+      },
+      {
+        "candidate_id": "B6_beta13.642_lam0.5_lr2e-05_ep5",
+        "method": "B6",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "anchor",
+            "weight": 13.642,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        },
+        "image_anchor_weight": 0.0,
+        "effective_anchor_weight": 13.642,
+        "reused_from": "stage2"
+      },
+      {
+        "candidate_id": "B7_imgw1.7052_beta13.642_lam0.5_lr2e-05_ep5",
+        "method": "B7",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "anchor",
+            "weight": 15.3472,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        },
+        "image_anchor_weight": 1.7052,
+        "effective_anchor_weight": 15.3472,
+        "reused_from": null
+      },
+      {
+        "candidate_id": "B7_imgw3.4105_beta13.642_lam0.5_lr2e-05_ep5",
+        "method": "B7",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "anchor",
+            "weight": 17.0525,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        },
+        "image_anchor_weight": 3.4105,
+        "effective_anchor_weight": 17.0525,
+        "reused_from": null
+      },
+      {
+        "candidate_id": "B7_imgw6.821_beta13.642_lam0.5_lr2e-05_ep5",
+        "method": "B7",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "anchor",
+            "weight": 20.463,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        },
+        "image_anchor_weight": 6.821,
+        "effective_anchor_weight": 20.463,
+        "reused_from": null
+      },
+      {
+        "candidate_id": "B7_imgw13.642_beta13.642_lam0.5_lr2e-05_ep5",
+        "method": "B7",
+        "noop": false,
+        "groups": [
+          {
+            "name": "fine_target",
+            "mode": "gd",
+            "weight": 0.5,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "target_level",
+            "mode": "sft",
+            "weight": 1.0,
+            "cap": null,
+            "anchor_weight": null
+          },
+          {
+            "name": "retain",
+            "mode": "anchor",
+            "weight": 27.284,
+            "cap": null,
+            "anchor_weight": null
+          }
+        ],
+        "overrides": {
+          "learning_rate": 2e-05,
+          "num_epochs": 5
+        },
+        "image_anchor_weight": 13.642,
+        "effective_anchor_weight": 27.284,
+        "reused_from": null
+      }
+    ],
+    "the_frozen_validator_was_run": {
+      "residual_errors": [],
+      "filtered_messages": [
+        "B6_beta13.642_lam0.5_lr2e-05_ep5: unknown method B6",
+        "B6_beta13.642_lam0.5_lr2e-05_ep5: bad mode anchor",
+        "B7_imgw1.7052_beta13.642_lam0.5_lr2e-05_ep5: unknown method B7",
+        "B7_imgw1.7052_beta13.642_lam0.5_lr2e-05_ep5: bad mode anchor",
+        "B7_imgw3.4105_beta13.642_lam0.5_lr2e-05_ep5: unknown method B7",
+        "B7_imgw3.4105_beta13.642_lam0.5_lr2e-05_ep5: bad mode anchor",
+        "B7_imgw6.821_beta13.642_lam0.5_lr2e-05_ep5: unknown method B7",
+        "B7_imgw6.821_beta13.642_lam0.5_lr2e-05_ep5: bad mode anchor",
+        "B7_imgw13.642_beta13.642_lam0.5_lr2e-05_ep5: unknown method B7",
+        "B7_imgw13.642_beta13.642_lam0.5_lr2e-05_ep5: bad mode anchor"
+      ],
+      "filtered_gap_substrings": [
+        "unknown method",
+        "bad mode"
+      ],
+      "filtered_because": "candidate_grid.py is hash-bound and its METHODS/mode vocabulary predates B6/B7 and anchor. Only 'unknown method' and 'bad mode' are filtered; every structural check it can still make applies unchanged."
+    }
+  },
+  "selection_rule": {
+    "inherited_from": "data/reports/mllmu_iter12_stage2_freeze.json",
+    "floor_numbers": [
+      "text.retain_same_entity.entity_macro",
+      "text.retain_same_entity.row_micro",
+      "text.retain_other_entity.entity_macro",
+      "text.retain_other_entity.row_micro",
+      "image.retain_same_entity_image.entity_macro",
+      "image.retain_same_entity_image.row_micro",
+      "image.retain_other_entity_image.entity_macro",
+      "image.retain_other_entity_image.row_micro"
+    ],
+    "num_numbers": 8,
+    "primary_anchor": "MG",
+    "primary_rule": "candidate >= MG - epsilon on all eight numbers; a number missing on either side disqualifies",
+    "epsilon": 1e-09,
+    "margin": 0.0,
+    "no_margin_is_used": true,
+    "anchor_values": {
+      "text.retain_same_entity.entity_macro": 0.4874,
+      "text.retain_same_entity.row_micro": 0.5025,
+      "text.retain_other_entity.entity_macro": 0.4257,
+      "text.retain_other_entity.row_micro": 0.4605,
+      "image.retain_same_entity_image.entity_macro": 0.5382,
+      "image.retain_same_entity_image.row_micro": 0.5221,
+      "image.retain_other_entity_image.entity_macro": 0.413,
+      "image.retain_other_entity_image.row_micro": 0.4474
+    },
+    "reported_baseline": "B0",
+    "reported_baseline_values": {
+      "text.retain_same_entity.entity_macro": 0.5256,
+      "text.retain_same_entity.row_micro": 0.5294,
+      "text.retain_other_entity.entity_macro": 0.5072,
+      "text.retain_other_entity.row_micro": 0.4737,
+      "image.retain_same_entity_image.entity_macro": 0.5053,
+      "image.retain_same_entity_image.row_micro": 0.5147,
+      "image.retain_other_entity_image.entity_macro": 0.5,
+      "image.retain_other_entity_image.row_micro": 0.4737
+    },
+    "among_eligible": "minimise D_G with the frozen tie-break, exactly as Stage 1 did. The floor decides eligibility; D_G only orders the eligible.",
+    "tie_break": "(distance_to_mg, candidate_id) ascending",
+    "distance_rounding": "6 decimals, as distance_to_reference rounds",
+    "mg_is_excluded_from_the_ranking": true,
+    "why_mg_is_excluded": "MG is the reference D_G measures distance to. Stage 2's frozen selector omitted that exclusion at the ranking bindings and the repair had to remove it at runtime; Stage 3 writes the exclusion into its selector instead of repeating the defect.",
+    "unchanged_from_stage2": true
+  },
+  "partition": {
+    "source": "data/reports/mllmu_iter12_retention_probe.json",
+    "rule": {
+      "unit": "entity",
+      "why_entity_not_association": "An association-level split leaves a probe fact belonging to an entity whose other facts were rehearsed, so the entity was partly seen.  Entity-level makes 'never replayed' true of a whole entity's knowledge.",
+      "seed": 42,
+      "ordering": "entities sorted ascending by sha256('42:iter12probe:<entity_id>')",
+      "cut": "first half of the ordering is PROBE, remainder is FIT",
+      "derived_from": "data/reports/mllmu_pilot100_target_retain.json",
+      "no_randomness_beyond_the_seed": true
+    },
+    "fit_entities": 35,
+    "probe_entities": 35,
+    "probe_never_replayed": true,
+    "route_basis": "data/reports/mllmu_iter12_route_probe.json",
+    "route_denominators": {
+      "text": {
+        "retain_same_entity": {
+          "probe_queries": 408,
+          "probe_entities": 35,
+          "max_queries_for_one_entity": 14,
+          "row_micro": {
+            "min_resolvable_gap": 0.0024509804,
+            "why": "one flipped outcome out of 408 pooled queries"
+          },
+          "entity_macro": {
+            "min_resolvable_gap": 0.0020408163,
+            "why": "one flipped outcome in the widest of 35 entities (14 queries), then averaged over entities"
+          }
+        },
+        "retain_other_entity": {
+          "probe_queries": 76,
+          "probe_entities": 23,
+          "max_queries_for_one_entity": 8,
+          "row_micro": {
+            "min_resolvable_gap": 0.0131578947,
+            "why": "one flipped outcome out of 76 pooled queries"
+          },
+          "entity_macro": {
+            "min_resolvable_gap": 0.0054347826,
+            "why": "one flipped outcome in the widest of 23 entities (8 queries), then averaged over entities"
+          }
+        }
+      },
+      "image": {
+        "retain_same_entity_image": {
+          "probe_queries": 408,
+          "probe_entities": 35,
+          "max_queries_for_one_entity": 14,
+          "row_micro": {
+            "min_resolvable_gap": 0.0024509804,
+            "why": "one flipped outcome out of 408 pooled queries"
+          },
+          "entity_macro": {
+            "min_resolvable_gap": 0.0020408163,
+            "why": "one flipped outcome in the widest of 35 entities (14 queries), then averaged over entities"
+          }
+        },
+        "retain_other_entity_image": {
+          "probe_queries": 76,
+          "probe_entities": 23,
+          "max_queries_for_one_entity": 8,
+          "row_micro": {
+            "min_resolvable_gap": 0.0131578947,
+            "why": "one flipped outcome out of 76 pooled queries"
+          },
+          "entity_macro": {
+            "min_resolvable_gap": 0.0054347826,
+            "why": "one flipped outcome in the widest of 23 entities (8 queries), then averaged over entities"
+          }
+        }
+      }
+    }
+  },
+  "seeds_and_layout": {
+    "training_seed": 42,
+    "python_hash_seed": "0",
+    "why_the_seed_is_held": "Every B7 row is B6 with one coefficient moved, so the recipe seed, LoRA shape, optimizer, learning rate, epochs, per-device batch, accumulation, max length and image-pixel budget are held at B6's values.",
+    "training": {
+      "learning_rate": 2e-05,
+      "num_epochs": 5,
+      "per_device_batch_size": 1,
+      "gradient_accumulation_steps": 8,
+      "max_length": 1536,
+      "max_image_pixels": 147456
+    },
+    "generation_contract_inherited_from": "data/reports/mllmu_iter12_selection_protocol_freeze.json"
+  },
+  "zero_weight_control": {
+    "report": "data/reports/mllmu_iter12_stage3_control.json",
+    "rule": "the Stage-3 row with additional image-anchor weight 0 must map exactly to B6 structurally, and B6's bound prediction bytes must reproduce its filed eight retention values and D_G within the frozen tolerances",
+    "floor_tolerance": 1e-09,
+    "d_g_tolerance": 1e-06,
+    "why_b6_is_reused_not_retrained": "The zero-weight row is the same objective, the same trainer, the same seed and the same starting adapter. A second same-seed training run would measure GPU nondeterminism; reuse of the bound B6 bytes is the comparison that answers whether gamma=0 is B6."
+  },
+  "evidence_base": {
+    "used": [
+      "data/reports/mllmu_iter12_stage2_selection.json",
+      "data/reports/mllmu_iter12_stage2_freeze.json",
+      "data/reports/mllmu_iter12_anchor_calibration.json",
+      "data/reports/mllmu_iter12_retention_probe.json",
+      "data/reports/mllmu_iter12_route_probe.json",
+      "data/mllmu_hier_pilot100/unlearning_iter12/retain.jsonl",
+      "data/mllmu_hier_pilot100/mf_reference_logprobs/sidecar.json"
+    ],
+    "never_read": [
+      "data/mllmu_hier_confirm100",
+      "data/reports/mllmu_confirm100_final_analysis.json"
+    ],
+    "probe_entities_evaluation_only": true
+  }
+}

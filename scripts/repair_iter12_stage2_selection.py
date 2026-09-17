@@ -628,6 +628,18 @@ def _git_calls_missing_the_repo_root(script_rel: str) -> list[dict[str, Any]]:
     return calls
 
 
+#: The five freezes that existed when this repair record was filed.  Later
+#: freezes are reported separately rather than allowed to make this historical
+#: disclosure "stale" for not describing a document that did not exist yet.
+PROVENANCE_FREEZES_AT_FILING: tuple[str, ...] = (
+    "data/reports/mllmu_iter12_route_stratification_freeze.json",
+    "data/reports/mllmu_iter12_seed_replication_freeze.json",
+    "data/reports/mllmu_iter12_selection_protocol_freeze.json",
+    "data/reports/mllmu_iter12_stage2_freeze.json",
+    "data/reports/mllmu_pilot100_confirmation_freeze.json",
+)
+
+
 def the_freeze_records_no_git_provenance() -> dict[str, Any]:
     """Neither the Stage-1c nor the Stage-2 freeze can be attributed to a commit.
 
@@ -658,8 +670,16 @@ def the_freeze_records_no_git_provenance() -> dict[str, Any]:
     sig = str(inspect.signature(fis2._git))
     verify_src = inspect.getsource(fis2.verify_freeze)
 
+    all_freezes = sorted(
+        (REPO_ROOT / "data" / "reports").glob("*freeze*.json"))
+    wanted = set(PROVENANCE_FREEZES_AT_FILING)
+    in_scope = [p for p in all_freezes
+                if str(p.relative_to(REPO_ROOT)) in wanted]
+    later = sorted(str(p.relative_to(REPO_ROOT)) for p in all_freezes
+                   if str(p.relative_to(REPO_ROOT)) not in wanted)
+
     found: dict[str, Any] = {}
-    for path in sorted((REPO_ROOT / "data" / "reports").glob("*freeze*.json")):
+    for path in in_scope:
         doc = json.loads(path.read_text())
         if "git_commit" not in doc:
             continue
@@ -725,6 +745,19 @@ def the_freeze_records_no_git_provenance() -> dict[str, Any]:
         "per_freeze": found,
         "the_freezes_that_recorded_it_properly": sorted(
             k for k, v in found.items() if v["git_commit"] is not None),
+        "scope": {
+            "freezes_at_the_stage2_repair_filing":
+                list(PROVENANCE_FREEZES_AT_FILING),
+            "later_freezes_outside_this_record": later,
+            "missing_from_the_filing_scope": sorted(
+                wanted - {str(p.relative_to(REPO_ROOT)) for p in in_scope}),
+            "why_later_freezes_are_not_folded_in": (
+                "This block is a historical disclosure about the freezes the "
+                "Stage-2 repair could have described when it was filed. A "
+                "later, correctly recorded freeze does not make that account "
+                "stale; folding it in would rewrite history rather than "
+                "preserve the distinction."),
+        },
         "what_is_lost": (
             "For these two freezes the commit, and with it any independent check that "
             "the bytes hashed are the bytes that were reviewed, and the tree state at "

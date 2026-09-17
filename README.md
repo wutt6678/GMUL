@@ -1280,6 +1280,50 @@ generation figure above is quotable at all: `gen: one lane per candidate` at 12:
 and `gen: all generation lanes finished` at 14:27:34 are two of its lines, 96.72
 minutes apart.
 
+### Stage 3 is frozen: one image-conditioned anchor weight, and nothing else
+
+Stage 2's gate opened with a narrow failure, so Stage 3's grid is correspondingly
+narrow. Its parent is `B6_beta13.642_lam0.5_lr2e-05_ep5`: all four text-route
+floors pass, exactly three image-route floors fail, the distinct row shortfall is
+five of 408 image retain-same plus two of 76 image retain-other (written as ten
+of 816 and four of 152 over the two routes' train+val denominators, fourteen
+rows in total), and its fine-target NLL is 0.6857 against 0.7832–2.9924 for the
+bounded-ascent rows. The mechanism is `B7`: B6's fine-target ascent, target-level
+objective, learning rate, five-epoch budget, seed 42, MF cache and starting MF
+adapter, with one additional image-conditioned anchor weight swept at
+`beta/8`, `beta/4`, `beta/2` and `beta` — 1.7052, 3.4105, 6.821 and 13.642 —
+for effective anchor weights 15.3472, 17.0525, 20.463 and 27.284.
+
+One disclosure is load-bearing. **All 183** fit-half retention examples are
+image-conditioned (`modality == "image_text"` with a non-empty `image_path`),
+and the Stage-2 MF cache already covers exactly those 183 examples at 1,489
+supervised positions. The image-anchor term is therefore additional weight on
+the existing image-conditioned stream, not a restriction to a smaller subset;
+calling it a subset without that sentence would overstate the mechanism. The
+probe half remains evaluation-only: the stream overlaps 0 of its 204
+associations.
+
+The zero-weight control is B6 itself, reused rather than retrained. Structurally,
+the Stage-3 `gamma = 0` row is B6's exact groups, modes, weights, paths,
+overrides, seed, batch layout, cache and starting adapter; numerically, the
+bound B6 parquet recomputes to all eight filed retention values and D_G
+0.060314 with zero observed difference, against frozen tolerances of 1e-09 and
+1e-06. A second same-seed training run would measure GPU nondeterminism, not
+whether `gamma = 0` is B6. `train_iter12_stage3.py --control` filed that proof
+before the freeze, and both the trainer and selector re-check it before any
+B7 work.
+
+`data/reports/mllmu_iter12_stage3_freeze.json` was written before any Stage-3
+adapter exists and refuses amendment once one does. It preserves Stage 2's
+eight MG-anchored floors, epsilon 1e-09, no margin, D_G at six decimals and
+`(distance_to_mg, candidate_id)` tie-break unchanged; unlike the frozen Stage-2
+selector, Stage 3's selector excludes MG from the candidate ranking at source.
+The generation contract is the inherited one (`batch_size` 8,
+`image_batch_size` 1, greedy, max 96 tokens), the training layout is B6's
+(per-device batch 1, accumulation 8), and the sealed 11C confirmation split is
+refused on resolved paths. `--check-only` currently reports all three reused
+parquets and both cache files matching.
+
 ## Iteration history
 
 `git log --oneline` is the authoritative narrative and its commit messages carry

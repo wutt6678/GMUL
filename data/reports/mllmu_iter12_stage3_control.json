@@ -1,0 +1,103 @@
+{
+  "control": "control_zero_image_anchor_weight_reproduces_b6",
+  "parent": "B6_beta13.642_lam0.5_lr2e-05_ep5",
+  "rule": "additional image-anchor weight 0 is B6: same groups, modes, weights, paths, overrides, seed, batch layout, cache and starting adapter, and the bound B6 bytes reproduce the filed eight values and D_G within tolerance",
+  "tolerances": {
+    "floor_values": 1e-09,
+    "d_g": 1e-06,
+    "why": "the floor values are filed at four decimals and must reproduce to float precision; D_G is filed at six decimals, so one unit in its last place is allowed"
+  },
+  "structural": {
+    "zero_row_maps_exactly_to_b6": true,
+    "all_fit_half_examples_are_image_conditioned": true,
+    "cache_covers_exactly_the_image_conditioned_group": true,
+    "cache_was_built_from_the_same_mf_adapter_field": true,
+    "training_seed_is_b6s": true,
+    "learning_rate_is_b6s": true,
+    "epoch_budget_is_b6s": true,
+    "batch_layout_is_b6s": true,
+    "encoding_is_the_cache_contract": true
+  },
+  "numerical": {
+    "eight_values": {
+      "text.retain_same_entity.entity_macro": {
+        "filed": 0.543,
+        "recomputed": 0.543,
+        "abs_difference": 0.0,
+        "within_tolerance": true
+      },
+      "text.retain_same_entity.row_micro": {
+        "filed": 0.5466,
+        "recomputed": 0.5466,
+        "abs_difference": 0.0,
+        "within_tolerance": true
+      },
+      "text.retain_other_entity.entity_macro": {
+        "filed": 0.5199,
+        "recomputed": 0.5199,
+        "abs_difference": 0.0,
+        "within_tolerance": true
+      },
+      "text.retain_other_entity.row_micro": {
+        "filed": 0.5132,
+        "recomputed": 0.5132,
+        "abs_difference": 0.0,
+        "within_tolerance": true
+      },
+      "image.retain_same_entity_image.entity_macro": {
+        "filed": 0.5043,
+        "recomputed": 0.5043,
+        "abs_difference": 0.0,
+        "within_tolerance": true
+      },
+      "image.retain_same_entity_image.row_micro": {
+        "filed": 0.5098,
+        "recomputed": 0.5098,
+        "abs_difference": 0.0,
+        "within_tolerance": true
+      },
+      "image.retain_other_entity_image.entity_macro": {
+        "filed": 0.4348,
+        "recomputed": 0.4348,
+        "abs_difference": 0.0,
+        "within_tolerance": true
+      },
+      "image.retain_other_entity_image.row_micro": {
+        "filed": 0.4211,
+        "recomputed": 0.4211,
+        "abs_difference": 0.0,
+        "within_tolerance": true
+      }
+    },
+    "d_g": {
+      "filed": 0.060314,
+      "recomputed": 0.060314,
+      "abs_difference": 0.0,
+      "used_components": [
+        "filr",
+        "tga",
+        "ancestor",
+        "retain_same",
+        "retain_other",
+        "over",
+        "wrong"
+      ],
+      "within_tolerance": true
+    }
+  },
+  "bound_bytes": {
+    "b6_predictions": "data/mllmu_hier_pilot100/predictions_iter12_stage2/predictions_tv_B6_beta13.642_lam0.5_lr2e-05_ep5.parquet",
+    "b6_predictions_sha256": "94b630b0202b83825f9d810fe5eb529d152f0beb0205701da7a6f9f35582f857",
+    "mg_predictions": "data/mllmu_hier_pilot100/predictions_iter12/predictions_tv_MG.parquet",
+    "mg_predictions_sha256": "3fdc212d0d839a03f4c01be5baad94181d5c020c4a28251f0ed61f7fd6383434",
+    "retain_group": "data/mllmu_hier_pilot100/unlearning_iter12/retain.jsonl",
+    "retain_group_sha256": "1221a45f08958a0542c0c40b8f219181d248ee0318e0c41cf403a90634276e3c",
+    "cache_sidecar": "data/mllmu_hier_pilot100/mf_reference_logprobs/sidecar.json",
+    "cache_sidecar_sha256": "b1e33ada946a1b49624e812f3659ec90e66d453e81e83aa3471cdf04a3467e35",
+    "cache_tensor_sha256": "dbf8b475e01bf3e13c731f04b94109e8dc37b14d6252598d7e9b6811999e5f6a"
+  },
+  "image_conditioned_examples": 183,
+  "fit_half_examples": 183,
+  "why_b6_is_reused_not_retrained": "The zero-weight row is the same objective, trainer, seed, cache and starting adapter. A second same-seed run would measure GPU nondeterminism; reuse of the bound B6 bytes is the control that answers whether gamma=0 is B6.",
+  "holds": true
+}
