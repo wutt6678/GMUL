@@ -45,6 +45,7 @@ from granunlearn.evaluation.reference_eval import (
 from granunlearn.logging_utils import setup_logger
 from granunlearn.training import stage2_grid as s2g
 from granunlearn.training import stage3_grid as s3g
+from granunlearn.training import stage3b_replication as s3b
 from granunlearn.training.preservation_anchor import sha256_file
 
 log = setup_logger("select_iter12_stage3")
@@ -180,6 +181,35 @@ def gate_reused_states(recomputed: dict[str, dict[str, Any]],
     }
 
 
+def gate_incumbent_envelope(b6_values: dict[str, float | None],
+                            mg_eight: dict[str, float | None],
+                            ) -> dict[str, Any]:
+    """Re-derive the near-miss envelope from the bound Stage-2 bytes.
+
+    The envelope that decides which B7 rows earn replication is a property of
+    B6's own measured shortfall, so it is recomputed here from the parquet the
+    freeze binds -- never transcribed from the Stage-2 report's rounded
+    difference fields, which would drop the 1e-9 the comparison is made at.
+    """
+    problems = s3b.verify_incumbent_values(b6_values)
+    filed = s3b.incumbent_envelope(mg_eight)
+    recomputed = s3b.envelope(s3b.shortfall_vector(b6_values, mg_eight))
+    for field in ("K", "M", "S"):
+        if recomputed[field] != filed[field]:
+            problems.append(
+                f"the filed envelope {field}={filed[field]!r} does not "
+                f"reproduce from the bound parquet: {recomputed[field]!r}")
+    return {
+        "incumbent_envelope": {
+            "K": filed["K"], "M": filed["M"], "S": filed["S"],
+            "failed_metrics": filed["failed_metrics"],
+            "recomputed_from_the_bound_stage2_parquet": True,
+            "problems": problems,
+            "holds": not problems,
+        },
+    }
+
+
 def build_report(states: dict[str, dict[str, Any]],
                  reused_vec: dict[str, Any],
                  mg_vec: dict[str, float | None],
@@ -235,6 +265,19 @@ def build_report(states: dict[str, dict[str, Any]],
                   and rows[cid]["distance_to_mg"] ==
                   rows[selected]["distance_to_mg"])
     b7 = [c for c in grid if c.method == s3g.METHOD_ROUTE_ANCHOR]
+    #: The amended decision tree.  It is applied to the values recomputed in
+    #: this run, and it refuses to rank anything unless the incumbent envelope
+    #: still reproduces from the bound Stage-2 parquet.
+    tree = s3b.select_parents(
+        {cid: {"method": r["method"], "values": r["values"],
+               "distance_to_mg": r["distance_to_mg"]}
+         for cid, r in rows.items()},
+        mg_eight, b6)
+    if not tree["incumbent"]["envelope_reproduces"]:
+        raise SystemExit(
+            "REFUSING to file a Stage-3 selection: the incumbent-relative "
+            "near-miss envelope no longer reproduces from the bound Stage-2 "
+            f"predictions: {tree['incumbent']['problems']}")
     return {
         "iteration": "12",
         "stage": 3,
@@ -289,6 +332,15 @@ def build_report(states: dict[str, dict[str, Any]],
         },
         "ranking_of_eligible": ranked,
         "selected": selected,
+        "selected_is_provisional": {
+            "pending": "stage_3b" if tree["parents"] else "nothing",
+            "why": (
+                "Stage 3 trains one seed per row. Under the amended tree a "
+                "single-seed pass makes a row a Stage-3b replication parent, "
+                "not a result; the successor is decided on the replicated "
+                "mean."),
+        },
+        "post_stage3_decision": tree,
         "tied_with": tied,
         "a_tie_means": (
             "the criterion did not discriminate and the tie-break -- not the "
@@ -324,9 +376,11 @@ def build_report(states: dict[str, dict[str, Any]],
         "note": (
             "EXPLORATORY. This report selects a checkpoint; it tests no "
             "hypothesis and controls no error rate. Stage 3 trains one seed "
-            "per B7 row, so a row that clears the floor by less than the "
-            "between-seed spread Stage 1b measured is a candidate for "
-            "replication rather than a result."),
+            "per B7 row, so what happens next is decided by the amended "
+            "tree in post_stage3_decision: no qualifying B7 closes Iteration "
+            "12 as a documented negative result, and a pass or an "
+            "incumbent-relative near miss earns replication at seeds "
+            "42/43/44/45 rather than standing as a result."),
     }
 
 
@@ -437,8 +491,21 @@ def main() -> None:
             "zero-weight B6 control failed, so a B7 row would not be "
             "interpretable as B6 plus image weight.")
 
-    stage2 = json.loads((repo_root / s2g.OUT_REPORT).read_text())
+    #: The near-miss envelope is gated here too, before any GPU is spent: if
+    #: the bound B6 bytes no longer reproduce the filed shortfall, the rule
+    #: that decides which B7 rows earn replication is undefined.
+    mg_anchor = freeze["what_is_frozen"]["anchor_values"]
     b6 = control_row_id(repo_root)
+    envelope_gate = gate_incumbent_envelope(recomputed[b6]["eight_numbers"],
+                                            mg_anchor)
+    if not envelope_gate["incumbent_envelope"]["holds"]:
+        raise SystemExit(
+            "REFUSING to generate B7 predictions: the incumbent-relative "
+            "near-miss envelope does not reproduce from the bound Stage-2 "
+            f"parquet: {envelope_gate['incumbent_envelope']['problems']}")
+    gates.update(envelope_gate)
+
+    stage2 = json.loads((repo_root / s2g.OUT_REPORT).read_text())
     states: dict[str, dict[str, Any]] = {
         "B0": {
             "method": "B0",

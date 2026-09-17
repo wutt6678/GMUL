@@ -1324,6 +1324,72 @@ The generation contract is the inherited one (`batch_size` 8,
 refused on resolved paths. `--check-only` currently reports all three reused
 parquets and both cache files matching.
 
+### What Stage 3 is allowed to conclude: the amended decision tree
+
+Stage 3 trains one seed per row, so a single-seed verdict on eight numbers whose
+denominators are 408 and 76 per route cannot separate a repaired shortfall from a
+lucky draw. The freeze was therefore amended — **before any B7 adapter or B7
+prediction existed** — to preregister everything downstream, and the amendment
+records its own reason: the tree was absent from the original freeze, and a
+near-miss threshold chosen after Stage 3 is scored can be fitted to whichever row
+it admits.
+
+The threshold is **incumbent-relative rather than variance-based**, because the
+variance it would need has never been measured. Stage 1b measured between-seed sd
+on the four **text** numbers only (0.0121 and 0.0127 retain-same, 0.0225 and
+0.0195 retain-other); B6 fails three **image** numbers, and no image-route
+training-seed spread exists. Generation noise cannot stand in for it: under the
+fixed contract the Stage-1b determinism control found **0** differing rows out of
+4,518 across all seven recorded fields.
+
+So the envelope is B6's own measured shortfall, recomputed from the bound Stage-2
+parquet rather than read from a report's rounded difference fields — those are
+rounded to four decimals and would drop the 1e-9 the comparison is made at. With
+`d_j(c) = max(0, a_j − v_j(c) − 1e-9)` over the eight frozen numbers, B6 gives
+`K = 3` failed metrics, `M = 0.0339 − 1e-9` worst shortfall and
+`S = 0.0725 − 3e-9` total. A B7 row qualifies for Stage 3b by clearing all eight
+exactly, or by failing **no worse than the incumbent on all three** of count,
+worst and total. All three conjuncts bite: without `S` a row could spread a
+collapse over three numbers each just under `M`, and without `M` it could fail one
+number arbitrarily far below the anchor. "No worse than the best existing
+mechanism's retention shortfall" needs no variance estimate and no distributional
+assumption.
+
+Only the four B7 rows can become parents. The B6 zero control is excluded
+explicitly, and the exclusion is load-bearing: B6 satisfies its own envelope with
+equality on all three conjuncts, so without the exclusion the control would select
+itself as its own successor. At most two parents are taken, ranked exact pass
+before near miss, then fewer failed metrics, then smaller worst shortfall, then
+smaller total shortfall, then smaller `D_G`, then candidate id. If no B7 row
+qualifies, Iteration 12 closes immediately as a documented negative result and no
+replicate is trained.
+
+Stage 3b reuses the parent's seed-42 adapter and predictions and trains 43/44/45 —
+the Stage-1b seeds, recorded before any replicate existed. Each seed's eight
+numbers are computed separately and averaged componentwise **unrounded**, and
+every mean must satisfy `mean_j >= a_j − 1e-9` under `floor_check_stratified`.
+Stage 1b's analyzer is not reused and could not be: its `floor_check` reads four
+text families against a B0 anchor, so an image-route failure is invisible to it — a
+test measures exactly that, on a mean the stratified floor rejects and the Stage-1b
+rule would have accepted. `D_G` is the frozen distance applied to the
+componentwise mean of the **complete** summary vector; averaging four already
+computed per-seed distances is forbidden, because `distance_to_reference` rounds
+inside each call and `abs` is convex, so the two statistics can order two parents
+differently. The rejected statistic is reported beside the decision and marked
+non-decision-bearing.
+
+No mean-eligible parent stops Iteration 12. One survivor is selected and its `D_G`
+is descriptive, deciding nothing. Several are decided by minimum `D_G` under the
+frozen tie-break. A selected parent proceeds to a **separately frozen
+Iteration-13 confirmation**; Iteration 12 carries no confirmatory claim on any
+branch.
+
+These rules live in `src/granunlearn/training/stage3b_replication.py`, which the
+freeze hashes as a protocol path, so the Stage-3b executors — which deliberately
+do not exist yet — can only import them rather than restate them. The selector
+re-derives the envelope from the bound parquet before generation and refuses to
+spend a GPU, or to file a report, if it no longer reproduces.
+
 ## Iteration history
 
 `git log --oneline` is the authoritative narrative and its commit messages carry
@@ -1443,4 +1509,20 @@ can be edited. 72 tests, 31 mutations caught and 0 survived, and the five record
 scoring invocations left one distinct sha256 of the selection report between them.
 The provenance reconstruction also refuses to fabricate an answer in a checkout with
 no history: a depth-1 clone gets a disclosure naming the timestamp it could not
-resolve, not a `the_tree_was_therefore_dirty: false` computed from nothing.
+resolve, not a `the_tree_was_therefore_dirty: false` computed from nothing. · **12f**
+Stage 3 was frozen as a one-coordinate successor to B6 — the additional
+image-conditioned anchor weight swept at `beta/8`, `beta/4`, `beta/2` and `beta`,
+with B6 reused as the `gamma = 0` control and the disclosure that **all 183**
+fit-half retention examples are image-conditioned, so the term is additional weight
+on the existing stream rather than a restriction to a subset — and then amended,
+still with no B7 adapter and no B7 prediction on disk, to preregister the tree that
+decides what Stage 3 may conclude. The near-miss threshold is incumbent-relative
+(`K`/`M`/`S` recomputed from B6's bound parquet: 3 failed metrics, worst 0.0339,
+total 0.0725, each carrying the 1e-9) because the image route's between-seed
+training variance has never been measured and generation noise under the fixed
+contract is measured at zero; only the four B7 rows can become parents, since the
+control satisfies its own envelope with equality and would otherwise select itself;
+and the replicated mean is scored on all eight numbers by `floor_check_stratified`,
+with `D_G` taken as the frozen distance of the componentwise mean vector and never
+as the mean of four per-seed distances. The rules are code the freeze hashes, so the
+executors — not written yet — can only import them.

@@ -2,10 +2,141 @@
   "iteration": "12",
   "stage": 3,
   "protocol": "route-aware B6 successor (method B7), exploratory",
-  "frozen_at_utc": "2026-09-17T11:25:45+00:00",
-  "git_commit": "8cff210faec260be9caaea214718c198064babc9",
-  "git_dirty": "M tests/unit/test_iteration12_stage2_repair.py\n?? scripts/build_iter12_stage3_basis.py\n?? scripts/freeze_iter12_stage3.py\n?? scripts/select_iter12_stage3.py\n?? scripts/train_iter12_stage3.py\n?? src/granunlearn/training/stage3_grid.py",
-  "amendments": [],
+  "frozen_at_utc": "2026-09-17T17:08:21+00:00",
+  "git_commit": "2ff64b1970984691199446079acf1a50274e6d9c",
+  "git_dirty": "M .gitignore\n M README.md\n M scripts/freeze_iter12_stage3.py\n M scripts/select_iter12_stage3.py\n M tests/unit/test_iteration12_stage2_repair.py\n M tests/unit/test_iteration12_stage3.py\n?? src/granunlearn/training/stage3b_replication.py\n?? tests/unit/test_iteration12_stage3b.py",
+  "amendments": [
+    {
+      "amended_at_utc": "2026-09-17T17:08:21+00:00",
+      "reason": "Preregister the post-Stage-3 decision tree, which the original freeze did not contain: the shortfall definition, the incumbent-relative near-miss envelope, qualification, parent eligibility and ranking, the Stage-3b replicated-mean rules and the four terminal branches. The threshold is incumbent-relative -- B6's own shortfall, recomputed from the bound Stage-2 parquet as K=3 failed metrics, M=0.0339-1e-9 worst and S=0.0725-3e-9 total -- because the image route's between-seed training variance has never been measured: Stage 1b measured sd on the four TEXT numbers only, and generation noise under the fixed contract is measured at zero over all 4,518 rows, so \"within measured seed noise\" had no referent for the three image numbers that decide Stage 3. Only the four B7 rows can become parents; the B6 zero control is excluded because it satisfies its own envelope with equality and would otherwise select itself. Filed while no B7 adapter and no B7 prediction existed, so the rule predates every result it governs. The eight floors, the MG anchor and its values, epsilon 1e-9, margin 0.0, the weight grid, the seeds, the batch layouts, the cache and the tie-break are unchanged; the amendment adds one protocol path, src/granunlearn/training/stage3b_replication.py, which implements these rules so that the Stage-3b executors can only import them.",
+      "supersedes_sha256": "ce313e0d7f1a227f4d0203cbd706bace07385355dfb8188fc7757a1ff4224359",
+      "fields_changed": [
+        "hashes.protocol_paths.scripts/freeze_iter12_stage3.py",
+        "hashes.protocol_paths.scripts/select_iter12_stage3.py",
+        "hashes.protocol_paths.src/granunlearn/training/stage3b_replication.py",
+        "post_stage3_decision_tree.implemented_by.constraint_on_them",
+        "post_stage3_decision_tree.implemented_by.executor_scripts_do_not_exist_yet",
+        "post_stage3_decision_tree.implemented_by.module",
+        "post_stage3_decision_tree.implemented_by.sha256_bound_in",
+        "post_stage3_decision_tree.incumbent_relative_envelope.K",
+        "post_stage3_decision_tree.incumbent_relative_envelope.M",
+        "post_stage3_decision_tree.incumbent_relative_envelope.S",
+        "post_stage3_decision_tree.incumbent_relative_envelope.b6_floor_values.image.retain_other_entity_image.entity_macro",
+        "post_stage3_decision_tree.incumbent_relative_envelope.b6_floor_values.image.retain_other_entity_image.row_micro",
+        "post_stage3_decision_tree.incumbent_relative_envelope.b6_floor_values.image.retain_same_entity_image.entity_macro",
+        "post_stage3_decision_tree.incumbent_relative_envelope.b6_floor_values.image.retain_same_entity_image.row_micro",
+        "post_stage3_decision_tree.incumbent_relative_envelope.b6_floor_values.text.retain_other_entity.entity_macro",
+        "post_stage3_decision_tree.incumbent_relative_envelope.b6_floor_values.text.retain_other_entity.row_micro",
+        "post_stage3_decision_tree.incumbent_relative_envelope.b6_floor_values.text.retain_same_entity.entity_macro",
+        "post_stage3_decision_tree.incumbent_relative_envelope.b6_floor_values.text.retain_same_entity.row_micro",
+        "post_stage3_decision_tree.incumbent_relative_envelope.b6_floor_values_source.not_transcribed_from_a_report",
+        "post_stage3_decision_tree.incumbent_relative_envelope.b6_floor_values_source.parquet",
+        "post_stage3_decision_tree.incumbent_relative_envelope.b6_floor_values_source.re_verified_before_every_scoring_run_by",
+        "post_stage3_decision_tree.incumbent_relative_envelope.b6_floor_values_source.recomputed_from_the_bound_stage2_parquet",
+        "post_stage3_decision_tree.incumbent_relative_envelope.b6_floor_values_source.sha256_bound_as",
+        "post_stage3_decision_tree.incumbent_relative_envelope.failed_metrics.0",
+        "post_stage3_decision_tree.incumbent_relative_envelope.failed_metrics.1",
+        "post_stage3_decision_tree.incumbent_relative_envelope.failed_metrics.2",
+        "post_stage3_decision_tree.incumbent_relative_envelope.incumbent",
+        "post_stage3_decision_tree.incumbent_relative_envelope.per_metric_shortfall.image.retain_other_entity_image.entity_macro",
+        "post_stage3_decision_tree.incumbent_relative_envelope.per_metric_shortfall.image.retain_other_entity_image.row_micro",
+        "post_stage3_decision_tree.incumbent_relative_envelope.per_metric_shortfall.image.retain_same_entity_image.entity_macro",
+        "post_stage3_decision_tree.incumbent_relative_envelope.per_metric_shortfall.image.retain_same_entity_image.row_micro",
+        "post_stage3_decision_tree.incumbent_relative_envelope.per_metric_shortfall.text.retain_other_entity.entity_macro",
+        "post_stage3_decision_tree.incumbent_relative_envelope.per_metric_shortfall.text.retain_other_entity.row_micro",
+        "post_stage3_decision_tree.incumbent_relative_envelope.per_metric_shortfall.text.retain_same_entity.entity_macro",
+        "post_stage3_decision_tree.incumbent_relative_envelope.per_metric_shortfall.text.retain_same_entity.row_micro",
+        "post_stage3_decision_tree.incumbent_relative_envelope.query_shortfall_behind_it.other_image_denominator",
+        "post_stage3_decision_tree.incumbent_relative_envelope.query_shortfall_behind_it.other_image_rows",
+        "post_stage3_decision_tree.incumbent_relative_envelope.query_shortfall_behind_it.same_image_denominator",
+        "post_stage3_decision_tree.incumbent_relative_envelope.query_shortfall_behind_it.same_image_rows",
+        "post_stage3_decision_tree.incumbent_relative_envelope.query_shortfall_behind_it.total_distinct_rows",
+        "post_stage3_decision_tree.incumbent_relative_envelope.summation",
+        "post_stage3_decision_tree.incumbent_relative_envelope.why_incumbent_relative",
+        "post_stage3_decision_tree.parent_eligibility.b0_is_excluded",
+        "post_stage3_decision_tree.parent_eligibility.b6_zero_control_is_excluded",
+        "post_stage3_decision_tree.parent_eligibility.if_no_b7_candidate_qualifies",
+        "post_stage3_decision_tree.parent_eligibility.max_parents",
+        "post_stage3_decision_tree.parent_eligibility.num_b7_rows",
+        "post_stage3_decision_tree.parent_eligibility.only_these_rows_can_be_stage3b_parents.0",
+        "post_stage3_decision_tree.parent_eligibility.only_these_rows_can_be_stage3b_parents.1",
+        "post_stage3_decision_tree.parent_eligibility.only_these_rows_can_be_stage3b_parents.2",
+        "post_stage3_decision_tree.parent_eligibility.only_these_rows_can_be_stage3b_parents.3",
+        "post_stage3_decision_tree.parent_eligibility.ranking.0",
+        "post_stage3_decision_tree.parent_eligibility.ranking.1",
+        "post_stage3_decision_tree.parent_eligibility.ranking.2",
+        "post_stage3_decision_tree.parent_eligibility.ranking.3",
+        "post_stage3_decision_tree.parent_eligibility.ranking.4",
+        "post_stage3_decision_tree.parent_eligibility.ranking.5",
+        "post_stage3_decision_tree.parent_eligibility.ranking.6",
+        "post_stage3_decision_tree.parent_eligibility.ranking_key",
+        "post_stage3_decision_tree.parent_eligibility.what_closing_means",
+        "post_stage3_decision_tree.parent_eligibility.why_b0_is_excluded",
+        "post_stage3_decision_tree.parent_eligibility.why_b6_is_excluded",
+        "post_stage3_decision_tree.preregistration.amendment_reason_is_recorded_in",
+        "post_stage3_decision_tree.preregistration.filed_by",
+        "post_stage3_decision_tree.preregistration.why_it_had_to_be_filed_now",
+        "post_stage3_decision_tree.qualification.all_three_conjuncts_are_required",
+        "post_stage3_decision_tree.qualification.computed_by",
+        "post_stage3_decision_tree.qualification.exact_pass",
+        "post_stage3_decision_tree.qualification.incumbent_relative_near_miss",
+        "post_stage3_decision_tree.qualification.why_all_three",
+        "post_stage3_decision_tree.shortfall.a_j",
+        "post_stage3_decision_tree.shortfall.a_missing_number_disqualifies",
+        "post_stage3_decision_tree.shortfall.computed_by",
+        "post_stage3_decision_tree.shortfall.definition",
+        "post_stage3_decision_tree.shortfall.epsilon",
+        "post_stage3_decision_tree.shortfall.epsilon_is_the_frozen_tolerance_not_a_margin",
+        "post_stage3_decision_tree.shortfall.no_further_rounding",
+        "post_stage3_decision_tree.shortfall.v_j_c",
+        "post_stage3_decision_tree.shortfall.why_not_the_reported_differences",
+        "post_stage3_decision_tree.stage3b_mechanics.d_g.components.0",
+        "post_stage3_decision_tree.stage3b_mechanics.d_g.components.1",
+        "post_stage3_decision_tree.stage3b_mechanics.d_g.components.2",
+        "post_stage3_decision_tree.stage3b_mechanics.d_g.components.3",
+        "post_stage3_decision_tree.stage3b_mechanics.d_g.components.4",
+        "post_stage3_decision_tree.stage3b_mechanics.d_g.components.5",
+        "post_stage3_decision_tree.stage3b_mechanics.d_g.components.6",
+        "post_stage3_decision_tree.stage3b_mechanics.d_g.forbidden",
+        "post_stage3_decision_tree.stage3b_mechanics.d_g.per_seed_distances_are_reported_but_not_used",
+        "post_stage3_decision_tree.stage3b_mechanics.d_g.rule",
+        "post_stage3_decision_tree.stage3b_mechanics.d_g.why_forbidden",
+        "post_stage3_decision_tree.stage3b_mechanics.mean",
+        "post_stage3_decision_tree.stage3b_mechanics.mean_floor_rule",
+        "post_stage3_decision_tree.stage3b_mechanics.own_namespaces.checkpoints",
+        "post_stage3_decision_tree.stage3b_mechanics.own_namespaces.predictions",
+        "post_stage3_decision_tree.stage3b_mechanics.own_namespaces.report",
+        "post_stage3_decision_tree.stage3b_mechanics.own_namespaces.resolvers_refuse_to_collide_with",
+        "post_stage3_decision_tree.stage3b_mechanics.per_seed",
+        "post_stage3_decision_tree.stage3b_mechanics.scored_by",
+        "post_stage3_decision_tree.stage3b_mechanics.seed_42_is_reused_not_retrained",
+        "post_stage3_decision_tree.stage3b_mechanics.seeds.all.0",
+        "post_stage3_decision_tree.stage3b_mechanics.seeds.all.1",
+        "post_stage3_decision_tree.stage3b_mechanics.seeds.all.2",
+        "post_stage3_decision_tree.stage3b_mechanics.seeds.all.3",
+        "post_stage3_decision_tree.stage3b_mechanics.seeds.frozen_by",
+        "post_stage3_decision_tree.stage3b_mechanics.seeds.reused",
+        "post_stage3_decision_tree.stage3b_mechanics.seeds.trained.0",
+        "post_stage3_decision_tree.stage3b_mechanics.seeds.trained.1",
+        "post_stage3_decision_tree.stage3b_mechanics.seeds.trained.2",
+        "post_stage3_decision_tree.stage3b_mechanics.the_stage1b_analyzer_must_not_be_reused",
+        "post_stage3_decision_tree.stage3b_mechanics.the_text_stratum_cross_check_still_runs",
+        "post_stage3_decision_tree.stage3b_mechanics.why_not",
+        "post_stage3_decision_tree.terminal_branches.exactly_one_mean_eligible_parent.d_g_is_descriptive",
+        "post_stage3_decision_tree.terminal_branches.exactly_one_mean_eligible_parent.decision",
+        "post_stage3_decision_tree.terminal_branches.exactly_one_mean_eligible_parent.why",
+        "post_stage3_decision_tree.terminal_branches.iteration_12_carries_no_confirmatory_claim",
+        "post_stage3_decision_tree.terminal_branches.iteration_13_is_separately_frozen",
+        "post_stage3_decision_tree.terminal_branches.more_than_one_mean_eligible_parent.decision",
+        "post_stage3_decision_tree.terminal_branches.more_than_one_mean_eligible_parent.tie_break",
+        "post_stage3_decision_tree.terminal_branches.no_mean_eligible_parent",
+        "post_stage3_decision_tree.terminal_branches.selected_parent",
+        "refusal_policy.reason"
+      ],
+      "num_fields_changed": 121,
+      "no_adapter_existed_at_amendment_time": true
+    }
+  ],
   "status": {
     "exploratory": true,
     "preregistered_before_training": true,
@@ -487,6 +618,171 @@
     },
     "it_is_a_gate_not_a_report": "train_iter12_stage3.py recomputes this control and refuses to train any B7 row if it no longer holds; select_iter12_stage3.py applies the same gate before generation."
   },
+  "post_stage3_decision_tree": {
+    "preregistration": {
+      "filed_by": "an amendment to this freeze, before any B7 adapter or B7 prediction existed",
+      "amendment_reason_is_recorded_in": "amendments[-1].reason",
+      "why_it_had_to_be_filed_now": "the tree was absent from the original freeze, and a near-miss threshold chosen after Stage 3 is scored can be fitted to whichever row it admits. This freeze refuses amendment once a B7 adapter exists, so this is the last moment the rule can predate the result it governs."
+    },
+    "shortfall": {
+      "definition": "d_j(c) = max(0, a_j - v_j(c) - epsilon) for each of the eight frozen floor numbers j",
+      "epsilon": 1e-09,
+      "epsilon_is_the_frozen_tolerance_not_a_margin": true,
+      "a_j": "the frozen MG anchor in what_is_frozen.anchor_values",
+      "v_j_c": "the candidate's own eight numbers, recomputed from its prediction parquet",
+      "no_further_rounding": true,
+      "why_not_the_reported_differences": "the selection report's difference fields are rounded to four decimals; reading them would drop the 1e-9 and could flip a <= comparison against the envelope at exactly the boundary the epsilon exists to guard",
+      "a_missing_number_disqualifies": "an unmeasurable retention number is not a zero shortfall, so it cannot be ranked as a near miss",
+      "computed_by": "granunlearn.training.stage3b_replication.shortfall_vector"
+    },
+    "incumbent_relative_envelope": {
+      "incumbent": "B6_beta13.642_lam0.5_lr2e-05_ep5",
+      "b6_floor_values_source": {
+        "recomputed_from_the_bound_stage2_parquet": true,
+        "parquet": "data/mllmu_hier_pilot100/predictions_iter12_stage2/predictions_tv_B6_beta13.642_lam0.5_lr2e-05_ep5.parquet",
+        "sha256_bound_as": "reused_predictions_bound.sha256['stage2.B6']",
+        "not_transcribed_from_a_report": true,
+        "re_verified_before_every_scoring_run_by": "select_iter12_stage3.py, which refuses to score if the bound parquet no longer reproduces these values"
+      },
+      "b6_floor_values": {
+        "text.retain_same_entity.entity_macro": 0.543,
+        "text.retain_same_entity.row_micro": 0.5466,
+        "text.retain_other_entity.entity_macro": 0.5199,
+        "text.retain_other_entity.row_micro": 0.5132,
+        "image.retain_same_entity_image.entity_macro": 0.5043,
+        "image.retain_same_entity_image.row_micro": 0.5098,
+        "image.retain_other_entity_image.entity_macro": 0.4348,
+        "image.retain_other_entity_image.row_micro": 0.4211
+      },
+      "per_metric_shortfall": {
+        "text.retain_same_entity.entity_macro": 0.0,
+        "text.retain_same_entity.row_micro": 0.0,
+        "text.retain_other_entity.entity_macro": 0.0,
+        "text.retain_other_entity.row_micro": 0.0,
+        "image.retain_same_entity_image.entity_macro": 0.03389999900000004,
+        "image.retain_same_entity_image.row_micro": 0.012299998999999978,
+        "image.retain_other_entity_image.entity_macro": 0.0,
+        "image.retain_other_entity_image.row_micro": 0.026299999000000046
+      },
+      "K": 3,
+      "M": 0.03389999900000004,
+      "S": 0.07249999700000007,
+      "failed_metrics": [
+        "image.retain_other_entity_image.row_micro",
+        "image.retain_same_entity_image.entity_macro",
+        "image.retain_same_entity_image.row_micro"
+      ],
+      "summation": "math.fsum over the frozen key order (exactly rounded, so it cannot depend on the order)",
+      "query_shortfall_behind_it": {
+        "same_image_rows": 5,
+        "same_image_denominator": 408,
+        "other_image_rows": 2,
+        "other_image_denominator": 76,
+        "total_distinct_rows": 14
+      },
+      "why_incumbent_relative": "the image route's between-seed training variance has never been measured -- Stage 1b measured sd on the four TEXT numbers only (0.0121 and 0.0127 retain-same, 0.0225 and 0.0195 retain-other) -- and generation noise under the fixed contract is measured at zero over all 4,518 rows, so 'within measured seed noise' has no referent for the three image numbers that decide Stage 3. 'No worse than the best existing mechanism's retention shortfall' needs no variance estimate and no distributional assumption."
+    },
+    "qualification": {
+      "exact_pass": "all eight d_j(c) == 0",
+      "incumbent_relative_near_miss": "K(c) <= K_B6 AND M(c) <= M_B6 AND S(c) <= S_B6",
+      "all_three_conjuncts_are_required": true,
+      "why_all_three": "K bounds how many numbers may fail, M how badly any one may fail, S the total. Without S a candidate could fail three numbers each just under M; without M it could fail one number arbitrarily far below the anchor.",
+      "computed_by": "granunlearn.training.stage3b_replication.qualification"
+    },
+    "parent_eligibility": {
+      "only_these_rows_can_be_stage3b_parents": [
+        "B7_imgw1.7052_beta13.642_lam0.5_lr2e-05_ep5",
+        "B7_imgw3.4105_beta13.642_lam0.5_lr2e-05_ep5",
+        "B7_imgw6.821_beta13.642_lam0.5_lr2e-05_ep5",
+        "B7_imgw13.642_beta13.642_lam0.5_lr2e-05_ep5"
+      ],
+      "num_b7_rows": 4,
+      "b6_zero_control_is_excluded": true,
+      "why_b6_is_excluded": "it validates reproduction and defines the envelope, but it is the filed Stage-2 incumbent rather than a new successor. The exclusion is load-bearing: B6 satisfies its own envelope with equality on all three conjuncts, so without it the control would select itself.",
+      "b0_is_excluded": true,
+      "why_b0_is_excluded": "the no-op reference is not a mechanism",
+      "max_parents": 2,
+      "ranking": [
+        "exact pass before near miss",
+        "among exact passers: smaller D_G",
+        "among near misses: fewer failed metrics",
+        "then smaller maximum shortfall",
+        "then smaller total shortfall",
+        "then smaller D_G",
+        "then lexicographic candidate_id"
+      ],
+      "ranking_key": "(0 if exact_pass else 1, K, M, S, distance_to_mg, candidate_id)",
+      "if_no_b7_candidate_qualifies": "close_iteration_12_as_a_documented_negative_result",
+      "what_closing_means": "Iteration 12 ends as a documented negative result. No Stage-3b replicate is trained and no successor is adopted. A non-B7 row in the selection report's `selected` field does not open Stage 3b."
+    },
+    "stage3b_mechanics": {
+      "seeds": {
+        "reused": 42,
+        "trained": [
+          43,
+          44,
+          45
+        ],
+        "all": [
+          42,
+          43,
+          44,
+          45
+        ],
+        "frozen_by": "the Stage-1b seed list, recorded before any replicate existed"
+      },
+      "seed_42_is_reused_not_retrained": "the parent's Stage-3 adapter and predictions are read from the Stage-3 namespaces; re-running seed 42 would measure GPU nondeterminism rather than between-seed variance",
+      "per_seed": "all eight floor numbers are computed separately for every seed, from that seed's own predictions",
+      "mean": "the arithmetic mean of each metric over 42/43/44/45, UNROUNDED",
+      "mean_floor_rule": "every mean metric must satisfy mean_j >= a_j - 1e-9",
+      "scored_by": "granunlearn.evaluation.route_stratified_retention.floor_check_stratified",
+      "the_stage1b_analyzer_must_not_be_reused": true,
+      "why_not": "Stage 1b's mean_candidate/floor_check path is text-only (four numbers) and B0-anchored. Reusing it would drop the four image numbers that decide Stage 3 and re-anchor the floor on a state Stage 3 does not use.",
+      "the_text_stratum_cross_check_still_runs": "text_stratum_reproduces_the_frozen_floor is asserted on the mean, so the stratified verdict still equals the frozen floor's verdict on the four numbers they share",
+      "d_g": {
+        "rule": "average the COMPLETE summary vector componentwise over the four seeds, then apply the frozen distance_to_mg to that mean vector",
+        "components": [
+          "filr",
+          "tga",
+          "ancestor",
+          "retain_same",
+          "retain_other",
+          "over",
+          "wrong"
+        ],
+        "forbidden": "averaging already-computed per-seed D_G values",
+        "why_forbidden": "distance_to_reference is a weighted L1 over absolute component differences, rounded to six decimals inside each call. abs is convex and the rounding is per call, so the mean of four distances is not the distance of the mean vector and the two can order two parents differently.",
+        "per_seed_distances_are_reported_but_not_used": true
+      },
+      "own_namespaces": {
+        "checkpoints": "data/checkpoints/mllmu_iter12_stage3b",
+        "predictions": "data/mllmu_hier_pilot100/predictions_iter12_stage3b",
+        "report": "data/reports/mllmu_iter12_stage3b_replication.json",
+        "resolvers_refuse_to_collide_with": "the Stage-1, Stage-1b, Stage-2 and Stage-3 roots"
+      }
+    },
+    "terminal_branches": {
+      "no_mean_eligible_parent": "stop_iteration_12_no_mean_eligible_parent",
+      "exactly_one_mean_eligible_parent": {
+        "decision": "select_the_single_mean_eligible_parent",
+        "d_g_is_descriptive": true,
+        "why": "with one survivor there is nothing to choose between, so its D_G describes the state and decides nothing"
+      },
+      "more_than_one_mean_eligible_parent": {
+        "decision": "select_the_mean_eligible_parent_with_minimum_d_g",
+        "tie_break": "(distance_to_mg, candidate_id) ascending"
+      },
+      "selected_parent": "proceed_to_a_separately_frozen_iteration_13_confirmation",
+      "iteration_13_is_separately_frozen": true,
+      "iteration_12_carries_no_confirmatory_claim": true
+    },
+    "implemented_by": {
+      "module": "src/granunlearn/training/stage3b_replication.py",
+      "sha256_bound_in": "hashes.protocol_paths",
+      "executor_scripts_do_not_exist_yet": true,
+      "constraint_on_them": "a Stage-3b trainer or analyzer may only IMPORT that module. It may not restate or reinterpret these rules, and this freeze cannot be amended again once a B7 adapter exists."
+    }
+  },
   "evidence_base": {
     "used": [
       "data/reports/mllmu_iter12_stage2_selection.json",
@@ -551,15 +847,16 @@
     "refuses_to_freeze_when": "any Stage-3 adapter exists",
     "unconditional": true,
     "no_flag_reaches_past_it": true,
-    "reason": "the parent and its shortfall are already known, so a grid or control amended after training could be fitted to the outcome it is supposed to govern"
+    "reason": "the parent and its shortfall are already known, so a grid or control amended after training could be fitted to the outcome it is supposed to govern -- including which shortfalls earn replication"
   },
   "hashes": {
     "protocol_paths": {
-      "scripts/freeze_iter12_stage3.py": "5f8bae4e24a47b96595d3c867027349d2de46eb87196f33b4809a0d3d62bee83",
+      "scripts/freeze_iter12_stage3.py": "2dfd86523bc7a89d71c8db24e484ebf1d2aba685c432548e2dc55d205b45e173",
       "scripts/build_iter12_stage3_basis.py": "0fcd4af5b49000650461a3c8a904b54f662130514cb01ff508b784a6e21a43b2",
       "scripts/train_iter12_stage3.py": "9e008175b226f1c1ffdb7d1440804cc7c8d3318d57c65bac914755c8ad8eff54",
-      "scripts/select_iter12_stage3.py": "70727575054bef60ef6e922b7e3802c3381d0a1330124bb0fce65ca3ee7d676b",
-      "src/granunlearn/training/stage3_grid.py": "9daa9e7345bc51b33dd5e78656daeec3f6c27e79fdbe9fb36d3cb4864c8a381b"
+      "scripts/select_iter12_stage3.py": "5e4f5f77a30bc211ba9e73952d9962f3c97fbf98ce7d19c63b553f38659d919a",
+      "src/granunlearn/training/stage3_grid.py": "9daa9e7345bc51b33dd5e78656daeec3f6c27e79fdbe9fb36d3cb4864c8a381b",
+      "src/granunlearn/training/stage3b_replication.py": "18e3431abef41aafbe9461807dbcbfa16866d1746dc9a54296cceec62a033f06"
     },
     "depends_on_unchanged": {
       "src/granunlearn/evaluation/retention_selection.py": "ff0ae167a9df495753b6a52d30fd0af0e16df81e910b039d1aaeb3ac190cdb79",

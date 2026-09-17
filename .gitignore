@@ -279,6 +279,12 @@ data/mllmu_hier_pilot100/predictions_iter12_seeds/
 !data/reports/mllmu_iter12_stage3_freeze.json
 !data/reports/mllmu_iter12_stage3_selection.json
 data/mllmu_hier_pilot100/predictions_iter12_stage3/
+# Stage 3b: the seed replication the amended Stage-3 freeze preregisters.  Its
+# namespace is reserved here so a replicate can never be written into a Stage-3
+# path the freeze already binds; the report's negation is inert until Stage 3b
+# runs, exactly as Stage 3's selection negation is.
+!data/reports/mllmu_iter12_stage3b_replication.json
+data/mllmu_hier_pilot100/predictions_iter12_stage3b/
 # The faithfulness control's result, copied out of the gitignored checkpoint
 # directory it is written into.  The control is what licences the whole Stage-2
 # comparison -- that a difference between Stage 1 and Stage 2 is a difference

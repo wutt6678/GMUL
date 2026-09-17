@@ -44,9 +44,11 @@ from freeze_iter12_selection_protocol import (
 from granunlearn.config import _find_repo_root
 from granunlearn.evaluation import retention_selection as rs
 from granunlearn.evaluation import route_stratified_retention as rt
+from granunlearn.evaluation.selection import SUMMARY_COMPONENTS
 from granunlearn.logging_utils import setup_logger
 from granunlearn.training import stage2_grid as s2g
 from granunlearn.training import stage3_grid as s3g
+from granunlearn.training import stage3b_replication as s3b
 from granunlearn.training.preservation_anchor import (
     CACHE_SIDECAR,
     CACHE_TENSOR,
@@ -70,6 +72,7 @@ PROTOCOL_PATHS = (
     "scripts/train_iter12_stage3.py",
     "scripts/select_iter12_stage3.py",
     "src/granunlearn/training/stage3_grid.py",
+    "src/granunlearn/training/stage3b_replication.py",
 )
 
 #: Frozen code Stage 3 DEPENDS ON but must not modify.  Several of these are
@@ -207,6 +210,209 @@ def adapters_exist(repo_root: Path) -> list[str]:
                   for p in root.glob("**/adapters") if p.is_dir())
 
 
+def post_stage3_decision_tree(repo_root: Path, grid: list) -> dict[str, Any]:
+    """The downstream tree, derived rather than transcribed.
+
+    The envelope is recomputed here from the frozen MG anchor and B6's filed
+    floor values, so the numbers in this document cannot drift from the code
+    that applies them.  ``select_iter12_stage3.py`` re-derives the same
+    envelope from the bound Stage-2 parquet before every scoring run and
+    refuses to write a report if the bytes no longer reproduce it.
+    """
+    stage2_freeze = json.loads((repo_root / s2g.FREEZE_REPORT).read_text())
+    anchor = stage2_freeze["what_is_frozen"]["anchor_values"]
+    env = s3b.incumbent_envelope(anchor)
+    b7 = s3g.b7_rows(grid)
+    return {
+        "preregistration": {
+            "filed_by": "an amendment to this freeze, before any B7 adapter "
+                        "or B7 prediction existed",
+            "amendment_reason_is_recorded_in": "amendments[-1].reason",
+            "why_it_had_to_be_filed_now": (
+                "the tree was absent from the original freeze, and a "
+                "near-miss threshold chosen after Stage 3 is scored can be "
+                "fitted to whichever row it admits. This freeze refuses "
+                "amendment once a B7 adapter exists, so this is the last "
+                "moment the rule can predate the result it governs."),
+        },
+        "shortfall": {
+            "definition": "d_j(c) = max(0, a_j - v_j(c) - epsilon) for each "
+                          "of the eight frozen floor numbers j",
+            "epsilon": rs.FLOOR_EPSILON,
+            "epsilon_is_the_frozen_tolerance_not_a_margin": True,
+            "a_j": "the frozen MG anchor in what_is_frozen.anchor_values",
+            "v_j_c": "the candidate's own eight numbers, recomputed from its "
+                     "prediction parquet",
+            "no_further_rounding": True,
+            "why_not_the_reported_differences": (
+                "the selection report's difference fields are rounded to four "
+                "decimals; reading them would drop the 1e-9 and could flip a "
+                "<= comparison against the envelope at exactly the boundary "
+                "the epsilon exists to guard"),
+            "a_missing_number_disqualifies": (
+                "an unmeasurable retention number is not a zero shortfall, so "
+                "it cannot be ranked as a near miss"),
+            "computed_by":
+                "granunlearn.training.stage3b_replication.shortfall_vector",
+        },
+        "incumbent_relative_envelope": {
+            "incumbent": s3g.control_row(grid).candidate_id,
+            "b6_floor_values_source": {
+                "recomputed_from_the_bound_stage2_parquet": True,
+                "parquet": reused_prediction_paths(repo_root)["stage2.B6"],
+                "sha256_bound_as":
+                    "reused_predictions_bound.sha256['stage2.B6']",
+                "not_transcribed_from_a_report": True,
+                "re_verified_before_every_scoring_run_by":
+                    "select_iter12_stage3.py, which refuses to score if the "
+                    "bound parquet no longer reproduces these values",
+            },
+            "b6_floor_values": dict(s3b.B6_FLOOR_VALUES_AT_AMENDMENT_TIME),
+            "per_metric_shortfall": env["per_metric"],
+            "K": env["K"],
+            "M": env["M"],
+            "S": env["S"],
+            "failed_metrics": env["failed_metrics"],
+            "summation": env["summation"],
+            "query_shortfall_behind_it": dict(s3b.B6_QUERY_SHORTFALL),
+            "why_incumbent_relative": (
+                "the image route's between-seed training variance has never "
+                "been measured -- Stage 1b measured sd on the four TEXT "
+                "numbers only (0.0121 and 0.0127 retain-same, 0.0225 and "
+                "0.0195 retain-other) -- and generation noise under the fixed "
+                "contract is measured at zero over all 4,518 rows, so "
+                "'within measured seed noise' has no referent for the three "
+                "image numbers that decide Stage 3. 'No worse than the best "
+                "existing mechanism's retention shortfall' needs no variance "
+                "estimate and no distributional assumption."),
+        },
+        "qualification": {
+            "exact_pass": "all eight d_j(c) == 0",
+            "incumbent_relative_near_miss":
+                "K(c) <= K_B6 AND M(c) <= M_B6 AND S(c) <= S_B6",
+            "all_three_conjuncts_are_required": True,
+            "why_all_three": (
+                "K bounds how many numbers may fail, M how badly any one may "
+                "fail, S the total. Without S a candidate could fail three "
+                "numbers each just under M; without M it could fail one "
+                "number arbitrarily far below the anchor."),
+            "computed_by":
+                "granunlearn.training.stage3b_replication.qualification",
+        },
+        "parent_eligibility": {
+            "only_these_rows_can_be_stage3b_parents":
+                [c.candidate_id for c in b7],
+            "num_b7_rows": len(b7),
+            "b6_zero_control_is_excluded": True,
+            "why_b6_is_excluded": (
+                "it validates reproduction and defines the envelope, but it is "
+                "the filed Stage-2 incumbent rather than a new successor. The "
+                "exclusion is load-bearing: B6 satisfies its own envelope "
+                "with equality on all three conjuncts, so without it the "
+                "control would select itself."),
+            "b0_is_excluded": True,
+            "why_b0_is_excluded": "the no-op reference is not a mechanism",
+            "max_parents": s3b.MAX_PARENTS,
+            "ranking": [
+                "exact pass before near miss",
+                "among exact passers: smaller D_G",
+                "among near misses: fewer failed metrics",
+                "then smaller maximum shortfall",
+                "then smaller total shortfall",
+                "then smaller D_G",
+                "then lexicographic candidate_id",
+            ],
+            "ranking_key":
+                "(0 if exact_pass else 1, K, M, S, distance_to_mg, "
+                "candidate_id)",
+            "if_no_b7_candidate_qualifies": s3b.CLOSE_ITERATION_12,
+            "what_closing_means": (
+                "Iteration 12 ends as a documented negative result. No "
+                "Stage-3b replicate is trained and no successor is adopted. A "
+                "non-B7 row in the selection report's `selected` field does "
+                "not open Stage 3b."),
+        },
+        "stage3b_mechanics": {
+            "seeds": {"reused": s3b.BASE_SEED, "trained": list(s3b.NEW_SEEDS),
+                      "all": list(s3b.ALL_SEEDS),
+                      "frozen_by": "the Stage-1b seed list, recorded before "
+                                   "any replicate existed"},
+            "seed_42_is_reused_not_retrained": (
+                "the parent's Stage-3 adapter and predictions are read from "
+                "the Stage-3 namespaces; re-running seed 42 would measure GPU "
+                "nondeterminism rather than between-seed variance"),
+            "per_seed": "all eight floor numbers are computed separately for "
+                        "every seed, from that seed's own predictions",
+            "mean": "the arithmetic mean of each metric over 42/43/44/45, "
+                    "UNROUNDED",
+            "mean_floor_rule": "every mean metric must satisfy "
+                               "mean_j >= a_j - 1e-9",
+            "scored_by": "granunlearn.evaluation.route_stratified_retention"
+                         ".floor_check_stratified",
+            "the_stage1b_analyzer_must_not_be_reused": True,
+            "why_not": (
+                "Stage 1b's mean_candidate/floor_check path is text-only "
+                "(four numbers) and B0-anchored. Reusing it would drop the "
+                "four image numbers that decide Stage 3 and re-anchor the "
+                "floor on a state Stage 3 does not use."),
+            "the_text_stratum_cross_check_still_runs": (
+                "text_stratum_reproduces_the_frozen_floor is asserted on the "
+                "mean, so the stratified verdict still equals the frozen "
+                "floor's verdict on the four numbers they share"),
+            "d_g": {
+                "rule": "average the COMPLETE summary vector componentwise "
+                        "over the four seeds, then apply the frozen "
+                        "distance_to_mg to that mean vector",
+                "components": list(SUMMARY_COMPONENTS),
+                "forbidden": "averaging already-computed per-seed D_G values",
+                "why_forbidden": (
+                    "distance_to_reference is a weighted L1 over absolute "
+                    "component differences, rounded to six decimals inside "
+                    "each call. abs is convex and the rounding is per call, so "
+                    "the mean of four distances is not the distance of the "
+                    "mean vector and the two can order two parents "
+                    "differently."),
+                "per_seed_distances_are_reported_but_not_used": True,
+            },
+            "own_namespaces": {
+                "checkpoints": s3b.STAGE3B_CKPT_ROOT,
+                "predictions":
+                    f"data/mllmu_hier_pilot100/"
+                    f"{s3b.STAGE3B_PREDICTIONS_SUBDIR}",
+                "report": s3b.OUT_REPORT,
+                "resolvers_refuse_to_collide_with":
+                    "the Stage-1, Stage-1b, Stage-2 and Stage-3 roots",
+            },
+        },
+        "terminal_branches": {
+            "no_mean_eligible_parent": s3b.STOP_ITERATION_12,
+            "exactly_one_mean_eligible_parent": {
+                "decision": s3b.SELECT_THE_ONLY_PARENT,
+                "d_g_is_descriptive": True,
+                "why": "with one survivor there is nothing to choose "
+                       "between, so its D_G describes the state and decides "
+                       "nothing",
+            },
+            "more_than_one_mean_eligible_parent": {
+                "decision": s3b.SELECT_BY_MINIMUM_D_G,
+                "tie_break": "(distance_to_mg, candidate_id) ascending",
+            },
+            "selected_parent": s3b.ITERATION_13,
+            "iteration_13_is_separately_frozen": True,
+            "iteration_12_carries_no_confirmatory_claim": True,
+        },
+        "implemented_by": {
+            "module": "src/granunlearn/training/stage3b_replication.py",
+            "sha256_bound_in": "hashes.protocol_paths",
+            "executor_scripts_do_not_exist_yet": True,
+            "constraint_on_them": (
+                "a Stage-3b trainer or analyzer may only IMPORT that module. "
+                "It may not restate or reinterpret these rules, and this "
+                "freeze cannot be amended again once a B7 adapter exists."),
+        },
+    }
+
+
 def build_freeze(repo_root: Path) -> dict[str, Any]:
     basis_path = repo_root / BASIS_REPORT
     control_path = repo_root / CONTROL_REPORT
@@ -332,6 +538,8 @@ def build_freeze(repo_root: Path) -> dict[str, Any]:
                 "generation."),
         },
 
+        "post_stage3_decision_tree": post_stage3_decision_tree(repo_root, grid),
+
         "evidence_base": {
             "used": basis["evidence_base"]["used"],
             "never_read": list(rs.FORBIDDEN_EVIDENCE),
@@ -368,7 +576,8 @@ def build_freeze(repo_root: Path) -> dict[str, Any]:
             "reason": (
                 "the parent and its shortfall are already known, so a grid "
                 "or control amended after training could be fitted to the "
-                "outcome it is supposed to govern"),
+                "outcome it is supposed to govern -- including which "
+                "shortfalls earn replication"),
         },
 
         "hashes": {

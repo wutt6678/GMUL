@@ -29,6 +29,7 @@ from granunlearn.evaluation import retention_selection as rs
 from granunlearn.evaluation import route_stratified_retention as rt
 from granunlearn.training import stage2_grid as s2g
 from granunlearn.training import stage3_grid as s3g
+from granunlearn.training import stage3b_replication as s3b
 from granunlearn.training.candidate_grid import validate_grid
 from granunlearn.training.reference_trainer import ReferenceRecipe
 
@@ -377,8 +378,13 @@ class TestTheExecutorsGuardTheProtocol:
         states = {
             "B0": {"method": "B0", "spec": {}, "trainval_metrics": {},
                    "eight_numbers": values},
+            #: The B6 row carries its measured floor values, because
+            #: build_report now derives the incumbent-relative near-miss
+            #: envelope from it and refuses to file a report over anything
+            #: else.
             b6: {"method": "B6", "spec": {}, "trainval_metrics": {"x": 1},
-                 "eight_numbers": values},
+                 "eight_numbers": dict(
+                     s3b.B6_FLOOR_VALUES_AT_AMENDMENT_TIME)},
         }
         fz = freeze()
         report = sis3.build_report(
