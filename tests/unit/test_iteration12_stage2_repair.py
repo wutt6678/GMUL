@@ -77,8 +77,8 @@ def freeze_doc() -> dict:
     return json.loads(FREEZE.read_text())
 
 
-def _history_can_reconstruct(frozen_at_utc: str) -> bool:
-    """Whether THIS checkout can turn that one timestamp into a commit.
+def _git_rev_list_before(frozen_at_utc: str) -> str | None:
+    """The commit Git resolves for this timestamp in this checkout, if any.
 
     The same query the script runs, asked of git directly rather than inferred
     from what the script returned -- a test that branched on the returned value
@@ -94,10 +94,10 @@ def _history_can_reconstruct(frozen_at_utc: str) -> bool:
     have required instead.  Shallow says history was TRUNCATED; it does not say
     how much, or whether what is needed survived the truncation.
     """
-    return bool(subprocess.run(
+    return subprocess.run(
         ("git", "rev-list", "-1", f"--before={frozen_at_utc}", "HEAD"),
         cwd=REPO_ROOT, capture_output=True, text=True,
-        check=False).stdout.strip())
+        check=True).stdout.strip() or None
 
 
 def selector_lines() -> list[str]:
@@ -658,7 +658,8 @@ class TestTheThirdDefectIsDisclosedRatherThanPatched:
             #: the branch is chosen by git and the artifact rather than by anything
             #: the function under test produced.
             frozen_at = json.loads((REPO_ROOT / rel).read_text())["frozen_at_utc"]
-            if not _history_can_reconstruct(frozen_at):
+            expected = _git_rev_list_before(frozen_at)
+            if expected is None:
                 #: This checkout does not contain the commit that preceded the
                 #: freeze, so there is nothing to reconstruct FROM.  Asserted
                 #: rather than skipped, and the assertion is about the shape: the
@@ -668,6 +669,7 @@ class TestTheThirdDefectIsDisclosedRatherThanPatched:
                 assert entry["so_no_bound_path_was_compared"] is True, rel
                 assert "the_tree_was_therefore_dirty" not in entry, rel
                 continue
+            assert entry["reconstructed_head"] == expected, rel
             assert re.fullmatch(r"[0-9a-f]{40}", entry["reconstructed_head"]), rel
             assert entry["the_tree_was_therefore_dirty"] is True, rel
             assert entry["which_contradicts_git_dirty"] is False, rel
