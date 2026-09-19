@@ -408,3 +408,129 @@ class TestTheChainLaneDiscipline:
         assert "four freezes and the basis match" in p.stdout
         assert "still amendable" in p.stdout
         assert not (REPO_ROOT / "data/checkpoints/mllmu_iter12_stage3").exists()
+
+
+# ──────────────────────────────────────────────────────────────────────
+WRAPPER = REPO_ROOT / "scripts" / "lanes" / "train_attempt.sh"
+
+
+class TestAPerAttemptScaffoldingCleanup:
+    """An OOM during the model load must cost one attempt, not one row.
+
+    The trainer creates ``<row>/adapters/`` before it loads the model and skips
+    any row whose directory exists, so an attempt that dies during the load —
+    which is what a co-tenant landing ~29 GiB on a freshly claimed card causes
+    — leaves an empty directory that silently removes that row from every later
+    attempt.  Measured over one night: 8 claims, 6 OOMs, all four rows
+    poisoned, both lanes exiting 0 having trained nothing, and the chain
+    stopped by the completeness gate with zero weight files.
+
+    Every case here runs the real wrapper with ``/bin/echo`` as the
+    interpreter, so the exec is proven reached without needing torch or a GPU,
+    and against a ``tmp_path`` checkpoint root, so nothing is ever created
+    under the real Stage-3 root (which would permanently lock the freeze).
+    """
+
+    def run(self, root: Path,
+            ids: str = "rowA,rowB") -> subprocess.CompletedProcess:
+        return subprocess.run(
+            ("bash", str(WRAPPER), "/bin/echo", str(root), ids, "cuda:0"),
+            cwd=REPO_ROOT, capture_output=True, text=True, check=False)
+
+    def scaffolding(self, root: Path, row: str) -> Path:
+        d = root / row / "adapters"
+        d.mkdir(parents=True)
+        return d
+
+    def test_an_empty_adapters_dir_is_removed(self, tmp_path):
+        self.scaffolding(tmp_path, "rowA")
+        assert self.run(tmp_path).returncode == 0
+        assert not (tmp_path / "rowA" / "adapters").exists()
+
+    def test_the_empty_row_dir_goes_with_it(self, tmp_path):
+        self.scaffolding(tmp_path, "rowA")
+        self.run(tmp_path)
+        assert not (tmp_path / "rowA").exists(), (
+            "an empty row directory left behind is what arms the freeze's "
+            "adapters_exist() glob on a run that produced no adapter")
+
+    def test_a_populated_adapters_dir_is_never_removed(self, tmp_path):
+        d = self.scaffolding(tmp_path, "rowA")
+        (d / "adapter_model.safetensors").write_bytes(b"\x00" * 8)
+        out = self.run(tmp_path)
+        assert (d / "adapter_model.safetensors").exists()
+        assert (tmp_path / "rowA" / "adapters").exists()
+        assert "keeping" in out.stdout, (
+            "the decision to preserve a trained row is evidence, so it is "
+            "printed rather than left to be inferred from a surviving file")
+
+    def test_a_dir_holding_only_empty_subdirs_still_counts_as_untrained(
+            self, tmp_path):
+        d = self.scaffolding(tmp_path, "rowA")
+        (d / "nested").mkdir()
+        self.run(tmp_path)
+        assert not d.exists(), (
+            "a partially created tree with no file in it is scaffolding too")
+
+    def test_a_mixed_lane_keeps_the_trained_row_and_retries_the_lost_one(
+            self, tmp_path):
+        done = self.scaffolding(tmp_path, "rowA")
+        (done / "adapter_model.safetensors").write_bytes(b"\x00" * 8)
+        self.scaffolding(tmp_path, "rowB")
+        self.run(tmp_path)
+        assert (done / "adapter_model.safetensors").exists(), (
+            "resumption depends on a completed row staying skipped")
+        assert not (tmp_path / "rowB" / "adapters").exists()
+
+    def test_a_row_with_no_directory_is_left_alone(self, tmp_path):
+        out = self.run(tmp_path, ids="rowC")
+        assert out.returncode == 0
+        assert not (tmp_path / "rowC").exists()
+        assert "cleared" not in out.stdout
+
+    def test_it_still_execs_the_trainer_with_the_lanes_argv(self, tmp_path):
+        out = self.run(tmp_path, ids="rowA,rowB")
+        assert "scripts/train_iter12_stage3.py" in out.stdout
+        assert "--candidates rowA,rowB" in out.stdout
+        assert "--device cuda:0" in out.stdout
+
+    def test_the_cleanup_is_ordered_before_the_exec(self):
+        src = WRAPPER.read_text()
+        assert src.index("-type d -empty -delete") < src.index('exec "$PY"'), (
+            "cleaning after the trainer starts would race the directory the "
+            "trainer is about to create")
+
+    def test_the_wrapper_is_valid_bash(self):
+        p = subprocess.run(("bash", "-n", str(WRAPPER)),
+                           capture_output=True, text=True, check=False)
+        assert p.returncode == 0, p.stderr
+
+    def test_it_refuses_to_run_without_its_arguments(self):
+        p = subprocess.run(("bash", str(WRAPPER)), cwd=REPO_ROOT,
+                           capture_output=True, text=True, check=False)
+        assert p.returncode != 0
+        assert "usage" in p.stdout + p.stderr
+
+    def test_the_chain_runs_it_once_per_claim_not_once_per_launch(self):
+        src = CHAIN.read_text()
+        train = src[src.index("# ── train ─"):src.index("# ── check ─")]
+        wait = train.index('wait_for_gpu.sh "$TRAIN_MIN_FREE" "$log"')
+        wrap = train.index("bash scripts/lanes/train_attempt.sh")
+        end = train.index("< /dev/null > /dev/null 2>&1 &")
+        assert wait < wrap < end, (
+            "the cleanup must sit inside the command the WAITER runs, so it "
+            "happens on every re-queued attempt; done at launch it would run "
+            "once, before the OOM that creates the scaffolding")
+        assert '"$PY" "$STAGE3_CKPT" "$ids" "$DEVICE"' in train
+        assert '--candidates "$ids"' not in train, (
+            "the train lane must reach the trainer only through the wrapper; "
+            "--plan-lanes is the one direct call that remains, and it writes "
+            "no adapter")
+
+    def test_the_wrapper_needed_no_refreeze(self):
+        rel = "scripts/lanes/train_attempt.sh"
+        assert rel not in fis3.PROTOCOL_PATHS
+        assert rel not in json.loads(
+            (REPO_ROOT / s3g.FREEZE_REPORT).read_text())["hashes"][
+                "protocol_paths"]
+        assert str(CHAIN.relative_to(REPO_ROOT)) not in fis3.PROTOCOL_PATHS

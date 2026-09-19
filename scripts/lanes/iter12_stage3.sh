@@ -36,6 +36,13 @@
 #           and its exit status is captured individually: `wait` in a loop over
 #           pids without reading `$?` per pid discards every lane's status, which
 #           is how a chain comes to report success over a lane that died.
+#           Every attempt runs through scripts/lanes/train_attempt.sh, which
+#           first removes a row's adapters/ directory when — and only when — it
+#           holds no file at all.  The trainer creates that directory BEFORE it
+#           loads the model and skips any row whose directory exists, so an OOM
+#           during the load (17.53 GiB contiguous, on a card a co-tenant is
+#           also claiming) would otherwise cost that row on every later attempt
+#           and let the lane exit 0 having trained nothing.
 #   check   completeness, not existence.  scripts/check_iter12_stage3_adapters.py
 #           parses each safetensors header (whole iff the tensor offsets account
 #           for the file size, which a truncated write violates), compares the
@@ -366,10 +373,17 @@ else
     #: Truncated per lane at launch, which is after the lock was claimed, so a
     #: second invocation cannot wipe the running chain's evidence.
     : > "$log"
+    #: The trainer is reached through train_attempt.sh, which clears scaffolding
+    #: left by an attempt that died during the model load before it execs.  The
+    #: trainer skips any row whose adapters/ DIRECTORY exists, so an OOM — which
+    #: happens after that directory is created and before any file is written —
+    #: otherwise removes the row from every later attempt: measured over one
+    #: night, 8 claims and 6 OOMs poisoned all 4 rows, both lanes then exited 0
+    #: having trained nothing, and only the completeness gate caught it.
     bash scripts/lanes/wait_for_gpu.sh "$TRAIN_MIN_FREE" "$log" \
       bash -c "$LANE_PROLOGUE" \
-      "$PY" scripts/train_iter12_stage3.py \
-        --candidates "$ids" --device "$DEVICE" \
+      bash scripts/lanes/train_attempt.sh \
+        "$PY" "$STAGE3_CKPT" "$ids" "$DEVICE" \
       < /dev/null > /dev/null 2>&1 &
     pid=$!
     lane_pids+=("$pid"); lane_ids+=("$ids"); lane_logs+=("$log")
